@@ -53,7 +53,7 @@
         },
         "datePublished": "2024-07-31",
         "description": "",
-        "wordCount":  718 ,
+        "wordCount":  799 ,
         "mainEntityOfPage": "True",
         "dateModified": "2024-07-31",
         "image": {
@@ -184,14 +184,23 @@ stroke-linejoin="round" class="feather feather-home">
     <li><a href="#code">Code</a></li>
     <li><a href="#programı-çalıştırma">Programı Çalıştırma</a></li>
     <li><a href="#sonuç">Sonuç</a></li>
+    <li><a href="#references">References</a></li>
   </ul>
 </nav>
     </details>
             <div class="page-content">
                 <p>Merhabalar. Bu konumda icon file spoofing tekniğinden bahsedeceğim.</p>
-<p>Kısaca tekniği özetlemek gerekirse oluşturulan malware&rsquo;in executable icon&rsquo;unun değiştirilerek kullanıcıyı yanıltma tekniğidir. Bu sayede kullanıcı, malware&rsquo;i zararsız bir dosya olarak görebilir. Bu icon, bu konuda örnek olarak gösterileceği gibi bir PDF olabilir veya bir başka icon. Teknik, sosyal mühendislik saldırıları için oldukça etkili bir yöntemdir. Ayrıca Pentest ve Red Team çalışmalarında da kullanılışlı olabilir.</p>
-<p>Örnek senaryo üzerinden ilerlersek, bir şirketin iç ağının güvenliğini test etmek amacıyla görevlendirilmiş bir pentester olduğunuzu düşünün. Şirket çalışanlarının kötü amaçlı dosyaları açma konusunda ne kadar dikkatli olduklarını test etmeniz gerekiyor. Bu bağlamda, kötü amaçlı yazılımınızı zararsız bir PDF dosyası olarak maskeleyerek, bir kimlik avı e-postası aracılığıyla veya paylaşılan bir klasöre yerleştirerek gönderebilirsiniz. Eğer bir çalışan bu dosyayı açarsa, dosya aslında zararlı yazılımı çalıştırarak sistemlerine erişim sağlar.</p>
+<p>Kısaca tekniği özetlemek gerekirse oluşturulan malware&rsquo;in programın icon&rsquo;u değiştirilerek kullanıcıyı yanıltma tekniğidir. Bu sayede kullanıcı, ilgili malware&rsquo;i zararsız bir dosya olarak görebilir. Malware için belirlediğiniz icon, bu konuda örnek olarak gösterileceği gibi bir PDF olabilir veya bir başka icon olabilir. Tekniğin, sosyal mühendislik saldırıları için oldukça etkili bir yöntem olabilir ve ayrıca Pentest ve Red Team çalışmalarında da kullanılışlı olabilir.</p>
+<p>Konunun daha iyi anlaşılması için örnek senaryo üzerinden ilerleyelim, bir şirketin iç ağının güvenliğini test etmek amacıyla görevlendirilmiş bir pentester olduğunuzu düşünün. Şirket çalışanlarının kötü amaçlı dosyaları açma konusunda ne kadar dikkatli olduklarını test etmeniz gerekiyor. Bu bağlamda, kötü amaçlı yazılımınızı zararsız bir PDF dosyası olarak maskeleyerek, bir kimlik avı e-postası aracılığıyla veya paylaşılan bir klasöre yerleştirerek gönderebilirsiniz. Eğer bir çalışan bu dosyayı açarsa, dosya aslında zararlı yazılımı çalıştırarak sistemlerine erişim sağlar.</p>
 <h2 id="code">Code</h2>
+<blockquote>
+<p>EN <br>
+The code I shared here is taken from S12 H4CK&rsquo;s PDF Icon File Spoofing topic, which I used for this topic, and slightly updated by myself. You can check the References for more details.</p>
+</blockquote>
+<blockquote>
+<p>TR <br>
+Bu konu için kullandığım kod parçası, S12 H4CK&rsquo;in PDF Icon File Spoofing konusundan alınmış ve tarafımca güncellenmiştir. Daha fazla detay için Referanslar kısmından makalesine göz atabilirsiniz.</p>
+</blockquote>
 <p>Hazırlanan örnek kod parçasının github link&rsquo;ine erişmek için <a href="https://github.com/0xbekoo/maldev/tree/main/C/File-Icon-Spoofing">buraya</a> tıklayabilirsiniz.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;strsafe.h&gt;</span><span class="cp">
@@ -315,6 +324,10 @@ stroke-linejoin="round" class="feather feather-home">
 <h2 id="sonuç">Sonuç</h2>
 <p>Bu konumda, icon file spoofing tekniğini ele aldık. Unutmayın ki bu teknik, Pentest ve Red Team çalışmalarında da kullanılışlı olabilir.</p>
 <p>Umarım faydalı olmuştur, teşekkürler! 🚀</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://medium.com/@s12deff/pdf-icon-file-spoofing-dbfd76476b82">S12 H4CK - PDF Icon File Spoofing</a></li>
+</ul>
 
             </div>
         </article></main>
