@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Process on bekoo&#39;s blog</title>
+    <link>http://localhost:1313/tr-tr/tags/process/</link>
+    <description>Recent content in Process on bekoo&#39;s blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>tr-tr</language>
+    <lastBuildDate>Thu, 17 Aug 2023 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tr-tr/tags/process/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>maldev | Process Injection</title>
+      <link>http://localhost:1313/tr-tr/posts/process-injection/</link>
+      <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/tr-tr/posts/process-injection/</guid>
+      
+      <description>Merhabalar bu yazımda maldev alanından Process Injection konusuna değineceğim.
+Nedir bu Process&amp;rsquo;ler Kabaca Processler, işletim sistemi tarafından herhangi bir programın yürütülmesi için oluşturulan çalışma birimleridir. Eğer bir program, kullanıcı veya İşletim Sistemi (OS) tarafından çalıştırılmak istenirse, öncelikle İşletim Sistemi tarafından belleğe yüklenir ardından yine İşletim Sistemi tarafından bu programın yürütülmesi için bir process oluşturulur. En sonda ise belleğe yüklenen programın bellek alanı, Process tarafından temsil edilir ve programın içerdiği komutları çalıştırılmaya başlanır.</description>
+      
+    </item>
+    
+  </channel>
+</rss>

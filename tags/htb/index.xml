@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>HTB on bekoo&#39;s blog</title>
+    <link>http://localhost:1313/tags/htb/</link>
+    <description>Recent content in HTB on bekoo&#39;s blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-gb</language>
+    <lastBuildDate>Wed, 31 Jul 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/htb/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>HTB 0x0 | You know 0xDiablos</title>
+      <link>http://localhost:1313/posts/htb-ctf-0x0/</link>
+      <pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/htb-ctf-0x0/</guid>
+      
+      <description>Introduction Welcome to my First CTF write-up! In this post, i&amp;rsquo;ll be presenting the solution to You know 0xDiablos CTF from Hack The Box.
+Given Details Description: I missed my flag URL: 209.97.131.64:32522 File: vuln Analysis We only have the vuln file. Let&amp;rsquo;s see details of the vuln file:
+It&amp;rsquo;s an 32 bit file. Therefore an executable. After knowing this information, we can understand that the challenge is actually about reverse engineering.</description>
+      
+    </item>
+    
+  </channel>
+</rss>

