@@ -6,9 +6,22 @@
     <description>Recent content in Windows-Kernel on bekoo&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Thu, 22 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/windows-kernel/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 26 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/windows-kernel/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Windows Kernel Development | I/O Request Packet (IRP)</title>
+      <title>Windows Kernel Development | IOCTL</title>
+      <link>http://localhost:1313/posts/wkd-ioctl/</link>
+      <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/wkd-ioctl/</guid>
+      
+      <description>Merhabalar, windows kernel development&amp;rsquo;ın bu blogunda IOCTL üzerine bilgiler paylaşcağım.
+IOCTL Nedir? I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP&amp;rsquo;ler aracılığıyla gönderilir. Eğer IRP&amp;rsquo;ler hakkında bir bilginiz yoksa buraya tıklayarak IRP&amp;rsquo;ler hakkında bilgi alabilirsiniz.
+Windows&amp;rsquo;ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir.</description>
+      
+    </item>
+    
+    <item>
+      <title>Windows Kernel Development | IRP</title>
       <link>http://localhost:1313/posts/wkd-irp/</link>
       <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
       

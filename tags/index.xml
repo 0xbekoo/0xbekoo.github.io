@@ -6,7 +6,51 @@
     <description>Recent content in Tags on bekoo&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Thu, 22 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 26 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Io-Control</title>
+      <link>http://localhost:1313/tags/io-control/</link>
+      <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/tags/io-control/</guid>
+      
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>IOCTL</title>
+      <link>http://localhost:1313/tags/ioctl/</link>
+      <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/tags/ioctl/</guid>
+      
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Module</title>
+      <link>http://localhost:1313/tags/module/</link>
+      <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/tags/module/</guid>
+      
+      <description></description>
+      
+    </item>
+    
+    <item>
+      <title>Windows-Kernel</title>
+      <link>http://localhost:1313/tags/windows-kernel/</link>
+      <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/tags/windows-kernel/</guid>
+      
+      <description></description>
+      
+    </item>
+    
     <item>
       <title>Io-Request-Packet</title>
       <link>http://localhost:1313/tags/io-request-packet/</link>
@@ -24,28 +68,6 @@
       <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
       
       <guid>http://localhost:1313/tags/irp/</guid>
-      
-      <description></description>
-      
-    </item>
-    
-    <item>
-      <title>Module</title>
-      <link>http://localhost:1313/tags/module/</link>
-      <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
-      
-      <guid>http://localhost:1313/tags/module/</guid>
-      
-      <description></description>
-      
-    </item>
-    
-    <item>
-      <title>Windows-Kernel</title>
-      <link>http://localhost:1313/tags/windows-kernel/</link>
-      <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
-      
-      <guid>http://localhost:1313/tags/windows-kernel/</guid>
       
       <description></description>
       

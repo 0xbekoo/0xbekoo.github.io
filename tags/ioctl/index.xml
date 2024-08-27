@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Module on bekoo&#39;s blog</title>
-    <link>http://localhost:1313/tags/module/</link>
-    <description>Recent content in Module on bekoo&#39;s blog</description>
+    <title>IOCTL on bekoo&#39;s blog</title>
+    <link>http://localhost:1313/tags/ioctl/</link>
+    <description>Recent content in IOCTL on bekoo&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Mon, 26 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/module/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 26 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/ioctl/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Windows Kernel Development | IOCTL</title>
       <link>http://localhost:1313/posts/wkd-ioctl/</link>
@@ -17,19 +17,6 @@
       <description>Merhabalar, windows kernel development&amp;rsquo;ın bu blogunda IOCTL üzerine bilgiler paylaşcağım.
 IOCTL Nedir? I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP&amp;rsquo;ler aracılığıyla gönderilir. Eğer IRP&amp;rsquo;ler hakkında bir bilginiz yoksa buraya tıklayarak IRP&amp;rsquo;ler hakkında bilgi alabilirsiniz.
 Windows&amp;rsquo;ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. DeviceIoControl API&amp;rsquo;si alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir.</description>
-      
-    </item>
-    
-    <item>
-      <title>Windows Kernel Development | IRP</title>
-      <link>http://localhost:1313/posts/wkd-irp/</link>
-      <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
-      
-      <guid>http://localhost:1313/posts/wkd-irp/</guid>
-      
-      <description>Merhabalar, Windows Kernel Development&amp;rsquo;ın ilk serisi olarak bu konuda sizlere I/O Request Packet (IRP) hakkında bilgiler paylaşacağım. Bu konuda IRP&amp;rsquo;nin ne olduğunu, nasıl oluşturulduğunu ve nasıl kullanıldığını öğreneceğiz.
-UYARI Bu seride okuyucunun Windows Kernel Development konusunda temel bilgilere sahip olduğu varsayılmıştır. Eğer bu konuda bilgi sahibi değilseniz, bu konudan önce temel bilgileri öğrenmenizi tavsiye ederim.
-I/O Request Packet (IRP) Nedir? I/O Request Packet, kısaca IRP, Windows işletim sisteminde sürücüler ile işletim sistemi arasında bilgi alışverişini sağlayan bir yapıdır.</description>
       
     </item>
     
