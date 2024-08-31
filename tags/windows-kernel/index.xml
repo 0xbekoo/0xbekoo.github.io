@@ -21,6 +21,18 @@ Windows&amp;rsquo;ta User-mode programları, DeviceIoControl API kullanarak sür
     </item>
     
     <item>
+      <title>Windows Kernel Development | Virtual Memory</title>
+      <link>http://localhost:1313/posts/wkd-virtual-memory/</link>
+      <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/wkd-virtual-memory/</guid>
+      
+      <description>Merhabalar, bu yazıda Virtual Memory konusunu ele alıp, sürücü üzerinden örnekler yapacağız.
+Virtual Memory Nedir? &amp;ldquo;Windows, her bir işlem için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir işlemin diğerinin belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.</description>
+      
+    </item>
+    
+    <item>
       <title>Windows Kernel Development | IRP</title>
       <link>http://localhost:1313/posts/wkd-irp/</link>
       <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>

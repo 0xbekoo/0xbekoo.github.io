@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Driver on bekoo&#39;s blog</title>
+    <link>http://localhost:1313/tags/driver/</link>
+    <description>Recent content in Driver on bekoo&#39;s blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-gb</language>
+    <lastBuildDate>Mon, 26 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/driver/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Windows Kernel Development | Virtual Memory</title>
+      <link>http://localhost:1313/posts/wkd-virtual-memory/</link>
+      <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/wkd-virtual-memory/</guid>
+      
+      <description>Merhabalar, bu yazıda Virtual Memory konusunu ele alıp, sürücü üzerinden örnekler yapacağız.
+Virtual Memory Nedir? &amp;ldquo;Windows, her bir işlem için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir işlemin diğerinin belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.</description>
+      
+    </item>
+    
+  </channel>
+</rss>

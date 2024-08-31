@@ -5,10 +5,16 @@
     <loc>http://localhost:1313/</loc>
     <lastmod>2024-08-26T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/tags/driver/</loc>
+    <lastmod>2024-08-26T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/tags/io-control/</loc>
     <lastmod>2024-08-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/ioctl/</loc>
+    <lastmod>2024-08-26T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/memory/</loc>
     <lastmod>2024-08-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/module/</loc>
@@ -20,7 +26,16 @@
     <loc>http://localhost:1313/tags/</loc>
     <lastmod>2024-08-26T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/tags/virtual/</loc>
+    <lastmod>2024-08-26T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/virtual-memory/</loc>
+    <lastmod>2024-08-26T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/posts/wkd-ioctl/</loc>
+    <lastmod>2024-08-26T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/wkd-virtual-memory/</loc>
     <lastmod>2024-08-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/windows-kernel/</loc>
