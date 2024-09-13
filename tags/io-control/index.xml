@@ -14,7 +14,7 @@
       
       <guid>http://localhost:1313/posts/wkd-ioctl/</guid>
       
-      <description>Merhabalar, windows kernel development&amp;rsquo;ın bu blogunda IOCTL üzerine bilgiler paylaşcağım.
+      <description>Merhabalar, bu yazıda Windows Kernel Development&amp;rsquo;tan IOCTL mekanizmasını inceleyeceğiz.
 IOCTL Nedir? I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP&amp;rsquo;ler aracılığıyla gönderilir. Eğer IRP&amp;rsquo;ler hakkında bir bilginiz yoksa buraya tıklayarak IRP&amp;rsquo;ler hakkında bilgi alabilirsiniz.
 Windows&amp;rsquo;ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir.</description>
       

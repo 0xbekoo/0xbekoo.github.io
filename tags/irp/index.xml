@@ -14,9 +14,9 @@
       
       <guid>http://localhost:1313/posts/wkd-irp/</guid>
       
-      <description>Merhabalar, Windows Kernel Development&amp;rsquo;ın ilk serisi olarak bu konuda sizlere I/O Request Packet (IRP) hakkında bilgiler paylaşacağım. Bu konuda IRP&amp;rsquo;nin ne olduğunu, nasıl oluşturulduğunu ve nasıl kullanıldığını öğreneceğiz.
+      <description>Merhabalar, Windows Kernel Development&amp;rsquo;ın ilk serisi olarak bu konuda sizlere I/O Request Packet (IRP) konusunu inceleyeceğiz.
 UYARI Bu seride okuyucunun Windows Kernel Development konusunda temel bilgilere sahip olduğu varsayılmıştır. Eğer bu konuda bilgi sahibi değilseniz, bu konudan önce temel bilgileri öğrenmenizi tavsiye ederim.
-I/O Request Packet (IRP) Nedir? I/O Request Packet, kısaca IRP, Windows işletim sisteminde sürücüler ile işletim sistemi arasında bilgi alışverişini sağlayan bir yapıdır.</description>
+I/O Request Packet (IRP) Nedir? I/O Request Packet, kısaca IRP, Windows işletim sisteminde sürücüler ile işletim sistemi arasında bilgi alışverişini sağlayan bir yapıdır. Bunu bir &amp;ldquo;mesaj taşıyıcısı&amp;rdquo; gibi düşünebilirsiniz.</description>
       
     </item>
     

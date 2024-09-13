@@ -14,8 +14,8 @@
       
       <guid>http://localhost:1313/posts/wkd-virtual-memory/</guid>
       
-      <description>Merhabalar, bu yazıda Virtual Memory konusunu ele alıp, sürücü üzerinden örnekler yapacağız.
-Virtual Memory Nedir? &amp;ldquo;Windows, her bir işlem için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir işlemin diğerinin belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.</description>
+      <description>Merhabalar, bu yazıda Virtual Memory konusunu ele alacağım.
+Virtual Memory Nedir? &amp;ldquo;Windows, her bir process için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir process&amp;rsquo;in, diğer bir process&amp;rsquo;in belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.</description>
       
     </item>
     
@@ -26,7 +26,7 @@ Virtual Memory Nedir? &amp;ldquo;Windows, her bir işlem için, büyük ve özel
       
       <guid>http://localhost:1313/posts/wkd-ioctl/</guid>
       
-      <description>Merhabalar, windows kernel development&amp;rsquo;ın bu blogunda IOCTL üzerine bilgiler paylaşcağım.
+      <description>Merhabalar, bu yazıda Windows Kernel Development&amp;rsquo;tan IOCTL mekanizmasını inceleyeceğiz.
 IOCTL Nedir? I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP&amp;rsquo;ler aracılığıyla gönderilir. Eğer IRP&amp;rsquo;ler hakkında bir bilginiz yoksa buraya tıklayarak IRP&amp;rsquo;ler hakkında bilgi alabilirsiniz.
 Windows&amp;rsquo;ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir.</description>
       
@@ -39,9 +39,9 @@ Windows&amp;rsquo;ta User-mode programları, DeviceIoControl API kullanarak sür
       
       <guid>http://localhost:1313/posts/wkd-irp/</guid>
       
-      <description>Merhabalar, Windows Kernel Development&amp;rsquo;ın ilk serisi olarak bu konuda sizlere I/O Request Packet (IRP) hakkında bilgiler paylaşacağım. Bu konuda IRP&amp;rsquo;nin ne olduğunu, nasıl oluşturulduğunu ve nasıl kullanıldığını öğreneceğiz.
+      <description>Merhabalar, Windows Kernel Development&amp;rsquo;ın ilk serisi olarak bu konuda sizlere I/O Request Packet (IRP) konusunu inceleyeceğiz.
 UYARI Bu seride okuyucunun Windows Kernel Development konusunda temel bilgilere sahip olduğu varsayılmıştır. Eğer bu konuda bilgi sahibi değilseniz, bu konudan önce temel bilgileri öğrenmenizi tavsiye ederim.
-I/O Request Packet (IRP) Nedir? I/O Request Packet, kısaca IRP, Windows işletim sisteminde sürücüler ile işletim sistemi arasında bilgi alışverişini sağlayan bir yapıdır.</description>
+I/O Request Packet (IRP) Nedir? I/O Request Packet, kısaca IRP, Windows işletim sisteminde sürücüler ile işletim sistemi arasında bilgi alışverişini sağlayan bir yapıdır. Bunu bir &amp;ldquo;mesaj taşıyıcısı&amp;rdquo; gibi düşünebilirsiniz.</description>
       
     </item>
     

@@ -14,7 +14,7 @@
       
       <guid>http://localhost:1313/posts/process-injection/</guid>
       
-      <description>Merhabalar bu yazımda maldev alanından Process Injection konusuna değineceğim.
+      <description>Merhabalar bu yazımda maldev alanından Process Injection konusunu inceleyeceğiz.
 Nedir bu Process&amp;rsquo;ler Kabaca Processler, işletim sistemi tarafından herhangi bir programın yürütülmesi için oluşturulan çalışma birimleridir. Eğer bir program, kullanıcı veya İşletim Sistemi (OS) tarafından çalıştırılmak istenirse, öncelikle İşletim Sistemi tarafından belleğe yüklenir ardından yine İşletim Sistemi tarafından bu programın yürütülmesi için bir process oluşturulur. En sonda ise belleğe yüklenen programın bellek alanı, Process tarafından temsil edilir ve programın içerdiği komutları çalıştırılmaya başlanır.</description>
       
     </item>

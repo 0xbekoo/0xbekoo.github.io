@@ -6,7 +6,20 @@
     <description>Recent content on bekoo&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
-    <lastBuildDate>Fri, 30 Aug 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 12 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>maldev | Malware Resurrection</title>
+      <link>http://localhost:1313/posts/malware-resurrection/</link>
+      <pubDate>Thu, 12 Sep 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/malware-resurrection/</guid>
+      
+      <description>Merhabalar, bu yazıda Malware Resurrection tekniğini inceleyeceğiz.
+Nedir bu Malware Resurrection? Malware Resurrection tekniği, sisteme bulaşmış ve çalışan bir malware&amp;rsquo;in bir şekilde sonlandırılması sonrasında tekrar sistemde çalışabilmesi ve kalıcılığı sağlamak için sistemde tekrar diriltmesine olanak sağlayan bir tekniktir.
+Bu yöntemi gerçekleştirmek için malware&amp;rsquo;in yanında ek bir program kullanılabilir veya driver kullanılabilir. Bu program veya driver, malware&amp;rsquo;i dinlemeye alır ve kapatılması durumunda malware sisteme tekrar indirip çalıştırabilir. Kalıcılığı sağlanmak için ise çeşitli yöntemlere başvurulabilir.</description>
+      
+    </item>
+    
     <item>
       <title>Windows Kernel Development | Virtual Memory</title>
       <link>http://localhost:1313/posts/wkd-virtual-memory/</link>
@@ -14,8 +27,8 @@
       
       <guid>http://localhost:1313/posts/wkd-virtual-memory/</guid>
       
-      <description>Merhabalar, bu yazıda Virtual Memory konusunu ele alıp, sürücü üzerinden örnekler yapacağız.
-Virtual Memory Nedir? &amp;ldquo;Windows, her bir işlem için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir işlemin diğerinin belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.</description>
+      <description>Merhabalar, bu yazıda Virtual Memory konusunu ele alacağım.
+Virtual Memory Nedir? &amp;ldquo;Windows, her bir process için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir process&amp;rsquo;in, diğer bir process&amp;rsquo;in belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.</description>
       
     </item>
     
@@ -26,7 +39,7 @@ Virtual Memory Nedir? &amp;ldquo;Windows, her bir işlem için, büyük ve özel
       
       <guid>http://localhost:1313/posts/wkd-ioctl/</guid>
       
-      <description>Merhabalar, windows kernel development&amp;rsquo;ın bu blogunda IOCTL üzerine bilgiler paylaşcağım.
+      <description>Merhabalar, bu yazıda Windows Kernel Development&amp;rsquo;tan IOCTL mekanizmasını inceleyeceğiz.
 IOCTL Nedir? I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP&amp;rsquo;ler aracılığıyla gönderilir. Eğer IRP&amp;rsquo;ler hakkında bir bilginiz yoksa buraya tıklayarak IRP&amp;rsquo;ler hakkında bilgi alabilirsiniz.
 Windows&amp;rsquo;ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir.</description>
       
@@ -39,9 +52,9 @@ Windows&amp;rsquo;ta User-mode programları, DeviceIoControl API kullanarak sür
       
       <guid>http://localhost:1313/posts/wkd-irp/</guid>
       
-      <description>Merhabalar, Windows Kernel Development&amp;rsquo;ın ilk serisi olarak bu konuda sizlere I/O Request Packet (IRP) hakkında bilgiler paylaşacağım. Bu konuda IRP&amp;rsquo;nin ne olduğunu, nasıl oluşturulduğunu ve nasıl kullanıldığını öğreneceğiz.
+      <description>Merhabalar, Windows Kernel Development&amp;rsquo;ın ilk serisi olarak bu konuda sizlere I/O Request Packet (IRP) konusunu inceleyeceğiz.
 UYARI Bu seride okuyucunun Windows Kernel Development konusunda temel bilgilere sahip olduğu varsayılmıştır. Eğer bu konuda bilgi sahibi değilseniz, bu konudan önce temel bilgileri öğrenmenizi tavsiye ederim.
-I/O Request Packet (IRP) Nedir? I/O Request Packet, kısaca IRP, Windows işletim sisteminde sürücüler ile işletim sistemi arasında bilgi alışverişini sağlayan bir yapıdır.</description>
+I/O Request Packet (IRP) Nedir? I/O Request Packet, kısaca IRP, Windows işletim sisteminde sürücüler ile işletim sistemi arasında bilgi alışverişini sağlayan bir yapıdır. Bunu bir &amp;ldquo;mesaj taşıyıcısı&amp;rdquo; gibi düşünebilirsiniz.</description>
       
     </item>
     
@@ -52,7 +65,7 @@ I/O Request Packet (IRP) Nedir? I/O Request Packet, kısaca IRP, Windows işleti
       
       <guid>http://localhost:1313/posts/file-icon-spoofing/</guid>
       
-      <description>Merhabalar. Bu konumda icon file spoofing tekniğinden bahsedeceğim.
+      <description>Merhabalar, bu yazıda File Icon Spoofing tekniğini inceleyeceğiz.
 Kısaca tekniği özetlemek gerekirse oluşturulan malware&amp;rsquo;in programın icon&amp;rsquo;u değiştirilerek kullanıcıyı yanıltma tekniğidir. Bu sayede kullanıcı, ilgili malware&amp;rsquo;i zararsız bir dosya olarak görebilir. Malware için belirlediğiniz icon, bu konuda örnek olarak gösterileceği gibi bir PDF olabilir veya bir başka icon olabilir. Tekniğin, sosyal mühendislik saldırıları için oldukça etkili bir yöntem olabilir ve ayrıca Pentest ve Red Team çalışmalarında da kullanılışlı olabilir.
 Konunun daha iyi anlaşılması için örnek senaryo üzerinden ilerleyelim, bir şirketin iç ağının güvenliğini test etmek amacıyla görevlendirilmiş bir pentester olduğunuzu düşünün.</description>
       
@@ -103,7 +116,7 @@ ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilme
       
       <guid>http://localhost:1313/posts/process-injection/</guid>
       
-      <description>Merhabalar bu yazımda maldev alanından Process Injection konusuna değineceğim.
+      <description>Merhabalar bu yazımda maldev alanından Process Injection konusunu inceleyeceğiz.
 Nedir bu Process&amp;rsquo;ler Kabaca Processler, işletim sistemi tarafından herhangi bir programın yürütülmesi için oluşturulan çalışma birimleridir. Eğer bir program, kullanıcı veya İşletim Sistemi (OS) tarafından çalıştırılmak istenirse, öncelikle İşletim Sistemi tarafından belleğe yüklenir ardından yine İşletim Sistemi tarafından bu programın yürütülmesi için bir process oluşturulur. En sonda ise belleğe yüklenen programın bellek alanı, Process tarafından temsil edilir ve programın içerdiği komutları çalıştırılmaya başlanır.</description>
       
     </item>
