@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Process-Injection on 0xbekoo</title>
-    <link>https://0xbekoo.github.io/tags/process-injection/</link>
+    <link>http://localhost:1313/tags/process-injection/</link>
     <description>Recent content in Process-Injection on 0xbekoo</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Thu, 17 Aug 2023 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://0xbekoo.github.io/tags/process-injection/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/process-injection/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Process Injection</title>
-      <link>https://0xbekoo.github.io/post/process-injection/</link>
+      <link>http://localhost:1313/post/process-injection/</link>
       <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/post/process-injection/</guid>
+      <guid>http://localhost:1313/post/process-injection/</guid>
       <description>&lt;p&gt;&lt;img src=&#34;../../images/posts/process-injection/main-photo.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;Merhabalar bu yazımda maldev alanından Process Injection konusunu inceleyeceğiz.&lt;/p&gt;&#xA;&lt;h2 id=&#34;nedir-bu-processler&#34;&gt;&#xD;&#xA;&lt;a class=&#34;header-anchor&#34; href=&#34;#nedir-bu-processler&#34;&gt;&lt;/a&gt;&#xD;&#xA;Nedir bu Process&amp;rsquo;ler&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;Kabaca Processler, işletim sistemi tarafından herhangi bir programın yürütülmesi için oluşturulan çalışma birimleridir. Eğer bir program, kullanıcı veya İşletim Sistemi (OS) tarafından çalıştırılmak istenirse, öncelikle İşletim Sistemi tarafından belleğe yüklenir ardından yine İşletim Sistemi tarafından bu programın yürütülmesi için bir process oluşturulur. En sonda ise belleğe yüklenen programın bellek alanı, Process tarafından temsil edilir ve programın içerdiği komutları çalıştırılmaya başlanır.&lt;/p&gt;</description>
     </item>
   </channel>

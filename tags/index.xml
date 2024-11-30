@@ -2,241 +2,241 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on 0xbekoo</title>
-    <link>https://0xbekoo.github.io/tags/</link>
+    <link>http://localhost:1313/tags/</link>
     <description>Recent content in Tags on 0xbekoo</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Thu, 12 Sep 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://0xbekoo.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Malware-Dev</title>
-      <link>https://0xbekoo.github.io/tags/malware-dev/</link>
+      <link>http://localhost:1313/tags/malware-dev/</link>
       <pubDate>Thu, 12 Sep 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/malware-dev/</guid>
+      <guid>http://localhost:1313/tags/malware-dev/</guid>
       <description></description>
     </item>
     <item>
       <title>Resurrect</title>
-      <link>https://0xbekoo.github.io/tags/resurrect/</link>
+      <link>http://localhost:1313/tags/resurrect/</link>
       <pubDate>Thu, 12 Sep 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/resurrect/</guid>
+      <guid>http://localhost:1313/tags/resurrect/</guid>
       <description></description>
     </item>
     <item>
       <title>Resurrection</title>
-      <link>https://0xbekoo.github.io/tags/resurrection/</link>
+      <link>http://localhost:1313/tags/resurrection/</link>
       <pubDate>Thu, 12 Sep 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/resurrection/</guid>
+      <guid>http://localhost:1313/tags/resurrection/</guid>
       <description></description>
     </item>
     <item>
       <title>Driver</title>
-      <link>https://0xbekoo.github.io/tags/driver/</link>
+      <link>http://localhost:1313/tags/driver/</link>
       <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/driver/</guid>
+      <guid>http://localhost:1313/tags/driver/</guid>
       <description></description>
     </item>
     <item>
       <title>Memory</title>
-      <link>https://0xbekoo.github.io/tags/memory/</link>
+      <link>http://localhost:1313/tags/memory/</link>
       <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/memory/</guid>
+      <guid>http://localhost:1313/tags/memory/</guid>
       <description></description>
     </item>
     <item>
       <title>Virtual</title>
-      <link>https://0xbekoo.github.io/tags/virtual/</link>
+      <link>http://localhost:1313/tags/virtual/</link>
       <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/virtual/</guid>
+      <guid>http://localhost:1313/tags/virtual/</guid>
       <description></description>
     </item>
     <item>
       <title>Virtual-Memory</title>
-      <link>https://0xbekoo.github.io/tags/virtual-memory/</link>
+      <link>http://localhost:1313/tags/virtual-memory/</link>
       <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/virtual-memory/</guid>
+      <guid>http://localhost:1313/tags/virtual-memory/</guid>
       <description></description>
     </item>
     <item>
       <title>Winkernel-Dev</title>
-      <link>https://0xbekoo.github.io/tags/winkernel-dev/</link>
+      <link>http://localhost:1313/tags/winkernel-dev/</link>
       <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/winkernel-dev/</guid>
+      <guid>http://localhost:1313/tags/winkernel-dev/</guid>
       <description></description>
     </item>
     <item>
       <title>Io-Control</title>
-      <link>https://0xbekoo.github.io/tags/io-control/</link>
+      <link>http://localhost:1313/tags/io-control/</link>
       <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/io-control/</guid>
+      <guid>http://localhost:1313/tags/io-control/</guid>
       <description></description>
     </item>
     <item>
       <title>IOCTL</title>
-      <link>https://0xbekoo.github.io/tags/ioctl/</link>
+      <link>http://localhost:1313/tags/ioctl/</link>
       <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/ioctl/</guid>
+      <guid>http://localhost:1313/tags/ioctl/</guid>
       <description></description>
     </item>
     <item>
       <title>Module</title>
-      <link>https://0xbekoo.github.io/tags/module/</link>
+      <link>http://localhost:1313/tags/module/</link>
       <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/module/</guid>
+      <guid>http://localhost:1313/tags/module/</guid>
       <description></description>
     </item>
     <item>
       <title>Io-Request-Packet</title>
-      <link>https://0xbekoo.github.io/tags/io-request-packet/</link>
+      <link>http://localhost:1313/tags/io-request-packet/</link>
       <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/io-request-packet/</guid>
+      <guid>http://localhost:1313/tags/io-request-packet/</guid>
       <description></description>
     </item>
     <item>
       <title>Irp</title>
-      <link>https://0xbekoo.github.io/tags/irp/</link>
+      <link>http://localhost:1313/tags/irp/</link>
       <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/irp/</guid>
+      <guid>http://localhost:1313/tags/irp/</guid>
       <description></description>
     </item>
     <item>
       <title>Icon</title>
-      <link>https://0xbekoo.github.io/tags/icon/</link>
+      <link>http://localhost:1313/tags/icon/</link>
       <pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/icon/</guid>
+      <guid>http://localhost:1313/tags/icon/</guid>
       <description></description>
     </item>
     <item>
       <title>Maldev-Technique</title>
-      <link>https://0xbekoo.github.io/tags/maldev-technique/</link>
+      <link>http://localhost:1313/tags/maldev-technique/</link>
       <pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/maldev-technique/</guid>
+      <guid>http://localhost:1313/tags/maldev-technique/</guid>
       <description></description>
     </item>
     <item>
       <title>Spoofing</title>
-      <link>https://0xbekoo.github.io/tags/spoofing/</link>
+      <link>http://localhost:1313/tags/spoofing/</link>
       <pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/spoofing/</guid>
+      <guid>http://localhost:1313/tags/spoofing/</guid>
       <description></description>
     </item>
     <item>
       <title>API</title>
-      <link>https://0xbekoo.github.io/tags/api/</link>
+      <link>http://localhost:1313/tags/api/</link>
       <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/api/</guid>
+      <guid>http://localhost:1313/tags/api/</guid>
       <description></description>
     </item>
     <item>
       <title>API-Hashing</title>
-      <link>https://0xbekoo.github.io/tags/api-hashing/</link>
+      <link>http://localhost:1313/tags/api-hashing/</link>
       <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/api-hashing/</guid>
+      <guid>http://localhost:1313/tags/api-hashing/</guid>
       <description></description>
     </item>
     <item>
       <title>API-Security</title>
-      <link>https://0xbekoo.github.io/tags/api-security/</link>
+      <link>http://localhost:1313/tags/api-security/</link>
       <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/api-security/</guid>
+      <guid>http://localhost:1313/tags/api-security/</guid>
       <description></description>
     </item>
     <item>
       <title>Anti-Cheat</title>
-      <link>https://0xbekoo.github.io/tags/anti-cheat/</link>
+      <link>http://localhost:1313/tags/anti-cheat/</link>
       <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/anti-cheat/</guid>
+      <guid>http://localhost:1313/tags/anti-cheat/</guid>
       <description></description>
     </item>
     <item>
       <title>Malware-Analysis</title>
-      <link>https://0xbekoo.github.io/tags/malware-analysis/</link>
+      <link>http://localhost:1313/tags/malware-analysis/</link>
       <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/malware-analysis/</guid>
+      <guid>http://localhost:1313/tags/malware-analysis/</guid>
       <description></description>
     </item>
     <item>
       <title>Riot Games</title>
-      <link>https://0xbekoo.github.io/tags/riot-games/</link>
+      <link>http://localhost:1313/tags/riot-games/</link>
       <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/riot-games/</guid>
+      <guid>http://localhost:1313/tags/riot-games/</guid>
       <description></description>
     </item>
     <item>
       <title>Spyware</title>
-      <link>https://0xbekoo.github.io/tags/spyware/</link>
+      <link>http://localhost:1313/tags/spyware/</link>
       <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/spyware/</guid>
+      <guid>http://localhost:1313/tags/spyware/</guid>
       <description></description>
     </item>
     <item>
       <title>Valorant</title>
-      <link>https://0xbekoo.github.io/tags/valorant/</link>
+      <link>http://localhost:1313/tags/valorant/</link>
       <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/valorant/</guid>
+      <guid>http://localhost:1313/tags/valorant/</guid>
       <description></description>
     </item>
     <item>
       <title>Vanguard</title>
-      <link>https://0xbekoo.github.io/tags/vanguard/</link>
+      <link>http://localhost:1313/tags/vanguard/</link>
       <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/vanguard/</guid>
+      <guid>http://localhost:1313/tags/vanguard/</guid>
       <description></description>
     </item>
     <item>
       <title>Bypass</title>
-      <link>https://0xbekoo.github.io/tags/bypass/</link>
+      <link>http://localhost:1313/tags/bypass/</link>
       <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/bypass/</guid>
+      <guid>http://localhost:1313/tags/bypass/</guid>
       <description></description>
     </item>
     <item>
       <title>Linux</title>
-      <link>https://0xbekoo.github.io/tags/linux/</link>
+      <link>http://localhost:1313/tags/linux/</link>
       <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/linux/</guid>
+      <guid>http://localhost:1313/tags/linux/</guid>
       <description></description>
     </item>
     <item>
       <title>Ptrace</title>
-      <link>https://0xbekoo.github.io/tags/ptrace/</link>
+      <link>http://localhost:1313/tags/ptrace/</link>
       <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/ptrace/</guid>
+      <guid>http://localhost:1313/tags/ptrace/</guid>
       <description></description>
     </item>
     <item>
       <title>Reverse-Engineering</title>
-      <link>https://0xbekoo.github.io/tags/reverse-engineering/</link>
+      <link>http://localhost:1313/tags/reverse-engineering/</link>
       <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/reverse-engineering/</guid>
+      <guid>http://localhost:1313/tags/reverse-engineering/</guid>
       <description></description>
     </item>
     <item>
       <title>Security</title>
-      <link>https://0xbekoo.github.io/tags/security/</link>
+      <link>http://localhost:1313/tags/security/</link>
       <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/security/</guid>
+      <guid>http://localhost:1313/tags/security/</guid>
       <description></description>
     </item>
     <item>
       <title>Injection</title>
-      <link>https://0xbekoo.github.io/tags/injection/</link>
+      <link>http://localhost:1313/tags/injection/</link>
       <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/injection/</guid>
+      <guid>http://localhost:1313/tags/injection/</guid>
       <description></description>
     </item>
     <item>
       <title>Process</title>
-      <link>https://0xbekoo.github.io/tags/process/</link>
+      <link>http://localhost:1313/tags/process/</link>
       <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/process/</guid>
+      <guid>http://localhost:1313/tags/process/</guid>
       <description></description>
     </item>
     <item>
       <title>Process-Injection</title>
-      <link>https://0xbekoo.github.io/tags/process-injection/</link>
+      <link>http://localhost:1313/tags/process-injection/</link>
       <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/tags/process-injection/</guid>
+      <guid>http://localhost:1313/tags/process-injection/</guid>
       <description></description>
     </item>
   </channel>

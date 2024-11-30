@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Spoofing on 0xbekoo</title>
-    <link>https://0xbekoo.github.io/tags/spoofing/</link>
+    <link>http://localhost:1313/tags/spoofing/</link>
     <description>Recent content in Spoofing on 0xbekoo</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 31 Jul 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://0xbekoo.github.io/tags/spoofing/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/spoofing/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>PDF Icon File Spoofing</title>
-      <link>https://0xbekoo.github.io/post/file-icon-spoofing/</link>
+      <link>http://localhost:1313/post/file-icon-spoofing/</link>
       <pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/post/file-icon-spoofing/</guid>
+      <guid>http://localhost:1313/post/file-icon-spoofing/</guid>
       <description>&lt;p&gt;Merhabalar, bu yazıda File Icon Spoofing tekniğini inceleyeceğiz.&lt;/p&gt;&#xA;&lt;p&gt;Kısaca tekniği özetlemek gerekirse oluşturulan malware&amp;rsquo;in programın icon&amp;rsquo;u değiştirilerek kullanıcıyı yanıltma tekniğidir. Bu sayede kullanıcı, ilgili malware&amp;rsquo;i zararsız bir dosya olarak görebilir. Malware için belirlediğiniz icon, bu konuda örnek olarak gösterileceği gibi bir PDF olabilir veya bir başka icon olabilir. Tekniğin, sosyal mühendislik saldırıları için oldukça etkili bir yöntem olabilir ve ayrıca Pentest ve Red Team çalışmalarında da kullanılışlı olabilir.&lt;/p&gt;&#xA;&lt;p&gt;Konunun daha iyi anlaşılması için örnek senaryo üzerinden ilerleyelim, bir şirketin iç ağının güvenliğini test etmek amacıyla görevlendirilmiş bir pentester olduğunuzu düşünün. Şirket çalışanlarının kötü amaçlı dosyaları açma konusunda ne kadar dikkatli olduklarını test etmeniz gerekiyor. Bu bağlamda, kötü amaçlı yazılımınızı zararsız bir PDF dosyası olarak maskeleyerek, bir kimlik avı e-postası aracılığıyla veya paylaşılan bir klasöre yerleştirerek gönderebilirsiniz. Eğer bir çalışan bu dosyayı açarsa, dosya aslında zararlı yazılımı çalıştırarak sistemlerine erişim sağlar.&lt;/p&gt;</description>
     </item>
   </channel>

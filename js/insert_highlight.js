@@ -1,4 +1,7 @@
-(()=>{(()=>{let r=`
+(() => {
+  // <stdin>
+  (() => {
+    const codeFigcaption = `
   <div class="code-figcaption">
     <div class="code-left-wrap">
       <div class="code-decoration"></div>
@@ -8,6 +11,101 @@
       <div class="code-copy icon-copy"></div>
       <div class="icon-chevron-down code-expand"></div>
     </div>
-  </div>`;if(_$$("div.highlight").forEach(e=>{e.querySelector(".code-figcaption")||e.insertAdjacentHTML("afterbegin",r)}),_$$(".code-expand").forEach(e=>{e.off("click").on("click",function(){let o=e.closest("div.highlight");o.classList.contains("code-closed")?o.classList.remove("code-closed"):o.classList.add("code-closed")})}),_$$("div.highlight").forEach(e=>{let o;if(e.querySelector("table")?o=e.querySelector("tr td:last-of-type code"):o=e.querySelector("code"),!o)return;let i=o.dataset.lang;if(!i)return;let c=i.replace("line-numbers","").trim().replace("language-","").trim().toUpperCase(),t=o.closest(".highlight");if(t){let s=t.querySelector(".code-lang");s&&(s.innerText=c)}}),!window.ClipboardJS)return;let n=new ClipboardJS(".code-copy",{text:e=>{let o=window.getSelection(),i=document.createRange(),c=e.parentNode.parentNode.parentNode.querySelector("tr td:last-of-type");c||(c=e.parentNode.parentNode.parentNode.querySelector("code")),i.selectNodeContents(c),o.removeAllRanges(),o.addRange(i);let t=o.toString();return window.siteConfig.clipboard.copyright?.enable&&t.length>=window.siteConfig.clipboard.copyright?.count&&(t=t+`
-
-`+window.siteConfig.clipboard.copyright?.content||""),t}});n.on("success",function(e){e.trigger.classList.add("icon-check"),e.trigger.classList.remove("icon-copy"),_$("#copy-tooltip").innerText=window.siteConfig.clipboard.success,_$("#copy-tooltip").style.opacity="1",setTimeout(()=>{_$("#copy-tooltip").style.opacity="0",e.trigger.classList.add("icon-copy"),e.trigger.classList.remove("icon-check")},1e3),e.clearSelection()}),n.on("error",function(e){e.trigger.classList.add("icon-times"),e.trigger.classList.remove("icon-copy"),_$("#copy-tooltip").innerText=window.siteConfig.clipboard.fail,_$("#copy-tooltip").style.opacity="1",setTimeout(()=>{_$("#copy-tooltip").style.opacity="0",e.trigger.classList.add("icon-copy"),e.trigger.classList.remove("icon-times")},1e3)}),window.Pjax&&window.addEventListener("pjax:send",()=>{n.destroy()},{once:!0})})();})();
+  </div>`;
+    _$$("div.highlight").forEach((element) => {
+      if (!element.querySelector(".code-figcaption")) {
+        element.insertAdjacentHTML("afterbegin", codeFigcaption);
+      }
+    });
+    _$$(".code-expand").forEach((element) => {
+      element.off("click").on("click", function() {
+        const figure = element.closest("div.highlight");
+        if (figure.classList.contains("code-closed")) {
+          figure.classList.remove("code-closed");
+        } else {
+          figure.classList.add("code-closed");
+        }
+      });
+    });
+    _$$("div.highlight").forEach((element) => {
+      let code;
+      if (element.querySelector("table")) {
+        code = element.querySelector("tr td:last-of-type code");
+      } else {
+        code = element.querySelector("code");
+      }
+      if (!code) {
+        return;
+      }
+      const codeLanguage = code.dataset.lang;
+      if (!codeLanguage) {
+        return;
+      }
+      const langName = codeLanguage.replace("line-numbers", "").trim().replace("language-", "").trim().toUpperCase();
+      const wrapper = code.closest(".highlight");
+      if (wrapper) {
+        const lang = wrapper.querySelector(".code-lang");
+        if (lang) {
+          lang.innerText = langName;
+        }
+      }
+    });
+    if (!window.ClipboardJS) {
+      return;
+    }
+    const clipboard = new ClipboardJS(".code-copy", {
+      text: (trigger) => {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        let td = trigger.parentNode.parentNode.parentNode.querySelector(
+          "tr td:last-of-type"
+        );
+        if (!td) {
+          td = trigger.parentNode.parentNode.parentNode.querySelector("code");
+        }
+        range.selectNodeContents(td);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        let selectedText = selection.toString();
+        if (window.siteConfig.clipboard.copyright?.enable) {
+          if (selectedText.length >= window.siteConfig.clipboard.copyright?.count) {
+            selectedText = selectedText + "\n\n" + window.siteConfig.clipboard.copyright?.content || "";
+          }
+        }
+        return selectedText;
+      }
+    });
+    clipboard.on("success", function(e) {
+      e.trigger.classList.add("icon-check");
+      e.trigger.classList.remove("icon-copy");
+      _$("#copy-tooltip").innerText = window.siteConfig.clipboard.success;
+      _$("#copy-tooltip").style.opacity = "1";
+      setTimeout(() => {
+        _$("#copy-tooltip").style.opacity = "0";
+        e.trigger.classList.add("icon-copy");
+        e.trigger.classList.remove("icon-check");
+      }, 1e3);
+      e.clearSelection();
+    });
+    clipboard.on("error", function(e) {
+      e.trigger.classList.add("icon-times");
+      e.trigger.classList.remove("icon-copy");
+      _$("#copy-tooltip").innerText = window.siteConfig.clipboard.fail;
+      _$("#copy-tooltip").style.opacity = "1";
+      setTimeout(() => {
+        _$("#copy-tooltip").style.opacity = "0";
+        e.trigger.classList.add("icon-copy");
+        e.trigger.classList.remove("icon-times");
+      }, 1e3);
+    });
+    if (window.Pjax) {
+      window.addEventListener(
+        "pjax:send",
+        () => {
+          clipboard.destroy();
+        },
+        { once: true }
+      );
+    }
+  })();
+})();

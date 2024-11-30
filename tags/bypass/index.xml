@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Bypass on 0xbekoo</title>
-    <link>https://0xbekoo.github.io/tags/bypass/</link>
+    <link>http://localhost:1313/tags/bypass/</link>
     <description>Recent content in Bypass on 0xbekoo</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 31 Dec 2023 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://0xbekoo.github.io/tags/bypass/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/bypass/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Bypass Ptrace</title>
-      <link>https://0xbekoo.github.io/post/bypass-ptrace/</link>
+      <link>http://localhost:1313/post/bypass-ptrace/</link>
       <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/post/bypass-ptrace/</guid>
+      <guid>http://localhost:1313/post/bypass-ptrace/</guid>
       <description>&lt;p&gt;Merhabalar. Bu konumda ptrace’in nasıl bypass edilebileceğiniden bahsedeceğim.&lt;/p&gt;&#xA;&lt;p&gt;ptrace, bir process’in diğer bir process’i debug etmesini sağlayan bir sistem çağrısıdır. Bu sistem çağrısı sayesinde bir process’in diğer process’inin memory’sine erişebiliriz. Bu sayede process’in memory’sindeki verileri okuyabilir, yazabilir ve değiştirebiliriz.&lt;/p&gt;&#xA;&lt;p&gt;ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilmesi amacıyla kullanılır. Bu, hata ayıklama (debugging), sistem çağrılarını izleme, işlemi duraklatma, kaynak izleme ve benzeri geliştirme ve analiz amaçları için yaygın olarak kullanılan bir sistem aracıdır.&lt;/p&gt;</description>
     </item>
   </channel>

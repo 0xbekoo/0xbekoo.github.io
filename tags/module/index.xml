@@ -2,24 +2,24 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Module on 0xbekoo</title>
-    <link>https://0xbekoo.github.io/tags/module/</link>
+    <link>http://localhost:1313/tags/module/</link>
     <description>Recent content in Module on 0xbekoo</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Mon, 26 Aug 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://0xbekoo.github.io/tags/module/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/module/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Input/Output Control (IOCTL)</title>
-      <link>https://0xbekoo.github.io/post/wkd-ioctl/</link>
+      <link>http://localhost:1313/post/wkd-ioctl/</link>
       <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/post/wkd-ioctl/</guid>
+      <guid>http://localhost:1313/post/wkd-ioctl/</guid>
       <description>&lt;p&gt;Merhabalar, bu yazıda Windows Kernel Development&amp;rsquo;tan IOCTL mekanizmasını inceleyeceğiz.&lt;/p&gt;&#xA;&lt;h2 id=&#34;ioctl-nedir&#34;&gt;&#xD;&#xA;&lt;a class=&#34;header-anchor&#34; href=&#34;#ioctl-nedir&#34;&gt;&lt;/a&gt;&#xD;&#xA;IOCTL Nedir?&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP&amp;rsquo;ler aracılığıyla gönderilir. Eğer IRP&amp;rsquo;ler hakkında bir bilginiz yoksa &lt;a href=&#34;https://0xbekoo.github.io/posts/wkd-irp/&#34;&gt;buraya&lt;/a&gt; tıklayarak IRP&amp;rsquo;ler hakkında bilgi alabilirsiniz.&lt;/p&gt;&#xA;&lt;p&gt;Windows&amp;rsquo;ta User-mode programları, &lt;code&gt;DeviceIoControl&lt;/code&gt; API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu &lt;strong&gt;IRP_MJ_DEVICE_CONTROL&lt;/strong&gt; aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin &lt;strong&gt;IRP_MJ_DEVICE_CONTROL&lt;/strong&gt; veya &lt;strong&gt;IRP_MJ_INTERNAL_DEVICE_CONTROL&lt;/strong&gt; aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar.&lt;/p&gt;</description>
     </item>
     <item>
       <title>I/O Request Packets (IRP)</title>
-      <link>https://0xbekoo.github.io/post/wkd-irp/</link>
+      <link>http://localhost:1313/post/wkd-irp/</link>
       <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>https://0xbekoo.github.io/post/wkd-irp/</guid>
+      <guid>http://localhost:1313/post/wkd-irp/</guid>
       <description>&lt;p&gt;Merhabalar, Windows Kernel Development&amp;rsquo;ın ilk serisi olarak bu konuda sizlere I/O Request Packet (IRP) konusunu inceleyeceğiz.&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;UYARI &lt;!-- raw HTML omitted --&gt;&#xA;Bu seride okuyucunun Windows Kernel Development konusunda temel bilgilere sahip olduğu varsayılmıştır. Eğer bu konuda bilgi sahibi değilseniz, bu konudan önce temel bilgileri öğrenmenizi tavsiye ederim.&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;h2 id=&#34;io-request-packet-irp-nedir&#34;&gt;&#xD;&#xA;&lt;a class=&#34;header-anchor&#34; href=&#34;#io-request-packet-irp-nedir&#34;&gt;&lt;/a&gt;&#xD;&#xA;I/O Request Packet (IRP) Nedir?&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;I/O Request Packet, kısaca IRP, Windows işletim sisteminde sürücüler ile işletim sistemi arasında bilgi alışverişini sağlayan bir yapıdır. Bunu bir &amp;ldquo;mesaj taşıyıcısı&amp;rdquo; gibi düşünebilirsiniz.&lt;/p&gt;</description>
     </item>
   </channel>
