@@ -2,80 +2,80 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>0xbekoo</title>
-    <link>http://localhost:1313/</link>
+    <link>https://0xbekoo.github.io/</link>
     <description>Recent content on 0xbekoo</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 29 Nov 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://0xbekoo.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>kd&gt; !thread</title>
-      <link>http://localhost:1313/about/</link>
+      <link>https://0xbekoo.github.io/about/</link>
       <pubDate>Fri, 29 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/about/</guid>
+      <guid>https://0xbekoo.github.io/about/</guid>
       <description>&lt;p&gt;&lt;img src=&#34;../images/about/about-poster.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;Merhabalar efenimm, bloguma hoşgeldiniz.&lt;/p&gt;&#xA;&lt;p&gt;Ben Berkay ancak sanal ortamda kısaca bekoo olarak biliniyorum ve 18 yaşındayım. Yaklaşık 4 yıldır siber güvenlik alanında kendimi geliştirmeye çalışıyorum. Bu 4 yıllık sürecimde Reverse Engineering, Malware Analysis ve Malware Development alanlarına ilgi sardım.&lt;/p&gt;&#xA;&lt;p&gt;Sizinde bildiğiniz gibi, bu blogta ilgilendiğim alanlarda öğrendiğim konuları burada paylaşıyorum. Özellikle ilgilendiğim alanların Türkçe kaynakları kısıtlı olduğunu bildiğimden, blog sayfama ağırlık vermeye özen gösteriyorum.&lt;/p&gt;&#xA;&lt;p&gt;İçeriklerim illegal amaç güdmemekte olup, okuyucu hiçbir şekilde illegal aktivitelere teşvik etmemektedir. Eğer bu blogta anlatılan konuları gerçek senaryolarda kullanırsanız, sorumluluk sizin üzerine ait olacaktır. Buna göz yummuyorum. Buradaki nihai amacım, ilgili okuyuculara kaynak sağlamaktır.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Malware Resurrection</title>
-      <link>http://localhost:1313/post/malware-resurrection/</link>
+      <link>https://0xbekoo.github.io/post/malware-resurrection/</link>
       <pubDate>Thu, 12 Sep 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/malware-resurrection/</guid>
+      <guid>https://0xbekoo.github.io/post/malware-resurrection/</guid>
       <description>&lt;p&gt;&lt;img src=&#34;../../images/posts/malware-resurrection/wallpaper.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;Merhabalar, bu yazıda Malware Resurrection tekniğini inceleyeceğiz.&lt;/p&gt;&#xA;&lt;h2 id=&#34;nedir-bu-malware-resurrection&#34;&gt;&#xD;&#xA;&lt;a class=&#34;header-anchor&#34; href=&#34;#nedir-bu-malware-resurrection&#34;&gt;&lt;/a&gt;&#xD;&#xA;Nedir bu Malware Resurrection?&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;Malware Resurrection tekniği, sisteme bulaşmış ve çalışan bir malware&amp;rsquo;in bir şekilde sonlandırılması sonrasında tekrar sistemde çalışabilmesi ve kalıcılığı sağlamak için sistemde tekrar diriltmesine olanak sağlayan bir tekniktir.&lt;/p&gt;&#xA;&lt;p&gt;Bu yöntemi gerçekleştirmek için malware&amp;rsquo;in yanında ek bir program kullanılabilir veya driver kullanılabilir. Bu program veya driver, malware&amp;rsquo;i dinlemeye alır ve kapatılması durumunda malware sisteme tekrar indirip çalıştırabilir. Kalıcılığı sağlanmak için ise çeşitli yöntemlere başvurulabilir.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Virtual Memory</title>
-      <link>http://localhost:1313/post/wkd-virtual-memory/</link>
+      <link>https://0xbekoo.github.io/post/wkd-virtual-memory/</link>
       <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/wkd-virtual-memory/</guid>
+      <guid>https://0xbekoo.github.io/post/wkd-virtual-memory/</guid>
       <description>&lt;p&gt;Merhabalar, bu yazıda Virtual Memory konusunu ele alacağım.&lt;/p&gt;&#xA;&lt;h2 id=&#34;virtual-memory-nedir&#34;&gt;&#xD;&#xA;&lt;a class=&#34;header-anchor&#34; href=&#34;#virtual-memory-nedir&#34;&gt;&lt;/a&gt;&#xD;&#xA;Virtual Memory Nedir?&#xD;&#xA;&lt;/h2&gt;&lt;blockquote&gt;&#xA;&lt;p&gt;&lt;!-- raw HTML omitted --&gt;&amp;ldquo;Windows, her bir process için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir process&amp;rsquo;in, diğer bir process&amp;rsquo;in belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.&amp;quot;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;</description>
     </item>
     <item>
       <title>Input/Output Control (IOCTL)</title>
-      <link>http://localhost:1313/post/wkd-ioctl/</link>
+      <link>https://0xbekoo.github.io/post/wkd-ioctl/</link>
       <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/wkd-ioctl/</guid>
+      <guid>https://0xbekoo.github.io/post/wkd-ioctl/</guid>
       <description>&lt;p&gt;Merhabalar, bu yazıda Windows Kernel Development&amp;rsquo;tan IOCTL mekanizmasını inceleyeceğiz.&lt;/p&gt;&#xA;&lt;h2 id=&#34;ioctl-nedir&#34;&gt;&#xD;&#xA;&lt;a class=&#34;header-anchor&#34; href=&#34;#ioctl-nedir&#34;&gt;&lt;/a&gt;&#xD;&#xA;IOCTL Nedir?&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP&amp;rsquo;ler aracılığıyla gönderilir. Eğer IRP&amp;rsquo;ler hakkında bir bilginiz yoksa &lt;a href=&#34;https://0xbekoo.github.io/posts/wkd-irp/&#34;&gt;buraya&lt;/a&gt; tıklayarak IRP&amp;rsquo;ler hakkında bilgi alabilirsiniz.&lt;/p&gt;&#xA;&lt;p&gt;Windows&amp;rsquo;ta User-mode programları, &lt;code&gt;DeviceIoControl&lt;/code&gt; API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu &lt;strong&gt;IRP_MJ_DEVICE_CONTROL&lt;/strong&gt; aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin &lt;strong&gt;IRP_MJ_DEVICE_CONTROL&lt;/strong&gt; veya &lt;strong&gt;IRP_MJ_INTERNAL_DEVICE_CONTROL&lt;/strong&gt; aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar.&lt;/p&gt;</description>
     </item>
     <item>
       <title>I/O Request Packets (IRP)</title>
-      <link>http://localhost:1313/post/wkd-irp/</link>
+      <link>https://0xbekoo.github.io/post/wkd-irp/</link>
       <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/wkd-irp/</guid>
+      <guid>https://0xbekoo.github.io/post/wkd-irp/</guid>
       <description>&lt;p&gt;Merhabalar, Windows Kernel Development&amp;rsquo;ın ilk serisi olarak bu konuda sizlere I/O Request Packet (IRP) konusunu inceleyeceğiz.&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;UYARI &lt;!-- raw HTML omitted --&gt;&#xA;Bu seride okuyucunun Windows Kernel Development konusunda temel bilgilere sahip olduğu varsayılmıştır. Eğer bu konuda bilgi sahibi değilseniz, bu konudan önce temel bilgileri öğrenmenizi tavsiye ederim.&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;h2 id=&#34;io-request-packet-irp-nedir&#34;&gt;&#xD;&#xA;&lt;a class=&#34;header-anchor&#34; href=&#34;#io-request-packet-irp-nedir&#34;&gt;&lt;/a&gt;&#xD;&#xA;I/O Request Packet (IRP) Nedir?&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;I/O Request Packet, kısaca IRP, Windows işletim sisteminde sürücüler ile işletim sistemi arasında bilgi alışverişini sağlayan bir yapıdır. Bunu bir &amp;ldquo;mesaj taşıyıcısı&amp;rdquo; gibi düşünebilirsiniz.&lt;/p&gt;</description>
     </item>
     <item>
       <title>PDF Icon File Spoofing</title>
-      <link>http://localhost:1313/post/file-icon-spoofing/</link>
+      <link>https://0xbekoo.github.io/post/file-icon-spoofing/</link>
       <pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/file-icon-spoofing/</guid>
+      <guid>https://0xbekoo.github.io/post/file-icon-spoofing/</guid>
       <description>&lt;p&gt;Merhabalar, bu yazıda File Icon Spoofing tekniğini inceleyeceğiz.&lt;/p&gt;&#xA;&lt;p&gt;Kısaca tekniği özetlemek gerekirse oluşturulan malware&amp;rsquo;in programın icon&amp;rsquo;u değiştirilerek kullanıcıyı yanıltma tekniğidir. Bu sayede kullanıcı, ilgili malware&amp;rsquo;i zararsız bir dosya olarak görebilir. Malware için belirlediğiniz icon, bu konuda örnek olarak gösterileceği gibi bir PDF olabilir veya bir başka icon olabilir. Tekniğin, sosyal mühendislik saldırıları için oldukça etkili bir yöntem olabilir ve ayrıca Pentest ve Red Team çalışmalarında da kullanılışlı olabilir.&lt;/p&gt;&#xA;&lt;p&gt;Konunun daha iyi anlaşılması için örnek senaryo üzerinden ilerleyelim, bir şirketin iç ağının güvenliğini test etmek amacıyla görevlendirilmiş bir pentester olduğunuzu düşünün. Şirket çalışanlarının kötü amaçlı dosyaları açma konusunda ne kadar dikkatli olduklarını test etmeniz gerekiyor. Bu bağlamda, kötü amaçlı yazılımınızı zararsız bir PDF dosyası olarak maskeleyerek, bir kimlik avı e-postası aracılığıyla veya paylaşılan bir klasöre yerleştirerek gönderebilirsiniz. Eğer bir çalışan bu dosyayı açarsa, dosya aslında zararlı yazılımı çalıştırarak sistemlerine erişim sağlar.&lt;/p&gt;</description>
     </item>
     <item>
       <title>API Hashing</title>
-      <link>http://localhost:1313/post/api-hashing/</link>
+      <link>https://0xbekoo.github.io/post/api-hashing/</link>
       <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/api-hashing/</guid>
+      <guid>https://0xbekoo.github.io/post/api-hashing/</guid>
       <description>&lt;p&gt;Merhabalar. Bu yazıda, maldev alanındaki API Hashing yöntemini ele alacağım.&lt;/p&gt;&#xA;&lt;h2 id=&#34;pe-portable-executable-yapısı-nedir&#34;&gt;&#xD;&#xA;&lt;a class=&#34;header-anchor&#34; href=&#34;#pe-portable-executable-yap%c4%b1s%c4%b1-nedir&#34;&gt;&lt;/a&gt;&#xD;&#xA;PE (Portable Executable) Yapısı Nedir?&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;Her şeyden önce PE (Portable Executable) yapısını anlamanın gerekli olduğunu düşünüyorum çünkü bu tekniğimiz tamamen bu yapı üzerine.&lt;/p&gt;&#xA;&lt;p&gt;PE, Windows işletim sistemlerinde 32 ve 64 bit sürümlerde ve UEFI ortamlarda kullanılan executable dosyalar, object kodlar, DLL’ler ve diğerleri için bir dosya biçimidir. PE, Windows İşletim sistemi loader’in yürütülmek istenilen kodu yönetmesi için gereken veri yapıları içermektedir.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Is Valorant Spyware?</title>
-      <link>http://localhost:1313/post/is-valorant-spyware/</link>
+      <link>https://0xbekoo.github.io/post/is-valorant-spyware/</link>
       <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/is-valorant-spyware/</guid>
+      <guid>https://0xbekoo.github.io/post/is-valorant-spyware/</guid>
       <description>&lt;h2 id=&#34;giriş&#34;&gt;&#xD;&#xA;&lt;a class=&#34;header-anchor&#34; href=&#34;#giri%c5%9f&#34;&gt;&lt;/a&gt;&#xD;&#xA;Giriş&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;Valorant oyunu, çıkışından beri hem oyuncuların ilgisini çeken hem de tartışmalara neden olan bir yapım olmuştur. Özellikle oyunun anti-cheat sistemi olan Vanguard’ın, oyuncuların gizlilik haklarını ihlal ettiği ve spyware olarak adlandırılabilecek bir yazılım olduğu iddialarıyla sıkça gündeme gelmiştir. Bu iddialar, oyuncuların güvenlik endişelerini artırmış ve Valorant’ın popülaritesiyle birlikte bu konuda birçok tartışma başlatılmıştır.&lt;/p&gt;&#xA;&lt;p&gt;Reddit ve diğer sosyal medya platformlarında yayılan bu iddialar, Valorant’ın geliştiricisi olan Riot Games’in, oyuncuların bilgisayarlarında istenmeyen izleme ve kontrol yeteneklerine sahip olduğu yönünde eleştirilmesine neden olmuştur. Ancak, bu iddiaların gerçekliği ve Vanguard’ın gerçekten bir spyware olup olmadığı konusu hala netlik kazanmamıştır. Bu yazıda, Valorant’ın spyware olduğu iddialarını ele alacak ve bu iddiala bir göz atacağız.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Bypass Ptrace</title>
-      <link>http://localhost:1313/post/bypass-ptrace/</link>
+      <link>https://0xbekoo.github.io/post/bypass-ptrace/</link>
       <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/bypass-ptrace/</guid>
+      <guid>https://0xbekoo.github.io/post/bypass-ptrace/</guid>
       <description>&lt;p&gt;Merhabalar. Bu konumda ptrace’in nasıl bypass edilebileceğiniden bahsedeceğim.&lt;/p&gt;&#xA;&lt;p&gt;ptrace, bir process’in diğer bir process’i debug etmesini sağlayan bir sistem çağrısıdır. Bu sistem çağrısı sayesinde bir process’in diğer process’inin memory’sine erişebiliriz. Bu sayede process’in memory’sindeki verileri okuyabilir, yazabilir ve değiştirebiliriz.&lt;/p&gt;&#xA;&lt;p&gt;ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilmesi amacıyla kullanılır. Bu, hata ayıklama (debugging), sistem çağrılarını izleme, işlemi duraklatma, kaynak izleme ve benzeri geliştirme ve analiz amaçları için yaygın olarak kullanılan bir sistem aracıdır.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Process Injection</title>
-      <link>http://localhost:1313/post/process-injection/</link>
+      <link>https://0xbekoo.github.io/post/process-injection/</link>
       <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/process-injection/</guid>
+      <guid>https://0xbekoo.github.io/post/process-injection/</guid>
       <description>&lt;p&gt;&lt;img src=&#34;../../images/posts/process-injection/main-photo.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;Merhabalar bu yazımda maldev alanından Process Injection konusunu inceleyeceğiz.&lt;/p&gt;&#xA;&lt;h2 id=&#34;nedir-bu-processler&#34;&gt;&#xD;&#xA;&lt;a class=&#34;header-anchor&#34; href=&#34;#nedir-bu-processler&#34;&gt;&lt;/a&gt;&#xD;&#xA;Nedir bu Process&amp;rsquo;ler&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;Kabaca Processler, işletim sistemi tarafından herhangi bir programın yürütülmesi için oluşturulan çalışma birimleridir. Eğer bir program, kullanıcı veya İşletim Sistemi (OS) tarafından çalıştırılmak istenirse, öncelikle İşletim Sistemi tarafından belleğe yüklenir ardından yine İşletim Sistemi tarafından bu programın yürütülmesi için bir process oluşturulur. En sonda ise belleğe yüklenen programın bellek alanı, Process tarafından temsil edilir ve programın içerdiği komutları çalıştırılmaya başlanır.&lt;/p&gt;</description>
     </item>
   </channel>
