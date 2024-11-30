@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>API-Hashing on 0xbekoo</title>
+    <link>https://0xbekoo.github.io/tags/api-hashing/</link>
+    <description>Recent content in API-Hashing on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 30 Jul 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://0xbekoo.github.io/tags/api-hashing/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>API Hashing</title>
+      <link>https://0xbekoo.github.io/post/api-hashing/</link>
+      <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/post/api-hashing/</guid>
+      <description>&lt;p&gt;Merhabalar. Bu yazıda, maldev alanındaki API Hashing yöntemini ele alacağım.&lt;/p&gt;&#xA;&lt;h2 id=&#34;pe-portable-executable-yapısı-nedir&#34;&gt;&#xD;&#xA;&lt;a class=&#34;header-anchor&#34; href=&#34;#pe-portable-executable-yap%c4%b1s%c4%b1-nedir&#34;&gt;&lt;/a&gt;&#xD;&#xA;PE (Portable Executable) Yapısı Nedir?&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;Her şeyden önce PE (Portable Executable) yapısını anlamanın gerekli olduğunu düşünüyorum çünkü bu tekniğimiz tamamen bu yapı üzerine.&lt;/p&gt;&#xA;&lt;p&gt;PE, Windows işletim sistemlerinde 32 ve 64 bit sürümlerde ve UEFI ortamlarda kullanılan executable dosyalar, object kodlar, DLL’ler ve diğerleri için bir dosya biçimidir. PE, Windows İşletim sistemi loader’in yürütülmek istenilen kodu yönetmesi için gereken veri yapıları içermektedir.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

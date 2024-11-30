@@ -1,0 +1,1263 @@
+<!doctype html>
+<html
+  lang="en-us"
+  data-theme="dark"
+>
+  <head>
+    <meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, shrink-to-fit=no"
+/>
+
+
+
+
+
+
+
+  
+
+<title>
+  I/O Request Packets (IRP) | 0xbekoo
+</title>
+<meta
+  name="description"
+  content="Reverse Engineer, Malware Developer"
+/>
+
+
+
+
+
+
+
+
+<script>
+  window.siteConfig = JSON.parse("{\"clipboard\":{\"copyright\":{\"content\":\"本文版权：本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！\",\"count\":50,\"enable\":false},\"fail\":\"复制失败 (ﾟ⊿ﾟ)ﾂ\",\"success\":\"复制成功(*^▽^*)\"},\"icon_font\":\"4552607_tq6stt6tcg\",\"outdate\":{\"daysago\":180,\"enable\":false,\"message\":\"本文最后更新于 {time}，请注意文中内容可能已经发生变化。\"}}");
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+    
+  
+
+  
+  
+  
+    
+  
+
+  
+    
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="preload"
+  as="style"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+/>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+  media="print"
+  onload="this.media='all'"
+/>
+
+
+
+
+
+
+  <link
+    rel="preload"
+    href="//at.alicdn.com/t/c/font_4552607_tq6stt6tcg.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin="anonymous"
+  />
+
+
+
+
+
+
+
+
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+
+
+
+
+
+
+  
+ <link rel="stylesheet" href="/css/main.min.59637a2554ed2af98a7c982638a757284f0a2077b36a23d4791d5305198c2570.css" />
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/katex@0.16.9/dist/katex.min.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/pace-js@1.2.4/pace.min.js"
+    
+    
+    
+    
+    integrity="sha384-k6YtvFUEIuEFBdrLKJ3YAUbBki333tj1CSUisai5Cswsg9wcLNaPzsTHDswp4Az8" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  
+
+
+  <link rel="stylesheet" href="https://npm.webcache.cn/@reimujs/aos@0.1.0/dist/aos.css" />
+
+
+
+
+  </head>
+  <body>
+    
+
+<div id="copy-tooltip" style="pointer-events: none; opacity: 0; transition: all 0.2s ease; position: fixed;top: 50%;left: 50%;z-index: 999;transform: translate(-50%, -50%);color: white;background: rgba(0, 0, 0, 0.5);padding: 10px 15px;border-radius: 10px;">
+</div>
+
+
+    <div id="container">
+      <div id="wrap">
+        <div id="header-nav">
+  <nav id="main-nav">
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/">Home</a>
+      </span>
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/about">About</a>
+      </span>
+    
+    <a id="main-nav-toggle" class="nav-icon"></a>
+  </nav>
+  <nav id="sub-nav">
+    
+    
+  </nav>
+</div>
+<header id="header">
+  
+    <img fetchpriority="high" src="/images/header-photo.gif" alt="I/O Request Packets (IRP)">
+  
+
+  <div id="header-outer">
+    <div id="header-title">
+      
+        
+        
+          
+        
+  
+        
+          <a href="/" id="logo">
+            <h1 data-aos="slide-up">I/O Request Packets (IRP)</h1>
+          </a>
+        
+      
+  
+      
+        
+        
+        <h2 id="subtitle-wrap" data-aos="slide-down">
+          
+        </h2>
+      
+    </div>
+  </div>
+</header>
+        <main id="content">
+          
+            <aside id="sidebar">
+  <div class="sidebar-wrapper wrap-sticky">
+    <div
+      class="sidebar-wrap"
+      data-aos="fade-up"
+    >
+      
+        <div class="sidebar-toc-sidebar">
+          <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#io-request-packet-irp-nedir">I/O Request Packet (IRP) Nedir?</a></li>
+    <li><a href="#code">Code</a>
+      <ul>
+        <li><a href="#kernel-mode-driver">Kernel Mode Driver</a></li>
+        <li><a href="#user-mode-program">User Mode Program</a></li>
+      </ul>
+    </li>
+    <li><a href="#sürücünün-ve-programın-çalıştırılması">Sürücünün ve Programın Çalıştırılması</a></li>
+    <li><a href="#sonuç">Sonuç</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+        </div>
+        <div class="sidebar-common-sidebar hidden">
+          
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      9
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">33</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+        </div>
+      
+
+      
+        <div class="sidebar-btn-wrapper" style="position:static">
+          <div class="sidebar-toc-btn current"></div>
+          <div class="sidebar-common-btn"></div>
+        </div>
+      
+    </div>
+  </div>
+
+  
+</aside>
+
+          
+          <section id="main">
+  <article
+  class="h-entry article"
+  itemprop="blogPost"
+  itemscope
+  itemtype="https://schema.org/BlogPosting"
+>
+  <div
+    class="article-inner"
+    data-aos="fade-up"
+  >
+    <div class="article-meta">
+      <div class="article-date">
+  <a
+    href="https://0xbekoo.github.io/post/wkd-irp/"
+    class="article-date-link"
+    data-aos="zoom-in"
+  >
+    <time datetime="2024-08-22 00:00:00 &#43;0000 UTC" itemprop="datePublished"
+      >2024-08-22</time
+    >
+    <time style="display: none;" id="post-update-time"
+      >2024-08-22</time
+    >
+  </a>
+</div>
+
+      <div class="article-category">
+  
+    <a
+      class="article-category-link"
+      href="/categories/windows-kernel-development"
+      data-aos="zoom-in"
+      >WINDOWS-KERNEL-DEVELOPMENT</a
+    >
+  
+</div>
+
+    </div>
+    <div class="hr-line"></div>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+      
+        <p>Merhabalar, Windows Kernel Development&rsquo;ın ilk serisi olarak bu konuda sizlere I/O Request Packet (IRP) konusunu inceleyeceğiz.</p>
+<blockquote>
+<p>UYARI <!-- raw HTML omitted -->
+Bu seride okuyucunun Windows Kernel Development konusunda temel bilgilere sahip olduğu varsayılmıştır. Eğer bu konuda bilgi sahibi değilseniz, bu konudan önce temel bilgileri öğrenmenizi tavsiye ederim.</p>
+</blockquote>
+<h2 id="io-request-packet-irp-nedir">
+<a class="header-anchor" href="#io-request-packet-irp-nedir"></a>
+I/O Request Packet (IRP) Nedir?
+</h2><p>I/O Request Packet, kısaca IRP, Windows işletim sisteminde sürücüler ile işletim sistemi arasında bilgi alışverişini sağlayan bir yapıdır. Bunu bir &ldquo;mesaj taşıyıcısı&rdquo; gibi düşünebilirsiniz.</p>
+<p>Genellikle, sürücülere gönderilen talepler IRP olarak adlandırılan bu paketlerle gönderilir. Bir işletim sistemi bileşeni veya sürücü, IRP’yi bir sürücüye iletmek için IoCallDriver adlı bir fonksiyonu kullanır. Bu fonksiyon, bir aygıt nesnesi (DEVICE_OBJECT) ve bir IRP’yi işaret eden iki bilgi alır. Aygıt nesnesi, bu aygıtla ilişkili sürücüyü (DRIVER_OBJECT) işaret eder. Bu yüzden, IoCallDriver fonksiyonu çağrıldığında, IRP, ilgili aygıt nesnesine veya bu nesneyle ilişkili sürücüye gönderilir. Bazen bu işlem için &ldquo;IRP’yi iletmek&rdquo; veya &ldquo;IRP’yi aktarmak&rdquo; gibi ifadeler de kullanılır.</p>
+<p>Bir IRP, genellikle birden fazla sürücü tarafından işlenir ve bu sürücüler belirli bir sıraya göre düzenlenmiştir. IRP işlenirken, sürücüler yığının her bir katmanı gibi ele alınır. Yani, IRP önce yığının en üstündeki sürücüye gelir. Her sürücü, IRP&rsquo;yi belirli bir sırayla işler ve gerekli işlemi yapar. İşlem tamamlandığında, IRP bir sonraki sürücüye geçer. Bu süreç, IRP&rsquo;nin adım adım işlenmesini sağlar. Sonuç olarak, IRP tüm sürücülerden geçtikten sonra nihai işlem gerçekleştirilir ve istenen sonuç elde edilir.</p>
+<p>IRP, kullanıcı tarafından başlatılan bir işlemin işletim sisteminin çekirdeği tarafından işlenmesini de sağlar. Bu yapı sayesinde, sürücüler talepleri doğru bir şekilde alır ve yanıt verir. Örneğin, bir dosya yazdırmak istediğinizde, bu talep IRP olarak yazıcı sürücüsüne gönderilir. Yazıcı sürücüsü, IRP&rsquo;yi alır ve yazdırma işlemini başlatır. Bu sistem, kullanıcı işlemleri ile donanım arasındaki bağlantıyı güvenli ve verimli bir şekilde sağlar.</p>
+<h2 id="code">
+<a class="header-anchor" href="#code"></a>
+Code
+</h2><p>Örnek kod için iki ayrı proje oluşturacağız. İlk projede bir sürücü oluşturacağız ve IRP&rsquo;in nasıl işleneceğinden bahsedeceğim. Diğer proje ise user mode bir program oluşturacağız ve bu programda WriteFile fonksiyonunu kullanarak sürücüye IRP göndermeyi göstereceğim.</p>
+<p>Ayrıca Github link için <a href="https://github.com/0xbekoo/WinKernelDev/tree/main/IRP">buraya</a> tıklayabilirsiniz.</p>
+<h3 id="kernel-mode-driver">
+<a class="header-anchor" href="#kernel-mode-driver"></a>
+Kernel Mode Driver
+</h3><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;main.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IrpCreate</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">MJ_Create Received!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;;
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IrpWrite</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>    PIO_STACK_LOCATION  Stack   <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoGetCurrentIrpStackLocation</span>(Irp);
+</span></span><span style="display:flex;"><span>    PCHAR               Buffer  <span style="color:#f92672">=</span> Irp<span style="color:#f92672">-&gt;</span>UserBuffer;
+</span></span><span style="display:flex;"><span>    ULONG               Length  <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.Write.Length;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">MJ_WRITE Received!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> Buffer <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Length) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Received Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_PARAMETER;
+</span></span><span style="display:flex;"><span>        Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Data to be written received: %.*s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Length, Buffer);
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> Length;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">DriverEntry</span>(PDRIVER_OBJECT PDrvObj, PUNICODE_STRING RegistryPath) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(RegistryPath);
+</span></span><span style="display:flex;"><span>    UNICODE_STRING DeviceName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Device</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>    UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>    PDEVICE_OBJECT DeviceObject;
+</span></span><span style="display:flex;"><span>    NTSTATUS Status;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateDevice</span>(
+</span></span><span style="display:flex;"><span>        PDrvObj,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>DeviceName,
+</span></span><span style="display:flex;"><span>        FILE_DEVICE_UNKNOWN,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>        FALSE,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>DeviceObject
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create IO Device!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateSymbolicLink</span>(
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>SymName,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>DeviceName
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create Smybolic Link!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    PDrvObj<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CREATE]   <span style="color:#f92672">=</span> IrpCreate;
+</span></span><span style="display:flex;"><span>    PDrvObj<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_WRITE]    <span style="color:#f92672">=</span> IrpWrite;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">UnloadDriver</span>(PDRIVER_OBJECT PDrvObj) {
+</span></span><span style="display:flex;"><span>    UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Unloading Driver...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">IoDeleteSymbolicLink</span>(<span style="color:#f92672">&amp;</span>SymName);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">IoDeleteDevice</span>(PDrvObj<span style="color:#f92672">-&gt;</span>DeviceObject);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Çok uzun gözüksede emin olun çok basit bir sürücü kodu. Adım adım kodlara bakalım ve <strong>DriverEntry</strong> fonksiyonundan başlayalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>UNICODE_STRING DeviceName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Device</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>PDEVICE_OBJECT DeviceObject;
+</span></span></code></pre></div><p>İlk olarak <code>DeviceName</code> ve <code>SymName</code> adında iki adet <code>UNICODE_STRING</code> tanımladık. Bu iki değişken, sürücümüzün adını ve sembolik adını tutmaktadır. Bu değişkenlerle, sürücümüzün adını ve sembolik adını belirlemek için kullanacağız.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateDevice</span>(
+</span></span><span style="display:flex;"><span>    PDrvObj,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>DeviceName,
+</span></span><span style="display:flex;"><span>    FILE_DEVICE_UNKNOWN,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>    FALSE,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>DeviceObject
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create IO Device!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Daha sonra <strong>IoCreateDevice</strong> fonksiyonu ile bir aygıt nesnesi oluşturuyoruz. Bu fonksiyon, sürücümüz için bir aygıt nesnesi oluşturur ve bu nesneyi <code>DeviceObject</code> değişkenine atar.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateSymbolicLink</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>SymName,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>DeviceName
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create Smybolic Link!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><strong>IoCreateSymbolicLink</strong> fonksiyonu ile sembolik bir bağlantı oluşturuyoruz.  Bu sayede, user mode programımızda sürücünün adını ve sembolik adını kullanarak sürücümüze erişiyor olacağız.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>PDrvObj<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CREATE]   <span style="color:#f92672">=</span> IrpCreate;
+</span></span><span style="display:flex;"><span>PDrvObj<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_WRITE]    <span style="color:#f92672">=</span> IrpWrite;
+</span></span></code></pre></div><p>Son olarak, sürücümüzün IRP işlevlerini belirliyoruz. Bu işlevler, sürücümüzün IRP&rsquo;leri nasıl işleyeceğini belirler. Kodlarda ise, <strong>IrpCreate</strong> ve <strong>IrpWrite</strong> kullanıyoruz. <strong>MJ_CREATE</strong>, bir dosya oluşturulduğunda sürücümüzün ne yapacağını belirler. <strong>IrpWrite</strong> ise bir dosyaya yazıldığında sürücümüzün ne yapacağını belirler. IRP&rsquo;ler, bu işlevler aracılığıyla sürücümüze iletilir ve sürücümüz bu işlevler aracılığıyla IRP&rsquo;leri işler.</p>
+<p>Şimdi ise IRP isteklerini işleyecek fonksiyonlarımıza göz atalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IrpCreate</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">MJ_Create Received!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    ...
+</span></span></code></pre></div><p>İlk olarak IrpCreate&rsquo;e baktığımızda  <code>DeviceObject</code> ve <code>Irp</code> parametrelerini alır. Bu parametreler, yukarıda bahsettiğim gibi sürücümüzün aygıt nesnesini ve IRP&rsquo;yi temsil eder. Daha sonra <code>DbgPrintEx</code> fonksiyonu ile bir bilgi mesajı yazdırıyoruz.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;;
+</span></span><span style="display:flex;"><span>Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span></code></pre></div><p><code>MJ_CREATE</code> fonksiyonun son kısmında ise IRP&rsquo;nin durumunu ve bilgisini ayarlıyoruz. Bu durum ve bilgi, IRP&rsquo;nin işlem sonucunu belirler. Son olarak, <code>IoCompleteRequest</code> fonksiyonu ile IRP&rsquo;yi tamamlıyor ve işlemi sonlandırıyoruz.</p>
+<p>Şimdi ise <code>IrpWrite</code> fonksiyonuna bakalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IrpWrite</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>    PIO_STACK_LOCATION  Stack   <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoGetCurrentIrpStackLocation</span>(Irp);
+</span></span><span style="display:flex;"><span>    PCHAR               Buffer  <span style="color:#f92672">=</span> Irp<span style="color:#f92672">-&gt;</span>UserBuffer;
+</span></span><span style="display:flex;"><span>    ULONG               Length  <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.Write.Length;
+</span></span><span style="display:flex;"><span>    ...
+</span></span></code></pre></div><p>Tanımlanan değişkenlere göz atalım:</p>
+<ul>
+<li><code>Stack</code> değişkeni, IRP&rsquo;nin yığın konumunu temsil eder.</li>
+<li><code>Buffer</code> değişkeni, IRP&rsquo;nin veri alanını temsil eder. Bu veri alanı, IRP&rsquo;nin taşıdığı veriyi içerir.</li>
+<li><code>Length</code> değişkeni, IRP&rsquo;nin veri uzunluğunu temsil eder. Bu uzunluk, IRP&rsquo;nin taşıdığı verinin uzunluğunu belirtir.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> Buffer <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Length) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Received Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_PARAMETER;
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>İlk olarak, Buffer işaretçisinin NULL olup olmadığı ve Length değerinin 0 olup olmadığı kontrol ediyoruz.</p>
+<p>Eğer koşul sağlanıyorsa yani veri alınmamışsa <code>Irp-&gt;IoStatus.Status</code> ile değeri STATUS_INVALID_PARAMETER olarak ayarlıyoruz. Bu, bir parametre hatası olduğunu belirtir. Irp-&gt;IoStatus.Information değeri 0 olarak ayarlıyoruz. Sonda ise IRP&rsquo;nin işlem durumu döndürülerek işleme son verilir.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Data to be written received: %.*s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Length, Buffer);
+</span></span><span style="display:flex;"><span>Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> Length;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span></code></pre></div><p>Bu kısımda ise eğer veri düzgünce alınmışsa bu veriyi yazdırırız. Daha sonra aynı şekilde IRP&rsquo;nin durumunu ve bilgisini ayarlarız ve işlemi sonlandırırız.</p>
+<h3 id="user-mode-program">
+<a class="header-anchor" href="#user-mode-program"></a>
+User Mode Program
+</h3><p>Şimdi ise user mode programımızı oluşturalım. Bu programda WriteFile fonksiyonunu kullanarak sürücümüze IRP göndereceğiz.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;main.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> argv[]) {
+</span></span><span style="display:flex;"><span>    HANDLE	HandleDevice <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>    CHAR	Buffer[] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Hello, kernel!&#34;</span>;
+</span></span><span style="display:flex;"><span>    DWORD	BytesWritten <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    DWORD	BytesRead <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    BOOL	Status	<span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    HandleDevice <span style="color:#f92672">=</span> <span style="color:#a6e22e">CreateFile</span>(
+</span></span><span style="display:flex;"><span>	    DEVICE_NAME,
+</span></span><span style="display:flex;"><span>	    GENERIC_WRITE <span style="color:#f92672">|</span> GENERIC_READ,
+</span></span><span style="display:flex;"><span>	    <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>	    NULL,
+</span></span><span style="display:flex;"><span>	    OPEN_EXISTING,
+</span></span><span style="display:flex;"><span>	    FILE_ATTRIBUTE_NORMAL,
+</span></span><span style="display:flex;"><span>	    NULL
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> HandleDevice) {
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to Open Device! Error Code: 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>	    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">WriteFile</span>(
+</span></span><span style="display:flex;"><span>	    HandleDevice,
+</span></span><span style="display:flex;"><span>	    Buffer,
+</span></span><span style="display:flex;"><span>	    (DWORD)<span style="color:#66d9ef">sizeof</span>(Buffer),
+</span></span><span style="display:flex;"><span>	    <span style="color:#f92672">&amp;</span>BytesWritten,
+</span></span><span style="display:flex;"><span>	    NULL
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Status) {
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to Write Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">CloseHandle</span>(HandleDevice);
+</span></span><span style="display:flex;"><span>	    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">CloseHandle</span>(HandleDevice);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;   
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>User mode program kodlarımız da bu şekilde. Şimdi detaylıca göz atalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>HandleDevice <span style="color:#f92672">=</span> <span style="color:#a6e22e">CreateFile</span>(
+</span></span><span style="display:flex;"><span>	DEVICE_NAME,
+</span></span><span style="display:flex;"><span>	GENERIC_WRITE <span style="color:#f92672">|</span> GENERIC_READ,
+</span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>	NULL,
+</span></span><span style="display:flex;"><span>	OPEN_EXISTING,
+</span></span><span style="display:flex;"><span>	FILE_ATTRIBUTE_NORMAL,
+</span></span><span style="display:flex;"><span>	NULL
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> HandleDevice) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to Open Device! Error Code: 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Programımızda ilk olarak <code>CreateFile</code> aracılığıyla sürücümüzü açıyoruz. Bu fonksiyon, sürücümüzü açar ve bir kolu (HANDLE) döndürür.</p>
+<p>&ldquo;CreateFile kullanılarak sürücü mü açılıyor?&rdquo; diye düşünen olabilir. Bilmeyenler için CreateFile fonksiyonu, Windows işletim sisteminde bir dosya veya aygıt nesnesi oluşturmak veya açmak için kullanılabilir. Daha fazla araştırma için dökümanlara bakabilirsiniz.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">WriteFile</span>(
+</span></span><span style="display:flex;"><span>    HandleDevice,
+</span></span><span style="display:flex;"><span>    Buffer,
+</span></span><span style="display:flex;"><span>    (DWORD)<span style="color:#66d9ef">sizeof</span>(Buffer),
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>BytesWritten,
+</span></span><span style="display:flex;"><span>    NULL
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Status) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to Write Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">CloseHandle</span>(HandleDevice);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Bu kısımda ise <code>WriteFile</code> fonksiyonu aracılığıyla sürücümüze IRP isteği gönderiyoruz.</p>
+<h2 id="sürücünün-ve-programın-çalıştırılması">
+<a class="header-anchor" href="#s%c3%bcr%c3%bcc%c3%bcn%c3%bcn-ve-program%c4%b1n-%c3%a7al%c4%b1%c5%9ft%c4%b1r%c4%b1lmas%c4%b1"></a>
+Sürücünün ve Programın Çalıştırılması
+</h2><p>Öncelikle sürücümüzü windbg&rsquo;a bağlı sanal makineye yüklememiz ve ardından başlatmamız gerekecek:</p>
+<p><img src="../../images/posts/irp/img1.png" alt=""></p>
+<p>Şimdi ise user mode programımızı çalıştıralım:</p>
+<p><img src="../../images/posts/irp/result.gif" alt=""></p>
+<p>Göründüğü gibi user mode programımı çalıştırdığımızda sürücüye veri gönderdiğini ve gönderilen veriyi ekrana yazdırdığını gördük:</p>
+<p><img src="../../images/posts/irp/img2.png" alt=""></p>
+<p>User mode program tarafından <strong>MJ_WRITE</strong> IRP isteğinin geldiğini ve işlediğini böylece görmüş oluyoruz.</p>
+<h2 id="sonuç">
+<a class="header-anchor" href="#sonu%c3%a7"></a>
+Sonuç
+</h2><p>Bu yazıda IRP&rsquo;nin ne olduğunu, nasıl oluşturulduğunu ve nasıl kullanıldığını öğrendik. Ayrıca, IRP&rsquo;nin sürücüler ve işletim sistemi arasında nasıl bir köprü görevi gördüğünü de öğrendik. Bu konuda daha fazla bilgi edinmek isterseniz, Microsoft Docs&rsquo;ta bulunan kaynaklara göz atabilirsiniz.</p>
+<p>Umarım faydalı bir yazı olmuştur. İyi çalışmalar dilerim 🚀🚀🚀</p>
+<h2 id="references">
+<a class="header-anchor" href="#references"></a>
+References
+</h2><ul>
+<li><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/i-o-request-packets">Microsoft Docs - I/O Request Packets</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+      <ul class="article-tag-list" itemprop="keywords">
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/winkernel-dev"
+        rel="tag"
+        >WINKERNEL-DEV</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/module"
+        rel="tag"
+        >MODULE</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/irp"
+        rel="tag"
+        >IRP</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/io-request-packet"
+        rel="tag"
+        >IO-REQUEST-PACKET</a
+      >
+    </li>
+  
+</ul>
+
+    </footer>
+  </div>
+  
+    
+  <nav
+    id="article-nav"
+    data-aos="fade-up"
+  >
+    
+      <div class="article-nav-link-wrap article-nav-link-left">
+        
+          
+          
+            <img
+              data-src="images/blog-images/winkernel-dev.png"
+              data-sizes="auto"
+              alt="PDF Icon File Spoofing"
+              class="lazyload"
+            />
+          
+        
+        <a href="https://0xbekoo.github.io/post/file-icon-spoofing/"></a>
+        <div class="article-nav-caption">Newer</div>
+        <h3 class="article-nav-title">
+          
+            PDF Icon File Spoofing
+          
+        </h3>
+      </div>
+    
+
+    
+      <div class="article-nav-link-wrap article-nav-link-right">
+        
+          
+          
+            <img
+              data-src="images/blog-images/winkernel-dev.png"
+              data-sizes="auto"
+              alt="Input/Output Control (IOCTL)"
+              class="lazyload"
+            />
+          
+        
+        <a href="https://0xbekoo.github.io/post/wkd-ioctl/"></a>
+        <div class="article-nav-caption">Older</div>
+        <h3 class="article-nav-title">
+          
+            Input/Output Control (IOCTL)
+          
+        </h3>
+      </div>
+    
+  </nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+</section>
+          
+        </main>
+        
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<footer id="footer">
+  <div style="width: 100%; overflow: hidden">
+    <div class="footer-line"></div>
+  </div>
+  <div id="footer-info">
+    <div>
+      <span class="icon-copyright"></span>
+      2024 -
+      2024
+      <span class="footer-info-sep"></span>
+      0xbekoo
+    </div>
+    
+      <div>
+        Powered by&nbsp;<a
+          href="https://gohugo.io/"
+          target="_blank"
+          >Hugo</a
+        >&nbsp; Theme.<a
+          href="https://github.com/D-Sketon/hugo-theme-reimu"
+          target="_blank"
+          >Reimu</a
+        >
+      </div>
+    
+    
+    
+    
+    
+      <div>
+        <span class="icon-eye"></span>
+        <span id="busuanzi_container_site_pv"
+          >Number of visits&nbsp;<span
+            id="busuanzi_value_site_pv"
+          ></span
+        ></span>
+        &nbsp;|&nbsp;
+        <span class="icon-user"></span>
+        <span id="busuanzi_container_site_uv"
+          >Number of visitors&nbsp;<span
+            id="busuanzi_value_site_uv"
+          ></span
+        ></span>
+      </div>
+    
+  </div>
+</footer>
+
+        <div class="sidebar-top">
+          <img
+            src="/images/malware.png"
+            height="50"
+            width="50"
+            alt="backtop"
+          />
+          <div class="arrow-up"></div>
+        </div>
+        <div id="mask"></div>
+      </div>
+      <nav id="mobile-nav">
+  <div class="sidebar-wrap">
+    
+      <div class="sidebar-toc-sidebar">
+        <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#io-request-packet-irp-nedir">I/O Request Packet (IRP) Nedir?</a></li>
+    <li><a href="#code">Code</a>
+      <ul>
+        <li><a href="#kernel-mode-driver">Kernel Mode Driver</a></li>
+        <li><a href="#user-mode-program">User Mode Program</a></li>
+      </ul>
+    </li>
+    <li><a href="#sürücünün-ve-programın-çalıştırılması">Sürücünün ve Programın Çalıştırılması</a></li>
+    <li><a href="#sonuç">Sonuç</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+      </div>
+      <div class="sidebar-common-sidebar hidden">
+        
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      9
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">33</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-btn-wrapper">
+      <div class="sidebar-toc-btn current"></div>
+      <div class="sidebar-common-btn"></div>
+    </div>
+  
+</nav>
+
+    </div>
+    
+    
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js"
+    
+    
+    
+    
+    integrity="sha384-3gT/vsepWkfz/ff7PpWNUeMzeWoH3cDhm/A8jM7ouoAK0/fP/9bcHHR5kHq2nf&#43;e" crossorigin="anonymous"
+  ></script>
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/clipboard@2.0.11/dist/clipboard.min.js"
+    
+    
+    
+    
+    integrity="sha384-J08i8An/QeARD9ExYpvphB8BsyOj3Gh2TSh1aLINKO3L0cMSH2dN3E22zFoXEi0Q" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/main.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+
+
+  
+
+
+
+
+
+  
+      
+      <script src="/js/aos.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+  <script>
+    var aosInit = () => {
+      AOS.init({
+        duration: 1000,
+        easing: "ease",
+        once: true,
+        offset: 50,
+      });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", aosInit);
+    } else {
+      aosInit();
+    }
+  </script>
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/pjax_main.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/mouse-firework@0.0.6/dist/index.umd.js"
+    
+    
+    
+    
+    integrity="sha384-vkGvf25gm1C1PbcoD5dNfc137HzNL/hr1RKA5HniJOaawtvUmH5lTVFgFAruE9Ge" crossorigin="anonymous"
+  ></script>
+
+
+<script>
+  if (window.firework) {
+    const options = JSON.parse("{\"excludeelements\":[\"a\",\"button\"],\"particles\":[{\"colors\":[\"#ff5252\",\"#ff7c7c\",\"#ffafaf\",\"#ffd0d0\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"emit\"],\"number\":20,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.3,0.5],\"radius\":[16,32]}},{\"colors\":[\"#ff0000\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"diffuse\"],\"number\":1,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.2,0.5],\"lineWidth\":6,\"radius\":20}}]}");
+    options.excludeElements = options.excludeelements;
+    delete options.excludeelements;
+    window.firework(options);
+  }
+</script>
+
+
+
+
+
+
+
+
+<div id="lazy-script">
+  <div>
+    
+    
+      
+
+
+
+
+
+  
+      
+      <script src="/js/insert_highlight.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+      
+      
+      
+      
+      <script type="module" data-pjax>
+        const PhotoSwipeLightbox = (await safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js", "sha384-DiL6M\/gG\u002bwmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF\/N6lrZi\/")).default;
+
+        const pswp = () => {
+          if (_$$('.article-entry a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-entry',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          if(_$$('.article-gallery a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-gallery',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          window.lightboxStatus = 'done';
+          window.removeEventListener('lightbox:ready', pswp);
+        }
+        if(window.lightboxStatus === 'ready') {
+          pswp()
+        } else {
+          window.addEventListener('lightbox:ready', pswp);
+        }
+      </script>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+  </div>
+</div>
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/busuanzi@2.3.0/bsz.pure.mini.js"
+    
+    async
+    
+    
+    integrity="sha384-0M75wtSkhjIInv4coYlaJU83&#43;OypaRCIq2SukQVQX04eGTCBXJDuWAbJet56id&#43;S" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+  </script>
+
+
+<script>
+  const reimuCopyright = String.raw`
+   ______     ______     __     __    __     __  __    
+  /\  == \   /\  ___\   /\ \   /\ "-./  \   /\ \/\ \   
+  \ \  __<   \ \  __\   \ \ \  \ \ \-./\ \  \ \ \_\ \  
+   \ \_\ \_\  \ \_____\  \ \_\  \ \_\ \ \_\  \ \_____\ 
+    \/_/ /_/   \/_____/   \/_/   \/_/  \/_/   \/_____/ 
+                                                    
+  `;
+  console.log(String.raw`%c ${reimuCopyright}`, "color: #ff5252;");
+  console.log(
+    "%c Theme.Reimu" + " %c https://github.com/D-Sketon/hugo-theme-reimu ",
+    "color: white; background: #ff5252; padding:5px 0;",
+    "padding:4px;border:1px solid #ff5252;",
+  );
+</script>
+
+  </body>
+</html>

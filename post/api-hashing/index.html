@@ -1,0 +1,1350 @@
+<!doctype html>
+<html
+  lang="en-us"
+  data-theme="dark"
+>
+  <head>
+    <meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, shrink-to-fit=no"
+/>
+
+
+
+
+
+
+
+  
+
+<title>
+  API Hashing | 0xbekoo
+</title>
+<meta
+  name="description"
+  content="Reverse Engineer, Malware Developer"
+/>
+
+
+
+
+
+
+
+
+<script>
+  window.siteConfig = JSON.parse("{\"clipboard\":{\"copyright\":{\"content\":\"本文版权：本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！\",\"count\":50,\"enable\":false},\"fail\":\"复制失败 (ﾟ⊿ﾟ)ﾂ\",\"success\":\"复制成功(*^▽^*)\"},\"icon_font\":\"4552607_tq6stt6tcg\",\"outdate\":{\"daysago\":180,\"enable\":false,\"message\":\"本文最后更新于 {time}，请注意文中内容可能已经发生变化。\"}}");
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+    
+  
+
+  
+  
+  
+    
+  
+
+  
+    
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="preload"
+  as="style"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+/>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+  media="print"
+  onload="this.media='all'"
+/>
+
+
+
+
+
+
+  <link
+    rel="preload"
+    href="//at.alicdn.com/t/c/font_4552607_tq6stt6tcg.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin="anonymous"
+  />
+
+
+
+
+
+
+
+
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+
+
+
+
+
+
+  
+ <link rel="stylesheet" href="/css/main.min.59637a2554ed2af98a7c982638a757284f0a2077b36a23d4791d5305198c2570.css" />
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/katex@0.16.9/dist/katex.min.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/pace-js@1.2.4/pace.min.js"
+    
+    
+    
+    
+    integrity="sha384-k6YtvFUEIuEFBdrLKJ3YAUbBki333tj1CSUisai5Cswsg9wcLNaPzsTHDswp4Az8" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  
+
+
+  <link rel="stylesheet" href="https://npm.webcache.cn/@reimujs/aos@0.1.0/dist/aos.css" />
+
+
+
+
+  </head>
+  <body>
+    
+
+<div id="copy-tooltip" style="pointer-events: none; opacity: 0; transition: all 0.2s ease; position: fixed;top: 50%;left: 50%;z-index: 999;transform: translate(-50%, -50%);color: white;background: rgba(0, 0, 0, 0.5);padding: 10px 15px;border-radius: 10px;">
+</div>
+
+
+    <div id="container">
+      <div id="wrap">
+        <div id="header-nav">
+  <nav id="main-nav">
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/">Home</a>
+      </span>
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/about">About</a>
+      </span>
+    
+    <a id="main-nav-toggle" class="nav-icon"></a>
+  </nav>
+  <nav id="sub-nav">
+    
+    
+  </nav>
+</div>
+<header id="header">
+  
+    <img fetchpriority="high" src="/images/header-photo.gif" alt="API Hashing">
+  
+
+  <div id="header-outer">
+    <div id="header-title">
+      
+        
+        
+          
+        
+  
+        
+          <a href="/" id="logo">
+            <h1 data-aos="slide-up">API Hashing</h1>
+          </a>
+        
+      
+  
+      
+        
+        
+        <h2 id="subtitle-wrap" data-aos="slide-down">
+          
+        </h2>
+      
+    </div>
+  </div>
+</header>
+        <main id="content">
+          
+            <aside id="sidebar">
+  <div class="sidebar-wrapper wrap-sticky">
+    <div
+      class="sidebar-wrap"
+      data-aos="fade-up"
+    >
+      
+        <div class="sidebar-toc-sidebar">
+          <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#pe-portable-executable-yapısı-nedir">PE (Portable Executable) Yapısı Nedir?</a></li>
+    <li><a href="#eat-export-address-table-ve-iat-import-address-table-nedir">EAT (Export Address Table) ve IAT (Import Address Table) Nedir?</a></li>
+    <li><a href="#api-hashing-nedir">API Hashing Nedir?</a></li>
+    <li><a href="#modülün-base-addressini-bulma">Modülün Base Address’ini Bulma</a></li>
+    <li><a href="#apinin-adresini-bulma">API’nin Adresini Bulma</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+        </div>
+        <div class="sidebar-common-sidebar hidden">
+          
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      9
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">33</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+        </div>
+      
+
+      
+        <div class="sidebar-btn-wrapper" style="position:static">
+          <div class="sidebar-toc-btn current"></div>
+          <div class="sidebar-common-btn"></div>
+        </div>
+      
+    </div>
+  </div>
+
+  
+</aside>
+
+          
+          <section id="main">
+  <article
+  class="h-entry article"
+  itemprop="blogPost"
+  itemscope
+  itemtype="https://schema.org/BlogPosting"
+>
+  <div
+    class="article-inner"
+    data-aos="fade-up"
+  >
+    <div class="article-meta">
+      <div class="article-date">
+  <a
+    href="https://0xbekoo.github.io/post/api-hashing/"
+    class="article-date-link"
+    data-aos="zoom-in"
+  >
+    <time datetime="2024-07-30 00:00:00 &#43;0000 UTC" itemprop="datePublished"
+      >2024-07-30</time
+    >
+    <time style="display: none;" id="post-update-time"
+      >2024-07-30</time
+    >
+  </a>
+</div>
+
+      <div class="article-category">
+  
+    <a
+      class="article-category-link"
+      href="/categories/malware-development"
+      data-aos="zoom-in"
+      >MALWARE-DEVELOPMENT</a
+    >
+  
+</div>
+
+    </div>
+    <div class="hr-line"></div>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+      
+        <p>Merhabalar. Bu yazıda, maldev alanındaki API Hashing yöntemini ele alacağım.</p>
+<h2 id="pe-portable-executable-yapısı-nedir">
+<a class="header-anchor" href="#pe-portable-executable-yap%c4%b1s%c4%b1-nedir"></a>
+PE (Portable Executable) Yapısı Nedir?
+</h2><p>Her şeyden önce PE (Portable Executable) yapısını anlamanın gerekli olduğunu düşünüyorum çünkü bu tekniğimiz tamamen bu yapı üzerine.</p>
+<p>PE, Windows işletim sistemlerinde 32 ve 64 bit sürümlerde ve UEFI ortamlarda kullanılan executable dosyalar, object kodlar, DLL’ler ve diğerleri için bir dosya biçimidir. PE, Windows İşletim sistemi loader’in yürütülmek istenilen kodu yönetmesi için gereken veri yapıları içermektedir.</p>
+<p>Bir PE dosyası, dinamik linker’a (dynamic linker) yürütülebilir dosyanın dosya belleğin nasıl eşleceğini ve çalıştırılacağını belirten bir dizi başlık ve bölümden oluşur. Bu başlıklar ve bölümler, işletim sisteminin dosyayı doğru şekilde yüklemesine ve çalıştırmasına olanak tanır.</p>
+<p><img src="https://tech-zealots.com/storage/2018/05/PE-Structure.png" alt="PE Structure"></p>
+<p>PE yapısında bulunan bazı önemli başlıklar şunlardır:</p>
+<ul>
+<li>
+<p><strong>DOS Header (IMAGE_DOS_HEADER):</strong> Bu başlık, eski MS-DOS işletim sistemleri tarafından yürütülebilir dosyanın tanınması için gerekli minimum bilgileri içerir.</p>
+</li>
+<li>
+<p><strong>DOS Stub:</strong> Bu, yürütülebilir bir dosyanın başlangıcında bulunan ve DOS işletim sistemi tarafından tanınması için gereken minimum bilgileri içerir. Bu, dosyanın yürütülebilir olup olmadığını belirlemek için kullanılır.</p>
+</li>
+<li>
+<p><strong>PE Header (IMAGE_NT_HEADERS):</strong> Bu başlık, PE formatına özgü önemli bilgileri içerir. İşletim sisteminin dosyayı doğru şekilde yüklemesi ve çalıştırması için gerekli olan dosya boyutu, giriş noktası adresi, isteğe bağlı DLL’ler ve diğer bilgiler buradadır.</p>
+</li>
+<li>
+<p><strong>File Header (IMAGE_FILE_HEADER):</strong> Bu başlık, dosyanın genel bilgilerini içerir. Dosyanın mimarisi, dosya türü, bölümler ve diğer bilgiler burada bulunur.</p>
+</li>
+<li>
+<p><strong>Optional Header (IMAGE_OPTIONAL_HEADER):</strong> Bu başlık, dosyanın yüklenmesi ve çalıştırılması için gerekli olan bilgileri içerir. Dosyanın mimarisi, dosya türü, bölümler ve diğer bilgiler burada bulunur.</p>
+</li>
+</ul>
+<h2 id="eat-export-address-table-ve-iat-import-address-table-nedir">
+<a class="header-anchor" href="#eat-export-address-table-ve-iat-import-address-table-nedir"></a>
+EAT (Export Address Table) ve IAT (Import Address Table) Nedir?
+</h2><p>EAT ve IAT, PE dosyalarında bulunan iki önemli tablodur. Bu tablolar, dosyanın yürütülmesi sırasında işletim sistemi tarafından kullanılan fonksiyonların adreslerini ve adlarını içerir.</p>
+<ul>
+<li>
+<p><strong>EAT (Export Address Table):</strong> Dışa Aktarım Adres Tablosu olan EAT, bir PE dosyasının dışarı aktardığı fonksiyonların adreslerini ve adlarını içeren bir tablodur. Bu tablo, dinamik linker’ın (dynamic linker) yürütülebilir dosyayı yüklerken ve çalıştırırken hangi fonksiyonların kullanılabileceğini belirlemesine yardımcı olur. Bunu özellikle aklınızda tutun çünkü ileride bu tablo üzerinde işlem yapacağız.</p>
+</li>
+<li>
+<p><strong>IAT (Import Address Table):</strong> İçe Aktarım Adres Tablosu olan IAT, bir PE dosyasının diğer PE dosyalarından içe aktardığı fonksiyonların adreslerini ve adlarını içeren bir tablodur. Aynı şekilde bu tabloda dinamik linker’ın yürütülebilir dosyayı yüklerken ve çalıştırırken hangi fonksiyonların içe aktarılması gerektiğini belirlemesine yardımcı olur.</p>
+</li>
+</ul>
+<h2 id="api-hashing-nedir">
+<a class="header-anchor" href="#api-hashing-nedir"></a>
+API Hashing Nedir?
+</h2><p>API Hashing, bir API fonksiyonunun adını veya diğer tanımlayıcı özelliklerini bir hash değerine dönüştüren bir tekniktir. Bu hash değeri, fonksiyonun kimliğini temsil etmek için kullanılır. API’ların adlarını ve adreslerini gizlemek için kullanılabilir.</p>
+<p>Örneğin, MessageBoxA fonksiyonunu içeren bir projeyi derleyip çalıştırdığımızı düşünelim. Projemizde MessageBoxA kullandığımız için derleme sırasında derleyici (compiler), MessageBoxA API’sinin adresini Import Address Table (IAT) tablosuna ekleyecektir. Bu, programı çalıştırdığımızda MessageBoxA API’sinin bu adresten erişilebileceği anlamına gelir.</p>
+<p>Ancak, MessageBoxA’nın adresini gizlemek istiyorsak ne yapabiliriz? İşte burada API hashing devreye girer. Malware’i analiz eden bir kişi, malware’da kullanılan API’ları IAT içerisinde rahatlıkla görebilir. Bu nedenle, projemizde bu API’lara farklı isimler vererek ve ardından bu farklı isimleri hashleyerek IAT’a eklersek, analiz eden kişi bu API’ları kolayca göremez. Temelde, API hashing yöntemi budur: İlgili API’nin adını değiştirip hashleyerek ve sonra IAT tablosuna ekleyerek gizlemek.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Windows.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">CalculateHash</span>(<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> data) {
+</span></span><span style="display:flex;"><span>    DWORD hash <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x99</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">size_t</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">sizeof</span>(data); i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        hash <span style="color:#f92672">+=</span> (hash <span style="color:#f92672">*</span> <span style="color:#ae81ff">0xab10f29f</span> <span style="color:#f92672">+</span> data[i]) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xffffff</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> hash;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+</span></span><span style="display:flex;"><span>    DWORD hash_value <span style="color:#f92672">=</span> <span style="color:#a6e22e">CalculateHash</span>(<span style="color:#e6db74">&#34;CreateThread&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;CreateThread: 0x%00x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, hash_value);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">getchar</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Yukarıdaki örnekte, verilen API’in hash değerini hesaplayan basit bir kod parçası hazırlanmıştır. İlk olarak API’nin adı alınır ve hesap yapacak CalculateHash fonksiyonuna gönderilir.</p>
+<p>Fonksiyon içerisinde hash adında ve 0x99 değer tutan bir DWORD değişkeni oluşturduk. Bu değer, hesaplamanın başlangıç ​​noktası olarak kullandık.</p>
+<p>Daha sonra bir döngü başlattık. Bu döngüde, mevcut hash değerini 0xab10f29f sabit değeri ile çarpılır. Bu, her karakterin karma değerine katkısını artırmaya yardımcı olur. Mevcut karakterin değeri, çarpılan değere eklenir. Son olarak ise sonuç, 0xffffff değeri ile bitsel AND işlemine tabi tutulur. Bu, karma değerinin 32 bitlik bir tamsayı olarak kalmasını sağlar. Bu basit bir projedir ve ilerdeki süreçlerde bu fonksiyonu kullanacağız.</p>
+<h2 id="modülün-base-addressini-bulma">
+<a class="header-anchor" href="#mod%c3%bcl%c3%bcn-base-addressini-bulma"></a>
+Modülün Base Address’ini Bulma
+</h2><p>Şimdi, API’nin adresini bulma işlemine geçeceğiz. Adım adım WinDbg kullanarak, işlem modüllerini ve API’ları nasıl sıralandığını ve PE (Portable Executable) yapısını nasıl görebileceğimizi öğreneceğiz. Ardından, bu bilgileri C projesine uygulayacağız.</p>
+<p>İlk olarak, çalışan bir işlemin PEB yapısını inceleyerek, işlemin modüllerinin taban adreslerine göz atacağız. Belirtmek gerekirse, PEB, bir işlemin çalışma zamanı bilgilerini içeren bir yapıdır. Bu yapı, işlemin modüllerinin taban adreslerini, heap ve stack bilgilerini, çevresel değişkenlerini ve diğer bilgileri içerir.</p>
+<p>64 bit işlemlerde, PEB, Thread Environment Block bloğundan 0x60 ofsette bulunur. TEB, yürütülen iş parçacığının çalışma zamanı bilgilerini içeren bir yapıdır. TEB yapısı, GS segment kaydı tarafından işaretlenir. Dolayısıyla, PEB yapısına GS segment kaydı ile GS:[0x60] adresinden erişilebilir.</p>
+<p>Şimdi, cmd.exe’yi çalıştıralım ve WinDbg kullanarak analize başlayalım:</p>
+<p>İlk olarak dt komutu ile TEB’in yapısını inceleyerek başlayabiliriz:</p>
+<p><img src="../../images/posts/api-hashing/img1.png" alt=""></p>
+<p>Burada dikkatimizi çeken kısım +0x060 ProcessEnvironmentBlock : 0x000000fc4bacf000 _PEBolması yeterlidir. Yukarıda TEB ve PEB’ten bahsetmiştik ve burada TEB içerisinde PEB’in adresini görmekteyiz. Şimdi ise bu PEB’in adresi ile bu yapıya bir göz atalım:</p>
+<p><img src="../../images/posts/api-hashing/img2.png" alt=""></p>
+<p>Yakından ilgili process’in PEB yapısını böylece görmüş olduk. Burada bizi ilgilendiren kısım +0x018 Ldr: 0x00007ffe`c5c153e0 _PEB_LDR_DATA olacaktır. Bu yapı, yüklenen modüllerin listesini içerir. Şimdi ise bu yapıya bir göz atalım:</p>
+<p><img src="../../images/posts/api-hashing/img3.png" alt=""></p>
+<p>Bu yapıya göz attığımızda üç farklı liste olduğunu görmekteyiz. Bu listeler, yüklenen modüllerin listesini temsil eder. Bu listelerin içerisinde bulunan yapılar ise LDR_DATA_TABLE_ENTRY yapısına aittir. Bu yapı, yüklenen modülün bilgilerini içerir.</p>
+<p>Bu listeleri tanımadan önce LIST_ENTRY yapılarını anlamamiz lazım:</p>
+<p><img src="../../images/posts/api-hashing/img4.png" alt=""></p>
+<ul>
+<li>Flink: İlgili yapıyı işaret eden bir sonraki yapıdır.</li>
+<li>Blink: İlgili yapıyı işaret eden bir önceki yapıdır.</li>
+</ul>
+<p>Şimdi ise listeleri tanıyalım:</p>
+<ul>
+<li>
+<p>InLoadOrderModuleList: Modüllerin yüklenme sırasını temsil eder.</p>
+</li>
+<li>
+<p>InMemoryOrderModuleList: Modüllerin belleğe yüklenme sırasını temsil eder.</p>
+</li>
+<li>
+<p>InInitializationOrderModuleList: Modüllerin başlatılma sırasını temsil eder.</p>
+</li>
+</ul>
+<p>Bu listelerden ana odağımız InLoaderOrderModuleList olacaktır. Bu listenin modüllerin yüklenme sırasını temsil ettiğinden bahsetmiştik. Şimdi ise bu liste üzerinde işlem yaparak yüklenen modülleri tek tek göz atacağız.</p>
+<p>İlk olarak InLoadOrderModuleList yapısındaki 0x000002c0`f1e23690 adres, yüklenen ilk modülün adresidir. Bu adresi kullanarak ilk yüklenilen modüle göz atabiliriz:</p>
+<p><img src="../../images/posts/api-hashing/img5.png" alt=""></p>
+<p>İlk yüklenen modülün detaylı bilgilerini fotoğrafta görülebileceği üzere yakından görebiliyoruz. İlk yüklenen modül cmd.exe adıyla ilgili executable dosyanın modülü olduğunu görmekteyiz. Dllbase, ilgili modülün base addressini içerir. BaseDllName ise yüklenen modülün ismi. Bunları görmemiz yeterlidir araştırma için.</p>
+<p>Araştırmalara devam etmek için bir sonraki yüklenen modüle geçebiliriz:</p>
+<p><img src="../../images/posts/api-hashing/img6.png" alt=""></p>
+<p>Yüklenen diğer modülün ntdll.dll olduğunu görmekteyiz. Bu şekilde yüklenen tüm modülleri tek tek inceleyebiliriz. Son olarak diğer modüle de göz atalım:</p>
+<p><img src="../../images/posts/api-hashing/img7.png" alt=""></p>
+<p>Diğer yüklenen modüle göz attığımızda ise kernel32.dll olduğunu görmekteyiz.</p>
+<p>Şimdi ise odağımızı C projemize çevireceğiz. Bu öğrendiklerimizi ise C projesine dökeceğiz.</p>
+<p>IDE içerisinde bu yapılar tanımlı olmadığı için elle kendimiz tamamlamamız gerekmektedir. Şimdi ise kodlamaya geçebiliriz:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;utils.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">CalculateHash</span>(<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> data) {
+</span></span><span style="display:flex;"><span>    DWORD hash <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x99</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">size_t</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">sizeof</span>(data); i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        hash <span style="color:#f92672">+=</span> (hash <span style="color:#f92672">*</span> <span style="color:#ae81ff">0xab10f29f</span> <span style="color:#f92672">+</span> data[i]) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xffffff</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> hash;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">CalcModuleHash</span>(LDR_MODULE<span style="color:#f92672">*</span> ModuleLink) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>  ModuleName[<span style="color:#ae81ff">64</span>];
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">size_t</span> counter <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">while</span> (ModuleLink<span style="color:#f92672">-&gt;</span>BaseDllName.Buffer[counter] <span style="color:#f92672">&amp;&amp;</span> counter <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">sizeof</span>(ModuleName) <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>		ModuleName[counter] <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span>)ModuleLink<span style="color:#f92672">-&gt;</span>BaseDllName.Buffer[counter];
+</span></span><span style="display:flex;"><span>		counter<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	ModuleName[counter<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">CalculateHash</span>((<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)<span style="color:#a6e22e">CharLowerA</span>(ModuleName));
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>HMODULE <span style="color:#a6e22e">GetModuleBaseAddress</span>(DWORD Hash) {
+</span></span><span style="display:flex;"><span>	HMODULE ModuleBaseAddress <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>	INT_PTR PEB				  <span style="color:#f92672">=</span> <span style="color:#a6e22e">__readgsqword</span>(<span style="color:#ae81ff">0x60</span>);	<span style="color:#75715e">// PEB&#39;in offseti
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	INT_PTR LDR				  <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x18</span>;					<span style="color:#75715e">// PEB içerisindeki LDR&#39;in offseti
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	INT_PTR FlinkOffset	      <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x10</span>;					<span style="color:#75715e">// InLoadOrderModuleList&#39;in offseti
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>	INT_PTR PEB_LDR_DATA <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(INT_PTR<span style="color:#f92672">*</span>)(PEB <span style="color:#f92672">+</span> LDR);				  <span style="color:#75715e">// PEB içerisinden LDR&#39;e ulaş
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	INT_PTR FirstFlink <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(INT_PTR<span style="color:#f92672">*</span>)(PEB_LDR_DATA <span style="color:#f92672">+</span> FlinkOffset); <span style="color:#75715e">// LDR içerisinden InLoadOrderModuleList yapısına ulaş
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	LDR_MODULE<span style="color:#f92672">*</span> LDR_DATA_TABLE_ENTRY <span style="color:#f92672">=</span> (LDR_MODULE<span style="color:#f92672">*</span>)FirstFlink;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">do</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">/* 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">			Buradaki döngü, process&#39;e yüklenen tüm modül listesi üzerinde işlem yapar.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">			Yüklenen her modülün base address&#39;i ve hash değeri alınır ve kontrol yapılır. 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">		*/</span>
+</span></span><span style="display:flex;"><span>		LDR_DATA_TABLE_ENTRY <span style="color:#f92672">=</span> (LDR_MODULE<span style="color:#f92672">*</span>)LDR_DATA_TABLE_ENTRY<span style="color:#f92672">-&gt;</span>InLoadOrderModuleList.Flink;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (LDR_DATA_TABLE_ENTRY<span style="color:#f92672">-&gt;</span>BaseAddress <span style="color:#f92672">!=</span> NULL) {
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">CalcModuleHash</span>(LDR_DATA_TABLE_ENTRY) <span style="color:#f92672">==</span> Hash) {
+</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>			}
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>	} <span style="color:#66d9ef">while</span> (FirstFlink <span style="color:#f92672">!=</span> (INT_PTR)LDR_DATA_TABLE_ENTRY);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	ModuleBaseAddress <span style="color:#f92672">=</span> (HMODULE)LDR_DATA_TABLE_ENTRY<span style="color:#f92672">-&gt;</span>BaseAddress;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> ModuleBaseAddress;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Bu kod parçasında, öncelikle CalculateHash fonksiyonu ile API’nin hash değeri hesaplanmaktadır. Daha sonra CalcModuleHash fonksiyonu, bir modülün ismini alır ve bu ismin hash değerini hesaplar. İşlem sırasında modül ismi küçük harfe dönüştürülür ve her karakterin ASCII değeri ile önceki hash değeri kullanılarak yeni bir hash değeri hesaplanır.</p>
+<p>Son olarak, GetModuleBaseAddress fonksiyonu, verilen bir hash değeriyle eşleşen bir modül bulur ve bu modülün başlangıç adresini döndürür. Bunun için, işlem yüklenen modül listesi üzerinde döngü yapar ve her bir modülün hash değeri CalcModuleHash ile hesaplanarak kontrol edilir. Eşleşme bulunduğunda, ilgili modülün başlangıç adresi döndürülür.</p>
+<p>Ancak bu kod parçasını kullanmamıza gerek yok. Zaten bunları yapan hazır API’lar bulunmaktadır.</p>
+<h2 id="apinin-adresini-bulma">
+<a class="header-anchor" href="#apinin-adresini-bulma"></a>
+API’nin Adresini Bulma
+</h2><p>Base Address’i bulduktan sonra API’in adresini bulmamız gerekiyor. Bunun için ihtiyacımız olan şey, IMAGE_EXPORT_DIRECTORY yapısıdır. Bu yapı, Export Address Table’ın (EAT) adresini içerir. Bu yapıda içeren bazı önemli alanlar şunlardır:</p>
+<ul>
+<li>NumberOfFunctions: Export edilen fonksiyonların sayısı</li>
+<li>AddressOfFunctions: Export edilen fonksiyonların adreslerinin bulunduğu tablonun adresi</li>
+<li>AddressOfNames: Export edilen fonksiyonların isimlerinin bulunduğu tablonun adresi</li>
+</ul>
+<p>Windbg’a dönelim ve ntdll’in EAT tablosunu bularak başlayalım:</p>
+<p><img src="../../images/posts/api-hashing/img9.png" alt=""></p>
+<p>ntdll’in yüklü olduğu adresin 00007ffe`c5a90000 olduğunu görebiliyoruz. Şimdi bu adresten IMAGE_DOS_HEADER yapısına ulaşalım:</p>
+<p><img src="../../images/posts/api-hashing/img8.png" alt=""></p>
+<p>IMAGE_DOS_HEADER yapısının adresini bulduktan sonra IMAGE_NT_HEADERS yapısına ulaşacağız.</p>
+<p>Bu yapının adresini bulmak için IMAGE_DOS_HEADER yapısının e_lfanew’in hex değeri, ntdll’in adresine ekleyerek elde edebiliriz. Böylece IMAGE_NT_HEADERS yapısına ulaşabiliriz:</p>
+<p><img src="../../images/posts/api-hashing/img10.png" alt=""></p>
+<p>Daha sonra araştırmamıza _IMAGE_OPTIONAL_HEADER64’a (0x18) ulaşarak devam edeceğiz:</p>
+<pre tabindex="0"><code>0:004&gt; dt _IMAGE_OPTIONAL_HEADER64 00007ffe`c5a90000+0xe0+0x18
+ntdll!_IMAGE_OPTIONAL_HEADER64
+   +0x000 Magic            : 0x20b
+   +0x002 MajorLinkerVersion : 0xe &#39;&#39;
+   +0x003 MinorLinkerVersion : 0x1e &#39;&#39;
+   +0x004 SizeOfCode       : 0x130000
+   +0x008 SizeOfInitializedData : 0xe5000
+   +0x00c SizeOfUninitializedData : 0
+   +0x010 AddressOfEntryPoint : 0
+   +0x014 BaseOfCode       : 0x1000
+   +0x018 ImageBase        : 0x00007ff9`373b0000
+   +0x020 SectionAlignment : 0x1000
+   +0x024 FileAlignment    : 0x1000
+   +0x028 MajorOperatingSystemVersion : 0xa
+   +0x02a MinorOperatingSystemVersion : 0
+   +0x02c MajorImageVersion : 0xa
+   +0x02e MinorImageVersion : 0
+   +0x030 MajorSubsystemVersion : 0xa
+   +0x032 MinorSubsystemVersion : 0
+   +0x034 Win32VersionValue : 0
+   +0x038 SizeOfImage      : 0x216000
+   +0x03c SizeOfHeaders    : 0x1000
+   +0x040 CheckSum         : 0x21eed5
+   +0x044 Subsystem        : 3
+   +0x046 DllCharacteristics : 0x4160
+   +0x048 SizeOfStackReserve : 0x40000
+   +0x050 SizeOfStackCommit : 0x1000
+   +0x058 SizeOfHeapReserve : 0x100000
+   +0x060 SizeOfHeapCommit : 0x1000
+   +0x068 LoaderFlags      : 0
+   +0x06c NumberOfRvaAndSizes : 0x10
+   +0x070 DataDirectory    : [16] _IMAGE_DATA_DIRECTORY
+</code></pre><p>Dikkatimizi 0x70 offsetine yani IMAGE_DATA_DIRECTORY yapısına çekiyoruz. Bu yapı, Export Address Table’ın RVA’sı (Relative Virtual Address) gibi Import Address Table için önemli bilgileri tutar.</p>
+<p>IMAGE_EXPORT_DIRECTORY yapısı ise şu şekildedir:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> _IMAGE_EXPORT_DIRECTORY {
+</span></span><span style="display:flex;"><span>    DWORD   Characteristics;
+</span></span><span style="display:flex;"><span>    DWORD   TimeDateStamp;
+</span></span><span style="display:flex;"><span>    WORD    MajorVersion;
+</span></span><span style="display:flex;"><span>    WORD    MinorVersion;
+</span></span><span style="display:flex;"><span>    DWORD   Name;
+</span></span><span style="display:flex;"><span>    DWORD   Base;
+</span></span><span style="display:flex;"><span>    DWORD   NumberOfFunctions;
+</span></span><span style="display:flex;"><span>    DWORD   NumberOfNames;
+</span></span><span style="display:flex;"><span>    DWORD   AddressOfFunctions;     <span style="color:#75715e">// RVA from base of image
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    DWORD   AddressOfNames;         <span style="color:#75715e">// RVA from base of image
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    DWORD   AddressOfNameOrdinals;  <span style="color:#75715e">// RVA from base of image
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>} IMAGE_EXPORT_DIRECTORY, <span style="color:#f92672">*</span> PIMAGE_EXPORT_DIRECTORY;
+</span></span></code></pre></div><p>Şimdi ise bu bilgilerin ışığında API’in adresini bulmak için C projemize aşağıdaki kodu ekleyeyelim:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>PDWORD <span style="color:#a6e22e">getFunctionAddressByHash</span>(<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> library, DWORD hash)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	PDWORD functionAddress <span style="color:#f92672">=</span> (PDWORD)<span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	HMODULE libraryBase <span style="color:#f92672">=</span> <span style="color:#a6e22e">LoadLibraryA</span>(library);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	PIMAGE_DOS_HEADER dosHeader <span style="color:#f92672">=</span> (PIMAGE_DOS_HEADER)libraryBase;
+</span></span><span style="display:flex;"><span>	PIMAGE_NT_HEADERS imageNTHeaders <span style="color:#f92672">=</span> (PIMAGE_NT_HEADERS)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> dosHeader<span style="color:#f92672">-&gt;</span>e_lfanew);
+</span></span><span style="display:flex;"><span>	DWORD_PTR exportDirectoryRVA <span style="color:#f92672">=</span> imageNTHeaders<span style="color:#f92672">-&gt;</span>OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+</span></span><span style="display:flex;"><span>	PIMAGE_EXPORT_DIRECTORY imageExportDirectory <span style="color:#f92672">=</span> (PIMAGE_EXPORT_DIRECTORY)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> exportDirectoryRVA);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Export edilmiş fonksiyonlarla ilgili bilgiler için RVA&#39;ları al
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	PDWORD addresOfFunctionsRVA <span style="color:#f92672">=</span> (PDWORD)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> imageExportDirectory<span style="color:#f92672">-&gt;</span>AddressOfFunctions);
+</span></span><span style="display:flex;"><span>	PDWORD addressOfNamesRVA <span style="color:#f92672">=</span> (PDWORD)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> imageExportDirectory<span style="color:#f92672">-&gt;</span>AddressOfNames);
+</span></span><span style="display:flex;"><span>	PWORD addressOfNameOrdinalsRVA <span style="color:#f92672">=</span> (PWORD)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> imageExportDirectory<span style="color:#f92672">-&gt;</span>AddressOfNameOrdinals);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">for</span> (DWORD i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> imageExportDirectory<span style="color:#f92672">-&gt;</span>NumberOfFunctions; i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>	{
+</span></span><span style="display:flex;"><span>		DWORD functionNameRVA <span style="color:#f92672">=</span> addressOfNamesRVA[i];
+</span></span><span style="display:flex;"><span>		DWORD_PTR functionNameVA <span style="color:#f92672">=</span> (DWORD_PTR)libraryBase <span style="color:#f92672">+</span> functionNameRVA;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> functionName <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)functionNameVA;
+</span></span><span style="display:flex;"><span>		DWORD_PTR functionAddressRVA <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// Alınan Export fonksiyonun hash değerini hesapla
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		DWORD functionNameHash <span style="color:#f92672">=</span> <span style="color:#a6e22e">getHashFromString</span>(functionName);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// CreateThread bulunursa Adresini ekrana bastır ve main&#39;e dön
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#66d9ef">if</span> (functionNameHash <span style="color:#f92672">==</span> hash)
+</span></span><span style="display:flex;"><span>		{
+</span></span><span style="display:flex;"><span>			functionAddressRVA <span style="color:#f92672">=</span> addresOfFunctionsRVA[addressOfNameOrdinalsRVA[i]];
+</span></span><span style="display:flex;"><span>			functionAddress <span style="color:#f92672">=</span> (PDWORD)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> functionAddressRVA);
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%s : 0x%x : %p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, functionName, functionNameHash, functionAddress);
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span> functionAddress;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Bu kod parçasında, getFunctionAddressByHash fonksiyonu, verilen bir hash değeriyle eşleşen bir API’nin adresini bulur ve döndürür. Bunun için, verilen kütüphane adını yükler ve IMAGE_EXPORT_DIRECTORY yapısını kullanarak Export Address Table’ın adresini alır.</p>
+<p>Daha sonra bu yapıdaki adresler kullanılarak, Export edilen fonksiyonların adreslerinin bulunduğu tablo ve isimlerin bulunduğu tablo adresleri alınır. Daha sonra, bu tablolar üzerinde döngü yaparak, her bir fonksiyonun adını ve hash değerini hesaplar. Eşleşme bulunduğunda, ilgili fonksiyonun adresi döndürülür.</p>
+<p>Kodun tamamını birleştirelim ve basitçe CreateThread API’sini çalıştıralım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Windows.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">HANDLE</span>(NTAPI<span style="color:#f92672">*</span> MyCreateThread)(
+</span></span><span style="display:flex;"><span>	LPSECURITY_ATTRIBUTES   lpThreadAttributes,
+</span></span><span style="display:flex;"><span>	SIZE_T                  dwStackSize,
+</span></span><span style="display:flex;"><span>	LPTHREAD_START_ROUTINE  lpStartAddress,
+</span></span><span style="display:flex;"><span>	LPVOID                  lpParameter,
+</span></span><span style="display:flex;"><span>	DWORD                   dwCreationFlags,
+</span></span><span style="display:flex;"><span>	LPDWORD                 lpThreadId
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">getHashFromString</span>(<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> string)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">size_t</span> stringLength <span style="color:#f92672">=</span> <span style="color:#a6e22e">strnlen_s</span>(string, <span style="color:#ae81ff">50</span>);
+</span></span><span style="display:flex;"><span>	DWORD hash <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x35</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">size_t</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> stringLength; i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>	{
+</span></span><span style="display:flex;"><span>		hash <span style="color:#f92672">+=</span> (hash <span style="color:#f92672">*</span> <span style="color:#ae81ff">0xab10f29f</span> <span style="color:#f92672">+</span> string[i]) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xffffff</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> hash;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PDWORD <span style="color:#a6e22e">getFunctionAddressByHash</span>(<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> library, DWORD hash)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	PDWORD functionAddress <span style="color:#f92672">=</span> (PDWORD)<span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	HMODULE libraryBase <span style="color:#f92672">=</span> <span style="color:#a6e22e">LoadLibraryA</span>(library);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	PIMAGE_DOS_HEADER dosHeader <span style="color:#f92672">=</span> (PIMAGE_DOS_HEADER)libraryBase;
+</span></span><span style="display:flex;"><span>	PIMAGE_NT_HEADERS imageNTHeaders <span style="color:#f92672">=</span> (PIMAGE_NT_HEADERS)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> dosHeader<span style="color:#f92672">-&gt;</span>e_lfanew);
+</span></span><span style="display:flex;"><span>	DWORD_PTR exportDirectoryRVA <span style="color:#f92672">=</span> imageNTHeaders<span style="color:#f92672">-&gt;</span>OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+</span></span><span style="display:flex;"><span>	PIMAGE_EXPORT_DIRECTORY imageExportDirectory <span style="color:#f92672">=</span> (PIMAGE_EXPORT_DIRECTORY)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> exportDirectoryRVA);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Export edilmiş fonksiyonlarla ilgili bilgiler için RVA&#39;ları al
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	PDWORD addresOfFunctionsRVA <span style="color:#f92672">=</span> (PDWORD)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> imageExportDirectory<span style="color:#f92672">-&gt;</span>AddressOfFunctions);
+</span></span><span style="display:flex;"><span>	PDWORD addressOfNamesRVA <span style="color:#f92672">=</span> (PDWORD)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> imageExportDirectory<span style="color:#f92672">-&gt;</span>AddressOfNames);
+</span></span><span style="display:flex;"><span>	PWORD addressOfNameOrdinalsRVA <span style="color:#f92672">=</span> (PWORD)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> imageExportDirectory<span style="color:#f92672">-&gt;</span>AddressOfNameOrdinals);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">for</span> (DWORD i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> imageExportDirectory<span style="color:#f92672">-&gt;</span>NumberOfFunctions; i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>	{
+</span></span><span style="display:flex;"><span>		DWORD functionNameRVA <span style="color:#f92672">=</span> addressOfNamesRVA[i];
+</span></span><span style="display:flex;"><span>		DWORD_PTR functionNameVA <span style="color:#f92672">=</span> (DWORD_PTR)libraryBase <span style="color:#f92672">+</span> functionNameRVA;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> functionName <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)functionNameVA;
+</span></span><span style="display:flex;"><span>		DWORD_PTR functionAddressRVA <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// Alınan Export fonksiyonun hash değerini hesapla
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		DWORD functionNameHash <span style="color:#f92672">=</span> <span style="color:#a6e22e">getHashFromString</span>(functionName);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// CreateThread bulunursa Adresini ekrana bastır ve main&#39;e dön
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#66d9ef">if</span> (functionNameHash <span style="color:#f92672">==</span> hash)
+</span></span><span style="display:flex;"><span>		{
+</span></span><span style="display:flex;"><span>			functionAddressRVA <span style="color:#f92672">=</span> addresOfFunctionsRVA[addressOfNameOrdinalsRVA[i]];
+</span></span><span style="display:flex;"><span>			functionAddress <span style="color:#f92672">=</span> (PDWORD)((DWORD_PTR)libraryBase <span style="color:#f92672">+</span> functionAddressRVA);
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%s : 0x%x : %p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, functionName, functionNameHash, functionAddress);
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span> functionAddress;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	DWORD hash <span style="color:#f92672">=</span> <span style="color:#a6e22e">getHashFromString</span>(<span style="color:#e6db74">&#34;CreateThread&#34;</span>);
+</span></span><span style="display:flex;"><span>	PDWORD functionAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">getFunctionAddressByHash</span>((<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)<span style="color:#e6db74">&#34;kernel32&#34;</span>, hash);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	DWORD TID <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	HANDLE th <span style="color:#f92672">=</span> <span style="color:#a6e22e">CreateThread</span>(NULL, <span style="color:#ae81ff">0</span>, NULL, NULL, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>TID);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (th <span style="color:#f92672">==</span> NULL) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to create thread</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Thread created successfully</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">CloseHandle</span>(th);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Sonuca baktığımızda ise başarılı bir şekilde API’in adresinin alındığını ve çalıştırıldığını görmekteyiz.</p>
+<p><img src="../../images/posts/api-hashing/img11.png" alt=""></p>
+<h2 id="references">
+<a class="header-anchor" href="#references"></a>
+References
+</h2><ul>
+<li><a href="https://en.wikipedia.org/wiki/Portable_Executable"><strong>EN Wikipedia - Portable Executable</strong></a></li>
+<li><a href="https://tech-zealots.com/malware-analysis/pe-portable-executable-structure-malware-analysis-part-2/"><strong>Tech Zealots - A Comprehensive Guide To PE Structure, The Layman’s Way</strong></a></li>
+<li><a href="https://www.ired.team/offensive-security/defense-evasion/windows-api-hashing-in-malware"><strong>Red Team Notes - Windows API Hashing in Malware</strong></a></li>
+<li><a href="https://labs.cognisys.group/posts/Combining-Indirect-Dynamic-Syscalls-and-API-Hashing/"><strong>Cognisys Labs - Combining Indirect Dynamic Syscalls and API Hashing</strong></a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+      <ul class="article-tag-list" itemprop="keywords">
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/malware-dev"
+        rel="tag"
+        >MALWARE-DEV</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/maldev-technique"
+        rel="tag"
+        >MALDEV-TECHNIQUE</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/api"
+        rel="tag"
+        >API</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/api-hashing"
+        rel="tag"
+        >API-HASHING</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/api-security"
+        rel="tag"
+        >API-SECURITY</a
+      >
+    </li>
+  
+</ul>
+
+    </footer>
+  </div>
+  
+    
+  <nav
+    id="article-nav"
+    data-aos="fade-up"
+  >
+    
+      <div class="article-nav-link-wrap article-nav-link-left">
+        
+          
+          
+            <img
+              data-src="images/blog-images/malware-dev.png"
+              data-sizes="auto"
+              alt="Is Valorant Spyware?"
+              class="lazyload"
+            />
+          
+        
+        <a href="https://0xbekoo.github.io/post/is-valorant-spyware/"></a>
+        <div class="article-nav-caption">Newer</div>
+        <h3 class="article-nav-title">
+          
+            Is Valorant Spyware?
+          
+        </h3>
+      </div>
+    
+
+    
+      <div class="article-nav-link-wrap article-nav-link-right">
+        
+          
+          
+            <img
+              data-src="images/blog-images/malware-dev.png"
+              data-sizes="auto"
+              alt="PDF Icon File Spoofing"
+              class="lazyload"
+            />
+          
+        
+        <a href="https://0xbekoo.github.io/post/file-icon-spoofing/"></a>
+        <div class="article-nav-caption">Older</div>
+        <h3 class="article-nav-title">
+          
+            PDF Icon File Spoofing
+          
+        </h3>
+      </div>
+    
+  </nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+</section>
+          
+        </main>
+        
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<footer id="footer">
+  <div style="width: 100%; overflow: hidden">
+    <div class="footer-line"></div>
+  </div>
+  <div id="footer-info">
+    <div>
+      <span class="icon-copyright"></span>
+      2024 -
+      2024
+      <span class="footer-info-sep"></span>
+      0xbekoo
+    </div>
+    
+      <div>
+        Powered by&nbsp;<a
+          href="https://gohugo.io/"
+          target="_blank"
+          >Hugo</a
+        >&nbsp; Theme.<a
+          href="https://github.com/D-Sketon/hugo-theme-reimu"
+          target="_blank"
+          >Reimu</a
+        >
+      </div>
+    
+    
+    
+    
+    
+      <div>
+        <span class="icon-eye"></span>
+        <span id="busuanzi_container_site_pv"
+          >Number of visits&nbsp;<span
+            id="busuanzi_value_site_pv"
+          ></span
+        ></span>
+        &nbsp;|&nbsp;
+        <span class="icon-user"></span>
+        <span id="busuanzi_container_site_uv"
+          >Number of visitors&nbsp;<span
+            id="busuanzi_value_site_uv"
+          ></span
+        ></span>
+      </div>
+    
+  </div>
+</footer>
+
+        <div class="sidebar-top">
+          <img
+            src="/images/malware.png"
+            height="50"
+            width="50"
+            alt="backtop"
+          />
+          <div class="arrow-up"></div>
+        </div>
+        <div id="mask"></div>
+      </div>
+      <nav id="mobile-nav">
+  <div class="sidebar-wrap">
+    
+      <div class="sidebar-toc-sidebar">
+        <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#pe-portable-executable-yapısı-nedir">PE (Portable Executable) Yapısı Nedir?</a></li>
+    <li><a href="#eat-export-address-table-ve-iat-import-address-table-nedir">EAT (Export Address Table) ve IAT (Import Address Table) Nedir?</a></li>
+    <li><a href="#api-hashing-nedir">API Hashing Nedir?</a></li>
+    <li><a href="#modülün-base-addressini-bulma">Modülün Base Address’ini Bulma</a></li>
+    <li><a href="#apinin-adresini-bulma">API’nin Adresini Bulma</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+      </div>
+      <div class="sidebar-common-sidebar hidden">
+        
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      9
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">33</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-btn-wrapper">
+      <div class="sidebar-toc-btn current"></div>
+      <div class="sidebar-common-btn"></div>
+    </div>
+  
+</nav>
+
+    </div>
+    
+    
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js"
+    
+    
+    
+    
+    integrity="sha384-3gT/vsepWkfz/ff7PpWNUeMzeWoH3cDhm/A8jM7ouoAK0/fP/9bcHHR5kHq2nf&#43;e" crossorigin="anonymous"
+  ></script>
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/clipboard@2.0.11/dist/clipboard.min.js"
+    
+    
+    
+    
+    integrity="sha384-J08i8An/QeARD9ExYpvphB8BsyOj3Gh2TSh1aLINKO3L0cMSH2dN3E22zFoXEi0Q" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/main.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+
+
+  
+
+
+
+
+
+  
+      
+      <script src="/js/aos.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+  <script>
+    var aosInit = () => {
+      AOS.init({
+        duration: 1000,
+        easing: "ease",
+        once: true,
+        offset: 50,
+      });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", aosInit);
+    } else {
+      aosInit();
+    }
+  </script>
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/pjax_main.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/mouse-firework@0.0.6/dist/index.umd.js"
+    
+    
+    
+    
+    integrity="sha384-vkGvf25gm1C1PbcoD5dNfc137HzNL/hr1RKA5HniJOaawtvUmH5lTVFgFAruE9Ge" crossorigin="anonymous"
+  ></script>
+
+
+<script>
+  if (window.firework) {
+    const options = JSON.parse("{\"excludeelements\":[\"a\",\"button\"],\"particles\":[{\"colors\":[\"#ff5252\",\"#ff7c7c\",\"#ffafaf\",\"#ffd0d0\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"emit\"],\"number\":20,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.3,0.5],\"radius\":[16,32]}},{\"colors\":[\"#ff0000\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"diffuse\"],\"number\":1,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.2,0.5],\"lineWidth\":6,\"radius\":20}}]}");
+    options.excludeElements = options.excludeelements;
+    delete options.excludeelements;
+    window.firework(options);
+  }
+</script>
+
+
+
+
+
+
+
+
+<div id="lazy-script">
+  <div>
+    
+    
+      
+
+
+
+
+
+  
+      
+      <script src="/js/insert_highlight.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+      
+      
+      
+      
+      <script type="module" data-pjax>
+        const PhotoSwipeLightbox = (await safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js", "sha384-DiL6M\/gG\u002bwmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF\/N6lrZi\/")).default;
+
+        const pswp = () => {
+          if (_$$('.article-entry a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-entry',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          if(_$$('.article-gallery a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-gallery',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          window.lightboxStatus = 'done';
+          window.removeEventListener('lightbox:ready', pswp);
+        }
+        if(window.lightboxStatus === 'ready') {
+          pswp()
+        } else {
+          window.addEventListener('lightbox:ready', pswp);
+        }
+      </script>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+  </div>
+</div>
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/busuanzi@2.3.0/bsz.pure.mini.js"
+    
+    async
+    
+    
+    integrity="sha384-0M75wtSkhjIInv4coYlaJU83&#43;OypaRCIq2SukQVQX04eGTCBXJDuWAbJet56id&#43;S" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+  </script>
+
+
+<script>
+  const reimuCopyright = String.raw`
+   ______     ______     __     __    __     __  __    
+  /\  == \   /\  ___\   /\ \   /\ "-./  \   /\ \/\ \   
+  \ \  __<   \ \  __\   \ \ \  \ \ \-./\ \  \ \ \_\ \  
+   \ \_\ \_\  \ \_____\  \ \_\  \ \_\ \ \_\  \ \_____\ 
+    \/_/ /_/   \/_____/   \/_/   \/_/  \/_/   \/_____/ 
+                                                    
+  `;
+  console.log(String.raw`%c ${reimuCopyright}`, "color: #ff5252;");
+  console.log(
+    "%c Theme.Reimu" + " %c https://github.com/D-Sketon/hugo-theme-reimu ",
+    "color: white; background: #ff5252; padding:5px 0;",
+    "padding:4px;border:1px solid #ff5252;",
+  );
+</script>
+
+  </body>
+</html>

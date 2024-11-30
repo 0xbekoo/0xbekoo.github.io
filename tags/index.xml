@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on 0xbekoo</title>
+    <link>https://0xbekoo.github.io/tags/</link>
+    <description>Recent content in Tags on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 12 Sep 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://0xbekoo.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Malware-Dev</title>
+      <link>https://0xbekoo.github.io/tags/malware-dev/</link>
+      <pubDate>Thu, 12 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/malware-dev/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Resurrect</title>
+      <link>https://0xbekoo.github.io/tags/resurrect/</link>
+      <pubDate>Thu, 12 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/resurrect/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Resurrection</title>
+      <link>https://0xbekoo.github.io/tags/resurrection/</link>
+      <pubDate>Thu, 12 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/resurrection/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Driver</title>
+      <link>https://0xbekoo.github.io/tags/driver/</link>
+      <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/driver/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Memory</title>
+      <link>https://0xbekoo.github.io/tags/memory/</link>
+      <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/memory/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Virtual</title>
+      <link>https://0xbekoo.github.io/tags/virtual/</link>
+      <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/virtual/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Virtual-Memory</title>
+      <link>https://0xbekoo.github.io/tags/virtual-memory/</link>
+      <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/virtual-memory/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Winkernel-Dev</title>
+      <link>https://0xbekoo.github.io/tags/winkernel-dev/</link>
+      <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/winkernel-dev/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Io-Control</title>
+      <link>https://0xbekoo.github.io/tags/io-control/</link>
+      <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/io-control/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>IOCTL</title>
+      <link>https://0xbekoo.github.io/tags/ioctl/</link>
+      <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/ioctl/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Module</title>
+      <link>https://0xbekoo.github.io/tags/module/</link>
+      <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/module/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Io-Request-Packet</title>
+      <link>https://0xbekoo.github.io/tags/io-request-packet/</link>
+      <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/io-request-packet/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Irp</title>
+      <link>https://0xbekoo.github.io/tags/irp/</link>
+      <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/irp/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Icon</title>
+      <link>https://0xbekoo.github.io/tags/icon/</link>
+      <pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/icon/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Maldev-Technique</title>
+      <link>https://0xbekoo.github.io/tags/maldev-technique/</link>
+      <pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/maldev-technique/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Spoofing</title>
+      <link>https://0xbekoo.github.io/tags/spoofing/</link>
+      <pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/spoofing/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>API</title>
+      <link>https://0xbekoo.github.io/tags/api/</link>
+      <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/api/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>API-Hashing</title>
+      <link>https://0xbekoo.github.io/tags/api-hashing/</link>
+      <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/api-hashing/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>API-Security</title>
+      <link>https://0xbekoo.github.io/tags/api-security/</link>
+      <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/api-security/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Anti-Cheat</title>
+      <link>https://0xbekoo.github.io/tags/anti-cheat/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/anti-cheat/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Malware-Analysis</title>
+      <link>https://0xbekoo.github.io/tags/malware-analysis/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/malware-analysis/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Riot Games</title>
+      <link>https://0xbekoo.github.io/tags/riot-games/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/riot-games/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Spyware</title>
+      <link>https://0xbekoo.github.io/tags/spyware/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/spyware/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Valorant</title>
+      <link>https://0xbekoo.github.io/tags/valorant/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/valorant/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Vanguard</title>
+      <link>https://0xbekoo.github.io/tags/vanguard/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/vanguard/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Bypass</title>
+      <link>https://0xbekoo.github.io/tags/bypass/</link>
+      <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/bypass/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Linux</title>
+      <link>https://0xbekoo.github.io/tags/linux/</link>
+      <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/linux/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ptrace</title>
+      <link>https://0xbekoo.github.io/tags/ptrace/</link>
+      <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/ptrace/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Reverse-Engineering</title>
+      <link>https://0xbekoo.github.io/tags/reverse-engineering/</link>
+      <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/reverse-engineering/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Security</title>
+      <link>https://0xbekoo.github.io/tags/security/</link>
+      <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/security/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Injection</title>
+      <link>https://0xbekoo.github.io/tags/injection/</link>
+      <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/injection/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Process</title>
+      <link>https://0xbekoo.github.io/tags/process/</link>
+      <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/process/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Process-Injection</title>
+      <link>https://0xbekoo.github.io/tags/process-injection/</link>
+      <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/tags/process-injection/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

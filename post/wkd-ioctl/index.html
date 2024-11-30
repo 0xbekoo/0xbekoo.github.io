@@ -1,0 +1,1317 @@
+<!doctype html>
+<html
+  lang="en-us"
+  data-theme="dark"
+>
+  <head>
+    <meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, shrink-to-fit=no"
+/>
+
+
+
+
+
+
+
+  
+
+<title>
+  Input/Output Control (IOCTL) | 0xbekoo
+</title>
+<meta
+  name="description"
+  content="Reverse Engineer, Malware Developer"
+/>
+
+
+
+
+
+
+
+
+<script>
+  window.siteConfig = JSON.parse("{\"clipboard\":{\"copyright\":{\"content\":\"本文版权：本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！\",\"count\":50,\"enable\":false},\"fail\":\"复制失败 (ﾟ⊿ﾟ)ﾂ\",\"success\":\"复制成功(*^▽^*)\"},\"icon_font\":\"4552607_tq6stt6tcg\",\"outdate\":{\"daysago\":180,\"enable\":false,\"message\":\"本文最后更新于 {time}，请注意文中内容可能已经发生变化。\"}}");
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+    
+  
+
+  
+  
+  
+    
+  
+
+  
+    
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="preload"
+  as="style"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+/>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+  media="print"
+  onload="this.media='all'"
+/>
+
+
+
+
+
+
+  <link
+    rel="preload"
+    href="//at.alicdn.com/t/c/font_4552607_tq6stt6tcg.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin="anonymous"
+  />
+
+
+
+
+
+
+
+
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+
+
+
+
+
+
+  
+ <link rel="stylesheet" href="/css/main.min.59637a2554ed2af98a7c982638a757284f0a2077b36a23d4791d5305198c2570.css" />
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/katex@0.16.9/dist/katex.min.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/pace-js@1.2.4/pace.min.js"
+    
+    
+    
+    
+    integrity="sha384-k6YtvFUEIuEFBdrLKJ3YAUbBki333tj1CSUisai5Cswsg9wcLNaPzsTHDswp4Az8" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  
+
+
+  <link rel="stylesheet" href="https://npm.webcache.cn/@reimujs/aos@0.1.0/dist/aos.css" />
+
+
+
+
+  </head>
+  <body>
+    
+
+<div id="copy-tooltip" style="pointer-events: none; opacity: 0; transition: all 0.2s ease; position: fixed;top: 50%;left: 50%;z-index: 999;transform: translate(-50%, -50%);color: white;background: rgba(0, 0, 0, 0.5);padding: 10px 15px;border-radius: 10px;">
+</div>
+
+
+    <div id="container">
+      <div id="wrap">
+        <div id="header-nav">
+  <nav id="main-nav">
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/">Home</a>
+      </span>
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/about">About</a>
+      </span>
+    
+    <a id="main-nav-toggle" class="nav-icon"></a>
+  </nav>
+  <nav id="sub-nav">
+    
+    
+  </nav>
+</div>
+<header id="header">
+  
+    <img fetchpriority="high" src="/images/header-photo.gif" alt="Input/Output Control (IOCTL)">
+  
+
+  <div id="header-outer">
+    <div id="header-title">
+      
+        
+        
+          
+        
+  
+        
+          <a href="/" id="logo">
+            <h1 data-aos="slide-up">Input/Output Control (IOCTL)</h1>
+          </a>
+        
+      
+  
+      
+        
+        
+        <h2 id="subtitle-wrap" data-aos="slide-down">
+          
+        </h2>
+      
+    </div>
+  </div>
+</header>
+        <main id="content">
+          
+            <aside id="sidebar">
+  <div class="sidebar-wrapper wrap-sticky">
+    <div
+      class="sidebar-wrap"
+      data-aos="fade-up"
+    >
+      
+        <div class="sidebar-toc-sidebar">
+          <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#ioctl-nedir">IOCTL Nedir?</a></li>
+    <li><a href="#code">Code</a>
+      <ul>
+        <li><a href="#kernel-mode---driver">Kernel Mode - Driver</a></li>
+        <li><a href="#user-mode---program">User Mode - Program</a></li>
+      </ul>
+    </li>
+    <li><a href="#sürücü-ve-programın-çalıştırılması">Sürücü ve Programın Çalıştırılması</a></li>
+    <li><a href="#sonuç">Sonuç</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+        </div>
+        <div class="sidebar-common-sidebar hidden">
+          
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      9
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">33</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+        </div>
+      
+
+      
+        <div class="sidebar-btn-wrapper" style="position:static">
+          <div class="sidebar-toc-btn current"></div>
+          <div class="sidebar-common-btn"></div>
+        </div>
+      
+    </div>
+  </div>
+
+  
+</aside>
+
+          
+          <section id="main">
+  <article
+  class="h-entry article"
+  itemprop="blogPost"
+  itemscope
+  itemtype="https://schema.org/BlogPosting"
+>
+  <div
+    class="article-inner"
+    data-aos="fade-up"
+  >
+    <div class="article-meta">
+      <div class="article-date">
+  <a
+    href="https://0xbekoo.github.io/post/wkd-ioctl/"
+    class="article-date-link"
+    data-aos="zoom-in"
+  >
+    <time datetime="2024-08-26 00:00:00 &#43;0000 UTC" itemprop="datePublished"
+      >2024-08-26</time
+    >
+    <time style="display: none;" id="post-update-time"
+      >2024-08-26</time
+    >
+  </a>
+</div>
+
+      <div class="article-category">
+  
+    <a
+      class="article-category-link"
+      href="/categories/windows-kernel-development"
+      data-aos="zoom-in"
+      >WINDOWS-KERNEL-DEVELOPMENT</a
+    >
+  
+</div>
+
+    </div>
+    <div class="hr-line"></div>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+      
+        <p>Merhabalar, bu yazıda Windows Kernel Development&rsquo;tan IOCTL mekanizmasını inceleyeceğiz.</p>
+<h2 id="ioctl-nedir">
+<a class="header-anchor" href="#ioctl-nedir"></a>
+IOCTL Nedir?
+</h2><p>I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP&rsquo;ler aracılığıyla gönderilir. Eğer IRP&rsquo;ler hakkında bir bilginiz yoksa <a href="https://0xbekoo.github.io/posts/wkd-irp/">buraya</a> tıklayarak IRP&rsquo;ler hakkında bilgi alabilirsiniz.</p>
+<p>Windows&rsquo;ta User-mode programları, <code>DeviceIoControl</code> API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu <strong>IRP_MJ_DEVICE_CONTROL</strong> aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin <strong>IRP_MJ_DEVICE_CONTROL</strong> veya <strong>IRP_MJ_INTERNAL_DEVICE_CONTROL</strong> aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar.</p>
+<p>IOCTL kodları, genellikle sürücü geliştiricileri tarafından tanımlanan özel kodlar olabilir, ancak aynı zamanda Windows işletim sistemi tarafından belirli standart işlemler için önceden tanımlanmış kodlar da olabilir. Bu standart IOCTL kodları, Windows&rsquo;un donanım ve yazılım bileşenleri arasındaki iletişimi standartlaştırmak ve kolaylaştırmak amacıyla sağlanır. Örneğin, bazı IOCTL kodları, donanım cihazlarının özelliklerini sorgulama veya belirli işlemleri başlatma gibi genel görevler için kullanılır. Geliştiriciler, özel ihtiyaçlarına göre bu kodları özelleştirebilir veya yeni kodlar tanımlayabilirler, bu da esneklik ve genişletilebilirlik sağlar.</p>
+<h2 id="code">
+<a class="header-anchor" href="#code"></a>
+Code
+</h2><p>Önceki konumuzda olduğu gibi user-mode program ve kernel-mode sürücümüzü oluşturacağız.</p>
+<p>Senaryoda <strong>IOCTL_MEM_ALLOCATE</strong> kodu aracılığıyla user-mode uygulaması sürücüye kernel-space alanında bellek ayırması için kod ve bir veri gönderecek. Öte yandan oluşturacağımız <strong>IOCTL_MEM_READ</strong> kodu ile sürücümüz, bellek adresten veriyi alıp user-mode programa gönderecek.</p>
+<p>Github linki için <a href="https://github.com/0xbekoo/WinKernelDev/tree/main/IOCTL">buraya</a> tıklayabilirsiniz.</p>
+<h3 id="kernel-mode---driver">
+<a class="header-anchor" href="#kernel-mode---driver"></a>
+Kernel Mode - Driver
+</h3><p>Öncekikle sürücümüzü kodlayarak başlayalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;main.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define TAG &#39;beko&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_ALLOCATE \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_READ \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>PVOID GlobalMemoryAddr <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IoCreateClose</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	PIO_STACK_LOCATION Stack <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoGetCurrentIrpStackLocation</span>(Irp);
+</span></span><span style="display:flex;"><span>	NTSTATUS status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">switch</span> (Stack<span style="color:#f92672">-&gt;</span>MajorFunction) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> IRP_MJ_CREATE:
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> IRP_MJ_CLOSE:
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>		status <span style="color:#f92672">=</span> STATUS_INVALID_DEVICE_REQUEST;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IoControl</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	PIO_STACK_LOCATION Stack <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoGetCurrentIrpStackLocation</span>(Irp);
+</span></span><span style="display:flex;"><span>	PVOID Data <span style="color:#f92672">=</span> Irp<span style="color:#f92672">-&gt;</span>AssociatedIrp.SystemBuffer;
+</span></span><span style="display:flex;"><span>	PCHAR UserBuffer <span style="color:#f92672">=</span> (PCHAR)Data;
+</span></span><span style="display:flex;"><span>	ULONG OutLength <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.OutputBufferLength;
+</span></span><span style="display:flex;"><span>	ULONG Length <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.InputBufferLength;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	ULONG Tag <span style="color:#f92672">=</span> TAG;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">switch</span> (Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.IoControlCode) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> IOCTL_MEM_ALLOCATE:
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> UserBuffer <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Length) {
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_PARAMETER;
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Data from UserLand program: %.*s&#34;</span>, Length, UserBuffer);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		GlobalMemoryAddr <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExAllocatePool2</span>(POOL_FLAG_NON_PAGED, Length, Tag);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> GlobalMemoryAddr) {
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">RtlCopyMemory</span>(GlobalMemoryAddr, UserBuffer, Length);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> Length;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> IOCTL_MEM_READ:
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">RtlCopyMemory</span>(UserBuffer, GlobalMemoryAddr, OutLength);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> OutLength;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_DEVICE_REQUEST;
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">DriverEntry</span>(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(RegistryPath);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	UNICODE_STRING DeviceName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Device</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>	UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>	PDEVICE_OBJECT DeviceObject;
+</span></span><span style="display:flex;"><span>	NTSTATUS Status;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateDevice</span>(DriverObject, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>DeviceName, FILE_DEVICE_UNKNOWN, <span style="color:#ae81ff">0</span>, FALSE, <span style="color:#f92672">&amp;</span>DeviceObject);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create I/O Device!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateSymbolicLink</span>(<span style="color:#f92672">&amp;</span>SymName, <span style="color:#f92672">&amp;</span>DeviceName);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create Symbolic Link!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CREATE] <span style="color:#f92672">=</span> IoCreateClose;
+</span></span><span style="display:flex;"><span>	DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CLOSE] <span style="color:#f92672">=</span> IoCreateClose;
+</span></span><span style="display:flex;"><span>	DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_DEVICE_CONTROL] <span style="color:#f92672">=</span> IoControl;
+</span></span><span style="display:flex;"><span>	DriverObject<span style="color:#f92672">-&gt;</span>DriverUnload <span style="color:#f92672">=</span> UnloadDriver;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">UnloadDriver</span>(PDRIVER_OBJECT DriverObject) {
+</span></span><span style="display:flex;"><span>	UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Unloading the Driver...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoDeleteSymbolicLink</span>(<span style="color:#f92672">&amp;</span>SymName);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoDeleteDevice</span>(DriverObject<span style="color:#f92672">-&gt;</span>DeviceObject);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Önceki IRP konusuna aşina olduysanız zaten hemen hemen benzer kod olduğunu anlamışsınızdır. Şimdi detaylıca göz atalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_ALLOCATE \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_READ \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span></code></pre></div><p>Her şeyden önce konumuzla ilgisi olan tanımladığımız IOCTL kodlarına bir bakalım.</p>
+<p><strong>CTL_CODE</strong> makrosu, IOCTL kodlarını tanımlamak için kullanılır ve bu makro, çeşitli parametrelerle birlikte bir IOCTL kodu oluşturur. Parametreler şunlardır:</p>
+<ul>
+<li>
+<p><strong>DeviceType:</strong> Cihaz türünü belirtir. Bu, <strong>FILE_DEVICE_UNKNOWN</strong>, <strong>FILE_DEVICE_DISK</strong>, <strong>FILE_DEVICE_KEYBOARD</strong> gibi veya diğerlerinden biri olabilir. Burada kullandığımız FILE_DEVICE_UNKNOWN, belirli bir cihaz türü belirtmediğimiz ve genel bir cihaz tipi kullandığımız anlamına gelir.</p>
+</li>
+<li>
+<p><strong>FunctionCode:</strong> IOCTL işleminin benzersiz bir kodunu belirler. Bu, işlemi tanımlayan bir sayıdır ve genellikle uygulama veya sürücü tarafından belirlenen bir değerdir. Örneğin, 0x800 ve 0x801 gibi değerler olabilir.</p>
+</li>
+<li>
+<p><strong>Method:</strong> IOCTL işleminin veriyi nasıl ileteceğini tanımlar. Bu parametreler <strong>METHOD_BUFFERED</strong>, <strong>METHOD_IN_DIRECT</strong>, <strong>METHOD_OUT_DIRECT</strong>, ve <strong>METHOD_NEITHER</strong> gibi seçenekler bulunur. Kodumuzdaki METHOD_BUFFERED seçeneği, verinin bir bellek tamponu aracılığıyla taşınmasını ifade eder.</p>
+</li>
+<li>
+<p><strong>Access:</strong> IOCTL işleminin hangi erişim izinlerine sahip olduğunu belirtir. Bu parametre için <strong>FILE_ANY_ACCESS</strong>, <strong>FILE_SHARE_READ</strong>, <strong>FILE_SHARE_WRITE</strong> gibi seçenekler kullanılabilir. Kodumuzdaki FILE_ANY_ACCESS, işlemin herhangi bir erişim iznine sahip olduğunu ifade eder.</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>UNICODE_STRING DeviceName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Device</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>PDEVICE_OBJECT DeviceObject;
+</span></span><span style="display:flex;"><span>NTSTATUS Status;
+</span></span></code></pre></div><p>İlk olarak <code>DriverEntry</code> <strong>DeviceName</strong> ve <strong>SymName</strong> adında iki adet UNICODE_STRING tanımladık. Bu iki değişken, sürücümüzün adını ve sembolik adını tutmaktadır. Bu değişkenlerle, sürücümüzün adını ve sembolik adını belirlemek için kullanacağız.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateDevice</span>(DriverObject, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>DeviceName, FILE_DEVICE_UNKNOWN, <span style="color:#ae81ff">0</span>, FALSE, <span style="color:#f92672">&amp;</span>DeviceObject);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create I/O Device!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Daha sonra <code>IoCreateDevice</code> fonksiyonu ile bir aygıt nesnesi oluşturuyoruz. Bu fonksiyon, sürücümüz için bir aygıt nesnesi oluşturur ve bu nesneyi DeviceObject değişkenine atar.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateSymbolicLink</span>(<span style="color:#f92672">&amp;</span>SymName, <span style="color:#f92672">&amp;</span>DeviceName);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create Symbolic Link!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><code>IoCreateSymbolicLink</code> fonksiyonu ile sembolik bir bağlantı oluşturuyoruz. Bu sayede, user mode programımızda sürücünün adını ve sembolik adını kullanarak sürücümüze erişiyor olacağız.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CREATE] <span style="color:#f92672">=</span> IoCreateClose;
+</span></span><span style="display:flex;"><span>DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CLOSE] <span style="color:#f92672">=</span> IoCreateClose;
+</span></span><span style="display:flex;"><span>DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_DEVICE_CONTROL] <span style="color:#f92672">=</span> IoControl;
+</span></span><span style="display:flex;"><span>DriverObject<span style="color:#f92672">-&gt;</span>DriverUnload <span style="color:#f92672">=</span> UnloadDriver;
+</span></span></code></pre></div><p>Son olarak, sürücüde IRP istekleri için <strong>IRP_MJ_CREATE</strong>, <strong>IRP_MJ_CLOSE</strong> ve <strong>IRP_MJ_DEVICE_CONTROL</strong> fonksiyonlarını belirliyoruz. Bu fonksiyonlar, gelecek IRP isteklerini işleyecek olan fonksiyonlardır. Ayrıca, sürücümüzün yüklenmesi sırasında çağrılacak olan <code>UnloadDriver</code> fonksiyonunu belirliyoruz.</p>
+<p>Şimdi ise IOCTL kodlarını işleyecek fonksiyona göz atalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>PIO_STACK_LOCATION Stack <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoGetCurrentIrpStackLocation</span>(Irp);
+</span></span><span style="display:flex;"><span>PVOID Data <span style="color:#f92672">=</span> Irp<span style="color:#f92672">-&gt;</span>AssociatedIrp.SystemBuffer;
+</span></span><span style="display:flex;"><span>PCHAR UserBuffer <span style="color:#f92672">=</span> (PCHAR)Data;
+</span></span><span style="display:flex;"><span>ULONG OutLength <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.OutputBufferLength;
+</span></span><span style="display:flex;"><span>ULONG Length <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.InputBufferLength;
+</span></span><span style="display:flex;"><span>ULONG Tag <span style="color:#f92672">=</span> TAG;
+</span></span></code></pre></div><p>İlk olarak <code>IoGetCurrentIrpStackLocation</code> fonksiyonu ile mevcut IRP yığın konumunu alıyoruz. Daha sonra, user-mode programımızın gönderdiği veriyi almak için <code>Irp-&gt;AssociatedIrp.SystemBuffer</code> kullanıyoruz. Ayrıca, IRP&rsquo;nin giriş ve çıkış veri boyutlarını almak için <code>Stack-&gt;Parameters.DeviceIoControl.OutputBufferLength</code> ve <code>Stack-&gt;Parameters.DeviceIoControl.InputBufferLength</code> kullanarak alıyoruz. Son olarak, bellek tahsis etmek için kullanacağımız <strong>TAG</strong> değerini tanımlıyoruz.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">switch</span> (Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.IoControlCode) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> IOCTL_MEM_ALLOCATE:
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> UserBuffer <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Length) {
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_PARAMETER;
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		GlobalMemoryAddr <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExAllocatePool2</span>(POOL_FLAG_NON_PAGED, Length, Tag);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> GlobalMemoryAddr) {
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">RtlCopyMemory</span>(GlobalMemoryAddr, UserBuffer, Length);
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> Length;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> IOCTL_MEM_READ:
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">RtlCopyMemory</span>(UserBuffer, GlobalMemoryAddr, OutLength);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> OutLength;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_DEVICE_REQUEST;
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span></code></pre></div><p>İlk olarak <code>Stack-&gt;Parameters.DeviceIoControl.IoControlCode</code> ile user-mode&rsquo;ın gönderdiği IOCTL kodunu alıyoruz. Hangi kod gönderildiyse ona göre işlemleri yapacağız.</p>
+<p>Eğer <strong>IOCTL_MEM_ALLOCATE</strong> kodu gelmişse, öncelikle UserBuffer&rsquo;ın ve Length&rsquo;in kontrolünü yapıyoruz. Eğer UserBuffer NULL ise veya Length 0 ise, hatalı parametre hatası döndürüyoruz. Daha sonra, <code>ExAllocatePool2</code> fonksiyonu ile kernel-space tarafında bellek tahsis ediyoruz. Eğer bellek tahsis edilemezse, yetersiz kaynak hatası döndürüyoruz. Son olarak, <code>RtlCopyMemory</code> fonksiyonu ile user-mode&rsquo;dan gelen veriyi kernel-mode belleğe kopyalıyoruz.</p>
+<p>Eğer <strong>IOCTL_MEM_READ</strong> kodu gelmişse, kernel-space alanından ayrılan bellek adresinden veriyi alıp UserBuffer&rsquo;a kopyalıyoruz ve Output olarak veriyi user-mode programa gönderiyoruz.</p>
+<p><strong>default</strong> kısmında ise geçersiz bir IOCTL kodu gönderildiğinde hata döndürerek isteği bitiriyoruz.</p>
+<h3 id="user-mode---program">
+<a class="header-anchor" href="#user-mode---program"></a>
+User Mode - Program
+</h3><p>Şimdi ise user-mode programımıza göz atalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Windows.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define DEVICE_NAME L&#34;\\\\.\\MyDevice&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_ALLOCATE \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_READ \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> argv[]) {
+</span></span><span style="display:flex;"><span>	HANDLE HandleDevice <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>	CHAR InBuffer[] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Piyanis bana biraaak&#34;</span>;
+</span></span><span style="display:flex;"><span>	CHAR OutBuffer[<span style="color:#66d9ef">sizeof</span>(InBuffer)] <span style="color:#f92672">=</span> { <span style="color:#ae81ff">0</span> };
+</span></span><span style="display:flex;"><span>	DWORD InputBytesReturned <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	DWORD OutputBytesReturned <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	BOOL Result <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	HandleDevice <span style="color:#f92672">=</span> <span style="color:#a6e22e">CreateFile</span>(DEVICE_NAME, GENERIC_WRITE <span style="color:#f92672">|</span> GENERIC_READ, <span style="color:#ae81ff">0</span>, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> HandleDevice) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to connect Driver! Error Code: 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Result <span style="color:#f92672">=</span> <span style="color:#a6e22e">DeviceIoControl</span>(HandleDevice, IOCTL_MEM_ALLOCATE, InBuffer, <span style="color:#66d9ef">sizeof</span>(InBuffer), NULL, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>InputBytesReturned, NULL);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Result) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to Allocate Memory! Error Code: 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Result <span style="color:#f92672">=</span> <span style="color:#a6e22e">DeviceIoControl</span>(HandleDevice, IOCTL_MEM_READ, NULL, <span style="color:#ae81ff">0</span>, OutBuffer, <span style="color:#66d9ef">sizeof</span>(OutBuffer), <span style="color:#f92672">&amp;</span>OutputBytesReturned, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Result) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to get Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Output Buffer: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, OutBuffer);
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>User-mode kodumuzda bu. Şimdi detaylıca göz atalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define DEVICE_NAME L&#34;\\\\.\\MyDevice&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_ALLOCATE \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_READ \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span></code></pre></div><p>User-mode programımızda ilk olarak iletişim kuracağımız sürücünün ismini ve yukarıda bahsettiğim aynı CTL kodlarını tanımlıyoruz.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>HandleDevice <span style="color:#f92672">=</span> <span style="color:#a6e22e">CreateFile</span>(DEVICE_NAME, GENERIC_WRITE <span style="color:#f92672">|</span> GENERIC_READ, <span style="color:#ae81ff">0</span>, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> HandleDevice) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to connect Driver! Error Code: 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Bu kısımda ise <strong>CreateFile</strong> aracılığıyla sürücümüzle iletişime geçiyoruz.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Result <span style="color:#f92672">=</span> <span style="color:#a6e22e">DeviceIoControl</span>(HandleDevice, IOCTL_MEM_ALLOCATE, InBuffer, <span style="color:#66d9ef">sizeof</span>(InBuffer), NULL, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>InputBytesReturned, NULL);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Result) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to Allocate Memory! Error Code: 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Bu kısımda ise <code>DeviceIoControl</code> aracılığıyla sürücümüze <strong>IOCTL_MEM_ALLOCATE</strong> kodunu gönderiyoruz. Eğer IOCTL kodu başarılı bir şekilde gönderilmezse hata döndürüyoruz.</p>
+<p>Parametrelere dikkat edin. Bizim şuan bu kod parçasındaki amacımız kernel-space alanından bir bellek ayrımı yapmak ve gönderdiğimiz veriyi yazdırması. Veri göndermek için Input olarak verimizi ve uzunluğunu gönderiyoruz. Birazdan veri alırken bunu output için yaptığımızı göreceksiniz.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Result <span style="color:#f92672">=</span> <span style="color:#a6e22e">DeviceIoControl</span>(HandleDevice, IOCTL_MEM_READ, NULL, <span style="color:#ae81ff">0</span>, OutBuffer, <span style="color:#66d9ef">sizeof</span>(OutBuffer), <span style="color:#f92672">&amp;</span>OutputBytesReturned, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Result) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to get Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Output Buffer: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, OutBuffer);
+</span></span></code></pre></div><p>Artık verimiz kernel alanına yazıldı ve tekrar <strong>IOCTL_MEM_READ</strong> kodunu göndererek kernel-space alanından veriyi alıyoruz. Bu sefer ise sürücümüz bize veri göndereceği için göndereceği verileri OutBuffer değişkenie aktarıyoruz. Son olarak ise alınan veriyi ekrana yazdırıyoruz.</p>
+<p>Tekrardan parametrelere dikkat edin. Bu sefer Input parametreleri için NULL ve 0 gönderiyoruz. Çünkü sadece veri alacağız. Output olarak ise OutBuffer ve OutBuffer&rsquo;ın uzunluğunu veriyoruz.</p>
+<h2 id="sürücü-ve-programın-çalıştırılması">
+<a class="header-anchor" href="#s%c3%bcr%c3%bcc%c3%bc-ve-program%c4%b1n-%c3%a7al%c4%b1%c5%9ft%c4%b1r%c4%b1lmas%c4%b1"></a>
+Sürücü ve Programın Çalıştırılması
+</h2><p>Öncelikle sürücümüzü sisteme yükleyip ardından çalıştıralım:</p>
+<p><img src="../../images/posts/ioctl/img1.png" alt=""></p>
+<p>Ardından user-mode programını çalıştıralım:</p>
+<p><img src="../../images/posts/ioctl/video.gif" alt=""></p>
+<p>Göründüğü gibi programımızı çalıştırdığımızda Windbg&rsquo;dan user-mode programın gönderdiği veriyi ekrana bastırdığını, ardından sürücünün user-mode programına gönderdiği veriyi ekrana bastırdığını görebiliriz.</p>
+<h2 id="sonuç">
+<a class="header-anchor" href="#sonu%c3%a7"></a>
+Sonuç
+</h2><p>Bu konumuzda IOCTL hakkında bilgi verdim ve basit bir örnek üzerinden nasıl kullanıldığını gösterdim. Umarım bu mekanizmayi daha iyi anlamanıza yardımcı olmuştur.</p>
+<p>İyi çalışmalar dilerim 🚀🚀</p>
+<h2 id="references">
+<a class="header-anchor" href="#references"></a>
+References
+</h2><ul>
+<li><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/introduction-to-i-o-control-codes">Windows Docs - Introduction to I/O Control Codes</a></li>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/devio/device-input-and-output-control-ioctl-">Windows Docs - Device Input and Output Control</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+      <ul class="article-tag-list" itemprop="keywords">
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/winkernel-dev"
+        rel="tag"
+        >WINKERNEL-DEV</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/module"
+        rel="tag"
+        >MODULE</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/ioctl"
+        rel="tag"
+        >IOCTL</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/io-control"
+        rel="tag"
+        >IO-CONTROL</a
+      >
+    </li>
+  
+</ul>
+
+    </footer>
+  </div>
+  
+    
+  <nav
+    id="article-nav"
+    data-aos="fade-up"
+  >
+    
+      <div class="article-nav-link-wrap article-nav-link-left">
+        
+          
+          
+            <img
+              data-src="images/blog-images/winkernel-dev.png"
+              data-sizes="auto"
+              alt="I/O Request Packets (IRP)"
+              class="lazyload"
+            />
+          
+        
+        <a href="https://0xbekoo.github.io/post/wkd-irp/"></a>
+        <div class="article-nav-caption">Newer</div>
+        <h3 class="article-nav-title">
+          
+            I/O Request Packets (IRP)
+          
+        </h3>
+      </div>
+    
+
+    
+      <div class="article-nav-link-wrap article-nav-link-right">
+        
+          
+          
+            <img
+              data-src="images/blog-images/winkernel-dev.png"
+              data-sizes="auto"
+              alt="Virtual Memory"
+              class="lazyload"
+            />
+          
+        
+        <a href="https://0xbekoo.github.io/post/wkd-virtual-memory/"></a>
+        <div class="article-nav-caption">Older</div>
+        <h3 class="article-nav-title">
+          
+            Virtual Memory
+          
+        </h3>
+      </div>
+    
+  </nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+</section>
+          
+        </main>
+        
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<footer id="footer">
+  <div style="width: 100%; overflow: hidden">
+    <div class="footer-line"></div>
+  </div>
+  <div id="footer-info">
+    <div>
+      <span class="icon-copyright"></span>
+      2024 -
+      2024
+      <span class="footer-info-sep"></span>
+      0xbekoo
+    </div>
+    
+      <div>
+        Powered by&nbsp;<a
+          href="https://gohugo.io/"
+          target="_blank"
+          >Hugo</a
+        >&nbsp; Theme.<a
+          href="https://github.com/D-Sketon/hugo-theme-reimu"
+          target="_blank"
+          >Reimu</a
+        >
+      </div>
+    
+    
+    
+    
+    
+      <div>
+        <span class="icon-eye"></span>
+        <span id="busuanzi_container_site_pv"
+          >Number of visits&nbsp;<span
+            id="busuanzi_value_site_pv"
+          ></span
+        ></span>
+        &nbsp;|&nbsp;
+        <span class="icon-user"></span>
+        <span id="busuanzi_container_site_uv"
+          >Number of visitors&nbsp;<span
+            id="busuanzi_value_site_uv"
+          ></span
+        ></span>
+      </div>
+    
+  </div>
+</footer>
+
+        <div class="sidebar-top">
+          <img
+            src="/images/malware.png"
+            height="50"
+            width="50"
+            alt="backtop"
+          />
+          <div class="arrow-up"></div>
+        </div>
+        <div id="mask"></div>
+      </div>
+      <nav id="mobile-nav">
+  <div class="sidebar-wrap">
+    
+      <div class="sidebar-toc-sidebar">
+        <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#ioctl-nedir">IOCTL Nedir?</a></li>
+    <li><a href="#code">Code</a>
+      <ul>
+        <li><a href="#kernel-mode---driver">Kernel Mode - Driver</a></li>
+        <li><a href="#user-mode---program">User Mode - Program</a></li>
+      </ul>
+    </li>
+    <li><a href="#sürücü-ve-programın-çalıştırılması">Sürücü ve Programın Çalıştırılması</a></li>
+    <li><a href="#sonuç">Sonuç</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+      </div>
+      <div class="sidebar-common-sidebar hidden">
+        
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      9
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">33</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-btn-wrapper">
+      <div class="sidebar-toc-btn current"></div>
+      <div class="sidebar-common-btn"></div>
+    </div>
+  
+</nav>
+
+    </div>
+    
+    
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js"
+    
+    
+    
+    
+    integrity="sha384-3gT/vsepWkfz/ff7PpWNUeMzeWoH3cDhm/A8jM7ouoAK0/fP/9bcHHR5kHq2nf&#43;e" crossorigin="anonymous"
+  ></script>
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/clipboard@2.0.11/dist/clipboard.min.js"
+    
+    
+    
+    
+    integrity="sha384-J08i8An/QeARD9ExYpvphB8BsyOj3Gh2TSh1aLINKO3L0cMSH2dN3E22zFoXEi0Q" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/main.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+
+
+  
+
+
+
+
+
+  
+      
+      <script src="/js/aos.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+  <script>
+    var aosInit = () => {
+      AOS.init({
+        duration: 1000,
+        easing: "ease",
+        once: true,
+        offset: 50,
+      });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", aosInit);
+    } else {
+      aosInit();
+    }
+  </script>
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/pjax_main.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/mouse-firework@0.0.6/dist/index.umd.js"
+    
+    
+    
+    
+    integrity="sha384-vkGvf25gm1C1PbcoD5dNfc137HzNL/hr1RKA5HniJOaawtvUmH5lTVFgFAruE9Ge" crossorigin="anonymous"
+  ></script>
+
+
+<script>
+  if (window.firework) {
+    const options = JSON.parse("{\"excludeelements\":[\"a\",\"button\"],\"particles\":[{\"colors\":[\"#ff5252\",\"#ff7c7c\",\"#ffafaf\",\"#ffd0d0\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"emit\"],\"number\":20,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.3,0.5],\"radius\":[16,32]}},{\"colors\":[\"#ff0000\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"diffuse\"],\"number\":1,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.2,0.5],\"lineWidth\":6,\"radius\":20}}]}");
+    options.excludeElements = options.excludeelements;
+    delete options.excludeelements;
+    window.firework(options);
+  }
+</script>
+
+
+
+
+
+
+
+
+<div id="lazy-script">
+  <div>
+    
+    
+      
+
+
+
+
+
+  
+      
+      <script src="/js/insert_highlight.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+      
+      
+      
+      
+      <script type="module" data-pjax>
+        const PhotoSwipeLightbox = (await safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js", "sha384-DiL6M\/gG\u002bwmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF\/N6lrZi\/")).default;
+
+        const pswp = () => {
+          if (_$$('.article-entry a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-entry',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          if(_$$('.article-gallery a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-gallery',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          window.lightboxStatus = 'done';
+          window.removeEventListener('lightbox:ready', pswp);
+        }
+        if(window.lightboxStatus === 'ready') {
+          pswp()
+        } else {
+          window.addEventListener('lightbox:ready', pswp);
+        }
+      </script>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+  </div>
+</div>
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/busuanzi@2.3.0/bsz.pure.mini.js"
+    
+    async
+    
+    
+    integrity="sha384-0M75wtSkhjIInv4coYlaJU83&#43;OypaRCIq2SukQVQX04eGTCBXJDuWAbJet56id&#43;S" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+  </script>
+
+
+<script>
+  const reimuCopyright = String.raw`
+   ______     ______     __     __    __     __  __    
+  /\  == \   /\  ___\   /\ \   /\ "-./  \   /\ \/\ \   
+  \ \  __<   \ \  __\   \ \ \  \ \ \-./\ \  \ \ \_\ \  
+   \ \_\ \_\  \ \_____\  \ \_\  \ \_\ \ \_\  \ \_____\ 
+    \/_/ /_/   \/_____/   \/_/   \/_/  \/_/   \/_____/ 
+                                                    
+  `;
+  console.log(String.raw`%c ${reimuCopyright}`, "color: #ff5252;");
+  console.log(
+    "%c Theme.Reimu" + " %c https://github.com/D-Sketon/hugo-theme-reimu ",
+    "color: white; background: #ff5252; padding:5px 0;",
+    "padding:4px;border:1px solid #ff5252;",
+  );
+</script>
+
+  </body>
+</html>
