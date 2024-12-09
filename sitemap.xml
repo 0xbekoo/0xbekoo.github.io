@@ -3,12 +3,48 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://0xbekoo.github.io/</loc>
-    <lastmod>2024-11-29T00:00:00+00:00</lastmod>
+    <lastmod>2024-12-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/tags/arm/</loc>
+    <lastmod>2024-12-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/post/bare-metal-reversing-0x0/</loc>
+    <lastmod>2024-12-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/tags/bare-metal/</loc>
+    <lastmod>2024-12-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/categories/</loc>
+    <lastmod>2024-12-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/tags/firmware/</loc>
+    <lastmod>2024-12-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/tags/iot-hacking/</loc>
+    <lastmod>2024-12-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/post/</loc>
+    <lastmod>2024-12-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/categories/reverse-engineering/</loc>
+    <lastmod>2024-12-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/tags/reverse-engineering/</loc>
+    <lastmod>2024-12-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/tags/</loc>
+    <lastmod>2024-12-04T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/tags/router/</loc>
+    <lastmod>2024-12-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://0xbekoo.github.io/post/router-firmware-reversing/</loc>
+    <lastmod>2024-12-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://0xbekoo.github.io/about/</loc>
     <lastmod>2024-11-29T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://0xbekoo.github.io/categories/</loc>
+    <loc>https://0xbekoo.github.io/tags/ioctl/</loc>
     <lastmod>2024-09-12T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://0xbekoo.github.io/post/malware-resurrection/</loc>
@@ -20,16 +56,13 @@
     <loc>https://0xbekoo.github.io/categories/malware-development/</loc>
     <lastmod>2024-09-12T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://0xbekoo.github.io/post/</loc>
-    <lastmod>2024-09-12T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://0xbekoo.github.io/tags/resurrect/</loc>
+    <loc>https://0xbekoo.github.io/tags/ntapi/</loc>
     <lastmod>2024-09-12T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://0xbekoo.github.io/tags/resurrection/</loc>
     <lastmod>2024-09-12T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://0xbekoo.github.io/tags/</loc>
+    <loc>https://0xbekoo.github.io/tags/winkernel-dev/</loc>
     <lastmod>2024-09-12T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://0xbekoo.github.io/tags/driver/</loc>
@@ -50,16 +83,10 @@
     <loc>https://0xbekoo.github.io/categories/windows-kernel-development/</loc>
     <lastmod>2024-08-30T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://0xbekoo.github.io/tags/winkernel-dev/</loc>
-    <lastmod>2024-08-30T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://0xbekoo.github.io/post/wkd-ioctl/</loc>
     <lastmod>2024-08-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://0xbekoo.github.io/tags/io-control/</loc>
-    <lastmod>2024-08-26T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://0xbekoo.github.io/tags/ioctl/</loc>
     <lastmod>2024-08-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://0xbekoo.github.io/tags/module/</loc>
@@ -132,12 +159,6 @@
     <lastmod>2023-12-31T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://0xbekoo.github.io/tags/ptrace/</loc>
-    <lastmod>2023-12-31T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://0xbekoo.github.io/categories/reverse-engineering/</loc>
-    <lastmod>2023-12-31T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://0xbekoo.github.io/tags/reverse-engineering/</loc>
     <lastmod>2023-12-31T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://0xbekoo.github.io/tags/security/</loc>

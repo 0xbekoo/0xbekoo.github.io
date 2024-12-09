@@ -1,0 +1,1109 @@
+<!doctype html>
+<html
+  lang="en-us"
+  data-theme="dark"
+>
+  <head>
+    <meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, shrink-to-fit=no"
+/>
+
+
+
+
+
+
+
+  
+
+<title>
+  ARM Firmware Reverse Engineering | 0xbekoo
+</title>
+<meta
+  name="description"
+  content="Reverse Engineer, Malware Developer"
+/>
+
+
+
+
+
+
+
+
+<script>
+  window.siteConfig = JSON.parse("{\"clipboard\":{\"copyright\":{\"content\":\"本文版权：本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！\",\"count\":50,\"enable\":false},\"fail\":\"\",\"success\":\"Copied\"},\"icon_font\":\"4552607_tq6stt6tcg\",\"outdate\":{\"daysago\":180,\"enable\":false,\"message\":\"本文最后更新于 {time}，请注意文中内容可能已经发生变化。\"}}");
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+    
+  
+
+  
+  
+  
+    
+  
+
+  
+    
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="preload"
+  as="style"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+/>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+  media="print"
+  onload="this.media='all'"
+/>
+
+
+
+
+
+
+  <link
+    rel="preload"
+    href="//at.alicdn.com/t/c/font_4552607_tq6stt6tcg.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin="anonymous"
+  />
+
+
+
+
+
+
+
+
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+
+
+
+
+
+
+  
+ <link rel="stylesheet" href="/css/main.min.d8d89fe6a17e791b042a51385e38f32258057ee9739c9fc2fc310894201081d4.css" />
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/katex@0.16.9/dist/katex.min.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/pace-js@1.2.4/pace.min.js"
+    
+    
+    
+    
+    integrity="sha384-k6YtvFUEIuEFBdrLKJ3YAUbBki333tj1CSUisai5Cswsg9wcLNaPzsTHDswp4Az8" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  
+
+
+  <link rel="stylesheet" href="https://npm.webcache.cn/@reimujs/aos@0.1.0/dist/aos.css" />
+
+
+
+
+  </head>
+  <body>
+    
+
+<div id="copy-tooltip" style="pointer-events: none; opacity: 0; transition: all 0.2s ease; position: fixed;top: 50%;left: 50%;z-index: 999;transform: translate(-50%, -50%);color: white;background: rgba(0, 0, 0, 0.5);padding: 10px 15px;border-radius: 10px;">
+</div>
+
+
+    <div id="container">
+      <div id="wrap">
+        <div id="header-nav">
+  <nav id="main-nav">
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/">Home</a>
+      </span>
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/about">About</a>
+      </span>
+    
+    <a id="main-nav-toggle" class="nav-icon"></a>
+  </nav>
+  <nav id="sub-nav">
+    
+    
+  </nav>
+</div>
+<header id="header">
+  
+    <img fetchpriority="high" src="/images/header-photo.gif" alt="ARM Firmware Reverse Engineering">
+  
+
+  <div id="header-outer">
+    <div id="header-title">
+      
+        
+        
+          
+        
+  
+        
+          <a href="/" id="logo">
+            <h1 data-aos="slide-up">ARM Firmware Reverse Engineering</h1>
+          </a>
+        
+      
+  
+      
+        
+        
+        <h2 id="subtitle-wrap" data-aos="slide-down">
+          
+        </h2>
+      
+    </div>
+  </div>
+</header>
+
+        <main id="content">
+          
+            <aside id="sidebar">
+  <div class="sidebar-wrapper wrap-sticky">
+    <div
+      class="sidebar-wrap"
+      data-aos="fade-up"
+    >
+      
+        <div class="sidebar-toc-sidebar">
+          <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#kodlama"><strong>Kodlama</strong></a></li>
+    <li><a href="#firmware-reversing"><strong>Firmware Reversing</strong></a></li>
+    <li><a href="#sonuç"><strong>Sonuç</strong></a></li>
+    <li><a href="#references"><strong>References</strong></a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+        </div>
+        <div class="sidebar-common-sidebar hidden">
+          
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      11
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">38</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+        </div>
+      
+
+      
+        <div class="sidebar-btn-wrapper" style="position:static">
+          <div class="sidebar-toc-btn current"></div>
+          <div class="sidebar-common-btn"></div>
+        </div>
+      
+    </div>
+  </div>
+
+  
+</aside>
+
+          
+          <section id="main">
+  <article
+  class="h-entry article"
+  itemprop="blogPost"
+  itemscope
+  itemtype="https://schema.org/BlogPosting"
+>
+  <div
+    class="article-inner"
+    data-aos="fade-up"
+  >
+    <div class="article-meta">
+      <div class="article-date">
+  <a
+    href="https://0xbekoo.github.io/post/bare-metal-reversing-0x0/"
+    class="article-date-link"
+    data-aos="zoom-in"
+  >
+    <time datetime="2024-12-04 00:00:00 &#43;0000 UTC" itemprop="datePublished"
+      >2024-12-04</time
+    >
+    <time style="display: none;" id="post-update-time"
+      >2024-12-04</time
+    >
+  </a>
+</div>
+
+      <div class="article-category">
+  
+    <a
+      class="article-category-link"
+      href="/categories/reverse-engineering"
+      data-aos="zoom-in"
+      >REVERSE ENGINEERING</a
+    >
+  
+</div>
+
+    </div>
+    <div class="hr-line"></div>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+      
+        <p>Merhabalar. Bu yazıda Firmware Reverse Engineering&rsquo;e devam ediyoruz. Bu blogta ise Bare Metal Reversing&rsquo;e girişeceğiz.</p>
+<p>Hatırlarsanız önceki konumuzda TP-LINK Archer AX 21 V4.6&rsquo;ın 2024 yılında çıkmış Firmware&rsquo;ini analiz etmiştik. Bu konuda ise işleri birazcık ileriye götüreceğiz.</p>
+<p>Elimde bir Nucleo F030R8 kart (ARM Cortex M0 işlemcili) var ve bunu Firmware Reverse Engineering için değerlendirmek istedim. Bu blogta yapacağımız şey de bu kart&rsquo;ı basitçe programlayacağız ve ardından firmware&rsquo;ini reverse edip karta tekrar yükleyeceğiz. Tipik olarak bir Iot kartını hackliyor gibi düşünelim ancak daha basit bir senaryo ile.</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/nucleo-card.jpg" alt=""></p>
+<p>Elimdeki kart bu. Eğer elinizde nucleo&rsquo;nun farklı bir kartı var ise de bu blogtaki adımları takip edebilirsiniz.</p>
+<p>Açıkçası mikrodenetleyici kodlama konusunda kendimi geliştirmedim. Ancak bu konsept sürecinde beraber hem mikrodenetleyici kodlamaya hem de firmware reverse engineering alanlarında kendimizi geliştireceğiz.</p>
+<p>Gerekli programlar ise CubeIde, CubeProgrammer ve Ghidra olacaktır. CubeIde ile kartımız için programlamayı yapacağız, Ghidra ile aldığımız firmware yani .bin dosyasını reverse edeceğiz ve son adımda CubeProgrammer ile reverse ettiğimiz firmware’i kartımıza yükleyeceğiz.</p>
+<h2 id="kodlama">
+<a class="header-anchor" href="#kodlama"></a>
+<strong>Kodlama</strong>
+</h2><p>Yapacağımız kodlama tamamen basit. <strong>Nucleo F030R8</strong> kartında bir adet User Button (Fotoğrafta mavi button&rsquo;a göz atabilirsiniz) ve Green led (LD2) bulunmakta. Button&rsquo;a basıldığında Green Led&rsquo;i yakan bir kodlama yapacağız. Daha sonra Ghidra kullanarak IDE&rsquo;den aldığımız firmware reverse ederek bu programın çalışma prensibini tersine çevireceğiz. Yani reverse ettikten sonra button&rsquo;a basmadığımız durumlarda Green led&rsquo;i yakacak.</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img1.png" alt=""></p>
+<p>CubeIDE&rsquo;de projeyi oluşturduktan sonra <strong>.ioc</strong> dosyasına yönlenebiliriz. Kart üzerindeki button ve led ile çalışacağımız için fotoğraftan da görüldüğü üzere ayarlamalar zaten IDE tarafından yapılmış durumda. Bu yüzden burada yapacağımız ekstra bir şey yok. Benim kartımdan User Button <strong>PC13</strong>&lsquo;da ve Led2 ise <strong>PA5</strong>&lsquo;de bulunmakta.</p>
+<p>Kodlamaya geçmeden önce oluşturduğumuz projede ufak bir ayar yapmamız gerekecek. Firmware&rsquo;i analiz edeceğimiz için programın karta yüklenmesiyle .bin dosyasını almamız gerekecek:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img3.png" alt=""></p>
+<p>Oluşturduğumuz projeye sağ tıklayalım ve <strong>Properties</strong> seçeğine tıklayalım. Daha sonra <strong>C/C++ Build &gt; Settings &gt; MCU/MPU Post Build Outputs</strong>&lsquo;a gidelim ve <strong>Convert to binary file (-O binary)</strong> seçeneğini aktifleştirelim.</p>
+<p>Şimdi ise IDE&rsquo;nin en solunda bulunan <strong>Project Explorer</strong> sekmesinde <strong>Core &gt; Src &gt; main.c</strong> projesine yönelelim. Bu bizim ana projemiz.</p>
+<p><strong>main.c</strong> içerisinde kodlamaya geçmeden önce oluşturulmuş <strong>MX_GPIO_Init</strong> fonksiyonuna göz atabiliriz. Bu fonksiyon, IDE tarafından hazırlanan pin&rsquo;lerin konfigurasyonunu içerir:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img2.png" alt=""></p>
+<p>Göründüğü üzere <strong>F030R8</strong> kartı için User Button&rsquo;a GPIOA olarak B1_Pin (GPIO_PIN_13) ve LED2 için ise GPIOA ve LD2_PIN (GPIO_PIN_5) olarak ayarlanmış. Eğer farklı bir kartta iseniz bu ayarları kontrol edebilirsiniz.</p>
+<p>Şimdi ise main fonksiyonuna dönelim ve kodlamalara başlayalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>  <span style="color:#75715e">/* USER CODE BEGIN 2 */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">uint8_t</span> ButtonStatus <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>	  ButtonStatus <span style="color:#f92672">=</span> <span style="color:#a6e22e">HAL_GPIO_ReadPin</span>(B1_GPIO_Port, B1_Pin);
+</span></span><span style="display:flex;"><span>	  <span style="color:#66d9ef">if</span> (ButtonStatus <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>		  <span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, SET);
+</span></span><span style="display:flex;"><span>	  }
+</span></span><span style="display:flex;"><span>	  <span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, RESET);
+</span></span><span style="display:flex;"><span>  }
+</span></span></code></pre></div><p>Göründüğü üzere kod gayet basit bir durumda. Şimdi tek tek ele alalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ButtonStatus <span style="color:#f92672">=</span> <span style="color:#a6e22e">HAL_GPIO_ReadPin</span>(B1_GPIO_Port, B1_Pin);
+</span></span></code></pre></div><p>İlk olarak main&rsquo;in while içerisinde <strong>HAL_GPIO_ReadPin</strong> fonksiyonunu kullanıyoruz.Bu fonksiyon ilgili pinin durumunu okumak için kullanılıyor ve iki parametre almaktadır. İlk parametre, pinin bulunduğu GPIO portunu belirtir. STM32 mikrodenetleyicilerinde, GPIO pinleri belirli portlara (A, B, C, vb.) bağlıdır. Örneğin, GPIOA, GPIOB, GPIOC gibi portlar bulunur. Bu parametre, pinin hangi portta yer aldığını belirtmek için kullanılır. Kodumuzda ise <strong>GPIOA</strong> olduğunu belirtiyoruz.</p>
+<p>İkinci parametre ise okumak istediğiniz GPIO pinini belirtir. Her portun üzerinde birden fazla pin bulunabilir (örneğin, port A&rsquo;da PA0, PA1, PA2 vb.). Bu parametre, hangi pinin durumunu okuyacağınızı belirtir. Kodumuzda ise B1_Pin yani <strong>GPIO_PIN_13</strong> olduğunu belirtiyoruz.</p>
+<p>Son olarak ise bu fonksiyonun dönüş adresi <strong>uint8_t</strong> tipinde olan ButtonStatus değişkenine aktarılır. Yani kısaca bu fonksiyon, belirtilen pin&rsquo;deki durumu okur ve ButtonStatus değişkenine sonucu aktarır.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (ButtonStatus <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, SET);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, RESET);
+</span></span></code></pre></div><p>Pin okumasından sonra bir if karşılaştırması yapıyoruz. ButtonStatus&rsquo;a atanan değer eğer sıfır ise <strong>HAL_GPIO_WritePin</strong>  ile LED2 için işlem yapıyor.</p>
+<p>ButtonStatus değerinin 0 olması demek Button&rsquo;a basıldığı anlamına gelmektedir. 1 olması durumunda Button&rsquo;a basılmadığı anlamına gelir. Yani biz bu if içerisinde Button&rsquo;a basıldığında Led&rsquo;in yanmasını sağlayacağız.</p>
+<p><strong>HAL_GPIO_WritePin</strong> fonksiyonu, belirli bir GPIO pinini &ldquo;set&rdquo; (1 - HIGH durumu) veya &ldquo;reset&rdquo; (0 - LOW durumu) durumuna getirmek için kullanılır.</p>
+<p>İlk parametre, önceden anlatıldığı gibi hangi GPIO portunun kullanılacağını belirtir ve kodumuzda GPIOA olarak belirttim. İkinci parametre, ayarlanacak veya sıfırlanacak GPIO pinini belirtir ve tanımlanan GPIO_PIN_5 değerini taşıyan LD2_PIN değişkeni verdim. Son olarak üçüncü parametre ise Pinin durumu belirtilir. İf içerisindeki amacımız led&rsquo;i yakmak olduğu için <strong>SET</strong> değerini verebiliriz. Bu ilgili pinin durumunu 1 olarak ayarlayacaktır.</p>
+<p>Eğer button&rsquo;a basılmadığı sürece yine <strong>HAL_GPIO_WritePin</strong> fonksiyonunu kullanıyoruz ancak son parametresi <strong>RESET</strong> olarak belirtiliyor. Bu, button&rsquo;a basılmadığı zaman ilgili pini 0 olarak ayarlar. Böylece button&rsquo;a basılmadığı zaman led yanmayacaktır.</p>
+<p>Şimdi ise bu kodu kartımıza yükleyelim ve sonuca bir bakalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/video/coding.gif" alt=""></p>
+<p>Göründüğü gibi sorunsuz bir şekilde programımız çalışıyor. Button&rsquo;a tıkladığım anda green Led yanmakta. Şimdi ise Ghidra&rsquo;ya dönelim ve aldığımız .bin dosyasını ghidra&rsquo;da analiz etmeye başlayalım. Oluşturulan .bin dosyası Debug dosyasının altında olacaktır:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img4.png" alt=""></p>
+<h2 id="firmware-reversing">
+<a class="header-anchor" href="#firmware-reversing"></a>
+<strong>Firmware Reversing</strong>
+</h2><p>.bin dosyasını ghidra&rsquo;da <strong>File &gt; Import File</strong> tıklayarak .bin dosyamızı seçelim ancak direkt olarak çıkan ekranı kapatmayın önemli ayarlamaları yapmamız gerekecek.</p>
+<p>Öncelikle Languages kısmını ayarlayarak başlayalım ve filter alanına <strong>ARM</strong> diye aratalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img5.png" alt=""></p>
+<p>Ben Language olarak <strong>Cortex 32-bit, Little Endian</strong> olarak seçtim. Eğer aynı karta sahip iseniz bu seçeneği, farklı karta sahip iseniz kartınıza uygun olarak dil seçimini yapın. Daha sonra OK diyerek bu Language sekmesinden çıkabilirsiniz.</p>
+<p>Daha sonra aynı ekrandan <strong>Options</strong> kısmına tıklayalım ve burada yapacağımız ayar gerçekten önemli. Burada Base Address gibi ayarlamalar yapacağız.</p>
+<p>İlk olarak base address ayarını yapmamız gerekecek. <strong>&ldquo;Peki ama bir firmware&rsquo;in Base Addresini nasıl bulabiliriz?&rdquo;</strong> diye bir soru gelebilir. En iyi yöntem cihazın memory haritasına bakmak olacaktır.</p>
+<p>ARM tabanlı bir kartta çalışıyoruz. Nucleo&rsquo;nun datasheet&rsquo;leri aracılığıyla Base Address&rsquo;i bulabiliriz:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img6.png" alt=""></p>
+<p>Yukarıdaki fotoğraf <strong>STM32F030x4/x6/x8/xC</strong> kartlarının memory haritası. Benim kartım bu cihazlar arasından olduğundan dolayı bu memory haritasından yararlanmam gerekecek:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img7.png" alt=""></p>
+<p>Fotoğrafa daha detaylı baktığımızda Flash memory alanın <strong>0x8000000</strong> olduğunu görebiliriz. ARM Tabanlı işlemcilerin Base Address&rsquo;in çoğu zaten bu adrestedir ancak yine de farklı karta sahip iseniz datasheet ile adresine bakmakta fayda olacaktır.</p>
+<p>Daha sonra datasheet ile elde ettiğimiz adresi Ghidra&rsquo;nın Options sekmesinden <strong>Base Address</strong> alanına yazalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img8.png" alt=""></p>
+<p>Block Name ismine <strong>flash</strong> olarak verdim. Sizde böyle yapabilirsiniz. Diğer ayarlara dokunmamıza gerek yok sadece <strong>Block Name</strong> ve <strong>Base Address</strong> değerlerini vermemiz yeterlidir. OK button&rsquo;a tıklayalım ve artık ekranda .bin dosyasına çift tıklayalım.</p>
+<p>Fakat birkaç daha ayar yapmamız gerekecek. CodeBrowser ekranı açıldığında ekranın ortasında bulunan <strong>Memory Map</strong> kısmına tıklayalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img9.png" alt=""></p>
+<p>Daha sonra bu ekranda sağ üste bulunan &lsquo;+&rsquo; işaretine tıklayalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img10.png" alt=""></p>
+<p>Yine burada birkaç bellek alanı ayarlamamız gerekecek. İlk olarak <strong>Flash Memory</strong> alanını ayarlamamız gerekecek. Peki nedir bu?</p>
+<p>Flash Mirror, firmware&rsquo;in çalıştırılabilir kodunun genellikle saklandığı alanı temsil eder. Çoğu gömülü sistemde, bu bölge işlemciye bağlı olarak 0x0 adresinden başlar ve firmware&rsquo;in yüklenip çalıştırılacağı yerdir. Flash bölgesi kod bölgesini (örneğin, main fonksiyon, başlangıç kodları, vb.) içerir</p>
+<p>Yinede offset&rsquo;i doğrulamak için datasheet&rsquo;e bakabiliriz. Yukarıda paylaştığım fotoğrafa tekrar göz atarsak benim kart için 0x0 alanında olduğunu görebiliriz. Şimdi ise bu alanı ayarlayalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img11.png" alt=""></p>
+<p><strong>Block Name</strong> alanına &lsquo;flash_mirror&rsquo; ismini verebiliriz. <strong>Start Addr</strong> alanına ise default olarak 0&rsquo;da bırakalım. <strong>Length</strong> alanını ise okla gösterildiği gibi flash ismi ile ayarladığımız alanın boyutu ile aynı olacak şekilde ayarlayın. Daha sonra Execute kutucuğunu işaretleyelim. <strong>Block Types</strong> alanında File Bytes kutucuğunu işaretleyelim ve <strong>File Offsett</strong> değerini 0 olarak bırakalım ve bitirmek için OK tuşuna basalım.</p>
+<p>Son alanımızı ayarlamak için yine &lsquo;+&rsquo; tuşuna basalım. Bu sefer ise SRAM alanını ayarlayacağız. Genel olarak adresi <strong>0x20000000</strong>&lsquo;dir ancak yine de bunu doğrulamak için kartımızın dahasheet&rsquo;ine bakabiliriz:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img12.png" alt=""></p>
+<p>Göründüğü üzere 0x20000000 adresinde olduğunu görebiliyoruz. Şimdi SRAM&rsquo;in de alanını ayarlayalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img13.png" alt=""></p>
+<p><strong>Block Name</strong> alanına &lsquo;RAM&rsquo; ismini verebiliriz. <strong>Start Addr</strong> alanına 20000000 değerini verelim. <strong>Length</strong> değerine ise 80000 verelim. Daha sonra OK diyerek ekranı kapatalım.</p>
+<p>İşlemlerimiz bitti. Şimdi ise ekranın sol üstünde bulunan kaydetme tuşuna basalım ve Memory Map ekranını kapatalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img14.png" alt=""></p>
+<p>Son bir işlemimiz kaldı. Ekranı kapattıktan sonra Ghidra&rsquo;nın sol üstündeki bar&rsquo;dan <strong>Analysis &gt; Auto Analyze&rsquo;<!-- raw HTML omitted -->.bin&rsquo;</strong> kısmına gidelim ve bu ekranda <strong>&lsquo;ARM Aggressive Instruction Finder (Prototype)&rsquo;</strong> seçeceğini aktifleştirelim ve &lsquo;Analyze&rsquo; button&rsquo;a tıklayalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img15.png" alt=""></p>
+<p>Artık her şey için hazırız. Şimdi ise Disassembly ekranından en üst tarafa bir göz atalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img16.png" alt=""></p>
+<p>Eğer benim gibi yeni iseniz burada işaretlenenleri gördüğünüzde biraz kafanız karışabilir ama aslında basit.</p>
+<p>Fotoğrafta gördüğünüz bu alana &lsquo;vektör tablosu&rsquo; deniyor. CPU, sistem başlatıldığında ilk olarak buradan Stack Pointer’ı (yığın işaretçisi) yükler. Yani tablonun ilk adresi, sistemin yığın belleğinin başlangıç adresini gösterir. Daha sonra işlemci, bu tabloda tanımlı olan Reset Handler (Reset İşleyicisi) adresine sıçrayarak çalışmaya başlar.</p>
+<p>Vektör tablosu, mikrodenetleyicinin işletim sırasında karşılaşabileceği tüm kesme (interrupt) ve hata (fault) durumlarına nasıl tepki vereceğini tanımlar. Örneğin:</p>
+<ul>
+<li><strong>Reset:</strong> CPU yeniden başlatıldığında çalışacak kodun adresini belirler. Bu, genellikle sistemin ilk ayarlarını yapan başlatma fonksiyonudur.</li>
+<li><strong>NMI (Non-Maskable Interrupt):</strong> Maskelenemeyen, yani her zaman işlenmesi gereken bir kesme durumudur.</li>
+<li><strong>HardFault:</strong> Kritik bir hata meydana geldiğinde çağrılan işleyicidir.</li>
+<li><strong>BusFault:</strong> Bellek erişim hataları gibi donanım sorunlarını yönetir.</li>
+<li><strong>UsageFault:</strong> Yanlış talimat veya matematiksel hatalar gibi yazılımla ilgili sorunlar için işleyici sağlar.</li>
+</ul>
+<p>Bizim burada ilgileneceğimiz kısım <strong>Reset</strong> alanı olacaktır. <strong>Reset</strong> vektörü, C Programın giriş bölümüne benzer şekilde basit kurulum kodları içermektedir. Bu vektör içerisinde main fonksiyon çağırıldığı için buradan ana fonksiyonu bulacağız.</p>
+<p>Şimdi Reset vektör ile işaretlenen adrese çift tıklayalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img17.png" alt=""></p>
+<p>Assembly kodlarını okuyan hayatsız bir birey olmak yerine normal bir insan gibi decompiler ile bakabiliriz:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img18.png" alt=""></p>
+<p>Burada umursamadığımız birkaç döngü vs. kullanıldığını ve fonksiyon çağırıldığını görmekteyiz. Çağırılan üç fonksiyonundan ikisine göz attım ancak bir şey anlamadım ve son çağırılan fonksiyona göz attığımda main fonksiyon olduğunu doğruladım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img19.png" alt=""></p>
+<p>Daha anlaşılır gözükmesi için Fonksiyon adlarını vs. güncelledim. Fonksiyona baktığımızda zaten kodlama yaptığımız esnada anlatmıştım. Bir farklılık bulunmamakta. Şimdi Assembly kodlarına dönüp Patch işlemi yapacağız.</p>
+<p>Yapacağımız şey de basit. if koşulundaki &lsquo;0&rsquo; değerini &lsquo;1&rsquo; ile değiştireceğiz. Böylece button&rsquo;a basmadığımız zamanlarda led yanmış olacak.</p>
+<p>main fonksiyonun Dissassembly ekranında if koşuluna karşılık gelen instruction&rsquo;u bulalım ve sağ tıklayıp <strong>Patch Instruction</strong> seçeceğine tıklayalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img20.png" alt=""></p>
+<p>Daha sonra 0x0 değerini <strong>0x1</strong> olarak değiştirelim ve enter tuşuna basalım. Bu işlemden sonra Decompiler&rsquo;dan kontrol ettiğimizde sonuç şu şekilde olmalı:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img21.png" alt=""></p>
+<p>Her şey bu kadar. Şimdi Ghidra ekranında sol üstünde **File &gt; <strong>Save &lsquo;.bin&rsquo; As&hellip;</strong> sekmesine tıklayalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img22.png" alt=""></p>
+<p>Sonu &lsquo;.bin&rsquo; ile bitecek şekilde bir isim vererek projeyi kaydedin.</p>
+<p>Son olarak CodeBrowser ekranını kapatın ve kaydettiğiniz projeye sağ tıklayıp export diyerek projeyi bilgisayara kaydedin:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img23.png" alt=""></p>
+<p>Şimdi bu reverse ettiğimiz .bin dosyasını CubeProgrammer aracılığıyla kartımıza yükleyeceğiz.</p>
+<p>CubeProgrammer&rsquo;i başlatalım ve programın sağ üstündeki <strong>Connect</strong> buttonu ile kartımızı bağlayalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img24.png" alt=""></p>
+<p>Göründüğü gibi kartımıza bağlandığında memory address&rsquo;leri vs görmekteyiz.</p>
+<p>Programda &lsquo;Open File&rsquo; seçeceğine tıklayarak reverse ettiğimiz .bin dosyasını seçelim ve ardından &lsquo;Download&rsquo; seçeceğine tıklayarak reverse ettiğimiz firmware&rsquo;i kartımıza yükleyelim:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img25.png" alt=""></p>
+<p>Göründüğü gibi ekranda &lsquo;File Download Complete&rsquo; mesajı alıyoruz. Tebrikler artık elimizde reverse edilmiş bir firmware ile çalışan  kartımız var!</p>
+<h2 id="sonuç">
+<a class="header-anchor" href="#sonu%c3%a7"></a>
+<strong>Sonuç</strong>
+</h2><p>Şimdi kartın son haliyle bir kez daha göz atalım:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/video/reversing.gif" alt=""></p>
+<p>Videodan göründüğü üzere Button&rsquo;a basmadığımız durumlarda Led yanıyor. Eğer button&rsquo;a basarsak led sönüyor.</p>
+<p>Temel olarak yaptığımız şey oldukça basitti. Basitçe kartımızı button&rsquo;a basıldığında led yakacak şekilde kodladık ve Ghidra ile kartın firmware&rsquo;ini reverse ederek kodladığımızın tersini yapacak şekilde ayarladık ve karta tekrar yükledik.</p>
+<p>Umarım içerik sizin için faydalı olmuştur. Eğer konuyu daha detaylı araştırmak isterseniz <strong>referans olarak bıraktığım kaynaklara göz atabilirsiniz.</strong></p>
+<p>İyi çalışmalar dilerim efenimmm.</p>
+<h2 id="references">
+<a class="header-anchor" href="#references"></a>
+<strong>References</strong>
+</h2><ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=q4CxE5P6RUE"><strong>Stacksmashing - Bare-metal ARM Firmware Reverse Engineering with Ghidra</strong></a></p>
+</li>
+<li>
+<p><a href="https://www.cutawaysecurity.com/learning-ghidra-basics-analyzing-firmware/"><strong>Cutaway Security - Learning Ghidra Basics Analyzing Firmware</strong></a></p>
+</li>
+<li>
+<p><a href="https://cybergibbons.com/hardware-hacking/reading-and-writing-firmware-on-an-stm32-using-swd/"><strong>Cybergibbons - Reading and Writing Firmware on an STM32 using SWD</strong></a></p>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+      <ul class="article-tag-list" itemprop="keywords">
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/reverse-engineering"
+        rel="tag"
+        >REVERSE-ENGINEERING</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/iot-hacking"
+        rel="tag"
+        >IOT-HACKING</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/firmware"
+        rel="tag"
+        >FIRMWARE</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/bare-metal"
+        rel="tag"
+        >BARE-METAL</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/arm"
+        rel="tag"
+        >ARM</a
+      >
+    </li>
+  
+</ul>
+
+    </footer>
+  </div>
+  
+    
+  <nav
+    id="article-nav"
+    data-aos="fade-up"
+  >
+    
+      <div class="article-nav-link-wrap article-nav-link-left">
+        
+          
+          
+            <img
+              data-src="images/blog-images/reverse-engineering.jpeg"
+              data-sizes="auto"
+              alt="Router Firmware Reverse Engineering"
+              class="lazyload"
+            />
+          
+        
+        <a href="https://0xbekoo.github.io/post/router-firmware-reversing/"></a>
+        <div class="article-nav-caption">Newer</div>
+        <h3 class="article-nav-title">
+          
+            Router Firmware Reverse Engineering
+          
+        </h3>
+      </div>
+    
+
+    
+  </nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+</section>
+          
+        </main>
+        
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<footer id="footer">
+  <div style="width: 100%; overflow: hidden">
+    <div class="footer-line"></div>
+  </div>
+  <div id="footer-info">
+    <div>
+      <span class="icon-copyright"></span>
+      2024 -
+      2024
+      <span class="footer-info-sep"></span>
+      0xbekoo
+    </div>
+    
+      <div>
+        Powered by&nbsp;<a
+          href="https://gohugo.io/"
+          target="_blank"
+          >Hugo</a
+        >&nbsp; Theme.<a
+          href="https://github.com/D-Sketon/hugo-theme-reimu"
+          target="_blank"
+          >Reimu</a
+        >
+      </div>
+    
+    
+    
+    
+
+  </div>
+</footer>
+
+        <div class="sidebar-top">
+          <img
+            src="/images/malware.png"
+            width="50"
+            alt="backtop"
+          />
+          <div class="arrow-up"></div>
+        </div>
+        <div id="mask"></div>
+      </div>
+      <nav id="mobile-nav">
+  <div class="sidebar-wrap">
+    
+      <div class="sidebar-toc-sidebar">
+        <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#kodlama"><strong>Kodlama</strong></a></li>
+    <li><a href="#firmware-reversing"><strong>Firmware Reversing</strong></a></li>
+    <li><a href="#sonuç"><strong>Sonuç</strong></a></li>
+    <li><a href="#references"><strong>References</strong></a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+      </div>
+      <div class="sidebar-common-sidebar hidden">
+        
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      11
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">38</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-btn-wrapper">
+      <div class="sidebar-toc-btn current"></div>
+      <div class="sidebar-common-btn"></div>
+    </div>
+  
+</nav>
+
+    </div>
+    
+    
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js"
+    
+    
+    
+    
+    integrity="sha384-3gT/vsepWkfz/ff7PpWNUeMzeWoH3cDhm/A8jM7ouoAK0/fP/9bcHHR5kHq2nf&#43;e" crossorigin="anonymous"
+  ></script>
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/clipboard@2.0.11/dist/clipboard.min.js"
+    
+    
+    
+    
+    integrity="sha384-J08i8An/QeARD9ExYpvphB8BsyOj3Gh2TSh1aLINKO3L0cMSH2dN3E22zFoXEi0Q" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/main.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+
+
+  
+
+
+
+
+
+  
+      
+      <script src="/js/aos.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+  <script>
+    var aosInit = () => {
+      AOS.init({
+        duration: 1000,
+        easing: "ease",
+        once: true,
+        offset: 50,
+      });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", aosInit);
+    } else {
+      aosInit();
+    }
+  </script>
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/pjax_main.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/mouse-firework@0.0.6/dist/index.umd.js"
+    
+    
+    
+    
+    integrity="sha384-vkGvf25gm1C1PbcoD5dNfc137HzNL/hr1RKA5HniJOaawtvUmH5lTVFgFAruE9Ge" crossorigin="anonymous"
+  ></script>
+
+
+<script>
+  if (window.firework) {
+    const options = JSON.parse("{\"excludeelements\":[\"a\",\"button\"],\"particles\":[{\"colors\":[\"#ff5252\",\"#ff7c7c\",\"#ffafaf\",\"#ffd0d0\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"emit\"],\"number\":20,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.3,0.5],\"radius\":[16,32]}},{\"colors\":[\"#ff0000\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"diffuse\"],\"number\":1,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.2,0.5],\"lineWidth\":6,\"radius\":20}}]}");
+    options.excludeElements = options.excludeelements;
+    delete options.excludeelements;
+    window.firework(options);
+  }
+</script>
+
+
+
+
+
+
+
+
+<div id="lazy-script">
+  <div>
+    
+    
+      
+
+
+
+
+
+  
+      
+      <script src="/js/insert_highlight.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+      
+      
+      
+      
+      <script type="module" data-pjax>
+        const PhotoSwipeLightbox = (await safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js", "sha384-DiL6M\/gG\u002bwmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF\/N6lrZi\/")).default;
+
+        const pswp = () => {
+          if (_$$('.article-entry a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-entry',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          if(_$$('.article-gallery a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-gallery',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          window.lightboxStatus = 'done';
+          window.removeEventListener('lightbox:ready', pswp);
+        }
+        if(window.lightboxStatus === 'ready') {
+          pswp()
+        } else {
+          window.addEventListener('lightbox:ready', pswp);
+        }
+      </script>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+  </div>
+</div>
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/busuanzi@2.3.0/bsz.pure.mini.js"
+    
+    async
+    
+    
+    integrity="sha384-0M75wtSkhjIInv4coYlaJU83&#43;OypaRCIq2SukQVQX04eGTCBXJDuWAbJet56id&#43;S" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+  </script>
+
+
+<script>
+  const reimuCopyright = String.raw`
+   ______     ______     __     __    __     __  __    
+  /\  == \   /\  ___\   /\ \   /\ "-./  \   /\ \/\ \   
+  \ \  __<   \ \  __\   \ \ \  \ \ \-./\ \  \ \ \_\ \  
+   \ \_\ \_\  \ \_____\  \ \_\  \ \_\ \ \_\  \ \_____\ 
+    \/_/ /_/   \/_____/   \/_/   \/_/  \/_/   \/_____/ 
+                                                    
+  `;
+  console.log(String.raw`%c ${reimuCopyright}`, "color: #ff5252;");
+  console.log(
+    "%c Theme.Reimu" + " %c https://github.com/D-Sketon/hugo-theme-reimu ",
+    "color: white; background: #ff5252; padding:5px 0;",
+    "padding:4px;border:1px solid #ff5252;",
+  );
+</script>
+
+  </body>
+</html>

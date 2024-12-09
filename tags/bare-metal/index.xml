@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Bare-Metal on 0xbekoo</title>
+    <link>https://0xbekoo.github.io/tags/bare-metal/</link>
+    <description>Recent content in Bare-Metal on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 04 Dec 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://0xbekoo.github.io/tags/bare-metal/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ARM Firmware Reverse Engineering</title>
+      <link>https://0xbekoo.github.io/post/bare-metal-reversing-0x0/</link>
+      <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://0xbekoo.github.io/post/bare-metal-reversing-0x0/</guid>
+      <description>&lt;p&gt;Merhabalar. Bu yazıda Firmware Reverse Engineering&amp;rsquo;e devam ediyoruz. Bu blogta ise Bare Metal Reversing&amp;rsquo;e girişeceğiz.&lt;/p&gt;&#xA;&lt;p&gt;Hatırlarsanız önceki konumuzda TP-LINK Archer AX 21 V4.6&amp;rsquo;ın 2024 yılında çıkmış Firmware&amp;rsquo;ini analiz etmiştik. Bu konuda ise işleri birazcık ileriye götüreceğiz.&lt;/p&gt;&#xA;&lt;p&gt;Elimde bir Nucleo F030R8 kart (ARM Cortex M0 işlemcili) var ve bunu Firmware Reverse Engineering için değerlendirmek istedim. Bu blogta yapacağımız şey de bu kart&amp;rsquo;ı basitçe programlayacağız ve ardından firmware&amp;rsquo;ini reverse edip karta tekrar yükleyeceğiz. Tipik olarak bir Iot kartını hackliyor gibi düşünelim ancak daha basit bir senaryo ile.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

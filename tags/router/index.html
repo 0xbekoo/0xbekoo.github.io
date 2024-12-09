@@ -1,0 +1,1661 @@
+<!doctype html>
+<html
+  lang="en-us"
+  data-theme="dark"
+>
+  <head>
+    <meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, shrink-to-fit=no"
+/>
+
+
+
+
+
+
+
+  
+    
+  
+
+<title>
+  Router | 0xbekoo
+</title>
+<meta
+  name="description"
+  content="Reverse Engineer, Malware Developer"
+/>
+
+
+
+
+
+
+
+
+<script>
+  window.siteConfig = JSON.parse("{\"clipboard\":{\"copyright\":{\"content\":\"本文版权：本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！\",\"count\":50,\"enable\":false},\"fail\":\"\",\"success\":\"Copied\"},\"icon_font\":\"4552607_tq6stt6tcg\",\"outdate\":{\"daysago\":180,\"enable\":false,\"message\":\"本文最后更新于 {time}，请注意文中内容可能已经发生变化。\"}}");
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+    
+  
+
+  
+  
+  
+    
+  
+
+  
+    
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="preload"
+  as="style"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+/>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+  media="print"
+  onload="this.media='all'"
+/>
+
+
+
+
+
+
+  <link
+    rel="preload"
+    href="//at.alicdn.com/t/c/font_4552607_tq6stt6tcg.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin="anonymous"
+  />
+
+
+
+
+
+
+<link rel="alternate" type="application/rss+xml" href="https://0xbekoo.github.io/tags/router/index.xml" title="0xbekoo">
+
+
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+
+
+
+
+
+
+  
+ <link rel="stylesheet" href="/css/main.min.d8d89fe6a17e791b042a51385e38f32258057ee9739c9fc2fc310894201081d4.css" />
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/katex@0.16.9/dist/katex.min.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/pace-js@1.2.4/pace.min.js"
+    
+    
+    
+    
+    integrity="sha384-k6YtvFUEIuEFBdrLKJ3YAUbBki333tj1CSUisai5Cswsg9wcLNaPzsTHDswp4Az8" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  
+
+
+  <link rel="stylesheet" href="https://npm.webcache.cn/@reimujs/aos@0.1.0/dist/aos.css" />
+
+
+
+
+  </head>
+  <body>
+    
+
+<div id="copy-tooltip" style="pointer-events: none; opacity: 0; transition: all 0.2s ease; position: fixed;top: 50%;left: 50%;z-index: 999;transform: translate(-50%, -50%);color: white;background: rgba(0, 0, 0, 0.5);padding: 10px 15px;border-radius: 10px;">
+</div>
+
+
+    <div id="container">
+      <div id="wrap">
+        <div id="header-nav">
+  <nav id="main-nav">
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/">Home</a>
+      </span>
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/about">About</a>
+      </span>
+    
+    <a id="main-nav-toggle" class="nav-icon"></a>
+  </nav>
+  <nav id="sub-nav">
+    <a id="nav-rss-link" class="nav-icon" href="https://0xbekoo.github.io/tags/router/index.xml" title="RSS Feed" target="_blank"></a>
+    
+    
+  </nav>
+</div>
+<header id="header">
+  
+    <img fetchpriority="high" src="/images/header-photo.gif" alt="Router">
+  
+
+  <div id="header-outer">
+    <div id="header-title">
+      
+        
+        
+          
+        
+  
+        
+          <a href="/" id="logo">
+            <h1 data-aos="slide-up">Tag</h1>
+          </a>
+        
+      
+  
+      
+        
+        
+          
+        
+        <h2 id="subtitle-wrap" data-aos="slide-down">
+          
+            <a href="/" id="subtitle">Router</a>
+          
+        </h2>
+      
+    </div>
+  </div>
+</header>
+
+        <main id="content">
+          
+            <aside id="sidebar">
+  <div class="sidebar-wrapper ">
+    <div
+      class="sidebar-wrap"
+      data-aos="fade-up"
+    >
+      
+        
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      11
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">38</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+      
+
+      
+    </div>
+  </div>
+
+  
+    
+      
+  <div class="widget-wrapper">
+    <div
+      class="widget-wrap"
+      data-aos="fade-up"
+    >
+      <h3 class="widget-title">Categories</h3>
+      <div class="widget">
+        <ul class="category-list">
+          
+            <li class="category-list-item">
+              <a class="category-list-link" href="/categories/malware-analysis/"
+                >Malware-Analysis</a
+              >
+            </li>
+          
+            <li class="category-list-item">
+              <a class="category-list-link" href="/categories/malware-development/"
+                >Malware-Development</a
+              >
+            </li>
+          
+            <li class="category-list-item">
+              <a class="category-list-link" href="/categories/reverse-engineering/"
+                >Reverse Engineering</a
+              >
+            </li>
+          
+            <li class="category-list-item">
+              <a class="category-list-link" href="/categories/windows-kernel-development/"
+                >Windows-Kernel-Development</a
+              >
+            </li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrapper">
+    <div
+      class="widget-wrap"
+      data-aos="fade-up"
+    >
+      <h3 class="widget-title">Tags</h3>
+      <div class="widget">
+        <ul class="tag-list" itemprop="keywords">
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/anti-cheat/"
+                aria-label="Tag: Anti-Cheat"
+              >
+                Anti-Cheat
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/api/"
+                aria-label="Tag: API"
+              >
+                API
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/api-hashing/"
+                aria-label="Tag: API-Hashing"
+              >
+                API-Hashing
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/api-security/"
+                aria-label="Tag: API-Security"
+              >
+                API-Security
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/arm/"
+                aria-label="Tag: Arm"
+              >
+                Arm
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/bare-metal/"
+                aria-label="Tag: Bare-Metal"
+              >
+                Bare-Metal
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/bypass/"
+                aria-label="Tag: Bypass"
+              >
+                Bypass
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/driver/"
+                aria-label="Tag: Driver"
+              >
+                Driver
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/firmware/"
+                aria-label="Tag: Firmware"
+              >
+                Firmware
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/icon/"
+                aria-label="Tag: Icon"
+              >
+                Icon
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/injection/"
+                aria-label="Tag: Injection"
+              >
+                Injection
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/io-control/"
+                aria-label="Tag: Io-Control"
+              >
+                Io-Control
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/io-request-packet/"
+                aria-label="Tag: Io-Request-Packet"
+              >
+                Io-Request-Packet
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/ioctl/"
+                aria-label="Tag: IOCTL"
+              >
+                IOCTL
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/iot-hacking/"
+                aria-label="Tag: Iot-Hacking"
+              >
+                Iot-Hacking
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/irp/"
+                aria-label="Tag: Irp"
+              >
+                Irp
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/linux/"
+                aria-label="Tag: Linux"
+              >
+                Linux
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/maldev-technique/"
+                aria-label="Tag: Maldev-Technique"
+              >
+                Maldev-Technique
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/malware-analysis/"
+                aria-label="Tag: Malware-Analysis"
+              >
+                Malware-Analysis
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/malware-dev/"
+                aria-label="Tag: Malware-Dev"
+              >
+                Malware-Dev
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/memory/"
+                aria-label="Tag: Memory"
+              >
+                Memory
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/module/"
+                aria-label="Tag: Module"
+              >
+                Module
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/ntapi/"
+                aria-label="Tag: NTAPI"
+              >
+                NTAPI
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/process/"
+                aria-label="Tag: Process"
+              >
+                Process
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/process-injection/"
+                aria-label="Tag: Process-Injection"
+              >
+                Process-Injection
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/ptrace/"
+                aria-label="Tag: Ptrace"
+              >
+                Ptrace
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/resurrection/"
+                aria-label="Tag: Resurrection"
+              >
+                Resurrection
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/reverse-engineering/"
+                aria-label="Tag: Reverse-Engineering"
+              >
+                Reverse-Engineering
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/riot-games/"
+                aria-label="Tag: Riot Games"
+              >
+                Riot Games
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/router/"
+                aria-label="Tag: Router"
+              >
+                Router
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/security/"
+                aria-label="Tag: Security"
+              >
+                Security
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/spoofing/"
+                aria-label="Tag: Spoofing"
+              >
+                Spoofing
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/spyware/"
+                aria-label="Tag: Spyware"
+              >
+                Spyware
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/valorant/"
+                aria-label="Tag: Valorant"
+              >
+                Valorant
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/vanguard/"
+                aria-label="Tag: Vanguard"
+              >
+                Vanguard
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/virtual/"
+                aria-label="Tag: Virtual"
+              >
+                Virtual
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/virtual-memory/"
+                aria-label="Tag: Virtual-Memory"
+              >
+                Virtual-Memory
+              </a>
+            </li>
+          
+            <li class="tag-item">
+              <a
+                class="tag-link"
+                href="/tags/winkernel-dev/"
+                aria-label="Tag: Winkernel-Dev"
+              >
+                Winkernel-Dev
+              </a>
+            </li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+    
+  
+</aside>
+
+          
+          <section id="main">
+  <div
+    class="archives-outer-wrap"
+    data-aos="fade-up"
+  >
+    <div class="tag-wrap">
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/anti-cheat/"
+            >Anti-Cheat</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/api/"
+            >API</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/api-hashing/"
+            >API-Hashing</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/api-security/"
+            >API-Security</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/arm/"
+            >Arm</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/bare-metal/"
+            >Bare-Metal</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/bypass/"
+            >Bypass</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/driver/"
+            >Driver</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/firmware/"
+            >Firmware</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/icon/"
+            >Icon</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/injection/"
+            >Injection</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/io-control/"
+            >Io-Control</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/io-request-packet/"
+            >Io-Request-Packet</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/ioctl/"
+            >IOCTL</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/iot-hacking/"
+            >Iot-Hacking</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/irp/"
+            >Irp</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/linux/"
+            >Linux</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/maldev-technique/"
+            >Maldev-Technique</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/malware-analysis/"
+            >Malware-Analysis</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/malware-dev/"
+            >Malware-Dev</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/memory/"
+            >Memory</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/module/"
+            >Module</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/ntapi/"
+            >NTAPI</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/process/"
+            >Process</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/process-injection/"
+            >Process-Injection</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/ptrace/"
+            >Ptrace</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/resurrection/"
+            >Resurrection</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/reverse-engineering/"
+            >Reverse-Engineering</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/riot-games/"
+            >Riot Games</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/router/"
+            >Router</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/security/"
+            >Security</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/spoofing/"
+            >Spoofing</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/spyware/"
+            >Spyware</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/valorant/"
+            >Valorant</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/vanguard/"
+            >Vanguard</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/virtual/"
+            >Virtual</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/virtual-memory/"
+            >Virtual-Memory</a
+          >
+        </div>
+      
+        <div
+          class="archives-tag-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-tag-list-link" href="/tags/winkernel-dev/"
+            >Winkernel-Dev</a
+          >
+        </div>
+      
+    </div>
+    <div class="category-wrap">
+      
+        <div
+          class="archives-category-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-category-list-link" href="/categories/malware-analysis/"
+            >Malware-Analysis</a
+          >
+        </div>
+      
+        <div
+          class="archives-category-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-category-list-link" href="/categories/malware-development/"
+            >Malware-Development</a
+          >
+        </div>
+      
+        <div
+          class="archives-category-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-category-list-link" href="/categories/reverse-engineering/"
+            >Reverse Engineering</a
+          >
+        </div>
+      
+        <div
+          class="archives-category-list-item"
+          data-aos="zoom-in"
+        >
+          <a class="archives-category-list-link" href="/categories/windows-kernel-development/"
+            >Windows-Kernel-Development</a
+          >
+        </div>
+      
+    </div>
+    
+
+
+
+  <section class="archives-wrap" data-aos="fade-up">
+    <div class="archive-year-wrap">
+      <a href="" class="archive-year">2024</a>
+    </div>
+    <ul>
+      
+        <li class="archive-article">
+          <div class="archive-article-date-wrap">
+            <a href="https://0xbekoo.github.io/post/router-firmware-reversing/">
+              <time
+                class="dt-published"
+                datetime="2024-12-03 00:00:00 &#43;0000 UTC"
+                itemprop="datePublished"
+                >2024-12</time
+              >
+            </a>
+          </div>
+          
+            <a class="archive-article-title" href="https://0xbekoo.github.io/post/router-firmware-reversing/"
+              >Router Firmware Reverse Engineering</a
+            >
+          
+        </li>
+      
+    </ul>
+  </section>
+
+
+  </div>
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+<nav id="page-nav" data-aos="fade-up">
+  
+  
+    
+      
+        <span class="page-number current">1</span>
+      
+    
+  
+  
+</nav>
+
+</section>
+          
+        </main>
+        
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<footer id="footer">
+  <div style="width: 100%; overflow: hidden">
+    <div class="footer-line"></div>
+  </div>
+  <div id="footer-info">
+    <div>
+      <span class="icon-copyright"></span>
+      2024 -
+      2024
+      <span class="footer-info-sep"></span>
+      0xbekoo
+    </div>
+    
+      <div>
+        Powered by&nbsp;<a
+          href="https://gohugo.io/"
+          target="_blank"
+          >Hugo</a
+        >&nbsp; Theme.<a
+          href="https://github.com/D-Sketon/hugo-theme-reimu"
+          target="_blank"
+          >Reimu</a
+        >
+      </div>
+    
+    
+    
+    
+
+  </div>
+</footer>
+
+        <div class="sidebar-top">
+          <img
+            src="/images/malware.png"
+            width="50"
+            alt="backtop"
+          />
+          <div class="arrow-up"></div>
+        </div>
+        <div id="mask"></div>
+      </div>
+      <nav id="mobile-nav">
+  <div class="sidebar-wrap">
+    
+      
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      11
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">38</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+    
+  </div>
+  
+</nav>
+
+    </div>
+    
+    
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js"
+    
+    
+    
+    
+    integrity="sha384-3gT/vsepWkfz/ff7PpWNUeMzeWoH3cDhm/A8jM7ouoAK0/fP/9bcHHR5kHq2nf&#43;e" crossorigin="anonymous"
+  ></script>
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/clipboard@2.0.11/dist/clipboard.min.js"
+    
+    
+    
+    
+    integrity="sha384-J08i8An/QeARD9ExYpvphB8BsyOj3Gh2TSh1aLINKO3L0cMSH2dN3E22zFoXEi0Q" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/main.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+
+
+  
+
+
+
+
+
+  
+      
+      <script src="/js/aos.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+  <script>
+    var aosInit = () => {
+      AOS.init({
+        duration: 1000,
+        easing: "ease",
+        once: true,
+        offset: 50,
+      });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", aosInit);
+    } else {
+      aosInit();
+    }
+  </script>
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/pjax_main.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/mouse-firework@0.0.6/dist/index.umd.js"
+    
+    
+    
+    
+    integrity="sha384-vkGvf25gm1C1PbcoD5dNfc137HzNL/hr1RKA5HniJOaawtvUmH5lTVFgFAruE9Ge" crossorigin="anonymous"
+  ></script>
+
+
+<script>
+  if (window.firework) {
+    const options = JSON.parse("{\"excludeelements\":[\"a\",\"button\"],\"particles\":[{\"colors\":[\"#ff5252\",\"#ff7c7c\",\"#ffafaf\",\"#ffd0d0\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"emit\"],\"number\":20,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.3,0.5],\"radius\":[16,32]}},{\"colors\":[\"#ff0000\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"diffuse\"],\"number\":1,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.2,0.5],\"lineWidth\":6,\"radius\":20}}]}");
+    options.excludeElements = options.excludeelements;
+    delete options.excludeelements;
+    window.firework(options);
+  }
+</script>
+
+
+
+
+
+
+
+
+<div id="lazy-script">
+  <div>
+    
+    
+      
+
+
+
+
+
+  
+      
+      <script src="/js/insert_highlight.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+      
+      
+      
+      
+      <script type="module" data-pjax>
+        const PhotoSwipeLightbox = (await safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js", "sha384-DiL6M\/gG\u002bwmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF\/N6lrZi\/")).default;
+
+        const pswp = () => {
+          if (_$$('.article-entry a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-entry',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          if(_$$('.article-gallery a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-gallery',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          window.lightboxStatus = 'done';
+          window.removeEventListener('lightbox:ready', pswp);
+        }
+        if(window.lightboxStatus === 'ready') {
+          pswp()
+        } else {
+          window.addEventListener('lightbox:ready', pswp);
+        }
+      </script>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+  </div>
+</div>
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/busuanzi@2.3.0/bsz.pure.mini.js"
+    
+    async
+    
+    
+    integrity="sha384-0M75wtSkhjIInv4coYlaJU83&#43;OypaRCIq2SukQVQX04eGTCBXJDuWAbJet56id&#43;S" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+  </script>
+
+
+<script>
+  const reimuCopyright = String.raw`
+   ______     ______     __     __    __     __  __    
+  /\  == \   /\  ___\   /\ \   /\ "-./  \   /\ \/\ \   
+  \ \  __<   \ \  __\   \ \ \  \ \ \-./\ \  \ \ \_\ \  
+   \ \_\ \_\  \ \_____\  \ \_\  \ \_\ \ \_\  \ \_____\ 
+    \/_/ /_/   \/_____/   \/_/   \/_/  \/_/   \/_____/ 
+                                                    
+  `;
+  console.log(String.raw`%c ${reimuCopyright}`, "color: #ff5252;");
+  console.log(
+    "%c Theme.Reimu" + " %c https://github.com/D-Sketon/hugo-theme-reimu ",
+    "color: white; background: #ff5252; padding:5px 0;",
+    "padding:4px;border:1px solid #ff5252;",
+  );
+</script>
+
+  </body>
+</html>

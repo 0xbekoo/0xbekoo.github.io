@@ -1,0 +1,1073 @@
+<!doctype html>
+<html
+  lang="en-us"
+  data-theme="dark"
+>
+  <head>
+    <meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, shrink-to-fit=no"
+/>
+
+
+
+
+
+
+
+  
+
+<title>
+  Router Firmware Reverse Engineering | 0xbekoo
+</title>
+<meta
+  name="description"
+  content="Reverse Engineer, Malware Developer"
+/>
+
+
+
+
+
+
+
+
+<script>
+  window.siteConfig = JSON.parse("{\"clipboard\":{\"copyright\":{\"content\":\"本文版权：本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！\",\"count\":50,\"enable\":false},\"fail\":\"\",\"success\":\"Copied\"},\"icon_font\":\"4552607_tq6stt6tcg\",\"outdate\":{\"daysago\":180,\"enable\":false,\"message\":\"本文最后更新于 {time}，请注意文中内容可能已经发生变化。\"}}");
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+    
+  
+
+  
+  
+  
+    
+  
+
+  
+    
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="preload"
+  as="style"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+/>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css?family=Mulish:400,400italic,700,700italic%7cNoto%20Serif%20SC:400,400italic,700,700italic%7c&amp;display=swap"
+  media="print"
+  onload="this.media='all'"
+/>
+
+
+
+
+
+
+  <link
+    rel="preload"
+    href="//at.alicdn.com/t/c/font_4552607_tq6stt6tcg.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin="anonymous"
+  />
+
+
+
+
+
+
+
+
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+
+
+
+
+
+
+  
+ <link rel="stylesheet" href="/css/main.min.d8d89fe6a17e791b042a51385e38f32258057ee9739c9fc2fc310894201081d4.css" />
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/photoswipe@5.4.4/dist/photoswipe.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+  <link
+    rel="preload"
+    as="style"
+    href="https://npm.webcache.cn/katex@0.16.9/dist/katex.min.css"
+    onload="this.onload=null;this.rel='stylesheet'"
+  />
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/pace-js@1.2.4/pace.min.js"
+    
+    
+    
+    
+    integrity="sha384-k6YtvFUEIuEFBdrLKJ3YAUbBki333tj1CSUisai5Cswsg9wcLNaPzsTHDswp4Az8" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  
+
+
+  <link rel="stylesheet" href="https://npm.webcache.cn/@reimujs/aos@0.1.0/dist/aos.css" />
+
+
+
+
+  </head>
+  <body>
+    
+
+<div id="copy-tooltip" style="pointer-events: none; opacity: 0; transition: all 0.2s ease; position: fixed;top: 50%;left: 50%;z-index: 999;transform: translate(-50%, -50%);color: white;background: rgba(0, 0, 0, 0.5);padding: 10px 15px;border-radius: 10px;">
+</div>
+
+
+    <div id="container">
+      <div id="wrap">
+        <div id="header-nav">
+  <nav id="main-nav">
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/">Home</a>
+      </span>
+    
+      <span class="main-nav-link-wrap">
+        <div class="main-nav-icon"></div>
+        <a class="main-nav-link" href="/about">About</a>
+      </span>
+    
+    <a id="main-nav-toggle" class="nav-icon"></a>
+  </nav>
+  <nav id="sub-nav">
+    
+    
+  </nav>
+</div>
+<header id="header">
+  
+    <img fetchpriority="high" src="/images/header-photo.gif" alt="Router Firmware Reverse Engineering">
+  
+
+  <div id="header-outer">
+    <div id="header-title">
+      
+        
+        
+          
+        
+  
+        
+          <a href="/" id="logo">
+            <h1 data-aos="slide-up">Router Firmware Reverse Engineering</h1>
+          </a>
+        
+      
+  
+      
+        
+        
+        <h2 id="subtitle-wrap" data-aos="slide-down">
+          
+        </h2>
+      
+    </div>
+  </div>
+</header>
+
+        <main id="content">
+          
+            <aside id="sidebar">
+  <div class="sidebar-wrapper wrap-sticky">
+    <div
+      class="sidebar-wrap"
+      data-aos="fade-up"
+    >
+      
+        <div class="sidebar-toc-sidebar">
+          <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#linux-versiyonu-bulma"><strong>Linux Versiyonu Bulma</strong></a></li>
+    <li><a href="#linux-dosyalarını-bulma"><strong>Linux Dosyalarını Bulma</strong></a></li>
+    <li><a href="#simüle-etme"><strong>Simüle Etme</strong></a></li>
+    <li><a href="#sonuç"><strong>Sonuç</strong></a></li>
+    <li><a href="#references"><strong>References</strong></a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+        </div>
+        <div class="sidebar-common-sidebar hidden">
+          
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      11
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">38</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+        </div>
+      
+
+      
+        <div class="sidebar-btn-wrapper" style="position:static">
+          <div class="sidebar-toc-btn current"></div>
+          <div class="sidebar-common-btn"></div>
+        </div>
+      
+    </div>
+  </div>
+
+  
+</aside>
+
+          
+          <section id="main">
+  <article
+  class="h-entry article"
+  itemprop="blogPost"
+  itemscope
+  itemtype="https://schema.org/BlogPosting"
+>
+  <div
+    class="article-inner"
+    data-aos="fade-up"
+  >
+    <div class="article-meta">
+      <div class="article-date">
+  <a
+    href="https://0xbekoo.github.io/post/router-firmware-reversing/"
+    class="article-date-link"
+    data-aos="zoom-in"
+  >
+    <time datetime="2024-12-03 00:00:00 &#43;0000 UTC" itemprop="datePublished"
+      >2024-12-03</time
+    >
+    <time style="display: none;" id="post-update-time"
+      >2024-12-03</time
+    >
+  </a>
+</div>
+
+      <div class="article-category">
+  
+    <a
+      class="article-category-link"
+      href="/categories/reverse-engineering"
+      data-aos="zoom-in"
+      >REVERSE ENGINEERING</a
+    >
+  
+</div>
+
+    </div>
+    <div class="hr-line"></div>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+      
+        <p><img src="../../images/posts/reversing-router/headerphoto.jpg" alt=""></p>
+<p>Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link&rsquo;in <a href="https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/">Archer AX 21 V4.6</a> modemin firmware&rsquo;i reverse edeceğiz. Firmware indirmek için <a href="https://www.tp-link.com/us/support/download/archer-ax21/#Firmware">TP-Link&rsquo;in orijinal sayfasına</a> göz atabilirsiniz.</p>
+<p>Öncelikle indirdiğimiz Firmware&rsquo;in bilgilerine göz atalım:</p>
+<p><img src="../../images/posts/reversing-router/firmware-info.png" alt=""></p>
+<p>Görüldüğü üzere 14 Kasım 2024 yılında yayınlanmış. Yani neredeyse 1 ay önce yayınlanmış bir firmware. Birkaç hatanın düzeltildiği, optimizelerin yapıldığı ve yeni şeyler eklendiğini görebiliriz.</p>
+<p>Fiziksel olarak bu router&rsquo;a sahip olmadığım için bu blogta sadece firmware analiz ederek yelteneceğim.</p>
+<h2 id="linux-versiyonu-bulma">
+<a class="header-anchor" href="#linux-versiyonu-bulma"></a>
+<strong>Linux Versiyonu Bulma</strong>
+</h2><p>Özellikle firmware reverse engineering&rsquo;de sıklıkla kullanılan <strong>binwalk</strong> denilen aracı kullanacağız. Bu araç bize firmware için çeşitli bilgiler sunabilir.</p>
+<p>Öncelikle binwalk&rsquo;a analiz edeceğimiz firmware verelim:</p>
+<p><img src="../../images/posts/reversing-router/img2.png" alt=""></p>
+<p>Evett okumaya üşendiğimiz birkaç karmaşık gibi görünen çıktılar elde ettik. Peki nedir bunlar efenimm?</p>
+<p>Bu gördüğünüz çıktılar ilgili firmware&rsquo;in offsetlerini içermektedir. Ancak sadece offset değerleri verilmiyor yanlarında bu alanlar için açıklama da veriyor bu binwalk aracı. Gözümüz hemen bu çıktıdaki Decimal ve Hexdecimal değerlerine kaysın:</p>
+<p><img src="../../images/posts/reversing-router/img3.png" alt=""></p>
+<p>İşte offset değerleri bunlar. Hem decimal hem de hexdecimal olarak binwalk aracı bize bunları gösteriyor. Şimdi ilk odağımızı Bootloader (U-Boot)&lsquo;a yönlendirelim ve mimarisine bir göz atalım.</p>
+<p>Bu etapta <strong>dd</strong> aracını kullanabiliriz. Bunun için aşağıdaki komutu çalıştıralım:</p>
+<p><img src="../../images/posts/reversing-router/img4.png" alt=""></p>
+<p>Verdiğimiz değerlere dikkat edelim. <strong>if</strong> ile hedef firmware&rsquo;i veriyoruz. <strong>of</strong> ile çoğaltılan veriyi nasıl kaydedeceğimizi belirtiyoruz. <strong>skip</strong> ile ise belirli bir byte miktarını atlayarak kopyalama işlemine başlıyor. <strong>8212</strong> değeri verdiğime dikkat edin. Bu ise, dd aracın 8212 byte kadar sonrasındaki verileri kopyalacağı anlamına gelir. Bu değer binwalk&rsquo;tan bulduğumuz uImage&rsquo;ın offset değeri.</p>
+<p>Bu kopyalama sonucunda <strong>uImage</strong> adlı bir dosya elde edeceğiz:</p>
+<p><img src="../../images/posts/reversing-router/img5.png" alt=""></p>
+<p>Kopyaladığımız dosyayı incelediğimizde <strong>u-boot Legacy uImage</strong> olduğunu doğrulayabiliriz. Ayrıca arch&rsquo;ın MIPS olduğunu da görebiliriz.</p>
+<p>Linux versiyonu aramak için ise tekrar binwalk çıktımıza bir göz atalım:</p>
+<p><img src="../../images/posts/reversing-router/img2.png" alt=""></p>
+<p>Tekrar offsetlere göz atarsak LZMA ile sıkıştırılmış bölüme gidebiliriz. <strong>.lzma</strong> uzantılı olarak dosyayı alalım ve dosyayı çıkartalım:</p>
+<p><img src="../../images/posts/reversing-router/img6.png" alt=""></p>
+<p>Bu adımlardan sonra elimizde <strong>files</strong> olarak bir dosya elimizde olmalı. Amacımız sadece <strong>strings</strong> ile Linux versiyonuna göz atmak olacak:</p>
+<p><img src="../../images/posts/reversing-router/img7.png" alt=""></p>
+<p>Kullanılan Linux versiyonu <strong>3.10.108</strong> ve GCC için ise <strong>4.6.3</strong> kullanılmakta. Bu ikisi de eski versiyondur.</p>
+<p>Linux&rsquo;un <a href="https://lwn.net/Articles/738167/">3.10.108 versiyonu</a> <strong>5 Kasım 2017</strong> yılında çıkmış:</p>
+<p><img src="../../images/posts/reversing-router/img8.png" alt=""></p>
+<p>GCC&rsquo;nin <a href="https://lwn.net/Articles/738167/">4.6.3 versiyonu</a> ise <strong>1 Mart 2012</strong> yılında çıkmış:</p>
+<p><img src="../../images/posts/reversing-router/img9.png" alt=""></p>
+<p>Açıkçası ben <strong>Firmware Reverse Engineering</strong> alanında yeni olsam da, 2024 yılında sunulmuş bir firmware&rsquo;in eski Linux ve GCC versiyonu kullanmasını mantıklı bulmadım. Bu security açısından risk oluşturabilecek bir şey.</p>
+<p>Bunu gördüğüm zaman kendime şunu sordum: <strong>&ldquo;Bunu farklı firmalar da yapıyor mu ve normal mi?&rdquo;</strong>. Her ne kadar da bunun normal olmadığını düşünsem de farklı bir firmanın Router Firmware&rsquo;ini analiz ederek Linux versiyonunu karşılaştırmak istedim. Daha sonra kısa araştırmadan sonra ASUS&rsquo;un <a href="https://www.asus.com/tr/networking-iot-servers/wifi-routers/asus-wifi-routers/rt-ax58u/">RT-AX58U</a> Router Firmware&rsquo;i analiz etmeye karar verdim.</p>
+<p><a href="https://www.asus.com/networking-iot-servers/wifi-6/all-series/rt-ax58u/helpdesk_bios?model2Name=RT-AX58U">Bu Firmware</a> için bilgiler ise şu şekilde:</p>
+<p><img src="../../images/posts/reversing-router/img10.png" alt=""></p>
+<p>Aynı şekilde bu Firmware ise neredeyse 1 ay önce çıkmış. Odağımızın dağılmaması için hızlıca bulduğum sonucu paylaşacağım. Fakat size tavsiyem daha çok pratik yapmak isterseniz bu blogu okuduktan sonra benim gibi ASUS Router&rsquo;ın bu Firmware&rsquo;ini analiz edebilirsiniz:</p>
+<p><img src="../../images/posts/reversing-router/img11.png" alt=""></p>
+<p>Sonuca baktığımızda bu Firmware için Linux&rsquo;un <strong>4.19.183</strong> ve GCC&rsquo;nin <strong>9.2.0</strong> versiyonu kullanılmakta.</p>
+<p>Linux&rsquo;un <a href="https://lwn.net/Articles/850356/">4.19.183 versiyonu</a> <strong>24 Mart 2021</strong>&lsquo;de çıkmış:
+<img src="../../images/posts/reversing-router/img12.png" alt=""></p>
+<p>GCC&rsquo;nin <a href="https://gcc.gnu.org/gcc-9/">9.2.0 versiyonu</a> ise <strong>12 Ağustos 2019</strong> yılında çıkmış</p>
+<p><img src="../../images/posts/reversing-router/img13.png" alt=""></p>
+<p>ASUS RT-AX58U&rsquo;un bu Firmware&rsquo;inde ise analiz ettiğimiz TP-LINK Firmware&rsquo;ına kıyasla daha yakın bir tarihteki sürümler kullanıldığını görebiliriz ancak yine de bu sürümlerde eski.</p>
+<p>Bunun nedenini ilerideki bloglarda tartışabiliriz. Şimdi analizimize devam edelim.</p>
+<p>Analizimiz sonucunda bu Firmware için bulduğumuz Linux sürümü <strong>3.10.108</strong>&lsquo;dır. Şimdi ise bu Firmware&rsquo;in Linux dosyalarına bir göz atalım.</p>
+<h2 id="linux-dosyalarını-bulma">
+<a class="header-anchor" href="#linux-dosyalar%c4%b1n%c4%b1-bulma"></a>
+<strong>Linux Dosyalarını Bulma</strong>
+</h2><p>binwalk ile elde ettiğimiz offset çıktılarına bir tekrar göz atalım:</p>
+<p><img src="../../images/posts/reversing-router/img2.png" alt=""></p>
+<p>Burada Linux dosyalarını bulmak için <strong>Squashfs</strong> alanına yönelebiliriz. Çoğunlukla Linux dosyaları burada bulunurlar.</p>
+<p>Yine aynı şekilde <strong>.sqfs</strong> uzantısı ile kopyalayalım:</p>
+<p><img src="../../images/posts/reversing-router/img14.png" alt=""></p>
+<p>Tekrarlamaktan zarar gelmez, <strong>3106242</strong> offset değerini verdiğime dikkat edin. Burası <strong>Squashfs</strong> ile sıkıştırılmış alanın offset değeri.</p>
+<p>Dosyayı incelediğimizde zaten <strong>Squashfs</strong> ile sıkıştırıldığını doğrulayabiliriz. Şimdi ise bunu çıkartmamız gerekecek ancak eğer kurulu değilse <strong>Squashfs-tools</strong> paketi indirilmesi gerekiyor. Debian sistemlerde aşağıdaki komutla indirebilirsiniz:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt install squashfs-tools -y
+</span></span></code></pre></div><p>İndirdikten sonra <strong>unsquashfs</strong> ile çıkartalım:</p>
+<p><img src="../../images/posts/reversing-router/img15.png" alt=""></p>
+<p>Çıkarma işleminden sonra <strong>squashfs-root</strong> adlı bir dosya elde ediyoruz. İçerisine göz atalım:</p>
+<p><img src="../../images/posts/reversing-router/img16.png" alt=""></p>
+<p>Göründüğü üzere Linux dosyalarına eriştik. Bu kısımda yapabileceğimiz birçok şey bulunuyor. Bir bug, hashler veya şifreler gibi artık analiziniz neye dayanıyorsa ona göre araştırma yaparak ilerleyebilirsiniz. Mesela <strong>/etc/shadow</strong> içerisindeki şifrelere göz atabiliriz:</p>
+<p><img src="../../images/posts/reversing-router/img17.png" alt=""></p>
+<p>Benim gibi yeni iseniz bu Linux dosyalarını araştırabilir ve diğer offset bölümlerini kopyalayıp göz atabilirsiniz.</p>
+<h2 id="simüle-etme">
+<a class="header-anchor" href="#sim%c3%bcle-etme"></a>
+<strong>Simüle Etme</strong>
+</h2><p>Son olarak ise Firmware&rsquo;i emule (simüle) edelim. Bunun için <strong>chroot</strong> ve <strong>qemu</strong> kullanabiliriz. Fakat ondan önce Firmware&rsquo;in mimarisini bilmemiz gerekiyor.</p>
+<p>Linux versiyonunu ararken uImage&rsquo;a göz attığımızda mimarinin <strong>MIPS</strong> olduğunu zaten görmüştük. Ancak yine de çıktıyı bir kez daha kontrol edelim:</p>
+<p><img src="../../images/posts/reversing-router/img5.png" alt=""></p>
+<p>Göründüğü üzere MIPS olduğunu görebiliriz. Ayrıca da Little Endian.</p>
+<p>Qemu kullanacağımız için <strong>/usr/bin/qemu-mipsel-static</strong> programını squashfs-root dosyasına kopyalayalım ve ardından chroot çalıştıralım:</p>
+<p><img src="../../images/posts/reversing-router/img18.png" alt=""></p>
+<p>Başarılı bir şekilde simüle etmiş olduk. Busybox&rsquo;ın sürümüne göz attığımızda da <strong>1.19.4</strong> kullanıldığını görmekteyiz. Bu da 2012 yılında çıkmış bir eski sürümdür.</p>
+<h2 id="sonuç">
+<a class="header-anchor" href="#sonu%c3%a7"></a>
+<strong>Sonuç</strong>
+</h2><p>Firmware Reverse Engineering için ilk blogumda basitçe bir firmware&rsquo;in nasıl analiz edebileceğimizi gördük. Eğer araştırmalara devam etmek isterseniz konu içerisinde bahsettiğim ASUS&rsquo;un Firmware&rsquo;ini analiz edebilirsiniz. Ayrıca da referanslara da göz atabilirsiniz.</p>
+<p>Umarım bu konu işinize yaramıştır efenimmm iyi çalışmalarr.</p>
+<h2 id="references">
+<a class="header-anchor" href="#references"></a>
+<strong>References</strong>
+</h2><ul>
+<li>
+<p><a href="https://embeddedbits.org/reverse-engineering-my-routers-firmware-with-binwalk-embeddedbits/">Embeddedbits - Reverse engineering my router&rsquo;s firmware with binwalk</a></p>
+</li>
+<li>
+<p><a href="https://www.youtube.com/watch?v=zs86OYea8Wk">John Hammond -  Getting Started in Firmware Analysis &amp; IoT Reverse Engineering</a></p>
+</li>
+<li>
+<p><a href="https://www.youtube.com/watch?v=oqk3cU7ekag">Engineer Man - Simple Firmware Reverse Engineering</a></p>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+      <ul class="article-tag-list" itemprop="keywords">
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/reverse-engineering"
+        rel="tag"
+        >REVERSE-ENGINEERING</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/iot-hacking"
+        rel="tag"
+        >IOT-HACKING</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/firmware"
+        rel="tag"
+        >FIRMWARE</a
+      >
+    </li>
+  
+    <li class="article-tag-list-item" data-aos="zoom-in">
+      <a
+        class="article-tag-list-link"
+        href="/tags/router"
+        rel="tag"
+        >ROUTER</a
+      >
+    </li>
+  
+</ul>
+
+    </footer>
+  </div>
+  
+    
+  <nav
+    id="article-nav"
+    data-aos="fade-up"
+  >
+    
+      <div class="article-nav-link-wrap article-nav-link-left">
+        
+          
+          
+            <img
+              data-src="images/blog-images/reverse-engineering.jpeg"
+              data-sizes="auto"
+              alt="Malware Resurrection"
+              class="lazyload"
+            />
+          
+        
+        <a href="https://0xbekoo.github.io/post/malware-resurrection/"></a>
+        <div class="article-nav-caption">Newer</div>
+        <h3 class="article-nav-title">
+          
+            Malware Resurrection
+          
+        </h3>
+      </div>
+    
+
+    
+      <div class="article-nav-link-wrap article-nav-link-right">
+        
+          
+          
+            <img
+              data-src="images/blog-images/reverse-engineering.jpeg"
+              data-sizes="auto"
+              alt="ARM Firmware Reverse Engineering"
+              class="lazyload"
+            />
+          
+        
+        <a href="https://0xbekoo.github.io/post/bare-metal-reversing-0x0/"></a>
+        <div class="article-nav-caption">Older</div>
+        <h3 class="article-nav-title">
+          
+            ARM Firmware Reverse Engineering
+          
+        </h3>
+      </div>
+    
+  </nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+</section>
+          
+        </main>
+        
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<footer id="footer">
+  <div style="width: 100%; overflow: hidden">
+    <div class="footer-line"></div>
+  </div>
+  <div id="footer-info">
+    <div>
+      <span class="icon-copyright"></span>
+      2024 -
+      2024
+      <span class="footer-info-sep"></span>
+      0xbekoo
+    </div>
+    
+      <div>
+        Powered by&nbsp;<a
+          href="https://gohugo.io/"
+          target="_blank"
+          >Hugo</a
+        >&nbsp; Theme.<a
+          href="https://github.com/D-Sketon/hugo-theme-reimu"
+          target="_blank"
+          >Reimu</a
+        >
+      </div>
+    
+    
+    
+    
+
+  </div>
+</footer>
+
+        <div class="sidebar-top">
+          <img
+            src="/images/malware.png"
+            width="50"
+            alt="backtop"
+          />
+          <div class="arrow-up"></div>
+        </div>
+        <div id="mask"></div>
+      </div>
+      <nav id="mobile-nav">
+  <div class="sidebar-wrap">
+    
+      <div class="sidebar-toc-sidebar">
+        <div class="sidebar-toc">
+  <h3 class="toc-title">Contents</h3>
+  <div class="sidebar-toc-wrapper toc-div-class">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#linux-versiyonu-bulma"><strong>Linux Versiyonu Bulma</strong></a></li>
+    <li><a href="#linux-dosyalarını-bulma"><strong>Linux Dosyalarını Bulma</strong></a></li>
+    <li><a href="#simüle-etme"><strong>Simüle Etme</strong></a></li>
+    <li><a href="#sonuç"><strong>Sonuç</strong></a></li>
+    <li><a href="#references"><strong>References</strong></a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+      </div>
+      <div class="sidebar-common-sidebar hidden">
+        
+<div class="sidebar-author">
+  <img
+    data-src="/avatar/../avatar/avatar.png"
+    data-sizes="auto"
+    alt="0xbekoo"
+    class="lazyload"
+  />
+  <div class="sidebar-author-name">0xbekoo</div>
+  <div class="sidebar-description">Reverse Engineer, Malware Developer</div>
+</div>
+<div class="sidebar-state">
+  <div class="sidebar-state-article">
+    <div>Posts</div>
+    <div class="sidebar-state-number">
+      11
+    </div>
+  </div>
+  <div class="sidebar-state-category">
+    <div>Categories</div>
+    <div class="sidebar-state-number">
+      4
+    </div>
+  </div>
+  <div class="sidebar-state-tag">
+    <div>Tags</div>
+    <div class="sidebar-state-number">38</div>
+  </div>
+</div>
+<div class="sidebar-social">
+  
+    <div class="icon-github sidebar-social-icon">
+      <a
+        href="https://github.com/0xbekoo"
+        itemprop="url"
+        target="_blank"
+        aria-label="github"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-linkedin sidebar-social-icon">
+      <a
+        href="https://www.linkedin.com/in/berkayykarakocc"
+        itemprop="url"
+        target="_blank"
+        aria-label="linkedin"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+    <div class="icon-twitter sidebar-social-icon">
+      <a
+        href="https://twitter.com/0xbekooo"
+        itemprop="url"
+        target="_blank"
+        aria-label="twitter"
+        rel="noopener external nofollow noreferrer"
+      ></a>
+    </div>
+  
+</div>
+<div class="sidebar-menu">
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/"
+        aria-label="Home"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">Home</div>
+    </div>
+  
+    <div class="sidebar-menu-link-wrap">
+      <a
+        class="sidebar-menu-link-dummy"
+        href="/about"
+        aria-label="About"
+      ></a>
+      <div class="sidebar-menu-icon"></div>
+      <div class="sidebar-menu-link">About</div>
+    </div>
+  
+</div>
+
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-btn-wrapper">
+      <div class="sidebar-toc-btn current"></div>
+      <div class="sidebar-common-btn"></div>
+    </div>
+  
+</nav>
+
+    </div>
+    
+    
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js"
+    
+    
+    
+    
+    integrity="sha384-3gT/vsepWkfz/ff7PpWNUeMzeWoH3cDhm/A8jM7ouoAK0/fP/9bcHHR5kHq2nf&#43;e" crossorigin="anonymous"
+  ></script>
+
+
+
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/clipboard@2.0.11/dist/clipboard.min.js"
+    
+    
+    
+    
+    integrity="sha384-J08i8An/QeARD9ExYpvphB8BsyOj3Gh2TSh1aLINKO3L0cMSH2dN3E22zFoXEi0Q" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/main.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+
+
+  
+
+
+
+
+
+  
+      
+      <script src="/js/aos.js" integrity="" crossorigin="anonymous" ></script>
+      
+
+  <script>
+    var aosInit = () => {
+      AOS.init({
+        duration: 1000,
+        easing: "ease",
+        once: true,
+        offset: 50,
+      });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", aosInit);
+    } else {
+      aosInit();
+    }
+  </script>
+
+
+
+
+
+
+
+
+  
+      
+      <script src="/js/pjax_main.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/mouse-firework@0.0.6/dist/index.umd.js"
+    
+    
+    
+    
+    integrity="sha384-vkGvf25gm1C1PbcoD5dNfc137HzNL/hr1RKA5HniJOaawtvUmH5lTVFgFAruE9Ge" crossorigin="anonymous"
+  ></script>
+
+
+<script>
+  if (window.firework) {
+    const options = JSON.parse("{\"excludeelements\":[\"a\",\"button\"],\"particles\":[{\"colors\":[\"#ff5252\",\"#ff7c7c\",\"#ffafaf\",\"#ffd0d0\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"emit\"],\"number\":20,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.3,0.5],\"radius\":[16,32]}},{\"colors\":[\"#ff0000\"],\"duration\":[1200,1800],\"easing\":\"easeOutExpo\",\"move\":[\"diffuse\"],\"number\":1,\"shape\":\"circle\",\"shapeOptions\":{\"alpha\":[0.2,0.5],\"lineWidth\":6,\"radius\":20}}]}");
+    options.excludeElements = options.excludeelements;
+    delete options.excludeelements;
+    window.firework(options);
+  }
+</script>
+
+
+
+
+
+
+
+
+<div id="lazy-script">
+  <div>
+    
+    
+      
+
+
+
+
+
+  
+      
+      <script src="/js/insert_highlight.js" integrity="" crossorigin="anonymous" data-pjax></script>
+      
+
+      
+      
+      
+      
+      <script type="module" data-pjax>
+        const PhotoSwipeLightbox = (await safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js", "sha384-DiL6M\/gG\u002bwmTxmCRZyD1zee6lIhawn5TGvED0FOh7fXcN9B0aZ9dexSF\/N6lrZi\/")).default;
+
+        const pswp = () => {
+          if (_$$('.article-entry a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-entry',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          if(_$$('.article-gallery a.article-gallery-item').length > 0) {
+            new PhotoSwipeLightbox({
+              gallery: '.article-gallery',
+              children: 'a.article-gallery-item',
+              pswpModule: () => safeImport("https:\/\/npm.webcache.cn\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js", "sha384-WkkO3GCmgkC3VQWpaV8DqhKJqpzpF9JoByxDmnV8\u002boTJ7m3DfYEWX1fu1scuS4\u002bs")
+            }).init();
+          }
+          window.lightboxStatus = 'done';
+          window.removeEventListener('lightbox:ready', pswp);
+        }
+        if(window.lightboxStatus === 'ready') {
+          pswp()
+        } else {
+          window.addEventListener('lightbox:ready', pswp);
+        }
+      </script>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+  </div>
+</div>
+
+
+
+
+  
+
+  
+  
+  
+  
+  
+  
+  <script
+    src="https://npm.webcache.cn/busuanzi@2.3.0/bsz.pure.mini.js"
+    
+    async
+    
+    
+    integrity="sha384-0M75wtSkhjIInv4coYlaJU83&#43;OypaRCIq2SukQVQX04eGTCBXJDuWAbJet56id&#43;S" crossorigin="anonymous"
+  ></script>
+
+
+
+
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+  </script>
+
+
+<script>
+  const reimuCopyright = String.raw`
+   ______     ______     __     __    __     __  __    
+  /\  == \   /\  ___\   /\ \   /\ "-./  \   /\ \/\ \   
+  \ \  __<   \ \  __\   \ \ \  \ \ \-./\ \  \ \ \_\ \  
+   \ \_\ \_\  \ \_____\  \ \_\  \ \_\ \ \_\  \ \_____\ 
+    \/_/ /_/   \/_____/   \/_/   \/_/  \/_/   \/_____/ 
+                                                    
+  `;
+  console.log(String.raw`%c ${reimuCopyright}`, "color: #ff5252;");
+  console.log(
+    "%c Theme.Reimu" + " %c https://github.com/D-Sketon/hugo-theme-reimu ",
+    "color: white; background: #ff5252; padding:5px 0;",
+    "padding:4px;border:1px solid #ff5252;",
+  );
+</script>
+
+  </body>
+</html>
