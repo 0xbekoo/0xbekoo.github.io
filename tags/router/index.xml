@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>0xbekoo – Router</title>
-    <link>http://0xbekoo.github.io:1313/tags/router/</link>
+    <link>http://0xbekoo.github.io:58366/tags/router/</link>
     <description>Recent content in Router on 0xbekoo</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Tue, 03 Dec 2024 00:00:00 +0000</lastBuildDate>
     
-	  <atom:link href="http://0xbekoo.github.io:1313/tags/router/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="http://0xbekoo.github.io:58366/tags/router/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,10 +17,10 @@
     
     <item>
       <title>Router Firmware Reverse Engineering</title>
-      <link>http://0xbekoo.github.io:1313/blog/router-firmware-reversing/</link>
+      <link>http://0xbekoo.github.io:58366/blog/router-firmware-reversing/</link>
       <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://0xbekoo.github.io:1313/blog/router-firmware-reversing/</guid>
+      <guid>http://0xbekoo.github.io:58366/blog/router-firmware-reversing/</guid>
       <description>
         
         

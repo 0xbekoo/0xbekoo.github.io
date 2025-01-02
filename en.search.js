@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function () {
    * @returns {Promise<void>} A promise that resolves when the index is preloaded.
    */
   async function preloadIndex() {
-    const tokenize = 'full';
+    const tokenize = 'forward';
     window.pageIndex = new FlexSearch.Document({
       tokenize,
       cache: 100,

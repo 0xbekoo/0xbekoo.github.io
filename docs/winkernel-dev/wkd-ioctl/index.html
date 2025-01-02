@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=58366&amp;path=livereload" data-no-instant defer></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
@@ -13,7 +13,7 @@
 <title>Input/Output Control (IOCTL) – 0xbekoo</title>
   <meta name="description" content="Merhabalar, bu yazıda Windows Kernel Development’tan IOCTL mekanizmasını inceleyeceğiz.
 IOCTL Nedir? I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP’ler aracılığıyla gönderilir. Eğer IRP’ler hakkında bir bilginiz yoksa buraya tıklayarak IRP’ler hakkında bilgi alabilirsiniz.
-Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin IRP_MJ_DEVICE_CONTROL veya IRP_MJ_INTERNAL_DEVICE_CONTROL aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar." /><link rel="canonical" href="http://0xbekoo.github.io:1313/docs/winkernel-dev/wkd-ioctl/" itemprop="url" />
+Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin IRP_MJ_DEVICE_CONTROL veya IRP_MJ_INTERNAL_DEVICE_CONTROL aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar." /><link rel="canonical" href="http://0xbekoo.github.io:58366/docs/winkernel-dev/wkd-ioctl/" itemprop="url" />
 
 <meta property="og:title" content="Input/Output Control (IOCTL)" />
 <meta property="og:description" content="Merhabalar, bu yazıda Windows Kernel Development&rsquo;tan IOCTL mekanizmasını inceleyeceğiz.
@@ -21,7 +21,7 @@ IOCTL Nedir?
     I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP&rsquo;ler aracılığıyla gönderilir. Eğer IRP&rsquo;ler hakkında bir bilginiz yoksa buraya tıklayarak IRP&rsquo;ler hakkında bilgi alabilirsiniz.
 Windows&rsquo;ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin IRP_MJ_DEVICE_CONTROL veya IRP_MJ_INTERNAL_DEVICE_CONTROL aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://0xbekoo.github.io:1313/docs/winkernel-dev/wkd-ioctl/" /><meta property="article:section" content="docs" />
+<meta property="og:url" content="http://0xbekoo.github.io:58366/docs/winkernel-dev/wkd-ioctl/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2024-08-26T00:00:00+00:00" />
 <meta property="article:modified_time" content="2024-08-26T00:00:00+00:00" />
 
