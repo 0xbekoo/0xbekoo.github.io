@@ -1,1 +1,1 @@
-# 0xbekoo.github.io
+init
