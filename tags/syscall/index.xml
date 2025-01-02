@@ -1,0 +1,527 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>0xbekoo – Syscall</title>
+    <link>http://0xbekoo.github.io:1313/tags/syscall/</link>
+    <description>Recent content in Syscall on 0xbekoo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Tue, 31 Dec 2024 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="http://0xbekoo.github.io:1313/tags/syscall/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Windows Kernel&#39;da Syscall Araştırma Yolculuğum</title>
+      <link>http://0xbekoo.github.io:1313/blog/syscalls/</link>
+      <pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://0xbekoo.github.io:1313/blog/syscalls/</guid>
+      <description>
+        
+        
+        &lt;h2&gt;&lt;strong&gt;Giriş&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;giriş&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#giri%c5%9f&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.&lt;/p&gt;
+&lt;p&gt;Birkaç gün önce SSDT tablosu üzerine bir &lt;a href=&#34;https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;döküman&lt;/a&gt; paylaşmıştım. Bu dökümanda temel olarak SSDT&amp;rsquo;nin ne olduğunu, adreslerin nasıl hesaplandığı vs anlatmıştım. Dökümanın son kısmında ise öğrendiğimiz şeylerin bir kernel sürücüsünü hazırlamıştık.&lt;/p&gt;
+&lt;p&gt;Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğerbenim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel&amp;rsquo;da Syscall&amp;rsquo;ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!&lt;/p&gt;
+&lt;p&gt;Bu blogta, temel bilgiler olan NTAPI&amp;rsquo;ların ne olduğu ve syscall&amp;rsquo;ın nasıl işlendiği vs. gibi konulara yer vermeyeceğim. Zira &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;NTAPI Injection&lt;/strong&gt;&lt;/a&gt; dökümanında NTAPI&amp;rsquo;in ne olduğunu, &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/direct-syscalls&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Direct Systemcalls&lt;/strong&gt;&lt;/a&gt; dökümanında bir syscall&amp;rsquo;ın nasıl işlendiğini ve  temel olarak &lt;a href=&#34;https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;SSDT&lt;/strong&gt; dökümanında&lt;/a&gt; SSDT ve kernel&amp;rsquo;da syscall&amp;rsquo;ın nasıl işlendiğini daha önceden anlattım. Eğer temel şeylerle öğrenmeye başlayacaksınız bu dökümanlardan başlamak sizin için daha iyi olacaktır. Bu blogta nihai amacımız kernel alanında bir syscall&amp;rsquo;ın nasıl işlendiğini detaylı bir şekilde görmek olacak.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Statik Analiz&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;statik-analiz&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#statik-analiz&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Bir syscall işlendiğinde, ntdll.dll&amp;rsquo;den syscall yapıldığında kernel alanına geçişte ilk durağın KiSystemCall64 olduğunu biliyoruz. Statik olarak analizimizi buradan başlayacağız. IDA ortamında ntoskrnl.exe analiz etmekle başlayalım.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemserviceuser&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemserviceuser&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;KiSystemCall64/KiSystemCall64Shadow&lt;/strong&gt; kodlarına göz attığınızda akışın &lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&amp;lsquo;a doğru yönlendiğini göreceksiniz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&amp;lsquo;da syscall&amp;rsquo;ın işlenmesi için hazırlıklar yapılıyor:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Burada odağımızı &lt;code&gt;mov rbx,gs:188h&lt;/code&gt; kısmına çevirmemiz gerekiyor çünkü önemli bir yapı olan _KPCR yapısı içerisinden bir KTHREAD yapısı alınmakta.&lt;/p&gt;
+&lt;p&gt;Bu yapının ne olduğunu anlamak için &lt;a href=&#34;https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/amd64_x/kpcr.htm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Geoff Chappell, Software Analyst&lt;/a&gt;&amp;lsquo;ın açıklamasından yararlanabiliriz:&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&amp;ldquo;KPCR yapısı, &lt;strong&gt;Kernel Processor Control Region&lt;/strong&gt; anlamına gelir. Kernel, her mantıksal işlemci için bir KPCR yapısı tutar. KPCR, işlemci mimarisine son derece özeldir.&amp;rdquo;&lt;/p&gt;
+
+&lt;/blockquote&gt;
+&lt;p&gt;Yani kısaca aklımızda şöyle kalabilir bu yapıda işlemciye özel verileri saklamak için kullanılır. Yani baya önemli bir yapı.&lt;/p&gt;
+&lt;p&gt;x64 sistemlerde KPCR yapısı, gs:0 alanına işaret eder:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;kd&amp;gt; dt nt!_KPCR
+   &amp;#43;0x000 NtTib            : _NT_TIB
+   &amp;#43;0x000 GdtBase          : Ptr64 _KGDTENTRY64
+   &amp;#43;0x008 TssBase          : Ptr64 _KTSS64
+   &amp;#43;0x010 UserRsp          : Uint8B
+   &amp;#43;0x018 Self             : Ptr64 _KPCR
+   &amp;#43;0x020 CurrentPrcb      : Ptr64 _KPRCB
+   &amp;#43;0x028 LockArray        : Ptr64 _KSPIN_LOCK_QUEUE
+   &amp;#43;0x030 Used_Self        : Ptr64 Void
+   &amp;#43;0x038 IdtBase          : Ptr64 _KIDTENTRY64
+   &amp;#43;0x040 Unused           : [2] Uint8B
+   &amp;#43;0x050 Irql             : UChar
+   &amp;#43;0x051 SecondLevelCacheAssociativity : UChar
+   &amp;#43;0x052 ObsoleteNumber   : UChar
+   &amp;#43;0x053 Fill0            : UChar
+   &amp;#43;0x054 Unused0          : [3] Uint4B
+   &amp;#43;0x060 MajorVersion     : Uint2B
+   &amp;#43;0x062 MinorVersion     : Uint2B
+   &amp;#43;0x064 StallScaleFactor : Uint4B
+   &amp;#43;0x068 Unused1          : [3] Ptr64 Void
+   &amp;#43;0x080 KernelReserved   : [15] Uint4B
+   &amp;#43;0x0bc SecondLevelCacheSize : Uint4B
+   &amp;#43;0x0c0 HalReserved      : [16] Uint4B
+   &amp;#43;0x100 Unused2          : Uint4B
+   &amp;#43;0x108 KdVersionBlock   : Ptr64 Void
+   &amp;#43;0x110 Unused3          : Ptr64 Void
+   &amp;#43;0x118 PcrAlign1        : [24] Uint4B
+   &amp;#43;0x180 Prcb             : _KPRCB&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Şimdi odağımızı çevirdiğimiz koda baktığımızda ilk olarak &lt;strong&gt;gs:188&lt;/strong&gt; işaret edilen bölüm alınmakta. Windbg&amp;rsquo;dan elde ettiğimiz çıktı ile KPCR yapıya baktığımızda bu kısmın &lt;strong&gt;0x180 Prcb _KPRCB&lt;/strong&gt; alanından bir bölüme işaret ettiğini anlayabiliriz:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;dt nt!_KPRCB
+   &amp;#43;0x000 MxCsr            : Uint4B
+   &amp;#43;0x004 LegacyNumber     : UChar
+   &amp;#43;0x005 ReservedMustBeZero : UChar
+   &amp;#43;0x006 InterruptRequest : UChar
+   &amp;#43;0x007 IdleHalt         : UChar
+   &amp;#43;0x008 CurrentThread    : Ptr64 _KTHREAD&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;code&gt;gs:188h&lt;/code&gt; olduğu için KRPCB yapısından KTHREAD yapısına işaret eden &lt;strong&gt;+0x008 CurrentThread&lt;/strong&gt; alınmakta. &lt;strong&gt;KTHREAD&lt;/strong&gt; yapısının ne olduğunu anlamak için yine &lt;a href=&#34;https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/ke/kthread/index.htm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Geoff Chappell&lt;/a&gt;&amp;lsquo;in makalesinden yararlanabiliriz:&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&amp;ldquo;KTHREAD yapısı, ETHREAD yapısının çekirdek kısmıdır. ETHREAD, Nesne Yöneticisi (Object Manager) aracılığıyla sunulan iş parçacığı nesnesidir. KTHREAD ise bunun temel çekirdeğini oluşturur.&amp;rdquo;&lt;/p&gt;
+
+&lt;/blockquote&gt;
+&lt;p&gt;Yani bildiğimiz ETHREAD yapısının kernel versiyonu. Thread yürütme/yönetimi için Kernel tarafından ihtiyaç duyulan birçok önemli bilgiyi içeriyor bu yapı. Bunlardan biri de bu yapıda TEB&amp;rsquo;in adresi bulunmasıdır:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;kd&amp;gt; dt nt!_KTHREAD
+...
+   &amp;#43;0x080 SystemCallNumber : Uint4B
+   &amp;#43;0x084 ReadyTime        : Uint4B
+   &amp;#43;0x088 FirstArgument    : Ptr64
+...
+   &amp;#43;0x0f0 Teb              : Ptr64 Void&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&amp;lsquo;ın son kısımlarında ise KTHREAD yapısından &lt;strong&gt;SystemCallNumber&lt;/strong&gt; ve &lt;strong&gt;FirstArgument&lt;/strong&gt; bayrakların ayarlandığını görebiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bundan sonra akış &lt;strong&gt;KiSystemServiceStart&lt;/strong&gt;&amp;lsquo;a yönlendiriliyor.&lt;/p&gt;
+&lt;h3&gt;Syscall Numarasının Belirlenmesi: &lt;strong&gt;KiSystemServiceStart&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;syscall-numarasının-belirlenmesi-kisystemservicestart&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#syscall-numaras%c4%b1n%c4%b1n-belirlenmesi-kisystemservicestart&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Yapılan syscall&amp;rsquo;ın ilk temelleri burada atılmaya başlanıyor.&lt;/p&gt;
+&lt;p&gt;Bir syscall yapıldığında, içerdiği syscall index&amp;rsquo;le beraber &lt;strong&gt;Table Identifier&lt;/strong&gt; bilgisi de içermektedir. Kafanız karışmaması için bunu bir fotoğraf üzerinden anlatayım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/byte-diagram.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bitler sağdan sola okunduğundan 0 ila 11 bit System Call Index&amp;rsquo;ın bitini barındırır. 12 ila 13 bit arası ise Table Identifier&amp;rsquo;ın biti barındırır. Bundan sonraki bitler kullanılmaz. Şimdi ki durağımız olan &lt;strong&gt;KiSystemServiceStart&lt;/strong&gt; tam da bu konuyla alakalı:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Şimdi kafanızda daha iyi oturması için bir senaryo oluşturalım. Diyelim ki ntdll.dll&amp;rsquo;den NtOpenProcess için syscall yapıldı. Bu senaryoda Syscall&amp;rsquo;ın yapılmasını şöyle düşünmenizi istiyorum: içi beyaz sünger dolu kutu gibi düşünmenizi istiyorum.&lt;/p&gt;
+&lt;p&gt;Diyelim ki biri tarafından içinde iki tane hediye olan bu kutuyu aldınız. İçini açtığınızda en üstünde gereksiz beyaz sünger olduğunu gördüğünüz. Beyaz süngerin altında ise iki tane hediye bulunmakta. Normal bir insan gibi  üsteki süngerleri kaldırır ve altında duran hediyeleri alırız demi?&lt;/p&gt;
+&lt;p&gt;Syscall çağırısı kernel alanından KiSystemServiceStart&amp;rsquo;a ulaştıktan sonra KiSystemServiceStart fonksiyonu aynen bunu yapıyor. Bu gereksiz süngerleri (kabaca kullanılmayan bitleri) kaldırıyor ve ilk olarak birinci eşyayı (Table Identifier) ve ikinci eşyayı (System Call Index) alıyor.&lt;/p&gt;
+&lt;p&gt;Bu örnekten sonra fonksiyona tekrar göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Örneğimizde NtOpenProcess&amp;rsquo;i söylemiştim. NtOpenProcess&amp;rsquo;in ssn numarası &lt;strong&gt;0x26&lt;/strong&gt;&amp;lsquo;dır. Yani bu kısımda eax&amp;rsquo;ın 26h değeri barındırdığını düşünürsek:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-asm&#34; data-lang=&#34;asm&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;mov&lt;/span&gt; &lt;span class=&#34;no&#34;&gt;edi&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;eax&lt;/span&gt;     &lt;span class=&#34;c1&#34;&gt;; eax = 0x26 (0010 0110)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;shl&lt;/span&gt; &lt;span class=&#34;no&#34;&gt;edi&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;7&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Burada yapılan işlem tam olarak aşağıda gösterildiği gibidir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img6.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yani 7 bit sağ kaydırmadan sonra elde ettiğimiz değer tamamen 0 oluyor ve edi register&amp;rsquo;ı 0x0 değeri almış olur. Gereksiz bitleri kaldırdığımıza göre Table Identifier&amp;rsquo;ı alalım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;and edi,20h     ; edi = 0x20 (1000 00)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Burada yapılan işlem tam olarak aşağıda gösterildiği gibidir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yani NtOpenProcess için alacağımız Table Identifier&amp;rsquo;ın sonucu 0x0 olacaktır.&lt;/p&gt;
+&lt;p&gt;Fakat bu durum her zaman böyle değildir. SSN numarası eğer 1000h ile 1FFFh arasındaysa Table Identifier değeri 0x20 olacaktır. Bu API&amp;rsquo;lar Windows GUI ile ilgilidir.&lt;/p&gt;
+&lt;p&gt;Eğer ki Syscall Numarası 0h ile FFFh arasındaysa, örneğimizde olduğu gibi Table Identifier değeri 0x0 olacaktır. Bu API&amp;rsquo;lar ise ntdll.dll ile ilgilidir.&lt;/p&gt;
+&lt;p&gt;Şimdi ise Systemcall numarasının alındığı kısma geldik:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;and eax,0FFFh   // eax = 0x26 (0010 0110)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Burada yapılan işlem ise aşağıda gösterilmiştir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;0010 0110&lt;/strong&gt; (Hex: 0x26) sonucunu elde ediyoruz. Bu ise NtOpenProcess&amp;rsquo;in Systemcall numarasıdır.&lt;/p&gt;
+&lt;p&gt;Kafamızda daha iyi oturması için herhangi bir GUI ile alakalı bir API seçelim ve bu adımları ona da uygulayalım. &lt;strong&gt;win32u.dll&lt;/strong&gt;&amp;lsquo;den GUI ile alakalı bir API seçelim ve bu seçtiğimiz API&amp;rsquo;in Table Identifier değerini ve SSN&amp;rsquo;i hesaplayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img16.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NtUserCreateWindowEx&lt;/strong&gt; GUI ile alakalı bir API&amp;rsquo;dir ve win32u.dll&amp;rsquo;in içinde bulunur. SSN Numarası ise &lt;strong&gt;106F&lt;/strong&gt;. Bunun işlendiği varsayarsak:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;mov edi,eax ; eax = 0x106F (0001 0000 0110 1111)
+shl edi,7&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu işlem tam olarak şöyle:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img17.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;7 bit sola kaydırdığımızda aldığımız sonuç &lt;strong&gt;20h&lt;/strong&gt; oluyor. Daha sonra Table Identifier değerini alalım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;and edi,20h ; edi = 0x20 (1000 00)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu kodda yapılan işlem aşağdaki gibidir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img18.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yani Table Identifier değeri 0x20 (32) oluyor.&lt;/p&gt;
+&lt;p&gt;Yani her zaman Table Identifier değeri 0x0 olmuyor. Önceden anlattığım gibi, eğer GUI ile alakalı bir API&amp;rsquo;in ssn numarası işleniyorsa table Identifier değeri 0x20 olacaktır. 0x0 olması takdirde ntdll.dll&amp;rsquo;in içerisinden bir API olduğunu anlayabiliriz.&lt;/p&gt;
+&lt;p&gt;Son olarak GUI API&amp;rsquo;in SSN numarasını çıkaralım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;and eax,0FFFh   ; eax = 0x106F&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu kodda yapılan işlem aşağıdaki gibidir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img19.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Sonucumuz &lt;strong&gt;0001000001101111&lt;/strong&gt; yani 0x106F değerine denk gelmektedir.&lt;/p&gt;
+&lt;p&gt;Böylece &lt;strong&gt;KiSystemServiceStart&lt;/strong&gt; fonksiyonunun amacı, işlenilen syscall&amp;rsquo;ı ve Table Identifier değerlerini çıkarmak. Bu kısımdan sonra artık akış &lt;strong&gt;KiSystemServiceRepeat&lt;/strong&gt;&amp;rsquo;e yöneliyor.&lt;/p&gt;
+&lt;h3&gt;Kernel Rutinin Hesaplanması: &lt;strong&gt;KiServiceSystemRepeat&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kernel-rutinin-hesaplanması-kiservicesystemrepeat&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kernel-rutinin-hesaplanmas%c4%b1-kiservicesystemrepeat&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Artık Syscall numarası belirlendikten sonra bu fonksiyonda ilk olarak SSDT&amp;rsquo;nin adresi alınmakta:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img9.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Fakat ilgi çeken kısım ise SSDT&amp;rsquo;nin adresi alındıktan sonra rbx&amp;rsquo;in değerleri kontrol ediliyor. Hatırlayalım, rbx register&amp;rsquo;ı hangi adresi tutuyordu?&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;KiSystemServiceUser&lt;/strong&gt; başlığında gördüğümüz gibi rbx register&amp;rsquo;ı, _KPRCB altında &lt;code&gt;+0x008 CurrentThread    : Ptr64 _KTHREAD&lt;/code&gt; yapıyı tutmakta. Bu yapıda neyi kontrol ettiğine bir bakalım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;gt; dt nt!_KTHREAD
+   ...
+   &amp;#43;0x078 ThreadFlagsSpare : Pos 0, 2 Bits
+   &amp;#43;0x078 AutoAlignment    : Pos 2, 1 Bit
+   &amp;#43;0x078 DisableBoost     : Pos 3, 1 Bit
+   &amp;#43;0x078 AlertedByThreadId : Pos 4, 1 Bit
+   &amp;#43;0x078 QuantumDonation  : Pos 5, 1 Bit
+   &amp;#43;0x078 EnableStackSwap  : Pos 6, 1 Bit
+   &amp;#43;0x078 GuiThread        : Pos 7, 1 Bit&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu yapıdan &lt;strong&gt;GuiThread&lt;/strong&gt; flag&amp;rsquo;ın ayarlanıp ayarlanmadığını kontrol edilmektedir. Eğer ayarlanmamışsa direkt bu koşullardan atlanır.&lt;/p&gt;
+&lt;p&gt;İşin garip kısmı da ileride de göreceğimiz gibi, thread ilk olarak bu rutini çalıştırdığında GUI ile alakalı bir API&amp;rsquo;in işlenip işlenmediğini bilmiyor. Yani bir farklı deyişle, Kernel henüz mevcut Thread&amp;rsquo;ın bir GUI fonksiyonu işleyip işlemediğini bilmiyor. Dolayasıyla sonuç ne olursa olsun ilk kısımda burası her zaman atlanacaktır. İlerideki  analizde göreceksiniz ki hesaplamalardan sonra akış, eğer GUI ile alakalı bir API işleniyorsa bu kısma tekrardan yönlendirilecek.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img10.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;SSDT&amp;rsquo;nin adresi alındıktan sonra  bir karşılaştırma yapılıyor. Açıklamadan göreceğiniz üzere Syscall numarası, &lt;strong&gt;r10+rdi+10h&lt;/strong&gt; adresindeki değerle karşılaştırıyor. r10 register&amp;rsquo;ı SSDT adresini barındırırken rdi değeri ise yukarıda gördüğümüz gibi Table Identifier sonucunu taşımaktadır. Örneğimizin yine NtOpenProcess olduğunu düşünürsek Table Identifier&amp;rsquo;ın 0x0 olduğunu varsayabiliriz.&lt;/p&gt;
+&lt;p&gt;Bu koşulun amacı alınan syscall numarasının GUI ile alakalı bir API&amp;rsquo;a ait olup olmadığıdır. Eğer ait ise &lt;strong&gt;loc_14068DAC7&lt;/strong&gt; fonksiyonuna yönlendirilir. Değilse işlemlere devam edilir.&lt;/p&gt;
+&lt;p&gt;Şimdi ise büyünün gerçekleştiği kısma geliyoruz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img11.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Eğer SSDT dökümanımı okuduysanız SSDT tablosunu kullanarak mutlak adrese erişmek için bazı formüller kullanıyorduk. Bu formülleri de iredteam kaynağından almıştım. Bu kısım tam olarak bununla ilgili. Detaya geçmeden önce formülleri bir hatırlayalım.&lt;/p&gt;
+&lt;p&gt;İlk olarak offset&amp;rsquo;i hesaplıyorduk:&lt;/p&gt;
+&lt;div align=&#34;center&#34;&gt;
+&lt;br&gt;
+&lt;b&gt;
+&lt;i&gt;
+Offset = KiServiceTableAddress + 4 * SSN
+&lt;/b&gt;
+&lt;/i&gt;
+&lt;/div&gt;
+&lt;p&gt;Buradaki formülün karşılığını assembly kodlarında görebiliriz:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;movsxd  r11, dword ptr [r10&amp;#43;rax*4] ; Offset&amp;#39;i hesapla&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;r10 register&amp;rsquo;da SSDT adresi, rax&amp;rsquo;ta SSN numarası bulunmakta.&lt;/p&gt;
+&lt;p&gt;Yine SSDT dökümanında, elde ettiğimiz offset değeri ile ilgili kernel rutini hesaplıyorduk:&lt;/p&gt;
+&lt;div align=&#34;center&#34;&gt;
+&lt;br&gt;
+&lt;b&gt;
+&lt;i&gt;
+ KernelRoutineAddress = KiServiceTableAddress + ( Offset &gt;&gt;&gt; 4 )
+&lt;/b&gt;
+&lt;/i&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu kısmın assembly karşılığı ise şu şekilde:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;mov     rax, r11
+sar     r11, 4          ; Elde edilen offset değerini 4 bit sağ kaydır
+add     r10, r11        ; Kaydırma sonucunu SSDT adresiyle toplayarak mutlak adresi hesapla&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Yani SSDT&amp;rsquo;te öğrendiğimiz formüller kullanılarak asıl adres hesaplanıyor. Böylece canlı bir şekilde de formülleri görmüş olduk.&lt;/p&gt;
+&lt;p&gt;Daha sonra edi register&amp;rsquo;ın değeri &lt;strong&gt;0x20&lt;/strong&gt; değeri ile karşılaştırılıyor:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;cmp edi,20h
+jnz short loc_14068D270&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Artık bunun ne anlama geldiğini biliyoruz. İşlenilen API&amp;rsquo;in GUI API&amp;rsquo;a ait olup olmadığı kontrol ediliyor. Bunun için de alınan Table Identifier değeri kullanılıyor. Eğer işlenilen API, GUI ile alakalı ise bu kısma yönlendiriliyor:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img12.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bu başlıkta ilk olarak bahsettiğim konuya geldik. Eğer edi gerçekten 0x20 ise, bu bir GUI API&amp;rsquo;in işlendiğini gösterir ve mevcut thread&amp;rsquo;ı &lt;strong&gt;KiConvertGuiThread&lt;/strong&gt; ile bir GUI Thread&amp;rsquo;e dönüştürür. Sonrada akış tekrardan KiSystemServiceRepeat&amp;rsquo;e yönlendirilir&lt;/p&gt;
+&lt;p&gt;Artık işlenilen syscall&amp;rsquo;ın GUI ile alakalı olup olmadığı belirlendiğinde ve hesaplamalar yapıldıktan sonra akış KiSystemServiceGdiTebAccess&amp;rsquo;e yönlendirilir. Ardından hesaplanılan adrese yönlendirmek için akış &lt;strong&gt;KiSystemServiceCopyEnd&lt;/strong&gt;&amp;lsquo;den devam ediyor:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img13.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;KiSystemServiceCopyEnd&lt;/strong&gt;&amp;rsquo;nin adresine yönlendirmeden önce bu adresi rax&amp;rsquo;ın değeri kadarıyla çıkartıyor yani akış, KiSystemServiceCopyStart kısmına aktarılıyor.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Kernel Rutine Yönlendirme: KiSystemServiceCopyEnd&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kernel-rutine-yönlendirme-kisystemservicecopyend&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kernel-rutine-y%c3%b6nlendirme-kisystemservicecopyend&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img14.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bu fonksiyonda dikkatimizi çeken kısım ise akış, hesaplanan kernel rutin adresine yönlendirilmesidir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img15.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;r10 register&amp;rsquo;da hesaplanan rutin adresi bulunmaktadır. rax register&amp;rsquo;a adres aktarılarak adres çağrılıyor.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Statik Analiz Sonucu&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;statik-analiz-sonucu&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#statik-analiz-sonucu&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Statik analizle incelediğimizde kernel alanında syscall&amp;rsquo;ın şu şekilde işlendiğini anlayabiliriz:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Durak 1 - KiSystemServiceUser&lt;/strong&gt;: Geçerli Thread için KPRCB yapısından CurrentThread yapı alınır, &lt;strong&gt;SystemCallNumber&lt;/strong&gt; ve &lt;strong&gt;FirstArgument&lt;/strong&gt; bayrakları ayarlanır.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Durak 2 - KiSystemServiceStart&lt;/strong&gt;: İşlenilecek syscall&amp;rsquo;ın numarasını ve Table Identifier değerlerini çıkarır.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Durak 3 - KiSystemRepeat&lt;/strong&gt;: Syscall işlenme sürecin en önemli durağı. İşlenilen syscall&amp;rsquo;ın GUI ile ilgili olup olmadığı belirlenir ve ilgili rutin adres hesaplanır.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Durak 4 - KiSystemServiceCopyEnd&lt;/strong&gt;: Artık syscall işlenme sürecin son durağı. Akış, hesaplanılan adrese yönlendirilir ve işlemler tamamlanmış olur.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;&lt;strong&gt;Dinamik Analiz&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;dinamik-analiz&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#dinamik-analiz&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Sanal makinemize bağlı Windbg ile bu süreçleri yakından takip edebiliriz. Statik analizde öğrendiğimiz şeyleri dinamik olarak da görelim.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemCall64&lt;/strong&gt;&amp;rsquo;e Breakpoint Eklemek&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemcall64e-breakpoint-eklemek&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemcall64e-breakpoint-eklemek&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;KiSystemCall64&amp;rsquo;ün adresini okuyarak başlayabiliriz. Bunun için aşağıdaki komut ile adresini okuyabiliriz:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;kd&amp;gt; rdmsr c0000082
+msr[c0000082] = fffff802`5b21a1c0&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;İlk olarak windbg’da KiSystemCall64’e bp koyarak başlamıştım ancak sakın direkt olarak buraya bir bp koymayın yoksa PatchGuard selam verecektir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img20.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yani BSOD veriyor. Tekrar tekrar analiz ettiğimde nedenini anladım. Ayrıca bunu anlamamda stackoverflow&amp;rsquo;da bu sorunun üzerine &lt;a href=&#34;https://stackoverflow.com/questions/65367333/breakpoint-setting-in-ntkisystemcall64-not-working&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;konu açan&lt;/a&gt; kişi sayesinde netleştirmiş oldum.&lt;/p&gt;
+&lt;p&gt;KiSystemCall64 kısmın ilk kısımlarına göz atarsanız Windows çekirdek hata ayıklama mekanizması tarafından gerekli olan kernel stack&amp;rsquo;ın ayarlandığını göreceksiniz. Yani buradaki çözüm bu stack ayarlandıktan sonraki kısma bir bp koymak olacaktır:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img21.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Statik analizde buna dikkat etmemiştim ancak windbg&amp;rsquo;da daha iyi anladım. İlk başlarda stack ayarlamanın yapıldığını görebiliriz. Aşağıda gösterilen kısma bir bp koyduğumda bir sıkıntı olmadığını gözlemledim:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img22.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;İşte sonucu:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img23.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Başarılı bir şekilde tetikleniyor. Artık işlenilecek rastgele syscall&amp;rsquo;ı analiz edebiliriz!&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemserviceuser-1&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemserviceuser-1&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Analize başlamadan önce bilmediğimiz bir syscall yapıldığı için hangi API için syscall yapıldığına göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img24.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Hızlı bir şekilde formülleri kullandığımızda, benim için &lt;strong&gt;1a3&lt;/strong&gt; numaralı NtSetIoCompletion API&amp;rsquo;i tetiklenmiş.&lt;/p&gt;
+&lt;p&gt;Statik analizimizde ilk durağın &lt;strong&gt;KiSystemServiceUser&lt;/strong&gt; olduğunu görmüştük. Buraya bir bp koyarak akışı devam ettirelim:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;kd&amp;gt; bp ntkrnlmp!KiSystemServiceUser
+kd&amp;gt; g
+Breakpoint 1 hit
+nt!KiSystemServiceUser:
+fffff802`5ac1264d c645ab02        mov     byte ptr [rbp-55h],2&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu API&amp;rsquo;in ilk kısımlarında _KPRCB içerisinden KTHREAD yapısına işaret eden Current Thread yapının alındığını görmüştük. Windbg&amp;rsquo;da bunu görebiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img25.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yapının adresi alındıktan sonra &lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&amp;lsquo;ın son kısmında ayarlamalar yapıldığını tekrar görebiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img26.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bu ayarlamarın yapıldıktan sonraki kısmına bir bp koyalım ve aktarılan değerlere göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img27.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Ayarlanan Systemcall numarası ve FirstArgument bayrakların değerlerini görebiliriz. Ayrıca Teb&amp;rsquo;in adresini de.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemServiceStart&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemservicestart&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemservicestart&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Artık syscall ve Table Identifier değerlerini çıkaran &lt;strong&gt;KiSystemServiceStart&lt;/strong&gt; API&amp;rsquo;a bp koyalım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;kd&amp;gt; g
+Breakpoint 4 hit
+nt!KiSystemServiceStart:
+fffff802`5ac12770 4889a390000000  mov     qword ptr [rbx&amp;#43;90h],rsp&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu kısımda artık neler yapıldığını bilsek de bir kısaca göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img28.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Şimdi benim debugger&amp;rsquo;da tetiklenen syscall numarası 0x1a3 olduğu için bu değerle yapılan işlemleri tekrar edelim. Tekrardan zarar gelmez:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;mov edi eax     ; eax = 0x1a3 (0001 1010 0011)
+shr edi,7&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu komutlar çalıştığında şu sonucu almamız gerekecek:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img29.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Sonucumuz 0000 0011 (3) olacaktır. Windbg&amp;rsquo;da bu kısmı çalıştırıp sonucu doğrulayabiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img31.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Çıktıdan gördüğümüz gibi kaydırma işleminden sonra &lt;strong&gt;3&lt;/strong&gt; değeri alınıyor.&lt;/p&gt;
+&lt;p&gt;Şimdi kaydırma işleminden sonra Table Identifier&amp;rsquo;ı alalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img30.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Sonucumuz &lt;strong&gt;0&lt;/strong&gt;. Önceden anlattığım gibi eğer Table Identifier değeri 0 ise ntdll.dll API&amp;rsquo;a ait olduğunu anlayabiliriz. Doğrulamak için windbg&amp;rsquo;ı kullanalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img32.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Son olarak ise Systemcall numarası alınacak:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;and eax,0FFFh   ; eax = 0x1a3 (0001 1010 0011)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Aşağıda bu işlem gösterilmiştir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img33.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;İşlem sonucunda &lt;strong&gt;0001 1010 0011&lt;/strong&gt; yani 0x1a3 değerini elde ediyoruz. Yine doğrulamak için Windbg&amp;rsquo;ı kullanalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img34.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü üzere systemcall numarası alınmakta. Artık Syscall ve Table Identifier değerleri çıkarıldıktan sonra bu fonksiyonla işimiz bitiyor ve akış, &lt;strong&gt;KiSystemServiceRepeat&lt;/strong&gt;&amp;rsquo;e yöneliyor.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemServiceRepeat&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemservicerepeat&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemservicerepeat&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Syscall ve Table Identifier değerleride alındıktan sonra artık bu durakta adresin hesaplanacağını biliyoruz.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img35.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Tekrar etmekten zarar gelmez, SSDT&amp;rsquo;nin adresi alınması ardından işlenilen syscall numaranın GUI API&amp;rsquo;a ait olup olunmadığı karşılaştırılıyor. Ne olursa olsun thread ilk defa bu kısma gerdiğinde her zaman bu kısmı atlayacak çünkü önceden de anlattığım gibi, thread ilk defa bu kısma geldiğinde işlenilen API&amp;rsquo;in GUI ile alakalı olup olmadığını bilmiyor. İlerideki akışta hesaplamalardan sonra işlenilen API&amp;rsquo;in GUI ile alakalı olduğu tespit edildiğinde bu fonksiyonun başına tekrar yönlendirilecek.&lt;/p&gt;
+&lt;p&gt;Bu koşullar atladığında en önemli kısım geliyor. Artık adresin hesaplanması yapılıyor:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img36.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;r10 register&amp;rsquo;da SSDT&amp;rsquo;nin adresi bulunmakta. r11 register&amp;rsquo;a SSDT tablosunda işlenilen API&amp;rsquo;in mutlak adresine karşılık gelen Offset hesaplanıyor. Formülümüzü tekrardan hatırlayalım:&lt;/p&gt;
+&lt;div align=&#34;center&#34;&gt;
+&lt;br&gt;
+&lt;b&gt;
+&lt;i&gt;
+Offset = KiServiceTableAddress + 4 * SSN
+&lt;/b&gt;
+&lt;/i&gt;
+&lt;/div&gt;
+&lt;p&gt;Doğrulamak için offset&amp;rsquo;in hesaplandığı kısmı çalıştırıp elde edilen değere göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img37.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Elde edilen offset değerin &lt;strong&gt;0x637dd01&lt;/strong&gt; olduğunu görebiliriz.&lt;/p&gt;
+&lt;p&gt;Şimdi ise offset değerini kullanarak mutlak adresi hesapladığı kısmi çalıştıralım ve hesaplanan adrese bakalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img38.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Formülümüzü tekrar hatırlayalım arkadaşlar:&lt;/p&gt;
+&lt;div align=&#34;center&#34;&gt;
+&lt;br&gt;
+&lt;b&gt;
+&lt;i&gt;
+ KernelRoutineAddress = KiServiceTableAddress + ( Offset &gt;&gt;&gt; 4 )
+&lt;/b&gt;
+&lt;/i&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu formül ile hesaplamadan sonra &lt;strong&gt;0xfffff8025aeffa80&lt;/strong&gt; adresi elde ettim ve kontrol ettiğimde NtSetIoCompletion&amp;rsquo;a ait olduğunu doğruladım.&lt;/p&gt;
+&lt;p&gt;Adres hesaplamasından sonra edi&amp;rsquo;nin değeri 0x20 ile karşılaştırdığını tekrar görüyoruz. Artık bunun ne anlama geldiğini biliyoruzdur.&lt;/p&gt;
+&lt;p&gt;Eğer sizde tetiklenen Syscall numarası GUI ile alakalı bir API&amp;rsquo;a ait ise bu koşul sağlanacaktır. Benimkinde tetiklenen API, GUI ile ilgili olmadığından burası atlanacaktır.&lt;/p&gt;
+&lt;p&gt;Atlamadan sonra akışın &lt;strong&gt;KiSystemServiceGdiTebAccess&lt;/strong&gt;&amp;rsquo;e yönlendirdiğini göreceksiniz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img39.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Artık bu kısımlarda yapılan işlemlere göz atmamıza gerek yok. Zira artık işlenilen syscall&amp;rsquo;ın adresi belirlendi ve artık buraya yönlendirimeye hazırlanılacak. Ancak statik analizimizde gördüğümüz gibi bu yönlendirme &lt;strong&gt;KiSystemServiceCopyEnd&lt;/strong&gt;&amp;rsquo;e gerçekleşecek ve bu fonksiyonun sonuna göz attığınızda KiSystemServiceCopyEnd&amp;rsquo;in gerisine yönlendirdiğini göreceksiniz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img40.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;jmp r11 olan kısma bir bp koyalım ve akış bu kısma geldiğinde bir ileri götürelim ve nereye yönlendirdiğine bir bakalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img41.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bazı verilerin kopyalanması için &lt;strong&gt;KiSystemServiceCopyStart&lt;/strong&gt;&amp;lsquo;a yönlendirdiğini göreceksiniz. Artık bu kısımdan sonra ilgili adrese yönlendirilmek üzere &lt;strong&gt;KiSystemServiceCopyEnd&lt;/strong&gt;&amp;rsquo;e yönlenecek.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemServiceCopyEnd&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemservicecopyend&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemservicecopyend&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Artık syscall işlenmesi bitti ve hesaplanan adresi yönlendirme noktasına geldik:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img42.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Burada dikkatimizi çeken kısım rax register&amp;rsquo;a r10&amp;rsquo;un değeri verilmesi. r10 register&amp;rsquo;ı hesaplanan adresi taşımakta. Adresin çağırıldığı noktaya bp koyalım ve bir ileri götürelim:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img43.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Başarılı bir şekilde NtSetIoCompletion&amp;rsquo;a yönlendirdiğini görebiliriz.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Sonuç&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;sonuç&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#sonu%c3%a7&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Arkadaşlar umarım bu blog size yararlı olmuştur.&lt;/p&gt;
+&lt;p&gt;Ek olarak, bu analizimde zorlandığım süreçte bana cidden katkısı olan Alice&amp;rsquo;in &lt;a href=&#34;https://alice.climent-pommeret.red/posts/a-syscall-journey-in-the-windows-kernel/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Syscall yolcuğu&lt;/a&gt; ile alakalı bloguna da göz atabilirsiniz. Gerçekten bu kaynak sayesinde analiz sırasında anlamadığım noktaları anlamamda çok katkısı oldu.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

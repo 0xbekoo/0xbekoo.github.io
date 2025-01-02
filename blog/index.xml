@@ -1,0 +1,1155 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>0xbekoo – Blogs</title>
+    <link>http://0xbekoo.github.io:1313/blog/</link>
+    <description>Recent content in Blogs on 0xbekoo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Tue, 31 Dec 2024 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="http://0xbekoo.github.io:1313/blog/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Windows Kernel&#39;da Syscall Araştırma Yolculuğum</title>
+      <link>http://0xbekoo.github.io:1313/blog/syscalls/</link>
+      <pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://0xbekoo.github.io:1313/blog/syscalls/</guid>
+      <description>
+        
+        
+        &lt;h2&gt;&lt;strong&gt;Giriş&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;giriş&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#giri%c5%9f&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.&lt;/p&gt;
+&lt;p&gt;Birkaç gün önce SSDT tablosu üzerine bir &lt;a href=&#34;https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;döküman&lt;/a&gt; paylaşmıştım. Bu dökümanda temel olarak SSDT&amp;rsquo;nin ne olduğunu, adreslerin nasıl hesaplandığı vs anlatmıştım. Dökümanın son kısmında ise öğrendiğimiz şeylerin bir kernel sürücüsünü hazırlamıştık.&lt;/p&gt;
+&lt;p&gt;Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğerbenim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel&amp;rsquo;da Syscall&amp;rsquo;ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!&lt;/p&gt;
+&lt;p&gt;Bu blogta, temel bilgiler olan NTAPI&amp;rsquo;ların ne olduğu ve syscall&amp;rsquo;ın nasıl işlendiği vs. gibi konulara yer vermeyeceğim. Zira &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;NTAPI Injection&lt;/strong&gt;&lt;/a&gt; dökümanında NTAPI&amp;rsquo;in ne olduğunu, &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/direct-syscalls&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Direct Systemcalls&lt;/strong&gt;&lt;/a&gt; dökümanında bir syscall&amp;rsquo;ın nasıl işlendiğini ve  temel olarak &lt;a href=&#34;https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;SSDT&lt;/strong&gt; dökümanında&lt;/a&gt; SSDT ve kernel&amp;rsquo;da syscall&amp;rsquo;ın nasıl işlendiğini daha önceden anlattım. Eğer temel şeylerle öğrenmeye başlayacaksınız bu dökümanlardan başlamak sizin için daha iyi olacaktır. Bu blogta nihai amacımız kernel alanında bir syscall&amp;rsquo;ın nasıl işlendiğini detaylı bir şekilde görmek olacak.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Statik Analiz&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;statik-analiz&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#statik-analiz&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Bir syscall işlendiğinde, ntdll.dll&amp;rsquo;den syscall yapıldığında kernel alanına geçişte ilk durağın KiSystemCall64 olduğunu biliyoruz. Statik olarak analizimizi buradan başlayacağız. IDA ortamında ntoskrnl.exe analiz etmekle başlayalım.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemserviceuser&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemserviceuser&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;KiSystemCall64/KiSystemCall64Shadow&lt;/strong&gt; kodlarına göz attığınızda akışın &lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&amp;lsquo;a doğru yönlendiğini göreceksiniz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&amp;lsquo;da syscall&amp;rsquo;ın işlenmesi için hazırlıklar yapılıyor:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Burada odağımızı &lt;code&gt;mov rbx,gs:188h&lt;/code&gt; kısmına çevirmemiz gerekiyor çünkü önemli bir yapı olan _KPCR yapısı içerisinden bir KTHREAD yapısı alınmakta.&lt;/p&gt;
+&lt;p&gt;Bu yapının ne olduğunu anlamak için &lt;a href=&#34;https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/amd64_x/kpcr.htm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Geoff Chappell, Software Analyst&lt;/a&gt;&amp;lsquo;ın açıklamasından yararlanabiliriz:&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&amp;ldquo;KPCR yapısı, &lt;strong&gt;Kernel Processor Control Region&lt;/strong&gt; anlamına gelir. Kernel, her mantıksal işlemci için bir KPCR yapısı tutar. KPCR, işlemci mimarisine son derece özeldir.&amp;rdquo;&lt;/p&gt;
+
+&lt;/blockquote&gt;
+&lt;p&gt;Yani kısaca aklımızda şöyle kalabilir bu yapıda işlemciye özel verileri saklamak için kullanılır. Yani baya önemli bir yapı.&lt;/p&gt;
+&lt;p&gt;x64 sistemlerde KPCR yapısı, gs:0 alanına işaret eder:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;kd&amp;gt; dt nt!_KPCR
+   &amp;#43;0x000 NtTib            : _NT_TIB
+   &amp;#43;0x000 GdtBase          : Ptr64 _KGDTENTRY64
+   &amp;#43;0x008 TssBase          : Ptr64 _KTSS64
+   &amp;#43;0x010 UserRsp          : Uint8B
+   &amp;#43;0x018 Self             : Ptr64 _KPCR
+   &amp;#43;0x020 CurrentPrcb      : Ptr64 _KPRCB
+   &amp;#43;0x028 LockArray        : Ptr64 _KSPIN_LOCK_QUEUE
+   &amp;#43;0x030 Used_Self        : Ptr64 Void
+   &amp;#43;0x038 IdtBase          : Ptr64 _KIDTENTRY64
+   &amp;#43;0x040 Unused           : [2] Uint8B
+   &amp;#43;0x050 Irql             : UChar
+   &amp;#43;0x051 SecondLevelCacheAssociativity : UChar
+   &amp;#43;0x052 ObsoleteNumber   : UChar
+   &amp;#43;0x053 Fill0            : UChar
+   &amp;#43;0x054 Unused0          : [3] Uint4B
+   &amp;#43;0x060 MajorVersion     : Uint2B
+   &amp;#43;0x062 MinorVersion     : Uint2B
+   &amp;#43;0x064 StallScaleFactor : Uint4B
+   &amp;#43;0x068 Unused1          : [3] Ptr64 Void
+   &amp;#43;0x080 KernelReserved   : [15] Uint4B
+   &amp;#43;0x0bc SecondLevelCacheSize : Uint4B
+   &amp;#43;0x0c0 HalReserved      : [16] Uint4B
+   &amp;#43;0x100 Unused2          : Uint4B
+   &amp;#43;0x108 KdVersionBlock   : Ptr64 Void
+   &amp;#43;0x110 Unused3          : Ptr64 Void
+   &amp;#43;0x118 PcrAlign1        : [24] Uint4B
+   &amp;#43;0x180 Prcb             : _KPRCB&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Şimdi odağımızı çevirdiğimiz koda baktığımızda ilk olarak &lt;strong&gt;gs:188&lt;/strong&gt; işaret edilen bölüm alınmakta. Windbg&amp;rsquo;dan elde ettiğimiz çıktı ile KPCR yapıya baktığımızda bu kısmın &lt;strong&gt;0x180 Prcb _KPRCB&lt;/strong&gt; alanından bir bölüme işaret ettiğini anlayabiliriz:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;dt nt!_KPRCB
+   &amp;#43;0x000 MxCsr            : Uint4B
+   &amp;#43;0x004 LegacyNumber     : UChar
+   &amp;#43;0x005 ReservedMustBeZero : UChar
+   &amp;#43;0x006 InterruptRequest : UChar
+   &amp;#43;0x007 IdleHalt         : UChar
+   &amp;#43;0x008 CurrentThread    : Ptr64 _KTHREAD&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;code&gt;gs:188h&lt;/code&gt; olduğu için KRPCB yapısından KTHREAD yapısına işaret eden &lt;strong&gt;+0x008 CurrentThread&lt;/strong&gt; alınmakta. &lt;strong&gt;KTHREAD&lt;/strong&gt; yapısının ne olduğunu anlamak için yine &lt;a href=&#34;https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/ke/kthread/index.htm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Geoff Chappell&lt;/a&gt;&amp;lsquo;in makalesinden yararlanabiliriz:&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&amp;ldquo;KTHREAD yapısı, ETHREAD yapısının çekirdek kısmıdır. ETHREAD, Nesne Yöneticisi (Object Manager) aracılığıyla sunulan iş parçacığı nesnesidir. KTHREAD ise bunun temel çekirdeğini oluşturur.&amp;rdquo;&lt;/p&gt;
+
+&lt;/blockquote&gt;
+&lt;p&gt;Yani bildiğimiz ETHREAD yapısının kernel versiyonu. Thread yürütme/yönetimi için Kernel tarafından ihtiyaç duyulan birçok önemli bilgiyi içeriyor bu yapı. Bunlardan biri de bu yapıda TEB&amp;rsquo;in adresi bulunmasıdır:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;kd&amp;gt; dt nt!_KTHREAD
+...
+   &amp;#43;0x080 SystemCallNumber : Uint4B
+   &amp;#43;0x084 ReadyTime        : Uint4B
+   &amp;#43;0x088 FirstArgument    : Ptr64
+...
+   &amp;#43;0x0f0 Teb              : Ptr64 Void&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&amp;lsquo;ın son kısımlarında ise KTHREAD yapısından &lt;strong&gt;SystemCallNumber&lt;/strong&gt; ve &lt;strong&gt;FirstArgument&lt;/strong&gt; bayrakların ayarlandığını görebiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bundan sonra akış &lt;strong&gt;KiSystemServiceStart&lt;/strong&gt;&amp;lsquo;a yönlendiriliyor.&lt;/p&gt;
+&lt;h3&gt;Syscall Numarasının Belirlenmesi: &lt;strong&gt;KiSystemServiceStart&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;syscall-numarasının-belirlenmesi-kisystemservicestart&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#syscall-numaras%c4%b1n%c4%b1n-belirlenmesi-kisystemservicestart&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Yapılan syscall&amp;rsquo;ın ilk temelleri burada atılmaya başlanıyor.&lt;/p&gt;
+&lt;p&gt;Bir syscall yapıldığında, içerdiği syscall index&amp;rsquo;le beraber &lt;strong&gt;Table Identifier&lt;/strong&gt; bilgisi de içermektedir. Kafanız karışmaması için bunu bir fotoğraf üzerinden anlatayım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/byte-diagram.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bitler sağdan sola okunduğundan 0 ila 11 bit System Call Index&amp;rsquo;ın bitini barındırır. 12 ila 13 bit arası ise Table Identifier&amp;rsquo;ın biti barındırır. Bundan sonraki bitler kullanılmaz. Şimdi ki durağımız olan &lt;strong&gt;KiSystemServiceStart&lt;/strong&gt; tam da bu konuyla alakalı:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Şimdi kafanızda daha iyi oturması için bir senaryo oluşturalım. Diyelim ki ntdll.dll&amp;rsquo;den NtOpenProcess için syscall yapıldı. Bu senaryoda Syscall&amp;rsquo;ın yapılmasını şöyle düşünmenizi istiyorum: içi beyaz sünger dolu kutu gibi düşünmenizi istiyorum.&lt;/p&gt;
+&lt;p&gt;Diyelim ki biri tarafından içinde iki tane hediye olan bu kutuyu aldınız. İçini açtığınızda en üstünde gereksiz beyaz sünger olduğunu gördüğünüz. Beyaz süngerin altında ise iki tane hediye bulunmakta. Normal bir insan gibi  üsteki süngerleri kaldırır ve altında duran hediyeleri alırız demi?&lt;/p&gt;
+&lt;p&gt;Syscall çağırısı kernel alanından KiSystemServiceStart&amp;rsquo;a ulaştıktan sonra KiSystemServiceStart fonksiyonu aynen bunu yapıyor. Bu gereksiz süngerleri (kabaca kullanılmayan bitleri) kaldırıyor ve ilk olarak birinci eşyayı (Table Identifier) ve ikinci eşyayı (System Call Index) alıyor.&lt;/p&gt;
+&lt;p&gt;Bu örnekten sonra fonksiyona tekrar göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Örneğimizde NtOpenProcess&amp;rsquo;i söylemiştim. NtOpenProcess&amp;rsquo;in ssn numarası &lt;strong&gt;0x26&lt;/strong&gt;&amp;lsquo;dır. Yani bu kısımda eax&amp;rsquo;ın 26h değeri barındırdığını düşünürsek:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-asm&#34; data-lang=&#34;asm&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;mov&lt;/span&gt; &lt;span class=&#34;no&#34;&gt;edi&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;eax&lt;/span&gt;     &lt;span class=&#34;c1&#34;&gt;; eax = 0x26 (0010 0110)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;shl&lt;/span&gt; &lt;span class=&#34;no&#34;&gt;edi&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;7&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Burada yapılan işlem tam olarak aşağıda gösterildiği gibidir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img6.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yani 7 bit sağ kaydırmadan sonra elde ettiğimiz değer tamamen 0 oluyor ve edi register&amp;rsquo;ı 0x0 değeri almış olur. Gereksiz bitleri kaldırdığımıza göre Table Identifier&amp;rsquo;ı alalım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;and edi,20h     ; edi = 0x20 (1000 00)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Burada yapılan işlem tam olarak aşağıda gösterildiği gibidir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yani NtOpenProcess için alacağımız Table Identifier&amp;rsquo;ın sonucu 0x0 olacaktır.&lt;/p&gt;
+&lt;p&gt;Fakat bu durum her zaman böyle değildir. SSN numarası eğer 1000h ile 1FFFh arasındaysa Table Identifier değeri 0x20 olacaktır. Bu API&amp;rsquo;lar Windows GUI ile ilgilidir.&lt;/p&gt;
+&lt;p&gt;Eğer ki Syscall Numarası 0h ile FFFh arasındaysa, örneğimizde olduğu gibi Table Identifier değeri 0x0 olacaktır. Bu API&amp;rsquo;lar ise ntdll.dll ile ilgilidir.&lt;/p&gt;
+&lt;p&gt;Şimdi ise Systemcall numarasının alındığı kısma geldik:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;and eax,0FFFh   // eax = 0x26 (0010 0110)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Burada yapılan işlem ise aşağıda gösterilmiştir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;0010 0110&lt;/strong&gt; (Hex: 0x26) sonucunu elde ediyoruz. Bu ise NtOpenProcess&amp;rsquo;in Systemcall numarasıdır.&lt;/p&gt;
+&lt;p&gt;Kafamızda daha iyi oturması için herhangi bir GUI ile alakalı bir API seçelim ve bu adımları ona da uygulayalım. &lt;strong&gt;win32u.dll&lt;/strong&gt;&amp;lsquo;den GUI ile alakalı bir API seçelim ve bu seçtiğimiz API&amp;rsquo;in Table Identifier değerini ve SSN&amp;rsquo;i hesaplayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img16.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NtUserCreateWindowEx&lt;/strong&gt; GUI ile alakalı bir API&amp;rsquo;dir ve win32u.dll&amp;rsquo;in içinde bulunur. SSN Numarası ise &lt;strong&gt;106F&lt;/strong&gt;. Bunun işlendiği varsayarsak:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;mov edi,eax ; eax = 0x106F (0001 0000 0110 1111)
+shl edi,7&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu işlem tam olarak şöyle:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img17.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;7 bit sola kaydırdığımızda aldığımız sonuç &lt;strong&gt;20h&lt;/strong&gt; oluyor. Daha sonra Table Identifier değerini alalım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;and edi,20h ; edi = 0x20 (1000 00)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu kodda yapılan işlem aşağdaki gibidir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img18.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yani Table Identifier değeri 0x20 (32) oluyor.&lt;/p&gt;
+&lt;p&gt;Yani her zaman Table Identifier değeri 0x0 olmuyor. Önceden anlattığım gibi, eğer GUI ile alakalı bir API&amp;rsquo;in ssn numarası işleniyorsa table Identifier değeri 0x20 olacaktır. 0x0 olması takdirde ntdll.dll&amp;rsquo;in içerisinden bir API olduğunu anlayabiliriz.&lt;/p&gt;
+&lt;p&gt;Son olarak GUI API&amp;rsquo;in SSN numarasını çıkaralım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;and eax,0FFFh   ; eax = 0x106F&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu kodda yapılan işlem aşağıdaki gibidir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img19.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Sonucumuz &lt;strong&gt;0001000001101111&lt;/strong&gt; yani 0x106F değerine denk gelmektedir.&lt;/p&gt;
+&lt;p&gt;Böylece &lt;strong&gt;KiSystemServiceStart&lt;/strong&gt; fonksiyonunun amacı, işlenilen syscall&amp;rsquo;ı ve Table Identifier değerlerini çıkarmak. Bu kısımdan sonra artık akış &lt;strong&gt;KiSystemServiceRepeat&lt;/strong&gt;&amp;rsquo;e yöneliyor.&lt;/p&gt;
+&lt;h3&gt;Kernel Rutinin Hesaplanması: &lt;strong&gt;KiServiceSystemRepeat&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kernel-rutinin-hesaplanması-kiservicesystemrepeat&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kernel-rutinin-hesaplanmas%c4%b1-kiservicesystemrepeat&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Artık Syscall numarası belirlendikten sonra bu fonksiyonda ilk olarak SSDT&amp;rsquo;nin adresi alınmakta:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img9.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Fakat ilgi çeken kısım ise SSDT&amp;rsquo;nin adresi alındıktan sonra rbx&amp;rsquo;in değerleri kontrol ediliyor. Hatırlayalım, rbx register&amp;rsquo;ı hangi adresi tutuyordu?&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;KiSystemServiceUser&lt;/strong&gt; başlığında gördüğümüz gibi rbx register&amp;rsquo;ı, _KPRCB altında &lt;code&gt;+0x008 CurrentThread    : Ptr64 _KTHREAD&lt;/code&gt; yapıyı tutmakta. Bu yapıda neyi kontrol ettiğine bir bakalım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;gt; dt nt!_KTHREAD
+   ...
+   &amp;#43;0x078 ThreadFlagsSpare : Pos 0, 2 Bits
+   &amp;#43;0x078 AutoAlignment    : Pos 2, 1 Bit
+   &amp;#43;0x078 DisableBoost     : Pos 3, 1 Bit
+   &amp;#43;0x078 AlertedByThreadId : Pos 4, 1 Bit
+   &amp;#43;0x078 QuantumDonation  : Pos 5, 1 Bit
+   &amp;#43;0x078 EnableStackSwap  : Pos 6, 1 Bit
+   &amp;#43;0x078 GuiThread        : Pos 7, 1 Bit&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu yapıdan &lt;strong&gt;GuiThread&lt;/strong&gt; flag&amp;rsquo;ın ayarlanıp ayarlanmadığını kontrol edilmektedir. Eğer ayarlanmamışsa direkt bu koşullardan atlanır.&lt;/p&gt;
+&lt;p&gt;İşin garip kısmı da ileride de göreceğimiz gibi, thread ilk olarak bu rutini çalıştırdığında GUI ile alakalı bir API&amp;rsquo;in işlenip işlenmediğini bilmiyor. Yani bir farklı deyişle, Kernel henüz mevcut Thread&amp;rsquo;ın bir GUI fonksiyonu işleyip işlemediğini bilmiyor. Dolayasıyla sonuç ne olursa olsun ilk kısımda burası her zaman atlanacaktır. İlerideki  analizde göreceksiniz ki hesaplamalardan sonra akış, eğer GUI ile alakalı bir API işleniyorsa bu kısma tekrardan yönlendirilecek.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img10.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;SSDT&amp;rsquo;nin adresi alındıktan sonra  bir karşılaştırma yapılıyor. Açıklamadan göreceğiniz üzere Syscall numarası, &lt;strong&gt;r10+rdi+10h&lt;/strong&gt; adresindeki değerle karşılaştırıyor. r10 register&amp;rsquo;ı SSDT adresini barındırırken rdi değeri ise yukarıda gördüğümüz gibi Table Identifier sonucunu taşımaktadır. Örneğimizin yine NtOpenProcess olduğunu düşünürsek Table Identifier&amp;rsquo;ın 0x0 olduğunu varsayabiliriz.&lt;/p&gt;
+&lt;p&gt;Bu koşulun amacı alınan syscall numarasının GUI ile alakalı bir API&amp;rsquo;a ait olup olmadığıdır. Eğer ait ise &lt;strong&gt;loc_14068DAC7&lt;/strong&gt; fonksiyonuna yönlendirilir. Değilse işlemlere devam edilir.&lt;/p&gt;
+&lt;p&gt;Şimdi ise büyünün gerçekleştiği kısma geliyoruz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img11.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Eğer SSDT dökümanımı okuduysanız SSDT tablosunu kullanarak mutlak adrese erişmek için bazı formüller kullanıyorduk. Bu formülleri de iredteam kaynağından almıştım. Bu kısım tam olarak bununla ilgili. Detaya geçmeden önce formülleri bir hatırlayalım.&lt;/p&gt;
+&lt;p&gt;İlk olarak offset&amp;rsquo;i hesaplıyorduk:&lt;/p&gt;
+&lt;div align=&#34;center&#34;&gt;
+&lt;br&gt;
+&lt;b&gt;
+&lt;i&gt;
+Offset = KiServiceTableAddress + 4 * SSN
+&lt;/b&gt;
+&lt;/i&gt;
+&lt;/div&gt;
+&lt;p&gt;Buradaki formülün karşılığını assembly kodlarında görebiliriz:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;movsxd  r11, dword ptr [r10&amp;#43;rax*4] ; Offset&amp;#39;i hesapla&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;r10 register&amp;rsquo;da SSDT adresi, rax&amp;rsquo;ta SSN numarası bulunmakta.&lt;/p&gt;
+&lt;p&gt;Yine SSDT dökümanında, elde ettiğimiz offset değeri ile ilgili kernel rutini hesaplıyorduk:&lt;/p&gt;
+&lt;div align=&#34;center&#34;&gt;
+&lt;br&gt;
+&lt;b&gt;
+&lt;i&gt;
+ KernelRoutineAddress = KiServiceTableAddress + ( Offset &gt;&gt;&gt; 4 )
+&lt;/b&gt;
+&lt;/i&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu kısmın assembly karşılığı ise şu şekilde:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;mov     rax, r11
+sar     r11, 4          ; Elde edilen offset değerini 4 bit sağ kaydır
+add     r10, r11        ; Kaydırma sonucunu SSDT adresiyle toplayarak mutlak adresi hesapla&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Yani SSDT&amp;rsquo;te öğrendiğimiz formüller kullanılarak asıl adres hesaplanıyor. Böylece canlı bir şekilde de formülleri görmüş olduk.&lt;/p&gt;
+&lt;p&gt;Daha sonra edi register&amp;rsquo;ın değeri &lt;strong&gt;0x20&lt;/strong&gt; değeri ile karşılaştırılıyor:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;cmp edi,20h
+jnz short loc_14068D270&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Artık bunun ne anlama geldiğini biliyoruz. İşlenilen API&amp;rsquo;in GUI API&amp;rsquo;a ait olup olmadığı kontrol ediliyor. Bunun için de alınan Table Identifier değeri kullanılıyor. Eğer işlenilen API, GUI ile alakalı ise bu kısma yönlendiriliyor:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img12.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bu başlıkta ilk olarak bahsettiğim konuya geldik. Eğer edi gerçekten 0x20 ise, bu bir GUI API&amp;rsquo;in işlendiğini gösterir ve mevcut thread&amp;rsquo;ı &lt;strong&gt;KiConvertGuiThread&lt;/strong&gt; ile bir GUI Thread&amp;rsquo;e dönüştürür. Sonrada akış tekrardan KiSystemServiceRepeat&amp;rsquo;e yönlendirilir&lt;/p&gt;
+&lt;p&gt;Artık işlenilen syscall&amp;rsquo;ın GUI ile alakalı olup olmadığı belirlendiğinde ve hesaplamalar yapıldıktan sonra akış KiSystemServiceGdiTebAccess&amp;rsquo;e yönlendirilir. Ardından hesaplanılan adrese yönlendirmek için akış &lt;strong&gt;KiSystemServiceCopyEnd&lt;/strong&gt;&amp;lsquo;den devam ediyor:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img13.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;KiSystemServiceCopyEnd&lt;/strong&gt;&amp;rsquo;nin adresine yönlendirmeden önce bu adresi rax&amp;rsquo;ın değeri kadarıyla çıkartıyor yani akış, KiSystemServiceCopyStart kısmına aktarılıyor.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Kernel Rutine Yönlendirme: KiSystemServiceCopyEnd&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kernel-rutine-yönlendirme-kisystemservicecopyend&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kernel-rutine-y%c3%b6nlendirme-kisystemservicecopyend&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img14.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bu fonksiyonda dikkatimizi çeken kısım ise akış, hesaplanan kernel rutin adresine yönlendirilmesidir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img15.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;r10 register&amp;rsquo;da hesaplanan rutin adresi bulunmaktadır. rax register&amp;rsquo;a adres aktarılarak adres çağrılıyor.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Statik Analiz Sonucu&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;statik-analiz-sonucu&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#statik-analiz-sonucu&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Statik analizle incelediğimizde kernel alanında syscall&amp;rsquo;ın şu şekilde işlendiğini anlayabiliriz:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Durak 1 - KiSystemServiceUser&lt;/strong&gt;: Geçerli Thread için KPRCB yapısından CurrentThread yapı alınır, &lt;strong&gt;SystemCallNumber&lt;/strong&gt; ve &lt;strong&gt;FirstArgument&lt;/strong&gt; bayrakları ayarlanır.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Durak 2 - KiSystemServiceStart&lt;/strong&gt;: İşlenilecek syscall&amp;rsquo;ın numarasını ve Table Identifier değerlerini çıkarır.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Durak 3 - KiSystemRepeat&lt;/strong&gt;: Syscall işlenme sürecin en önemli durağı. İşlenilen syscall&amp;rsquo;ın GUI ile ilgili olup olmadığı belirlenir ve ilgili rutin adres hesaplanır.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Durak 4 - KiSystemServiceCopyEnd&lt;/strong&gt;: Artık syscall işlenme sürecin son durağı. Akış, hesaplanılan adrese yönlendirilir ve işlemler tamamlanmış olur.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;&lt;strong&gt;Dinamik Analiz&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;dinamik-analiz&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#dinamik-analiz&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Sanal makinemize bağlı Windbg ile bu süreçleri yakından takip edebiliriz. Statik analizde öğrendiğimiz şeyleri dinamik olarak da görelim.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemCall64&lt;/strong&gt;&amp;rsquo;e Breakpoint Eklemek&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemcall64e-breakpoint-eklemek&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemcall64e-breakpoint-eklemek&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;KiSystemCall64&amp;rsquo;ün adresini okuyarak başlayabiliriz. Bunun için aşağıdaki komut ile adresini okuyabiliriz:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;kd&amp;gt; rdmsr c0000082
+msr[c0000082] = fffff802`5b21a1c0&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;İlk olarak windbg’da KiSystemCall64’e bp koyarak başlamıştım ancak sakın direkt olarak buraya bir bp koymayın yoksa PatchGuard selam verecektir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img20.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yani BSOD veriyor. Tekrar tekrar analiz ettiğimde nedenini anladım. Ayrıca bunu anlamamda stackoverflow&amp;rsquo;da bu sorunun üzerine &lt;a href=&#34;https://stackoverflow.com/questions/65367333/breakpoint-setting-in-ntkisystemcall64-not-working&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;konu açan&lt;/a&gt; kişi sayesinde netleştirmiş oldum.&lt;/p&gt;
+&lt;p&gt;KiSystemCall64 kısmın ilk kısımlarına göz atarsanız Windows çekirdek hata ayıklama mekanizması tarafından gerekli olan kernel stack&amp;rsquo;ın ayarlandığını göreceksiniz. Yani buradaki çözüm bu stack ayarlandıktan sonraki kısma bir bp koymak olacaktır:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img21.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Statik analizde buna dikkat etmemiştim ancak windbg&amp;rsquo;da daha iyi anladım. İlk başlarda stack ayarlamanın yapıldığını görebiliriz. Aşağıda gösterilen kısma bir bp koyduğumda bir sıkıntı olmadığını gözlemledim:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img22.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;İşte sonucu:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img23.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Başarılı bir şekilde tetikleniyor. Artık işlenilecek rastgele syscall&amp;rsquo;ı analiz edebiliriz!&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemserviceuser-1&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemserviceuser-1&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Analize başlamadan önce bilmediğimiz bir syscall yapıldığı için hangi API için syscall yapıldığına göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img24.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Hızlı bir şekilde formülleri kullandığımızda, benim için &lt;strong&gt;1a3&lt;/strong&gt; numaralı NtSetIoCompletion API&amp;rsquo;i tetiklenmiş.&lt;/p&gt;
+&lt;p&gt;Statik analizimizde ilk durağın &lt;strong&gt;KiSystemServiceUser&lt;/strong&gt; olduğunu görmüştük. Buraya bir bp koyarak akışı devam ettirelim:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;kd&amp;gt; bp ntkrnlmp!KiSystemServiceUser
+kd&amp;gt; g
+Breakpoint 1 hit
+nt!KiSystemServiceUser:
+fffff802`5ac1264d c645ab02        mov     byte ptr [rbp-55h],2&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu API&amp;rsquo;in ilk kısımlarında _KPRCB içerisinden KTHREAD yapısına işaret eden Current Thread yapının alındığını görmüştük. Windbg&amp;rsquo;da bunu görebiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img25.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yapının adresi alındıktan sonra &lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&amp;lsquo;ın son kısmında ayarlamalar yapıldığını tekrar görebiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img26.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bu ayarlamarın yapıldıktan sonraki kısmına bir bp koyalım ve aktarılan değerlere göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img27.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Ayarlanan Systemcall numarası ve FirstArgument bayrakların değerlerini görebiliriz. Ayrıca Teb&amp;rsquo;in adresini de.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemServiceStart&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemservicestart&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemservicestart&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Artık syscall ve Table Identifier değerlerini çıkaran &lt;strong&gt;KiSystemServiceStart&lt;/strong&gt; API&amp;rsquo;a bp koyalım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;kd&amp;gt; g
+Breakpoint 4 hit
+nt!KiSystemServiceStart:
+fffff802`5ac12770 4889a390000000  mov     qword ptr [rbx&amp;#43;90h],rsp&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu kısımda artık neler yapıldığını bilsek de bir kısaca göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img28.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Şimdi benim debugger&amp;rsquo;da tetiklenen syscall numarası 0x1a3 olduğu için bu değerle yapılan işlemleri tekrar edelim. Tekrardan zarar gelmez:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;mov edi eax     ; eax = 0x1a3 (0001 1010 0011)
+shr edi,7&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu komutlar çalıştığında şu sonucu almamız gerekecek:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img29.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Sonucumuz 0000 0011 (3) olacaktır. Windbg&amp;rsquo;da bu kısmı çalıştırıp sonucu doğrulayabiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img31.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Çıktıdan gördüğümüz gibi kaydırma işleminden sonra &lt;strong&gt;3&lt;/strong&gt; değeri alınıyor.&lt;/p&gt;
+&lt;p&gt;Şimdi kaydırma işleminden sonra Table Identifier&amp;rsquo;ı alalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img30.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Sonucumuz &lt;strong&gt;0&lt;/strong&gt;. Önceden anlattığım gibi eğer Table Identifier değeri 0 ise ntdll.dll API&amp;rsquo;a ait olduğunu anlayabiliriz. Doğrulamak için windbg&amp;rsquo;ı kullanalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img32.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Son olarak ise Systemcall numarası alınacak:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;and eax,0FFFh   ; eax = 0x1a3 (0001 1010 0011)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Aşağıda bu işlem gösterilmiştir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img33.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;İşlem sonucunda &lt;strong&gt;0001 1010 0011&lt;/strong&gt; yani 0x1a3 değerini elde ediyoruz. Yine doğrulamak için Windbg&amp;rsquo;ı kullanalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img34.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü üzere systemcall numarası alınmakta. Artık Syscall ve Table Identifier değerleri çıkarıldıktan sonra bu fonksiyonla işimiz bitiyor ve akış, &lt;strong&gt;KiSystemServiceRepeat&lt;/strong&gt;&amp;rsquo;e yöneliyor.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemServiceRepeat&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemservicerepeat&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemservicerepeat&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Syscall ve Table Identifier değerleride alındıktan sonra artık bu durakta adresin hesaplanacağını biliyoruz.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img35.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Tekrar etmekten zarar gelmez, SSDT&amp;rsquo;nin adresi alınması ardından işlenilen syscall numaranın GUI API&amp;rsquo;a ait olup olunmadığı karşılaştırılıyor. Ne olursa olsun thread ilk defa bu kısma gerdiğinde her zaman bu kısmı atlayacak çünkü önceden de anlattığım gibi, thread ilk defa bu kısma geldiğinde işlenilen API&amp;rsquo;in GUI ile alakalı olup olmadığını bilmiyor. İlerideki akışta hesaplamalardan sonra işlenilen API&amp;rsquo;in GUI ile alakalı olduğu tespit edildiğinde bu fonksiyonun başına tekrar yönlendirilecek.&lt;/p&gt;
+&lt;p&gt;Bu koşullar atladığında en önemli kısım geliyor. Artık adresin hesaplanması yapılıyor:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img36.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;r10 register&amp;rsquo;da SSDT&amp;rsquo;nin adresi bulunmakta. r11 register&amp;rsquo;a SSDT tablosunda işlenilen API&amp;rsquo;in mutlak adresine karşılık gelen Offset hesaplanıyor. Formülümüzü tekrardan hatırlayalım:&lt;/p&gt;
+&lt;div align=&#34;center&#34;&gt;
+&lt;br&gt;
+&lt;b&gt;
+&lt;i&gt;
+Offset = KiServiceTableAddress + 4 * SSN
+&lt;/b&gt;
+&lt;/i&gt;
+&lt;/div&gt;
+&lt;p&gt;Doğrulamak için offset&amp;rsquo;in hesaplandığı kısmı çalıştırıp elde edilen değere göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img37.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Elde edilen offset değerin &lt;strong&gt;0x637dd01&lt;/strong&gt; olduğunu görebiliriz.&lt;/p&gt;
+&lt;p&gt;Şimdi ise offset değerini kullanarak mutlak adresi hesapladığı kısmi çalıştıralım ve hesaplanan adrese bakalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img38.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Formülümüzü tekrar hatırlayalım arkadaşlar:&lt;/p&gt;
+&lt;div align=&#34;center&#34;&gt;
+&lt;br&gt;
+&lt;b&gt;
+&lt;i&gt;
+ KernelRoutineAddress = KiServiceTableAddress + ( Offset &gt;&gt;&gt; 4 )
+&lt;/b&gt;
+&lt;/i&gt;
+&lt;/div&gt;
+&lt;p&gt;Bu formül ile hesaplamadan sonra &lt;strong&gt;0xfffff8025aeffa80&lt;/strong&gt; adresi elde ettim ve kontrol ettiğimde NtSetIoCompletion&amp;rsquo;a ait olduğunu doğruladım.&lt;/p&gt;
+&lt;p&gt;Adres hesaplamasından sonra edi&amp;rsquo;nin değeri 0x20 ile karşılaştırdığını tekrar görüyoruz. Artık bunun ne anlama geldiğini biliyoruzdur.&lt;/p&gt;
+&lt;p&gt;Eğer sizde tetiklenen Syscall numarası GUI ile alakalı bir API&amp;rsquo;a ait ise bu koşul sağlanacaktır. Benimkinde tetiklenen API, GUI ile ilgili olmadığından burası atlanacaktır.&lt;/p&gt;
+&lt;p&gt;Atlamadan sonra akışın &lt;strong&gt;KiSystemServiceGdiTebAccess&lt;/strong&gt;&amp;rsquo;e yönlendirdiğini göreceksiniz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img39.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Artık bu kısımlarda yapılan işlemlere göz atmamıza gerek yok. Zira artık işlenilen syscall&amp;rsquo;ın adresi belirlendi ve artık buraya yönlendirimeye hazırlanılacak. Ancak statik analizimizde gördüğümüz gibi bu yönlendirme &lt;strong&gt;KiSystemServiceCopyEnd&lt;/strong&gt;&amp;rsquo;e gerçekleşecek ve bu fonksiyonun sonuna göz attığınızda KiSystemServiceCopyEnd&amp;rsquo;in gerisine yönlendirdiğini göreceksiniz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img40.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;jmp r11 olan kısma bir bp koyalım ve akış bu kısma geldiğinde bir ileri götürelim ve nereye yönlendirdiğine bir bakalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img41.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bazı verilerin kopyalanması için &lt;strong&gt;KiSystemServiceCopyStart&lt;/strong&gt;&amp;lsquo;a yönlendirdiğini göreceksiniz. Artık bu kısımdan sonra ilgili adrese yönlendirilmek üzere &lt;strong&gt;KiSystemServiceCopyEnd&lt;/strong&gt;&amp;rsquo;e yönlenecek.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;KiSystemServiceCopyEnd&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemservicecopyend&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kisystemservicecopyend&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Artık syscall işlenmesi bitti ve hesaplanan adresi yönlendirme noktasına geldik:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img42.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Burada dikkatimizi çeken kısım rax register&amp;rsquo;a r10&amp;rsquo;un değeri verilmesi. r10 register&amp;rsquo;ı hesaplanan adresi taşımakta. Adresin çağırıldığı noktaya bp koyalım ve bir ileri götürelim:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/syscall-journey/img43.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Başarılı bir şekilde NtSetIoCompletion&amp;rsquo;a yönlendirdiğini görebiliriz.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Sonuç&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;sonuç&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#sonu%c3%a7&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Arkadaşlar umarım bu blog size yararlı olmuştur.&lt;/p&gt;
+&lt;p&gt;Ek olarak, bu analizimde zorlandığım süreçte bana cidden katkısı olan Alice&amp;rsquo;in &lt;a href=&#34;https://alice.climent-pommeret.red/posts/a-syscall-journey-in-the-windows-kernel/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Syscall yolcuğu&lt;/a&gt; ile alakalı bloguna da göz atabilirsiniz. Gerçekten bu kaynak sayesinde analiz sırasında anlamadığım noktaları anlamamda çok katkısı oldu.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>ARM Firmware Reverse Engineering</title>
+      <link>http://0xbekoo.github.io:1313/blog/bare-metal-reversing-0x0/</link>
+      <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://0xbekoo.github.io:1313/blog/bare-metal-reversing-0x0/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Merhabalar. Bu yazıda Firmware Reverse Engineering&amp;rsquo;e devam ediyoruz. Bu blogta ise Bare Metal Reversing&amp;rsquo;e girişeceğiz.&lt;/p&gt;
+&lt;p&gt;Hatırlarsanız önceki konumuzda TP-LINK Archer AX 21 V4.6&amp;rsquo;ın 2024 yılında çıkmış Firmware&amp;rsquo;ini analiz etmiştik. Bu konuda ise işleri birazcık ileriye götüreceğiz.&lt;/p&gt;
+&lt;p&gt;Elimde bir Nucleo F030R8 kart (ARM Cortex M0 işlemcili) var ve bunu Firmware Reverse Engineering için değerlendirmek istedim. Bu blogta yapacağımız şey de bu kart&amp;rsquo;ı basitçe programlayacağız ve ardından firmware&amp;rsquo;ini reverse edip karta tekrar yükleyeceğiz. Tipik olarak bir Iot kartını hackliyor gibi düşünelim ancak daha basit bir senaryo ile.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/nucleo-card.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Elimdeki kart bu. Eğer elinizde nucleo&amp;rsquo;nun farklı bir kartı var ise de bu blogtaki adımları takip edebilirsiniz.&lt;/p&gt;
+&lt;p&gt;Açıkçası mikrodenetleyici kodlama konusunda kendimi geliştirmedim. Ancak bu konsept sürecinde beraber hem mikrodenetleyici kodlamaya hem de firmware reverse engineering alanlarında kendimizi geliştireceğiz.&lt;/p&gt;
+&lt;p&gt;Gerekli programlar ise CubeIde, CubeProgrammer ve Ghidra olacaktır. CubeIde ile kartımız için programlamayı yapacağız, Ghidra ile aldığımız firmware yani .bin dosyasını reverse edeceğiz ve son adımda CubeProgrammer ile reverse ettiğimiz firmware’i kartımıza yükleyeceğiz.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Kodlama&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kodlama&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#kodlama&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Yapacağımız kodlama tamamen basit. &lt;strong&gt;Nucleo F030R8&lt;/strong&gt; kartında bir adet User Button (Fotoğrafta mavi button&amp;rsquo;a göz atabilirsiniz) ve Green led (LD2) bulunmakta. Button&amp;rsquo;a basıldığında Green Led&amp;rsquo;i yakan bir kodlama yapacağız. Daha sonra Ghidra kullanarak IDE&amp;rsquo;den aldığımız firmware reverse ederek bu programın çalışma prensibini tersine çevireceğiz. Yani reverse ettikten sonra button&amp;rsquo;a basmadığımız durumlarda Green led&amp;rsquo;i yakacak.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/bare-metal-reversing-0x0/img1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;CubeIDE&amp;rsquo;de projeyi oluşturduktan sonra &lt;strong&gt;.ioc&lt;/strong&gt; dosyasına yönlenebiliriz. Kart üzerindeki button ve led ile çalışacağımız için fotoğraftan da görüldüğü üzere ayarlamalar zaten IDE tarafından yapılmış durumda. Bu yüzden burada yapacağımız ekstra bir şey yok. Benim kartımdan User Button &lt;strong&gt;PC13&lt;/strong&gt;&amp;lsquo;da ve Led2 ise &lt;strong&gt;PA5&lt;/strong&gt;&amp;lsquo;de bulunmakta.&lt;/p&gt;
+&lt;p&gt;Kodlamaya geçmeden önce oluşturduğumuz projede ufak bir ayar yapmamız gerekecek. Firmware&amp;rsquo;i analiz edeceğimiz için programın karta yüklenmesiyle .bin dosyasını almamız gerekecek:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/bare-metal-reversing-0x0/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Oluşturduğumuz projeye sağ tıklayalım ve &lt;strong&gt;Properties&lt;/strong&gt; seçeğine tıklayalım. Daha sonra &lt;strong&gt;C/C++ Build &amp;gt; Settings &amp;gt; MCU/MPU Post Build Outputs&lt;/strong&gt;&amp;lsquo;a gidelim ve &lt;strong&gt;Convert to binary file (-O binary)&lt;/strong&gt; seçeneğini aktifleştirelim.&lt;/p&gt;
+&lt;p&gt;Şimdi ise IDE&amp;rsquo;nin en solunda bulunan &lt;strong&gt;Project Explorer&lt;/strong&gt; sekmesinde &lt;strong&gt;Core &amp;gt; Src &amp;gt; main.c&lt;/strong&gt; projesine yönelelim. Bu bizim ana projemiz.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;main.c&lt;/strong&gt; içerisinde kodlamaya geçmeden önce oluşturulmuş &lt;strong&gt;MX_GPIO_Init&lt;/strong&gt; fonksiyonuna göz atabiliriz. Bu fonksiyon, IDE tarafından hazırlanan pin&amp;rsquo;lerin konfigurasyonunu içerir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/bare-metal-reversing-0x0/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü üzere &lt;strong&gt;F030R8&lt;/strong&gt; kartı için User Button&amp;rsquo;a GPIOA olarak B1_Pin (GPIO_PIN_13) ve LED2 için ise GPIOA ve LD2_PIN (GPIO_PIN_5) olarak ayarlanmış. Eğer farklı bir kartta iseniz bu ayarları kontrol edebilirsiniz.&lt;/p&gt;
+&lt;p&gt;Şimdi ise main fonksiyonuna dönelim ve kodlamalara başlayalım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;cm&#34;&gt;/* USER CODE BEGIN 2 */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;kt&#34;&gt;uint8_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ButtonStatus&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;k&#34;&gt;while&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	  &lt;span class=&#34;n&#34;&gt;ButtonStatus&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;HAL_GPIO_ReadPin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;B1_GPIO_Port&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;B1_Pin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	  &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ButtonStatus&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;==&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;		  &lt;span class=&#34;nf&#34;&gt;HAL_GPIO_WritePin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;LD2_GPIO_Port&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;LD2_Pin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SET&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	  &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	  &lt;span class=&#34;nf&#34;&gt;HAL_GPIO_WritePin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;LD2_GPIO_Port&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;LD2_Pin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;RESET&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Göründüğü üzere kod gayet basit bir durumda. Şimdi tek tek ele alalım:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;ButtonStatus&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;HAL_GPIO_ReadPin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;B1_GPIO_Port&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;B1_Pin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;İlk olarak main&amp;rsquo;in while içerisinde &lt;strong&gt;HAL_GPIO_ReadPin&lt;/strong&gt; fonksiyonunu kullanıyoruz.Bu fonksiyon ilgili pinin durumunu okumak için kullanılıyor ve iki parametre almaktadır. İlk parametre, pinin bulunduğu GPIO portunu belirtir. STM32 mikrodenetleyicilerinde, GPIO pinleri belirli portlara (A, B, C, vb.) bağlıdır. Örneğin, GPIOA, GPIOB, GPIOC gibi portlar bulunur. Bu parametre, pinin hangi portta yer aldığını belirtmek için kullanılır. Kodumuzda ise &lt;strong&gt;GPIOA&lt;/strong&gt; olduğunu belirtiyoruz.&lt;/p&gt;
+&lt;p&gt;İkinci parametre ise okumak istediğiniz GPIO pinini belirtir. Her portun üzerinde birden fazla pin bulunabilir (örneğin, port A&amp;rsquo;da PA0, PA1, PA2 vb.). Bu parametre, hangi pinin durumunu okuyacağınızı belirtir. Kodumuzda ise B1_Pin yani &lt;strong&gt;GPIO_PIN_13&lt;/strong&gt; olduğunu belirtiyoruz.&lt;/p&gt;
+&lt;p&gt;Son olarak ise bu fonksiyonun dönüş adresi &lt;strong&gt;uint8_t&lt;/strong&gt; tipinde olan ButtonStatus değişkenine aktarılır. Yani kısaca bu fonksiyon, belirtilen pin&amp;rsquo;deki durumu okur ve ButtonStatus değişkenine sonucu aktarır.&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ButtonStatus&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;==&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;HAL_GPIO_WritePin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;LD2_GPIO_Port&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;LD2_Pin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SET&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;HAL_GPIO_WritePin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;LD2_GPIO_Port&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;LD2_Pin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;RESET&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Pin okumasından sonra bir if karşılaştırması yapıyoruz. ButtonStatus&amp;rsquo;a atanan değer eğer sıfır ise &lt;strong&gt;HAL_GPIO_WritePin&lt;/strong&gt;  ile LED2 için işlem yapıyor.&lt;/p&gt;
+&lt;p&gt;ButtonStatus değerinin 0 olması demek Button&amp;rsquo;a basıldığı anlamına gelmektedir. 1 olması durumunda Button&amp;rsquo;a basılmadığı anlamına gelir. Yani biz bu if içerisinde Button&amp;rsquo;a basıldığında Led&amp;rsquo;in yanmasını sağlayacağız.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;HAL_GPIO_WritePin&lt;/strong&gt; fonksiyonu, belirli bir GPIO pinini t1 - HIGH durumu) veya &amp;ldquo;reset&amp;rdquo; (0 - LOW durumu) durumuna getirmek için kullanılır.&lt;/p&gt;
+&lt;p&gt;İlk parametre, önceden anlatıldığı gibi hangi GPIO portunun kullanılacağını belirtir ve kodumuzda GPIOA olarak belirttim. İkinci parametre, ayarlanacak veya sıfırlanacak GPIO pinini belirtir ve tanımlanan GPIO_PIN_5 değerini taşıyan LD2_PIN değişkeni verdim. Son olarak üçüncü parametre ise Pinin durumu belirtilir. İf içerisindeki amacımız led&amp;rsquo;i yakmak olduğu için &lt;strong&gt;SET&lt;/strong&gt; değerini verebiliriz. Bu ilgili pinin durumunu 1 olarak ayarlayacaktır.&lt;/p&gt;
+&lt;p&gt;Eğer button&amp;rsquo;a basılmadığı sürece yine &lt;strong&gt;HAL_GPIO_WritePin&lt;/strong&gt; fonksiyonunu kullanıyoruz ancak son parametresi &lt;strong&gt;RESET&lt;/strong&gt; olarak belirtiliyor. Bu, button&amp;rsquo;a basılmadığı zaman ilgili pini 0 olarak ayarlar. Böylece button&amp;rsquo;a basılmadığı zaman led yanmayacaktır.&lt;/p&gt;
+&lt;p&gt;Şimdi ise bu kodu kartımıza yükleyelim ve sonuca bir bakalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/video/coding.gif&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü gibi sorunsuz bir şekilde programımız çalışıyor. Button&amp;rsquo;a tıkladığım anda green Led yanmakta. Şimdi ise Ghidra&amp;rsquo;ya dönelim ve aldığımız .bin dosyasını ghidra&amp;rsquo;da analiz etmeye başlayalım. Oluşturulan .bin dosyası Debug dosyasının altında olacaktır:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Firmware Reversing&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;firmware-reversing&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#firmware-reversing&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;.bin dosyasını ghidra&amp;rsquo;da &lt;strong&gt;File &amp;gt; Import File&lt;/strong&gt; tıklayarak .bin dosyamızı seçelim ancak direkt olarak çıkan ekranı kapatmayın önemli ayarlamaları yapmamız gerekecek.&lt;/p&gt;
+&lt;p&gt;Öncelikle Languages kısmını ayarlayarak başlayalım ve filter alanına &lt;strong&gt;ARM&lt;/strong&gt; diye aratalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Ben Language olarak &lt;strong&gt;Cortex 32-bit, Little Endian&lt;/strong&gt; olarak seçtim. Eğer aynı karta sahip iseniz bu seçeneği, farklı karta sahip iseniz kartınıza uygun olarak dil seçimini yapın. Daha sonra OK diyerek bu Language sekmesinden çıkabilirsiniz.&lt;/p&gt;
+&lt;p&gt;Daha sonra aynı ekrandan &lt;strong&gt;Options&lt;/strong&gt; kısmına tıklayalım ve burada yapacağımız ayar gerçekten önemli. Burada Base Address gibi ayarlamalar yapacağız.&lt;/p&gt;
+&lt;p&gt;İlk olarak base address ayarını yapmamız gerekecek. **ki ama bir firmware&amp;rsquo;in Base Addresini nasıl bulabiliriz? diye bir soru gelebilir. En iyi yöntem cihazın memory haritasına bakmak olacaktır.&lt;/p&gt;
+&lt;p&gt;ARM tabanlı bir kartta çalışıyoruz. Nucleo&amp;rsquo;nun datasheet&amp;rsquo;leri aracılığıyla Base Address&amp;rsquo;i bulabiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img6.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yukarıdaki fotoğraf &lt;strong&gt;STM32F030x4/x6/x8/xC&lt;/strong&gt; kartlarının memory haritası. Benim kartım bu cihazlar arasından olduğundan dolayı bu memory haritasından yararlanmam gerekecek:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Fotoğrafa daha detaylı baktığımızda Flash memory alanın &lt;strong&gt;0x8000000&lt;/strong&gt; olduğunu görebiliriz. ARM Tabanlı işlemcilerin Base Address&amp;rsquo;in çoğu zaten bu adrestedir ancak yine de farklı karta sahip iseniz datasheet ile adresine bakmakta fayda olacaktır.&lt;/p&gt;
+&lt;p&gt;Daha sonra datasheet ile elde ettiğimiz adresi Ghidra&amp;rsquo;nın Options sekmesinden &lt;strong&gt;Base Address&lt;/strong&gt; alanına yazalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Block Name ismine &lt;strong&gt;flash&lt;/strong&gt; olarak verdim. Sizde böyle yapabilirsiniz. Diğer ayarlara dokunmamıza gerek yok sadece &lt;strong&gt;Block Name&lt;/strong&gt; ve &lt;strong&gt;Base Address&lt;/strong&gt; değerlerini vermemiz yeterlidir. OK button&amp;rsquo;a tıklayalım ve artık ekranda .bin dosyasına çift tıklayalım.&lt;/p&gt;
+&lt;p&gt;Fakat birkaç daha ayar yapmamız gerekecek. CodeBrowser ekranı açıldığında ekranın ortasında bulunan &lt;strong&gt;Memory Map&lt;/strong&gt; kısmına tıklayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img9.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Daha sonra bu ekranda sağ üste bulunan &amp;lsquo;+&amp;rsquo; işaretine tıklayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img10.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Yine burada birkaç bellek alanı ayarlamamız gerekecek. İlk olarak &lt;strong&gt;Flash Memory&lt;/strong&gt; alanını ayarlamamız gerekecek. Peki nedir bu?&lt;/p&gt;
+&lt;p&gt;Flash Mirror, firmware&amp;rsquo;in çalıştırılabilir kodunun genellikle saklandığı alanı temsil eder. Çoğu gömülü sistemde, bu bölge işlemciye bağlı olarak 0x0 adresinden başlar ve firmware&amp;rsquo;in yüklenip çalıştırılacağı yerdir. Flash bölgesi kod bölgesini (örneğin, main fonksiyon, başlangıç kodları, vb.) içerir&lt;/p&gt;
+&lt;p&gt;Yinede offset&amp;rsquo;i doğrulamak için datasheet&amp;rsquo;e bakabiliriz. Yukarıda paylaştığım fotoğrafa tekrar göz atarsak benim kart için 0x0 alanında olduğunu görebiliriz. Şimdi ise bu alanı ayarlayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img11.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Block Name&lt;/strong&gt; alanına &amp;lsquo;flash_mirror&amp;rsquo; ismini verebiliriz. &lt;strong&gt;Start Addr&lt;/strong&gt; alanına ise default olarak 0&amp;rsquo;da bırakalım. &lt;strong&gt;Length&lt;/strong&gt; alanını ise okla gösterildiği gibi flash ismi ile ayarladığımız alanın boyutu ile aynı olacak şekilde ayarlayın. Daha sonra Execute kutucuğunu işaretleyelim. &lt;strong&gt;Block Types&lt;/strong&gt; alanında File Bytes kutucuğunu işaretleyelim ve &lt;strong&gt;File Offsett&lt;/strong&gt; değerini 0 olarak bırakalım ve bitirmek için OK tuşuna basalım.&lt;/p&gt;
+&lt;p&gt;Son alanımızı ayarlamak için yine &amp;lsquo;+&amp;rsquo; tuşuna basalım. Bu sefer ise SRAM alanını ayarlayacağız. Genel olarak adresi &lt;strong&gt;0x20000000&lt;/strong&gt;&amp;lsquo;dir ancak yine de bunu doğrulamak için kartımızın dahasheet&amp;rsquo;ine bakabiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img12.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü üzere 0x20000000 adresinde olduğunu görebiliyoruz. Şimdi SRAM&amp;rsquo;in de alanını ayarlayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img13.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Block Name&lt;/strong&gt; alanına &amp;lsquo;RAM&amp;rsquo; ismini verebiliriz. &lt;strong&gt;Start Addr&lt;/strong&gt; alanına 20000000 değerini verelim. &lt;strong&gt;Length&lt;/strong&gt; değerine ise 80000 verelim. Daha sonra OK diyerek ekranı kapatalım.&lt;/p&gt;
+&lt;p&gt;İşlemlerimiz bitti. Şimdi ise ekranın sol üstünde bulunan kaydetme tuşuna basalım ve Memory Map ekranını kapatalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img14.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Son bir işlemimiz kaldı. Ekranı kapattıktan sonra Ghidra&amp;rsquo;nın sol üstündeki bar&amp;rsquo;dan &lt;strong&gt;Analysis &amp;gt; Auto Analyze&amp;rsquo;&lt;project&gt;.bin&amp;rsquo;&lt;/strong&gt; kısmına gidelim ve bu ekranda &lt;strong&gt;&amp;lsquo;ARM Aggressive Instruction Finder (Prototype)&amp;rsquo;&lt;/strong&gt; seçeceğini aktifleştirelim ve &amp;lsquo;Analyze&amp;rsquo; button&amp;rsquo;a tıklayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img15.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Artık her şey için hazırız. Şimdi ise Disassembly ekranından en üst tarafa bir göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img16.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Eğer benim gibi yeni iseniz burada işaretlenenleri gördüğünüzde biraz kafanız karışabilir ama aslında basit.&lt;/p&gt;
+&lt;p&gt;Fotoğrafta gördüğünüz bu alana &amp;lsquo;vektör tablosu&amp;rsquo; deniyor. CPU, sistem başlatıldığında ilk olarak buradan Stack Pointer’ı (yığın işaretçisi) yükler. Yani tablonun ilk adresi, sistemin yığın belleğinin başlangıç adresini gösterir. Daha sonra işlemci, bu tabloda tanımlı olan Reset Handler (Reset İşleyicisi) adresine sıçrayarak çalışmaya başlar.&lt;/p&gt;
+&lt;p&gt;Vektör tablosu, mikrodenetleyicinin işletim sırasında karşılaşabileceği tüm kesme (interrupt) ve hata (fault) durumlarına nasıl tepki vereceğini tanımlar. Örneğin:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Reset:&lt;/strong&gt; CPU yeniden başlatıldığında çalışacak kodun adresini belirler. Bu, genellikle sistemin ilk ayarlarını yapan başlatma fonksiyonudur.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;NMI (Non-Maskable Interrupt):&lt;/strong&gt; Maskelenemeyen, yani her zaman işlenmesi gereken bir kesme durumudur.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;HardFault:&lt;/strong&gt; Kritik bir hata meydana geldiğinde çağrılan işleyicidir.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;BusFault:&lt;/strong&gt; Bellek erişim hataları gibi donanım sorunlarını yönetir.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;UsageFault:&lt;/strong&gt; Yanlış talimat veya matematiksel hatalar gibi yazılımla ilgili sorunlar için işleyici sağlar.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Bizim burada ilgileneceğimiz kısım &lt;strong&gt;Reset&lt;/strong&gt; alanı olacaktır. &lt;strong&gt;Reset&lt;/strong&gt; vektörü, C Programın giriş bölümüne benzer şekilde basit kurulum kodları içermektedir. Bu vektör içerisinde main fonksiyon çağırıldığı için buradan ana fonksiyonu bulacağız.&lt;/p&gt;
+&lt;p&gt;Şimdi Reset vektör ile işaretlenen adrese çift tıklayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img17.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Assembly kodlarını okuyan hayatsız bir birey olmak yerine normal bir insan gibi decompiler ile bakabiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img18.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Burada umursamadığımız birkaç döngü vs. kullanıldığını ve fonksiyon çağırıldığını görmekteyiz. Çağırılan üç fonksiyonundan ikisine göz attım ancak bir şey anlamadım ve son çağırılan fonksiyona göz attığımda main fonksiyon olduğunu doğruladım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img19.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Daha anlaşılır gözükmesi için Fonksiyon adlarını vs. güncelledim. Fonksiyona baktığımızda zaten kodlama yaptığımız esnada anlatmıştım. Bir farklılık bulunmamakta. Şimdi Assembly kodlarına dönüp Patch işlemi yapacağız.&lt;/p&gt;
+&lt;p&gt;Yapacağımız şey de basit. if koşulundaki &amp;lsquo;0&amp;rsquo; değerini &amp;lsquo;1&amp;rsquo; ile değiştireceğiz. Böylece button&amp;rsquo;a basmadığımız zamanlarda led yanmış olacak.&lt;/p&gt;
+&lt;p&gt;main fonksiyonun Dissassembly ekranında if koşuluna karşılık gelen instruction&amp;rsquo;u bulalım ve sağ tıklayıp &lt;strong&gt;Patch Instruction&lt;/strong&gt; seçeceğine tıklayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img20.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Daha sonra 0x0 değerini &lt;strong&gt;0x1&lt;/strong&gt; olarak değiştirelim ve enter tuşuna basalım. Bu işlemden sonra Decompiler&amp;rsquo;dan kontrol ettiğimizde sonuç şu şekilde olmalı:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img21.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Her şey bu kadar. Şimdi Ghidra ekranında sol üstünde **File &amp;gt; &lt;strong&gt;Save &amp;lsquo;.bin&amp;rsquo; As&amp;hellip;&lt;/strong&gt; sekmesine tıklayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img22.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Sonu &amp;lsquo;.bin&amp;rsquo; ile bitecek şekilde bir isim vererek projeyi kaydedin.&lt;/p&gt;
+&lt;p&gt;Son olarak CodeBrowser ekranını kapatın ve kaydettiğiniz projeye sağ tıklayıp export diyerek projeyi bilgisayara kaydedin:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img23.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Şimdi bu reverse ettiğimiz .bin dosyasını CubeProgrammer aracılığıyla kartımıza yükleyeceğiz.&lt;/p&gt;
+&lt;p&gt;CubeProgrammer&amp;rsquo;i başlatalım ve programın sağ üstündeki &lt;strong&gt;Connect&lt;/strong&gt; buttonu ile kartımızı bağlayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img24.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü gibi kartımıza bağlandığında memory address&amp;rsquo;leri vs görmekteyiz.&lt;/p&gt;
+&lt;p&gt;Programda &amp;lsquo;Open File&amp;rsquo; seçeceğine tıklayarak reverse ettiğimiz .bin dosyasını seçelim ve ardından &amp;lsquo;Download&amp;rsquo; seçeceğine tıklayarak reverse ettiğimiz firmware&amp;rsquo;i kartımıza yükleyelim:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img25.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü gibi ekranda &amp;lsquo;File Download Complete&amp;rsquo; mesajı alıyoruz. Tebrikler artık elimizde reverse edilmiş bir firmware ile çalışan  kartımız var!&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Sonuç&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;sonuç&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#sonu%c3%a7&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Şimdi kartın son haliyle bir kez daha göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/video/reversing.gif&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Videodan göründüğü üzere Button&amp;rsquo;a basmadığımız durumlarda Led yanıyor. Eğer button&amp;rsquo;a basarsak led sönüyor.&lt;/p&gt;
+&lt;p&gt;Temel olarak yaptığımız şey oldukça basitti. Basitçe kartımızı button&amp;rsquo;a basıldığında led yakacak şekilde kodladık ve Ghidra ile kartın firmware&amp;rsquo;ini reverse ederek kodladığımızın tersini yapacak şekilde ayarladık ve karta tekrar yükledik.&lt;/p&gt;
+&lt;p&gt;Umarım içerik sizin için faydalı olmuştur. Eğer konuyu daha detaylı araştırmak isterseniz &lt;strong&gt;referans olarak bıraktığım kaynaklara göz atabilirsiniz.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;İyi çalışmalar dilerim efenimmm.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;References&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=q4CxE5P6RUE&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Stacksmashing - Bare-metal ARM Firmware Reverse Engineering with Ghidra&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.cutawaysecurity.com/learning-ghidra-basics-analyzing-firmware/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Cutaway Security - Learning Ghidra Basics Analyzing Firmware&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://cybergibbons.com/hardware-hacking/reading-and-writing-firmware-on-an-stm32-using-swd/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Cybergibbons - Reading and Writing Firmware on an STM32 using SWD&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Router Firmware Reverse Engineering</title>
+      <link>http://0xbekoo.github.io:1313/blog/router-firmware-reversing/</link>
+      <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://0xbekoo.github.io:1313/blog/router-firmware-reversing/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/headerphoto.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link&amp;rsquo;in &lt;a href=&#34;https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Archer AX 21 V4.6&lt;/a&gt; modemin firmware&amp;rsquo;i reverse edeceğiz. Firmware indirmek için &lt;a href=&#34;https://www.tp-link.com/us/support/download/archer-ax21/#Firmware&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;TP-Link&amp;rsquo;in orijinal sayfasına&lt;/a&gt; göz atabilirsiniz.&lt;/p&gt;
+&lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200&#34;&gt;
+  &lt;p class=&#34;hx-flex hx-items-center hx-font-medium&#34;&gt;&lt;svg height=16px class=&#34;hx-inline-block hx-align-middle hx-mr-2&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z&#34;/&gt;&lt;/svg&gt;Warning&lt;/p&gt;
+
+  &lt;div class=&#34;hx-w-full hx-min-w-0 hx-leading-7&#34;&gt;
+    &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Öncelikle indirdiğimiz Firmware&amp;rsquo;in bilgilerine göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/firmware-info.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Görüldüğü üzere 14 Kasım 2024 yılında yayınlanmış. Yani neredeyse 1 ay önce yayınlanmış bir firmware. Birkaç hatanın düzeltildiği, optimizelerin yapıldığı ve yeni şeyler eklendiğini görebiliriz.&lt;/p&gt;
+&lt;p&gt;Fiziksel olarak bu router&amp;rsquo;a sahip olmadığım için bu blogta sadece firmware analiz ederek yelteneceğim.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Linux Versiyonu Bulma&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;linux-versiyonu-bulma&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#linux-versiyonu-bulma&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Özellikle firmware reverse engineering&amp;rsquo;de sıklıkla kullanılan &lt;strong&gt;binwalk&lt;/strong&gt; denilen aracı kullanacağız. Bu araç bize firmware için çeşitli bilgiler sunabilir.&lt;/p&gt;
+&lt;p&gt;Öncelikle binwalk&amp;rsquo;a analiz edeceğimiz firmware verelim:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Evett okumaya üşendiğimiz birkaç karmaşık gibi görünen çıktılar elde ettik. Peki nedir bunlar efenimm?&lt;/p&gt;
+&lt;p&gt;Bu gördüğünüz çıktılar ilgili firmware&amp;rsquo;in offsetlerini içermektedir. Ancak sadece offset değerleri verilmiyor yanlarında bu alanlar için açıklama da veriyor bu binwalk aracı. Gözümüz hemen bu çıktıdaki Decimal ve Hexdecimal değerlerine kaysın:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;İşte offset değerleri bunlar. Hem decimal hem de hexdecimal olarak binwalk aracı bize bunları gösteriyor. Şimdi ilk odağımızı Bootloader (U-Boot)&amp;lsquo;a yönlendirelim ve mimarisine bir göz atalım.&lt;/p&gt;
+&lt;p&gt;Bu etapta &lt;strong&gt;dd&lt;/strong&gt; aracını kullanabiliriz. Bunun için aşağıdaki komutu çalıştıralım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Verdiğimiz değerlere dikkat edelim. &lt;strong&gt;if&lt;/strong&gt; ile hedef firmware&amp;rsquo;i veriyoruz. &lt;strong&gt;of&lt;/strong&gt; ile çoğaltılan veriyi nasıl kaydedeceğimizi belirtiyoruz. &lt;strong&gt;skip&lt;/strong&gt; ile ise belirli bir byte miktarını atlayarak kopyalama işlemine başlıyor. &lt;strong&gt;8212&lt;/strong&gt; değeri verdiğime dikkat edin. Bu ise, dd aracın 8212 byte kadar sonrasındaki verileri kopyalacağı anlamına gelir. Bu değer binwalk&amp;rsquo;tan bulduğumuz uImage&amp;rsquo;ın offset değeri.&lt;/p&gt;
+&lt;p&gt;Bu kopyalama sonucunda &lt;strong&gt;uImage&lt;/strong&gt; adlı bir dosya elde edeceğiz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Kopyaladığımız dosyayı incelediğimizde &lt;strong&gt;u-boot Legacy uImage&lt;/strong&gt; olduğunu doğrulayabiliriz. Ayrıca arch&amp;rsquo;ın MIPS olduğunu da görebiliriz.&lt;/p&gt;
+&lt;p&gt;Linux versiyonu aramak için ise tekrar binwalk çıktımıza bir göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Tekrar offsetlere göz atarsak LZMA ile sıkıştırılmış bölüme gidebiliriz. &lt;strong&gt;.lzma&lt;/strong&gt; uzantılı olarak dosyayı alalım ve dosyayı çıkartalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img6.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bu adımlardan sonra elimizde &lt;strong&gt;files&lt;/strong&gt; olarak bir dosya elimizde olmalı. Amacımız sadece &lt;strong&gt;strings&lt;/strong&gt; ile Linux versiyonuna göz atmak olacak:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Kullanılan Linux versiyonu &lt;strong&gt;3.10.108&lt;/strong&gt; ve GCC için ise &lt;strong&gt;4.6.3&lt;/strong&gt; kullanılmakta. Bu ikisi de eski versiyondur.&lt;/p&gt;
+&lt;p&gt;Linux&amp;rsquo;un &lt;a href=&#34;https://lwn.net/Articles/738167/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;3.10.108 versiyonu&lt;/a&gt; &lt;strong&gt;5 Kasım 2017&lt;/strong&gt; yılında çıkmış:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;GCC&amp;rsquo;nin &lt;a href=&#34;https://lwn.net/Articles/738167/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;4.6.3 versiyonu&lt;/a&gt; ise &lt;strong&gt;1 Mart 2012&lt;/strong&gt; yılında çıkmış:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img9.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Açıkçası ben &lt;strong&gt;Firmware Reverse Engineering&lt;/strong&gt; alanında yeni olsam da, 2024 yılında sunulmuş bir firmware&amp;rsquo;in eski Linux ve GCC versiyonu kullanmasını mantıklı bulmadım. Bu security açısından risk oluşturabilecek bir şey.&lt;/p&gt;
+&lt;p&gt;Bunu gördüğüm zaman kendime şunu sordum: &lt;strong&gt;&amp;ldquo;Bunu farklı firmalar da yapıyor mu ve normal mi?&amp;rdquo;&lt;/strong&gt;. Her ne kadar da bunun normal olmadığını düşünsem de farklı bir firmanın Router Firmware&amp;rsquo;ini analiz ederek Linux versiyonunu karşılaştırmak istedim. Daha sonra kısa araştırmadan sonra ASUS&amp;rsquo;un &lt;a href=&#34;https://www.asus.com/tr/networking-iot-servers/wifi-routers/asus-wifi-routers/rt-ax58u/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;RT-AX58U&lt;/a&gt; Router Firmware&amp;rsquo;i analiz etmeye karar verdim.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.asus.com/networking-iot-servers/wifi-6/all-series/rt-ax58u/helpdesk_bios?model2Name=RT-AX58U&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Bu Firmware&lt;/a&gt; için bilgiler ise şu şekilde:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img10.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Aynı şekilde bu Firmware ise neredeyse 1 ay önce çıkmış. Odağımızın dağılmaması için hızlıca bulduğum sonucu paylaşacağım. Fakat size tavsiyem daha çok pratik yapmak isterseniz bu blogu okuduktan sonra benim gibi ASUS Router&amp;rsquo;ın bu Firmware&amp;rsquo;ini analiz edebilirsiniz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img11.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Sonuca baktığımızda bu Firmware için Linux&amp;rsquo;un &lt;strong&gt;4.19.183&lt;/strong&gt; ve GCC&amp;rsquo;nin &lt;strong&gt;9.2.0&lt;/strong&gt; versiyonu kullanılmakta.&lt;/p&gt;
+&lt;p&gt;Linux&amp;rsquo;un &lt;a href=&#34;https://lwn.net/Articles/850356/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;4.19.183 versiyonu&lt;/a&gt; &lt;strong&gt;24 Mart 2021&lt;/strong&gt;&amp;lsquo;de çıkmış:
+&lt;img src=&#34;../../../images/posts/reversing-router/img12.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;GCC&amp;rsquo;nin &lt;a href=&#34;https://gcc.gnu.org/gcc-9/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;9.2.0 versiyonu&lt;/a&gt; ise &lt;strong&gt;12 Ağustos 2019&lt;/strong&gt; yılında çıkmış&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img13.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;ASUS RT-AX58U&amp;rsquo;un bu Firmware&amp;rsquo;inde ise analiz ettiğimiz TP-LINK Firmware&amp;rsquo;ına kıyasla daha yakın bir tarihteki sürümler kullanıldığını görebiliriz ancak yine de bu sürümlerde eski.&lt;/p&gt;
+&lt;p&gt;Bunun nedenini ilerideki bloglarda tartışabiliriz. Şimdi analizimize devam edelim.&lt;/p&gt;
+&lt;p&gt;Analizimiz sonucunda bu Firmware için bulduğumuz Linux sürümü &lt;strong&gt;3.10.108&lt;/strong&gt;&amp;lsquo;dır. Şimdi ise bu Firmware&amp;rsquo;in Linux dosyalarına bir göz atalım.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Linux Dosyalarını Bulma&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;linux-dosyalarını-bulma&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#linux-dosyalar%c4%b1n%c4%b1-bulma&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;binwalk ile elde ettiğimiz offset çıktılarına bir tekrar göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Burada Linux dosyalarını bulmak için &lt;strong&gt;Squashfs&lt;/strong&gt; alanına yönelebiliriz. Çoğunlukla Linux dosyaları burada bulunurlar.&lt;/p&gt;
+&lt;p&gt;Yine aynı şekilde &lt;strong&gt;.sqfs&lt;/strong&gt; uzantısı ile kopyalayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img14.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Tekrarlamaktan zarar gelmez, &lt;strong&gt;3106242&lt;/strong&gt; offset değerini verdiğime dikkat edin. Burası &lt;strong&gt;Squashfs&lt;/strong&gt; ile sıkıştırılmış alanın offset değeri.&lt;/p&gt;
+&lt;p&gt;Dosyayı incelediğimizde zaten &lt;strong&gt;Squashfs&lt;/strong&gt; ile sıkıştırıldığını doğrulayabiliriz. Şimdi ise bunu çıkartmamız gerekecek ancak eğer kurulu değilse &lt;strong&gt;Squashfs-tools&lt;/strong&gt; paketi indirilmesi gerekiyor. Debian sistemlerde aşağıdaki komutla indirebilirsiniz:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install squashfs-tools -y&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;İndirdikten sonra &lt;strong&gt;unsquashfs&lt;/strong&gt; ile çıkartalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img15.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Çıkarma işleminden sonra &lt;strong&gt;squashfs-root&lt;/strong&gt; adlı bir dosya elde ediyoruz. İçerisine göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img16.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü üzere Linux dosyalarına eriştik. Bu kısımda yapabileceğimiz birçok şey bulunuyor. Bir bug, hashler veya şifreler gibi artık analiziniz neye dayanıyorsa ona göre araştırma yaparak ilerleyebilirsiniz. Mesela &lt;strong&gt;/etc/shadow&lt;/strong&gt; içerisindeki şifrelere göz atabiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img17.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Benim gibi yeni iseniz bu Linux dosyalarını araştırabilir ve diğer offset bölümlerini kopyalayıp göz atabilirsiniz.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Simüle Etme&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;simüle-etme&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#sim%c3%bcle-etme&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Son olarak ise Firmware&amp;rsquo;i emule (simüle) edelim. Bunun için &lt;strong&gt;chroot&lt;/strong&gt; ve &lt;strong&gt;qemu&lt;/strong&gt; kullanabiliriz. Fakat ondan önce Firmware&amp;rsquo;in mimarisini bilmemiz gerekiyor.&lt;/p&gt;
+&lt;p&gt;Linux versiyonunu ararken uImage&amp;rsquo;a göz attığımızda mimarinin &lt;strong&gt;MIPS&lt;/strong&gt; olduğunu zaten görmüştük. Ancak yine de çıktıyı bir kez daha kontrol edelim:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü üzere MIPS olduğunu görebiliriz. Ayrıca da Little Endian.&lt;/p&gt;
+&lt;p&gt;Qemu kullanacağımız için &lt;strong&gt;/usr/bin/qemu-mipsel-static&lt;/strong&gt; programını squashfs-root dosyasına kopyalayalım ve ardından chroot çalıştıralım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img18.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Başarılı bir şekilde simüle etmiş olduk. Busybox&amp;rsquo;ın sürümüne göz attığımızda da &lt;strong&gt;1.19.4&lt;/strong&gt; kullanıldığını görmekteyiz. Bu da 2012 yılında çıkmış bir eski sürümdür.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Sonuç&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;sonuç&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#sonu%c3%a7&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Firmware Reverse Engineering için ilk blogumda basitçe bir firmware&amp;rsquo;in nasıl analiz edebileceğimizi gördük. Eğer araştırmalara devam etmek isterseniz konu içerisinde bahsettiğim ASUS&amp;rsquo;un Firmware&amp;rsquo;ini analiz edebilirsiniz. Ayrıca da referanslara da göz atabilirsiniz.&lt;/p&gt;
+&lt;p&gt;Umarım bu konu işinize yaramıştır efenimmm iyi çalışmalarr.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;References&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://embeddedbits.org/reverse-engineering-my-routers-firmware-with-binwalk-embeddedbits/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Embeddedbits - Reverse engineering my router&amp;rsquo;s firmware with binwalk&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=zs86OYea8Wk&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;John Hammond -  Getting Started in Firmware Analysis &amp;amp; IoT Reverse Engineering&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=oqk3cU7ekag&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Engineer Man - Simple Firmware Reverse Engineering&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Is Valorant Spyware?</title>
+      <link>http://0xbekoo.github.io:1313/blog/is-valorant-spyware/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      
+      <guid>http://0xbekoo.github.io:1313/blog/is-valorant-spyware/</guid>
+      <description>
+        
+        
+        &lt;h2&gt;Giriş&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;giriş&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#giri%c5%9f&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Valorant oyunu, çıkışından beri hem oyuncuların ilgisini çeken hem de tartışmalara neden olan bir yapım olmuştur. Özellikle oyunun anti-cheat sistemi olan Vanguard’ın, oyuncuların gizlilik haklarını ihlal ettiği ve spyware olarak adlandırılabilecek bir yazılım olduğu iddialarıyla sıkça gündeme gelmiştir. Bu iddialar, oyuncuların güvenlik endişelerini artırmış ve Valorant’ın popülaritesiyle birlikte bu konuda birçok tartışma başlatılmıştır.&lt;/p&gt;
+&lt;p&gt;Reddit ve diğer sosyal medya platformlarında yayılan bu iddialar, Valorant’ın geliştiricisi olan Riot Games’in, oyuncuların bilgisayarlarında istenmeyen izleme ve kontrol yeteneklerine sahip olduğu yönünde eleştirilmesine neden olmuştur. Ancak, bu iddiaların gerçekliği ve Vanguard’ın gerçekten bir spyware olup olmadığı konusu hala netlik kazanmamıştır. Bu yazıda, Valorant’ın spyware olduğu iddialarını ele alacak ve bu iddiala bir göz atacağız.&lt;/p&gt;
+&lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200&#34;&gt;
+  &lt;p class=&#34;hx-flex hx-items-center hx-font-medium&#34;&gt;&lt;svg height=16px class=&#34;hx-inline-block hx-align-middle hx-mr-2&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z&#34;/&gt;&lt;/svg&gt;Warning&lt;/p&gt;
+
+  &lt;div class=&#34;hx-w-full hx-min-w-0 hx-leading-7&#34;&gt;
+    &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;Bu yazıdaki analiz ve değerlendirmeler, yalnızca araştırma amaçlıdır ve herhangi bir suçlama içermemektedir. Valorant’ın güvenlik önlemleri ve Vanguard anti-cheat sistemi hakkındaki iddiaların objektif bir bakış açısıyla incelenmesi amaçlanmıştır.&lt;/p&gt;
+&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;h2&gt;Anti-Cheat Yazılımları nasıl Çalışır?&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;anti-cheat-yazılımları-nasıl-çalışır&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#anti-cheat-yaz%c4%b1l%c4%b1mlar%c4%b1-nas%c4%b1l-%c3%a7al%c4%b1%c5%9f%c4%b1r&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Araştırmamıza Anti-Cheat yazılımların nasıl çalıştığını anlayarak başlamamız gerekiyor.&lt;/p&gt;
+&lt;p&gt;Genel olarak Anti-Cheat yazılımları, oyun içerisinde hile yapılmasını engellemek ve hile yapanları tespit etmek amacıyla geliştirilmiş yazılımlardır.&lt;/p&gt;
+&lt;p&gt;Bu yazılımların çalışma mantığını ikiye ayırabiliriz: server-side (sunucu taraflı) ve client-side (istemci taraflı) çalışma yöntemleri.&lt;sup&gt;[1]&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;Server-side tabanlı anti-cheat yazılımları, genellikle oyuncunun oyun sunucusuna gönderdiği verileri izler ve analiz eder. Bu veriler, oyuncunun oyunu nasıl oynadığı, hangi komutları gönderdiği, ne kadar hızlı tepki verdiği gibi bilgileri içerebilir. Amacı, oyuncunun normal oyun davranışları ile potansiyel hile kullanımı arasındaki farkları tespit etmektir.&lt;/p&gt;
+&lt;p&gt;Client-side tabanlı anti-cheat yazılımları ise oyuncunun kendi bilgisayarında çalışır ve oyuncunun bilgisayarına tamamen erişimi olabilir. Böylece oyuncunun bilgisayarında çalışan hile programlarını tespit etmeye çalışır ve bunları engellemeye veya raporlamaya yönelik çeşitli teknikler kullanabilir. Ayrıca bu yazılımlar kernel seviyesinde tam yetkili ve erişimli olarak çalışır. Yani oyuncunun bilgisayarına tamamen hakimdir.&lt;/p&gt;
+&lt;p&gt;Her iki tür anti-cheat yazılımının avantajları ve dezavantajları vardır. Server-side anti-cheat yazılımları genellikle daha güvenilirdir çünkü sunucu tarafında çalışırlar ve oyuncuların kendi bilgisayarlarında yapabilecekleri manipülasyonlara daha az açıktır. Client-side tabanlı anti-cheat yazılımları ise oyuncunun bilgisayarında daha kapsamlı bir kontrol sağlayabilir ve bu, bu yazıda sıkça tartışacağımız gizlilik ihlallerine veya oyuncunun güvenliği konusunda endişelere neden olabilir.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Priv_rings.svg/1024px-Priv_rings.svg.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;İlk başlarda Anti-Cheat yazılımları Ring 3 seviyesinde çalışıyordu. Bilindiği gibi ring 3 alanı, User Mode olarak geçmektedir. Eğer bu konuya aşina değilseniz hızlı bir şekilde araştırmanızı tavsiye ederim.&lt;/p&gt;
+&lt;p&gt;User Mode alanında ayrıcalıklar çok kısıtlıdır; işletim sistemi üzerinde her ayrıcalığa sahip olmadığınız ve çok kısıtlı olduğunuz bir alan. Anti-Cheat yazılımları ise bu alanda çalışıyordu. Bu alanda doğrudan donanıma erişim sağlayamadığınız için ve belleğe erişim sağlayamadığınız için anti-cheat yazılımları herhangi bir tarama gerçekleşmeden önce gerekli izinlere sahip olması gerekirdi. Bunlarla beraber bu alanda anti-cheat yazılımları, diğer uygulamara göre izole bir şekilde çalışırdı ve bu yüzden başka bir uygulamaya ait olan datalara müdahale edemez ya da datayı değiştiremezdi&lt;sup&gt;[2]&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;Fakat Cheater’lar, anti-cheat yazılımların Ring 3 seviyesinde çalıştığını bildikleri için daha sofistike yöntemler geliştirdiler. Yöntemleri ise hazırladıkları hileleri Ring 3 seviyesinde değil Ring 0 alanında çalıştırmaktı yani Kernel Mode alanında. Böylece hazırladıkları hileler daha fazla ayrıcalıklara sahip oluyordu ve tespit edilmesi ciddi anlamda zorlaşıyordu. Ring 0 yani Kernel Mode alanı, User Mode alanı gibi kısıtlamalara sahip değildir. User mode alana kıyasla daha fazla ayrıcalıklara sahiptir; herhangi bir instruction yürütülebilir ve herhangi bir bellek adresini rahatça okunabilir veya en önemlisi donanımla iletişime geçilebilir. Hatta Cheater’lar o kadar ileri seviyeye gitmişler ki, Ring 3 alanında çalışan Anti-Cheat yazılımlara ait verileri almak için bu yazılımların kullandığı system call’ları bile hooklayabiliyordı.&lt;sup&gt;[2]&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;Oyun şirketleri ise bu yönteme karşı bir cevap vermesi gerekiyordu ve User mode alanında kısıtlı bir şekilde çalışan anti-cheat yazılımlarını kernel seviyesinde yani Ring 0 alanına taşıdılar. Ring 0’da çalışan bu yazılımlar, Ring 3 alanında olduğu gibi sistemi aynı şekilde tarayabiliyor ancak bunu direkt kernel seviyesinde yapıyor yani tamamen yüksek yetkiler ile. Bunun avantajı olduğu gibi de bu blogta baya tartışacağımız dezavantajı da vardır. Anti-Cheat yazılımların Ring 0 alanında çalışma avantajı, tespit edilemesi zor olan hileleri bile kolayca tespit etmesi ve oyunu hileye karşı daha güvenli tutmasıdır. Dezavantajı ise gizlilik problemi.&lt;/p&gt;
+&lt;p&gt;Düşünün ki, eğer bu yazılımlar sizi hilelerden korumak için yüksek yetkiler ile tarama yapıp ve her şeyi okuyabiliyorsa teorik olarak bilgisayarınızdaki her şeye de erişebilir anlamına da geliyor. Bu yazılımlar kernel seviyesinde çalışıyor. Yani yüksek ayrıcalıklarla sizin bilgisayarınızdaki anlık her şeyi okuyabilir ve erişebilirler. Sizlere şu soruyu yönlendirmek isterim, oynadığınız oyunda hilecilere katlanmak istemezsiniz ve bu hilecilere karşı bir önlem alınmasını istersiniz ama bununla beraber gizliliğinizi riske atmak ister miydiniz?&lt;/p&gt;
+&lt;h2&gt;Anti-Cheat yazılımların getirdiği Potansiyel Tehlikeler&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;anti-cheat-yazılımların-getirdiği-potansiyel-tehlikeler&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#anti-cheat-yaz%c4%b1l%c4%b1mlar%c4%b1n-getirdi%c4%9fi-potansiyel-tehlikeler&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Geçmiş yıllarda anti-cheat yazılımların gizlilik ilkelerini ihlal eden olaylar olmuştur. Bunlardan biri de 2013 yılında ESEA şirketinden bir geliştiricinin işletim sisteminin kernel seviyesini kullanarak oyuncuların bilgisayarından gizli ve büyük ölçekte bir bitcoin madenciliği gerçekleştirmesi bu konuya güzel örnektir. Geliştirici, 14.000 oyuncunun bilgisayarındaki GPU ile yerleştirdiği mining yazılımıyla yaklaşık 4.000$ elde etti&lt;sup&gt;[3]&lt;/sup&gt; ve bu olay ortaya çıktıktan sonra ESEA şirketi US Regulators (ABD Düzenleyicileri) tarafından 1.000.000 para cezası verildi. Bu olaylardan sonra ESEA şirketi bizzat kamuoyundan özür diledi ve ESEA şirketi mining ile elde edilen paraları ödül potları aracılığıyla oyunculara dağıttı ve American Cancer Society (Amerikan Kanser Derneği)’ne $7.427.10 bağışladı.&lt;sup&gt;[3]&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;Bununla beraber bazı İşletim sistemi için problemlere neden olabilirler. Eğer sıklıkla oyun oynayan biriyseniz bu durumla belki karşılaşmış olabilirsiniz. Anti-Cheat yazılımları kernel sürücüsü olarak çalıştığı için sürücüde bulunan kodda küçük bir hata, işletim sistemin Blue Screen of Death (BSOD) benzeri çökmelere neden olabilir. Örneğin şu görsele bir bakabiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Burada kullanıcı bilgisayarı açtığı anda yukarıda bahsettiğim SYSTEM THREAD EXCEPTION NOT HANDLED hata koduyla mavi hata ekrana düştüğünü belirtiyor. &lt;strong&gt;vgk.sys&lt;/strong&gt;, RIOT Games’a ait olan bir Vanguard anti-cheat yazılımın sürücü dosyasıdır.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Burada ise kullanıcı Counter Strike 2 oyununu oynadığı sürece yine aynı hata koduyla mavi ekrana düştüğünü ve çözüm aradığını belirtiyor.&lt;/p&gt;
+&lt;h2&gt;Valorant için Spyware iddiaları&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;valorant-için-spyware-iddiaları&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#valorant-i%c3%a7in-spyware-iddialar%c4%b1&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Valorant için bu iddiaların bulunmasındaki en büyük sebeplerden biri de Çin ülkesine ait olan Tencent şirketinin RIOT Games’ın %100’üne sahip olması, bu iddialara öncülük etmektedir. Tencent şirketi, Şubat 2011’de Riot Games’in yüzde 93 hissesi için 400 milyon yatırım yapmıştı ve 16 Aralık 2015’te kalan yüzde 7 hisse için de belirtilmeyen fiyat ile yatırım yaparak %100 hisseyi almıştır.[4]&lt;/p&gt;
+&lt;p&gt;Tencent şirketi, Çin hükümeti ile yakın ilişkileri olan bir şirkettir ve Çin hükümeti, internet üzerindeki tüm faaliyetleri kontrol etmek istemektedir. Bu durum, Tencent’in RIOT Games’ın %100’üne sahip olması ve Valorant’ın anti-cheat yazılımının kernel seviyesinde çalışması, bu yazılımın Çin hükümeti tarafından kullanılabileceği iddialarına neden olmuştur.&lt;/p&gt;
+&lt;p&gt;Bu tartışmaların başlangıcını 3-4 yıl öncesinde başladığını görebiliriz. Mesela r/privacy subreddit’inde denk geldiğim şu konuya bir göz atabiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;İçerikte, Valorant’ın anti-cheat yazılımı olan Vanguard’ın tehlikeli olup olmayacağına dair bir soru sorulmuş. Yine içerikte bu yazılımın arka tarafta sürekli çalıştığı söyleniyor.&lt;/p&gt;
+&lt;p&gt;Öncelikle bu iddiaların doğruluğunu araştırarak başlamaya karar verdim ve RIOT’un kendi makalesi olan ‘Vanguard Nedir’ ile göz atarak başladım. Makalenin şu kısmı çok dikkatimi çekti:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Açıkçası bu metinler beni tatmin etmedi. Evet, RIOT makalesinde Vanguard’ın zaten bilgisayar açılışından itibaren çalıştığını açıkça söylüyor ancak bana soracak olursanız açıklama yetersiz.&lt;/p&gt;
+&lt;p&gt;Bu makale bana yetersiz geldiği için tekrardan reddit ortamlarına döndüm ve tekrar araştırmaya başladım. Daha sonra r/VALORANT subreddit’inde bu soruna yönelik açılan bir post&amp;rsquo;un altında u/RiotArkem&amp;rsquo;in uzun bir &lt;a href=&#34;https://www.reddit.com/r/VALORANT/comments/fzxdl7/comment/fn6yqbe/?utm_source=share&amp;amp;utm_medium=web3x&amp;amp;utm_name=web3xcss&amp;amp;utm_term=1&amp;amp;utm_content=share_button&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;açıklamasına&lt;/a&gt; denk geldim&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img12.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Bu açıklama, Vanguard üzerine okuduğum makaleye kıyasla daha açıklayıcıydı. Bir göz atalım.&lt;/p&gt;
+&lt;p&gt;vgk.sys sürücüsünün gerçekten bilgisayar başlangıcında çalıştığını söylüyor ancak oyun çalışmadığı sürece hiçbir şeyin taramadığını, sunucularla iletişim kurmadığını ve mümkün olduğunca az sistem kaynağı kullanarak çalıştığını söylüyor ve bu yazılımın istendiği zaman kaldırılabileceği söyleniyor.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&amp;ldquo;Neden başlangıçtan itibaren çalışıyor?&amp;rdquo;&lt;/strong&gt; sorusuna karşılık ise sistem başlangıcında yüklenmediği sürece bilgisayarı güvenilir olarak kabul etmediği ve en önemlisi de anti-cheat yazılımları bypass etmenin yollarından biri olan anti-cheat yazılımların yüklenmesinden hemen önce hilenin yüklenmesi gibi yöntemler için çözüm olabileceği söylenmiş.&lt;/p&gt;
+&lt;p&gt;Ayrıca bu sürücünün güvenliğine ve ayrıcalıklarına da değinmiş. Güvenlik olarak, güvenlik araştırma ekiplerine incelettiklerini, sürücünün mümkün olduğunda az şeyler yaptığını ve sürücüye en az ayrıcalıklar verdiklerini söylemiş&lt;/p&gt;
+&lt;p&gt;Açıklamaya göz attığımızda orijinal makaleye kıyasla daha açıklayıcı ve güzel duruyor. Şimdi ise bu topladığımız bilgileri analize dökerek bir kontrol edelim.&lt;/p&gt;
+&lt;h2&gt;Analizin gerçekleşmesi&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;analizin-gerçekleşmesi&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#analizin-ger%c3%a7ekle%c5%9fmesi&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Şimdi temel bilgilerden sonra artık basitçe neler yapabileceğimizi çözdük ve artık yavaştan analize başlayabiliriz.&lt;/p&gt;
+&lt;p&gt;Öncelikle analize wireshark ile başlamak istedim. RIOT Client uygulaması başlatıldığında nerelere bağlantı kurduğunu görerek başlayalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/video/wireshark-video.gif&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü gibi Client uygulaması çalıştırıldığında düşünüldüğünden daha fazla birçok yere veri gönderiliyor.&lt;/p&gt;
+&lt;p&gt;Burada gönderilen verilerin içeriğini göremeyiz çünkü videoda görülebileceği gibi veriler şifrelenmiş halde. Dolayasıyla bunun izinden gitmemiz pek mümkün olmayacaktır. Bu yüzden bende bireysel bağlantıların adreslerinden bir kaçına göz atmaya karar verdim:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Verilerin nereye gönderildiğine dair bir iz sürmeye çalıştığımda sonuca varamadım ancak The PC Security Channel adlı kanalın ‘Is Valorant Spyware?’ videosunun analizinde kendisinin birçok IP adresinin Amazon sunucularına ait olduğunu belirtiyor. Ayrıca bu konuyu hazırlarken ilham aldığım bahsi geçen videoya da göz atabilirsiniz. Gerçekten güzel ve açıklayıcı bir analiz gerçekleştiriyor.&lt;/p&gt;
+&lt;p&gt;Bağlantı sayılarına buradan da göz attığımızda çok kadar fazla bağlantı olduğunu görebiliyoruz ve maalesef bu iç açıcı bir şey değil. Kendi kendime bunun abarttığımı düşündüm ve bilgisayarımda yüklü olan Epic Games uygulaması için de kontrol etmek istedim ve sonuç:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img6.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü gibi RIOT Client uygulamasına kıyasla daha az bir bağlantı var. Yani RIOT Client uygulamasının cidden fazla veri gönderimi yaptığını anlayabiliyoruz.&lt;/p&gt;
+&lt;p&gt;Daha sonra yönümü .sys dosyasına çevirdim ve Process Explorer aracılığıyla vgk.sys’e kısaca bakmak istedim:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Aynı zamanda vgk.sys’in durumunu driverquery aracı ile daha hızlı kontrol edebiliriz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Fakat bir sorun var. Şuan işletim sisteminde RIOT’un herhangi bir uygulaması çalışmıyor - arka planda bile -. Bu, Riot Vanguard için de geçerli:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/video/process-explorer.gif&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;İşletim sistemimde RIOT’un tüm uygulamaları başlangıçta başlaması kapalı. Ancak yine de vgk.sys’in çalıştığını tespit ettim.&lt;/p&gt;
+&lt;p&gt;RIOT’un makalesinde zaten arka planda çalıştığını belirtse de RIOT ile ilgili tüm uygulamaların kapalı olmasına rağmen bu kernel sürücüsünün yine arka planda çalışması çok olanaksız. Oyun tamamen kapalı ise oyunlarda hileden koruyan bir yazılım beni neyden koruyabilir?&lt;/p&gt;
+&lt;p&gt;Araştırmalara, yukarıda Vanguard’ın eski lideri Arkhem’in bahsettiği şu kısmı ele alara devam etmek istiyorum:&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;i&gt;&amp;ldquo;Yes we run a driver at system startup, it doesn’t scan anything (unless the game is running), it’s designed to take up as few system resources as possible and it doesn’t communicate to our servers. You can remove it at anytime.&amp;quot;&lt;/i&gt;&lt;/p&gt;
+
+&lt;/blockquote&gt;
+&lt;p&gt;Yazılımın istendiği zaman kaldırabileceği belirtilmiş. Bunu tekrar okuduktan sonra Vanguard’ı kaldırdım ardından işletim sistemini yeniden başlattım ve vgk.sys’in yine sistemde olup olmadığını kontrol ettim ve sonuç:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/is-valorant-spyware/img9.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Gerçekten de Vanguard yazılımı kaldırıldığında vgk.sys sistemden kaldırılıyor. Bunu doğrulamış olduk.&lt;/p&gt;
+&lt;h2&gt;vgk.sys Sürücüsünü Analiz Etme&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;vgksys-sürücüsünü-analiz-etme&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#vgksys-s%c3%bcr%c3%bcc%c3%bcs%c3%bcn%c3%bc-analiz-etme&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;vgk.sys sürücüsünü yakından analiz etmeye başlayacaktım ancak maalesef bunun izinden süremedim. Çünkü RIOT’un hiçbir şekilde vgk.sys’i analiz etmemize fırsat vermediğini öğrendim.&lt;/p&gt;
+&lt;p&gt;İlk başta VALORANT oyununu sanal makineye kurdum ve sistemi yeniden başlattıktan sonra VANGUARD yazılımın başlatılmadığını fark ettim. Hatalardan olabileceğini düşünerek çeşitli yollar denedim ancak olmadı:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img10.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Sanal makinede valorant çalıştırmak istediğimde karşıma çıkan ekran buydu. Bunun sebebi ise vgk.sys sürücüsünün başlatılmaması.
+Sanal makinelerde hiçbir şekilde vgk.sys sürücüsünü başlatılmıyor ve analizde fark ettiğim bir diğer şey ise sanal makine olmasa bile eğer işletim sisteminizde debugging aktifse vgk.sys çalıştırılmıyor. Yani ana makinenizde çalışan vgk.sys dosyasını analiz etmek için debugging aktifleştirseniz bile kendini devre dışı bırakacaktır.&lt;/p&gt;
+&lt;p&gt;Dinamik analizine gidemediğim için statik analize yönelmeye karar verdim ve .sys dosyasının kullandığı fonksiyonlara göz atmak istedim:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img11.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;API’lara göz attığımızda vgk.sys sürücüsü oyuncunun bilgisayarın çalışma ortamını kontrol edebileceğini, sistem saat ve sistem dizinini elde edebilecek API’lar kullandığı gözüme çarptı. Tabi ki dinamik analiz gerçekleştiremediğimiz bunların ne amaçla kullandığını da bilemeyiz.&lt;/p&gt;
+&lt;p&gt;Eğer fonksiyonların tamamına siz de göz atmak isterseniz aşağıya listenin tamamını ekliyorum:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;pre&gt;&lt;code&gt;ZwClose	
+KeInitializeSpinLock	
+KeAcquireSpinLockAtDpcLevel	
+KeAcquireSpinLockRaiseToDpc	
+KeReleaseSpinLock	
+KeReleaseSpinLockFromDpcLevel	
+ExAllocatePoolWithTag	
+KeLowerIrql	
+KfRaiseIrql	
+KeInitializeDpc	
+KeInitializeTimer	
+KeSetTimer	
+MmMapLockedPagesSpecifyCache	
+MmUnmapLockedPages	
+MmAllocatePagesForMdl	
+MmFreePagesFromMdl	
+IoFreeMdl	
+IoAllocateWorkItem	
+IoQueueWorkItem	
+IoInitializeWorkItem	
+RtlDuplicateUnicodeString	
+ObfDereferenceObject	
+KeBugCheckEx	
+_stricmp	
+__C_specific_handler	
+KeIpiGenericCall	
+ExFreePoolWithTag	
+ProbeForRead	
+IoGetCurrentProcess	
+wcscpy_s	
+RtlInitUnicodeString	
+RtlTimeToTimeFields	
+KeAreAllApcsDisabled	
+ExSystemTimeToLocalTime	
+ZwWriteFile	
+IoCreateFileEx	
+ZwFlushBuffersFile	
+swprintf_s	
+vswprintf_s	
+_vsnwprintf	
+KeInitializeApc	
+KeInsertQueueApc	
+wcscat_s	
+ZwReadFile	
+ZwQuerySystemInformation	
+IoGetStackLimits	
+strchr	
+RtlPrefixUnicodeString	
+RtlMultiByteToUnicodeN	
+MmHighestUserAddress	
+ObReferenceObjectByHandle	
+IoFileObjectType	
+strnlen	&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Dediğim gibi dinamik olarak analiz yapamadığımız için burada kullanılan fonksiyonların ne işe yaradığını söylemek pek mümkün olmayacaktır.&lt;/p&gt;
+&lt;h2&gt;Sonuç&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;sonuç&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#sonu%c3%a7&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Analiz sonucunda, Vanguard’ın sürücüsü olan vgk.sys’in davranışlarını değerlendirdiğimizde, Valorant oyununun spyware olabileceği daha yakın olduğu düşünüyorum. Ancak, bu sonuç daha derin analizlerle doğrulanabilir veya reddedilebilir. Ayrıca RIOT’un bu konuda daha şeffaf olması gerektiğini düşünüyorum. Özellikle, Vanguard’ın ne yaptığı ve nasıl çalıştığı konusunda daha fazla bilgi sağlamaları önemlidir. Kullanıcıların gizlilik ve güvenlik endişelerini gidermek için RIOT’un daha açık bir iletişim politikası benimsemesi gerektiğini düşünüyorum.&lt;/p&gt;
+&lt;p&gt;Umarım sizler için faydalı bir konu olmuştur. Diğer konuda görüşmek üzere!&lt;/p&gt;
+&lt;h1&gt;References&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://helda.helsinki.fi/server/api/core/bitstreams/89d7c14b-58e0-441f-a0de-862254f95551/content&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;[1] - University of HELSINKI: Comparative Study of Anti-cheat Methods in Video Games&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.schellman.com/blog/cybersecurity/what-is-anti-cheat&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;[2] - Schellman: Understanding Anti-Cheat&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.theregister.com/2013/11/20/esea_gaming_bitcoin_fine/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;[3] - TheRegister: Gaming co ESEA hit by $1m fine for hidden Bitcoin mining enslaver&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://en.wikipedia.org/wiki/Riot_Games&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;[4] - EN Wikipedia: Riot Games&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Bypass Ptrace</title>
+      <link>http://0xbekoo.github.io:1313/blog/bypass-ptrace/</link>
+      <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
+      
+      <guid>http://0xbekoo.github.io:1313/blog/bypass-ptrace/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Merhabalar. Bu konumda ptrace’in nasıl bypass edilebileceğiniden bahsedeceğim.&lt;/p&gt;
+&lt;p&gt;ptrace, bir process’in diğer bir process’i debug etmesini sağlayan bir sistem çağrısıdır. Bu sistem çağrısı sayesinde bir process’in diğer process’inin memory’sine erişebiliriz. Bu sayede process’in memory’sindeki verileri okuyabilir, yazabilir ve değiştirebiliriz.&lt;/p&gt;
+&lt;p&gt;ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilmesi amacıyla kullanılır. Bu, hata ayıklama (debugging), sistem çağrılarını izleme, işlemi duraklatma, kaynak izleme ve benzeri geliştirme ve analiz amaçları için yaygın olarak kullanılan bir sistem aracıdır.&lt;/p&gt;
+&lt;p&gt;Ptrace’in Kullanımı
+C ile aşağıdaki basit kod ile ptrace’in kullanımı hakkında bilgi sahibi olabiliriz:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;stdio.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;sys/ptrace.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;main&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;ptrace&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PTRACE_TRACEME&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Debugging yok Security var!&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Programıma baktığımızda ilk aşamada bir PTRACE_TRACEME parametresi ile ptrace çağrısı yapıldığını görüyoruz. Bu parametre, process’in kendisini izlemek için kullanacağımızı belirtir. Bu fonksiyonun geri dönüş değeri 0’dan küçükse, işlemi izlemek için izin verilmediği anlamına gelir. Bu durumda programımız Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım çıktısını verir. Eğer geri dönüş değeri 0 ise Debugging yok Security var! çıktısını verir.&lt;/p&gt;
+&lt;h2&gt;Fonksiyon Parametreleri&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;fonksiyon-parametreleri&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#fonksiyon-parametreleri&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;long ptrace(enum __ptrace_request request, pid_t pid, void *addr, void *data);&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;enum&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;__ptrace_request&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;request&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;ilk parametre, ptrace’in hangi işlemi yapacağını belirten bir değerdir. Biz örnek senaryo için PTRACE_TRACEME kullandık. Bu parametre, Process’in kendisini izlemek için kullanacağımızı belirtir. Yani ikinci bir process değil o an çalıştırılacak process’i izlemeye alacaktır.&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;pid_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pid&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;İkinci parametre, işlem kimliğidir. Bu değer, işlemi izlemek isteyen işlem tarafından kullanılır.&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;addr&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Üçüncü parametre, işlemin adresidir. Bu değer, işlemi izlemek isteyen işlem tarafından kullanılır.&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;data&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Dördüncü parametre, işlemin verisidir. Bu değer, işlemi izlemek isteyen işlem tarafından kullanılır.&lt;/p&gt;
+&lt;h2&gt;Ptrace’in Bypass Edilmesi&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;ptracein-bypass-edilmesi&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#ptracein-bypass-edilmesi&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Şimdi ise önemli kısma geldik. Kali Linux’ta &lt;code&gt;radare2 -w &amp;lt;program&amp;gt;&lt;/code&gt; komutuyla programımızı açıyoruz. Daha sonra aaa komutuyla programımızı analiz ediyoruz. afl komutuyla fonksiyonlarımızı görüntülüyoruz:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Fonksiyonlarda main ve ptrace görmemiz yeterli olacaktır. Şimdi ise s main komutuyla main fonksiyonuna gidelim ve pdf komutuyla main fonksiyonumuzu görüntülüyelim:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;main içerisine baktığımızda ilk olarak prelog dediğimiz işlemin gerçekleştiğini görmekteyiz. Daha sonra ptrace fonksiyonun çağırıldığını görüyoruz ancak ondan önce bu fonksiyon için parametreler hazırlanıyor ve tüm parametrelere 0 değeri verilmiş. Fonksiyonun çağırılmasından sonra ise rax register’ın test instruction ile test edildiğini görmekteyiz.&lt;/p&gt;
+&lt;p&gt;Daha sonra jns (Jump if not Sign) ile eğer test edilen sonuç negatif bir sayı değil ise ( rax &amp;gt; 0 ) 0x00001186 adresine atlanıyor. Bu atlanılan kısımda Debugging yok Security Var! mesajı bastırılıyor. Yani bu kısım debugging edilmediğinde atlanılan bir kısım.&lt;/p&gt;
+&lt;p&gt;Eğer bu işlem başarısız olunursa yani sonuç negatif bir sayı ise 0x00001170 adresinden devam ediyor. Burası ise programın debugging edildiğinde atlanılan kısım. Bu kısımda ise Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım mesajı bastırılıyor ve program bitiriliyor. Yani bu kısmın decompiler’ı şu şekilde olabilir:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;long&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rax&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;ptrace&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PTRACE_TRACEME&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;rax&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Debugging yok Security var!&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Kodların source code’larını bilmediğimizi varsayarsak şuan biz bu programı Assembly kodları ile nasıl çalıştığını kabaca biliyoruz. bypass etmeden önce direkt programı çalıştıralım ve ne olduğuna bakalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü gibi debugger ile programı çalıştırdığımızda “Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım” mesajını alıyoruz. Şimdi ise bypass etmeye çalışalım.&lt;/p&gt;
+&lt;p&gt;Basit bir ptrace bypass etmek ile ilgili bloglarda genellikle rax register’ın değeri 0 yapılarak anlatılır. Bu da işe yarayan bir yöntemdir ancak ben burada farklı olarak sizlere farklı bir yöntem göstereceğim. Ayrıca bu yöntemin reverse engineering için sizlere daha iyi bir anlayış sağlayacağını ümit ediyorum.&lt;/p&gt;
+&lt;p&gt;Yapacağımız şey oldukça basit. Sadece karşılaştırmada kullanılan jns komutunu js olarak değiştirmek. Bunu neden yaptığımızı bu bypass sürecinde daha iyi anlayacağız. Let’s go!&lt;/p&gt;
+&lt;p&gt;Öncelikle programı çalıştırmadan s komutu ile 0x0000116e adresine gidelim. Burası jns ile değerin karşılaştırma yapıldığı kısım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Ardından buradaki assembly kodunu js olarak değiştirelim. Bunun için wx 0x78 komutunu kullanacağız. 0x78 değeri js instruction’a karşılık gelmektedir:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü gibi jns instruction’ı js instruction’ına çevrilmiş. Şimdi ise dc komutuyla programımızı çalıştıralım. Ancak ondan önce disassemble ettiğimiz main’in son haline bir göz atalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img6.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;main’in son haline baktığımızda fonksiyonun geri dönüş adresini karşılaştırdığımız kısımda jns değil js görmekteyiz. Böylece yapılacak işlemler tam tersine dönmüş oldu:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Göründüğü gibi debugger içerisinde programı çalıştırdığımızda &lt;strong&gt;“Debugging yok Security var!”&lt;/strong&gt; mesajını alıyoruz. Bu da bize ptrace’in bypass edildiğini gösteriyor. Yaptığımız işlemden sonra programın decompiler’ı şu şekilde olabilir:&lt;/p&gt;
+&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
+
+&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;long&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rax&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;ptrace&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PTRACE_TRACEME&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;rax&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Debugging yok Security var!&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
+  &lt;button
+    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
+    title=&#34;Copy code&#34;
+  &gt;
+    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Programı debugger ile çalıştırdığımız için bu if koşulun içerisine girecektir çünkü rax, -1 değerini alacaktır. js Instruction’u negatif değerleri kontrol etmek için kullanılır.&lt;/p&gt;
+&lt;p&gt;Bu değişikliklerin ardından program için potansiyel bir sorun oluşmakta. Size şunu sormak istiyorum debug etmeden normal şartlarda bu programı çalıştırdığımızda sizce ne olur? Gelin bir de buna bakalım:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Normal şekilde programı başlattığımızda hata mesajımızla karşılaşıyoruz. Zaten bunun sebebini detaylandırdım. Programı debugger ile çalıştırmadığımız için 0 değerinde kalıyor. Programı reverse ettiğimizde koşulu js olarak değiştirmiştik. Dolayasıyla programı çalıştırdığımızda hata mesajını almamak için rax’ın negatif bir değer alması gerekiyor; bunun için de debugger ile çalıştırılması gerekir.&lt;/p&gt;
+&lt;p&gt;Umarım faydalı olmuştur. Bir sonraki konumuzda görüşmek üzere. Hoşça kalın.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>
