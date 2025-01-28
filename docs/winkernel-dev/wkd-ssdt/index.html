@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=56554&amp;path=livereload" data-no-instant defer></script>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=56558&amp;path=livereload" data-no-instant defer></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
@@ -14,7 +14,7 @@
   <meta name="description" content="Merhabalar bu yazıda System Service Descriptor Table inceleyeceğiz.
 SSDT Nedir? Basitçe SSDT (System Service Descriptor Table), işletim sistemi tarafından desteklenen sistem çağrılarının bir listesidir. Sistem çağrıları, bir uygulamanın çekirdek seviyesindeki işlevleri kullanması için yapılan çağrılardır.
 SSDT, Service Descriptor Table kernel bellek yapısının ilk üyesidir:
-typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:" /><link rel="canonical" href="https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-ssdt/" itemprop="url" />
+typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:" /><link rel="canonical" href="https://0xbekoo.github.io:56558/docs/winkernel-dev/wkd-ssdt/" itemprop="url" />
 
 <meta property="og:title" content="System Service Descriptor Table" />
 <meta property="og:description" content="Merhabalar bu yazıda System Service Descriptor Table inceleyeceğiz.
@@ -37,7 +37,7 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE {
 
 SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-ssdt/" /><meta property="article:section" content="docs" />
+<meta property="og:url" content="https://0xbekoo.github.io:56558/docs/winkernel-dev/wkd-ssdt/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2024-12-26T00:00:00+00:00" />
 <meta property="article:modified_time" content="2024-12-26T00:00:00+00:00" />
 

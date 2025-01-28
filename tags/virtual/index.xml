@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>0xbekoo – Virtual</title>
-    <link>https://0xbekoo.github.io:56554/tags/virtual/</link>
+    <link>https://0xbekoo.github.io:56558/tags/virtual/</link>
     <description>Recent content in Virtual on 0xbekoo</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Fri, 30 Aug 2024 00:00:00 +0000</lastBuildDate>
     
-	  <atom:link href="https://0xbekoo.github.io:56554/tags/virtual/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="https://0xbekoo.github.io:56558/tags/virtual/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,10 +17,10 @@
     
     <item>
       <title>Virtual Memory</title>
-      <link>https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-virtual-memory/</link>
+      <link>https://0xbekoo.github.io:56558/docs/winkernel-dev/wkd-virtual-memory/</link>
       <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
       
-      <guid>https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-virtual-memory/</guid>
+      <guid>https://0xbekoo.github.io:56558/docs/winkernel-dev/wkd-virtual-memory/</guid>
       <description>
         
         

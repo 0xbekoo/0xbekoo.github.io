@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>0xbekoo – Reverse-Engineering</title>
-    <link>https://0xbekoo.github.io:56554/tags/reverse-engineering/</link>
+    <link>https://0xbekoo.github.io:56558/tags/reverse-engineering/</link>
     <description>Recent content in Reverse-Engineering on 0xbekoo</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Tue, 31 Dec 2024 00:00:00 +0000</lastBuildDate>
     
-	  <atom:link href="https://0xbekoo.github.io:56554/tags/reverse-engineering/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="https://0xbekoo.github.io:56558/tags/reverse-engineering/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,10 +17,10 @@
     
     <item>
       <title>Windows Kernel&#39;da Syscall Araştırma Yolculuğum</title>
-      <link>https://0xbekoo.github.io:56554/blog/syscalls/</link>
+      <link>https://0xbekoo.github.io:56558/blog/syscalls/</link>
       <pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate>
       
-      <guid>https://0xbekoo.github.io:56554/blog/syscalls/</guid>
+      <guid>https://0xbekoo.github.io:56558/blog/syscalls/</guid>
       <description>
         
         
@@ -525,10 +525,10 @@ Offset = KiServiceTableAddress + 4 * SSN
     
     <item>
       <title>ARM Firmware Reverse Engineering</title>
-      <link>https://0xbekoo.github.io:56554/blog/bare-metal-reversing-0x0/</link>
+      <link>https://0xbekoo.github.io:56558/blog/bare-metal-reversing-0x0/</link>
       <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
       
-      <guid>https://0xbekoo.github.io:56554/blog/bare-metal-reversing-0x0/</guid>
+      <guid>https://0xbekoo.github.io:56558/blog/bare-metal-reversing-0x0/</guid>
       <description>
         
         
@@ -707,10 +707,10 @@ Offset = KiServiceTableAddress + 4 * SSN
     
     <item>
       <title>Router Firmware Reverse Engineering</title>
-      <link>https://0xbekoo.github.io:56554/blog/router-firmware-reversing/</link>
+      <link>https://0xbekoo.github.io:56558/blog/router-firmware-reversing/</link>
       <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
       
-      <guid>https://0xbekoo.github.io:56554/blog/router-firmware-reversing/</guid>
+      <guid>https://0xbekoo.github.io:56558/blog/router-firmware-reversing/</guid>
       <description>
         
         
@@ -822,10 +822,10 @@ Offset = KiServiceTableAddress + 4 * SSN
     
     <item>
       <title>Is Valorant Spyware?</title>
-      <link>https://0xbekoo.github.io:56554/blog/is-valorant-spyware/</link>
+      <link>https://0xbekoo.github.io:56558/blog/is-valorant-spyware/</link>
       <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
       
-      <guid>https://0xbekoo.github.io:56554/blog/is-valorant-spyware/</guid>
+      <guid>https://0xbekoo.github.io:56558/blog/is-valorant-spyware/</guid>
       <description>
         
         
@@ -992,10 +992,10 @@ strnlen	&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-contain
     
     <item>
       <title>Bypass Ptrace</title>
-      <link>https://0xbekoo.github.io:56554/blog/bypass-ptrace/</link>
+      <link>https://0xbekoo.github.io:56558/blog/bypass-ptrace/</link>
       <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
       
-      <guid>https://0xbekoo.github.io:56554/blog/bypass-ptrace/</guid>
+      <guid>https://0xbekoo.github.io:56558/blog/bypass-ptrace/</guid>
       <description>
         
         
