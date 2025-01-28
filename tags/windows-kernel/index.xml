@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>0xbekoo – Windows-Kernel</title>
-    <link>http://0xbekoo.github.io:58366/tags/windows-kernel/</link>
+    <link>https://0xbekoo.github.io:56554/tags/windows-kernel/</link>
     <description>Recent content in Windows-Kernel on 0xbekoo</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Tue, 31 Dec 2024 00:00:00 +0000</lastBuildDate>
     
-	  <atom:link href="http://0xbekoo.github.io:58366/tags/windows-kernel/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="https://0xbekoo.github.io:56554/tags/windows-kernel/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,18 +17,18 @@
     
     <item>
       <title>Windows Kernel&#39;da Syscall Araştırma Yolculuğum</title>
-      <link>http://0xbekoo.github.io:58366/blog/syscalls/</link>
+      <link>https://0xbekoo.github.io:56554/blog/syscalls/</link>
       <pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://0xbekoo.github.io:58366/blog/syscalls/</guid>
+      <guid>https://0xbekoo.github.io:56554/blog/syscalls/</guid>
       <description>
         
         
         &lt;h2&gt;&lt;strong&gt;Giriş&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;giriş&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#giri%c5%9f&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.&lt;/p&gt;
 &lt;p&gt;Birkaç gün önce SSDT tablosu üzerine bir &lt;a href=&#34;https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;döküman&lt;/a&gt; paylaşmıştım. Bu dökümanda temel olarak SSDT&amp;rsquo;nin ne olduğunu, adreslerin nasıl hesaplandığı vs anlatmıştım. Dökümanın son kısmında ise öğrendiğimiz şeylerin bir kernel sürücüsünü hazırlamıştık.&lt;/p&gt;
-&lt;p&gt;Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğerbenim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel&amp;rsquo;da Syscall&amp;rsquo;ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!&lt;/p&gt;
-&lt;p&gt;Bu blogta, temel bilgiler olan NTAPI&amp;rsquo;ların ne olduğu ve syscall&amp;rsquo;ın nasıl işlendiği vs. gibi konulara yer vermeyeceğim. Zira &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;NTAPI Injection&lt;/strong&gt;&lt;/a&gt; dökümanında NTAPI&amp;rsquo;in ne olduğunu, &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/direct-syscalls&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Direct Systemcalls&lt;/strong&gt;&lt;/a&gt; dökümanında bir syscall&amp;rsquo;ın nasıl işlendiğini ve  temel olarak &lt;a href=&#34;https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;SSDT&lt;/strong&gt; dökümanında&lt;/a&gt; SSDT ve kernel&amp;rsquo;da syscall&amp;rsquo;ın nasıl işlendiğini daha önceden anlattım. Eğer temel şeylerle öğrenmeye başlayacaksınız bu dökümanlardan başlamak sizin için daha iyi olacaktır. Bu blogta nihai amacımız kernel alanında bir syscall&amp;rsquo;ın nasıl işlendiğini detaylı bir şekilde görmek olacak.&lt;/p&gt;
+&lt;p&gt;Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğer benim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel&amp;rsquo;da Syscall&amp;rsquo;ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!&lt;/p&gt;
+&lt;p&gt;Bu blogta, temel bilgiler olan NTAPI&amp;rsquo;ların ne olduğu ve syscall&amp;rsquo;ın nasıl işlendiği vs. gibi konulara yer vermeyeceğim. Zira &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;NTAPI Injection&lt;/strong&gt;&lt;/a&gt; dökümanında NTAPI&amp;rsquo;in ne olduğunu, &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/direct-syscalls&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Direct Systemcalls&lt;/strong&gt;&lt;/a&gt; dökümanında bir syscall&amp;rsquo;ın nasıl işlendiğini ve  temel olarak &lt;a href=&#34;https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;SSDT&lt;/strong&gt;&lt;/a&gt; dökümanında SSDT ve kernel&amp;rsquo;da syscall&amp;rsquo;ın nasıl işlendiğini daha önceden anlattım. Eğer temel şeylerle öğrenmeye başlayacaksınız bu dökümanlardan başlamak sizin için daha iyi olacaktır. Bu blogta nihai amacımız kernel alanında bir syscall&amp;rsquo;ın nasıl işlendiğini detaylı bir şekilde görmek olacak.&lt;/p&gt;
 &lt;h2&gt;&lt;strong&gt;Statik Analiz&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;statik-analiz&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#statik-analiz&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Bir syscall işlendiğinde, ntdll.dll&amp;rsquo;den syscall yapıldığında kernel alanına geçişte ilk durağın KiSystemCall64 olduğunu biliyoruz. Statik olarak analizimizi buradan başlayacağız. IDA ortamında ntoskrnl.exe analiz etmekle başlayalım.&lt;/p&gt;
 &lt;h3&gt;&lt;strong&gt;KiSystemServiceUser&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kisystemserviceuser&#34;&gt;&lt;/span&gt;

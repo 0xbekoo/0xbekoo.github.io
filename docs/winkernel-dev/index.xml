@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>0xbekoo – Windows Kernel Development Konuları</title>
-    <link>http://0xbekoo.github.io:58366/docs/winkernel-dev/</link>
+    <link>https://0xbekoo.github.io:56554/docs/winkernel-dev/</link>
     <description>Recent content in Windows Kernel Development Konuları on 0xbekoo</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Fri, 30 Aug 2024 00:00:00 +0000</lastBuildDate>
     
-	  <atom:link href="http://0xbekoo.github.io:58366/docs/winkernel-dev/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="https://0xbekoo.github.io:56554/docs/winkernel-dev/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,10 +17,10 @@
     
     <item>
       <title>System Service Descriptor Table</title>
-      <link>http://0xbekoo.github.io:58366/docs/winkernel-dev/wkd-ssdt/</link>
+      <link>https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-ssdt/</link>
       <pubDate>Thu, 26 Dec 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://0xbekoo.github.io:58366/docs/winkernel-dev/wkd-ssdt/</guid>
+      <guid>https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-ssdt/</guid>
       <description>
         
         
@@ -58,13 +58,13 @@
 &lt;/div&gt;
 &lt;p&gt;Yani arkadaşlar kısacası SSDT ve syscall&amp;rsquo;lar, user-mode alanından gelen API çağrılarıyla bunlara karşılık gelen kernel routine adresler arasında bir köprü görevi görür. Bu sayede kernel, user-mode alanından gelen bir sistem çağrısına hangi işlevin yanıt vereceğini belirler.&lt;/p&gt;
 &lt;h2&gt;&lt;strong&gt;Windbg ile Analiz&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;windbg-ile-analiz&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#windbg-ile-analiz&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Konuyu teorik olarak bırakmak olmaz. Windbg ile bu SSDT göz atabiliriz:&lt;/p&gt;
+    &lt;a href=&#34;#windbg-ile-analiz&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Konuyu teorik olarak bırakmak olmaz. Windbg ile bu SSDT&amp;rsquo;ye bir göz atalım:&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;../../../images/posts/ssdt/img1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Çıktıda verilen ilk adres &lt;strong&gt;fffff800`798c7cb0&lt;/strong&gt;, SSDT&amp;rsquo;nin adresidir.&lt;/p&gt;
-&lt;p&gt;Yukarıda buranın bir Offset tablosu olduğunu düşünmenizi istemiştim. Şimdi aldığımız bu adresle tablodaki birkaç offset&amp;rsquo;e göz atalım:&lt;/p&gt;
+&lt;p&gt;SSDT&amp;rsquo;nin bir tablo olduğunu düşünmenizi istemiştim. Şimdi ise elde ettiğimiz adresle tablodaki birkaç offset&amp;rsquo;e göz atalım:&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;../../../images/posts/ssdt/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Tablodan ilk 5 offset göründüğü gibi sıralanmış durumda. Şimdi bu offset&amp;rsquo;lerden &lt;strong&gt;056b3400&lt;/strong&gt; alalım ve işlevin adresine yönlendirdiğine bakalım.&lt;/p&gt;
-&lt;p&gt;Eğer Diagram&amp;rsquo;a tekrar bakarsanız kernel routine adresine erişmek için farklı bir formül kullanılıyor. Yani aşağıdaki formül:&lt;/p&gt;
+&lt;p&gt;Tablodan ilk 5 offset göründüğü gibi sıralanmış durumda. Şimdi bu offset&amp;rsquo;lerden &lt;strong&gt;056b3400&lt;/strong&gt; alalım ve adresini hesaplayalım.&lt;/p&gt;
+&lt;p&gt;Eğer Diagram&amp;rsquo;a tekrar bakarsanız kernel routine adresine erişmek için aşağıdaki formül kullanılıyor:&lt;/p&gt;
 &lt;div align=&#34;center&#34;&gt;
     &lt;br&gt;
     &lt;b&gt;
@@ -74,7 +74,7 @@
 &lt;/div&gt;
 &lt;p&gt;Şimdi örnek olarak aldığımız offset&amp;rsquo;i bu formül kullanarak routine adresine bir göz atalım:&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;../../../images/posts/ssdt/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü gibi &lt;strong&gt;NtWaitForSingleObject&lt;/strong&gt; işlevine ait olduğunu görebiliriz. Ayrıca bu yöntemle diğer elde ettiğiniz offset&amp;rsquo;lere de göz atabilirsiniz.&lt;/p&gt;
+&lt;p&gt;Göründüğü gibi örnek olarak aldığımız offset, &lt;strong&gt;NtWaitForSingleObject&lt;/strong&gt;&amp;rsquo;e ait.&lt;/p&gt;
 &lt;h2&gt;&lt;strong&gt;Syscall ile Routine Adresi bulma&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;syscall-ile-routine-adresi-bulma&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#syscall-ile-routine-adresi-bulma&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Şimdi Syscall kullanarak Routine adresini nasıl bulabiliriz buna bir bakalım.&lt;/p&gt;
 &lt;p&gt;Örnek olarak &lt;strong&gt;NtCreateFile&lt;/strong&gt;&amp;lsquo;dan bahsetmiştim. Windbg ile bu API&amp;rsquo;a ait SSN numarasını &lt;strong&gt;ntdll.dll&lt;/strong&gt;&amp;lsquo;den bulabiliriz:&lt;/p&gt;
@@ -82,7 +82,7 @@
 &lt;p&gt;eax register&amp;rsquo;a &lt;strong&gt;0x55&lt;/strong&gt; değerinin aktarıldığını görüyoruz. Bu NtCreateFile&amp;rsquo;in syscall numarasıdır.&lt;/p&gt;
 &lt;p&gt;Şimdi bu syscall numarasını kullanarak offset&amp;rsquo;i hesaplayıp ardından routine adresine erişelim:&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;../../../images/posts/ssdt/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Çıktıdan gördüğümüz üzere NtCreateFile&amp;rsquo;in routine adresi &lt;strong&gt;fffff804`31a2d240&lt;/strong&gt; olduğunu gösteriyor. Olayı tekrardan anlamak için tekrar şema oluşturabiliriz:&lt;/p&gt;
+&lt;p&gt;Çıktıdan gördüğümüz üzere NtCreateFile&amp;rsquo;in routine adresi &lt;strong&gt;fffff804`31a2d240&lt;/strong&gt; olduğunu gösteriyor. Yaptığımız bu adımları kafamıza daha iyi oturtmak için şemasını tekrar oluşturabiliriz:&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;../../../images/posts/ssdt/diagram2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
 &lt;h2&gt;&lt;strong&gt;Kodlama&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kodlama&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#kodlama&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Öğrendiğimiz şeyleri Kernel Driver kullanarak basitçe kodlayalım.&lt;/p&gt;
@@ -471,10 +471,10 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&amp;#43;10h],rdx&lt;/co
     
     <item>
       <title>Virtual Memory</title>
-      <link>http://0xbekoo.github.io:58366/docs/winkernel-dev/wkd-virtual-memory/</link>
+      <link>https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-virtual-memory/</link>
       <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://0xbekoo.github.io:58366/docs/winkernel-dev/wkd-virtual-memory/</guid>
+      <guid>https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-virtual-memory/</guid>
       <description>
         
         
@@ -687,10 +687,10 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&amp;#43;10h],rdx&lt;/co
     
     <item>
       <title>Input/Output Control (IOCTL)</title>
-      <link>http://0xbekoo.github.io:58366/docs/winkernel-dev/wkd-ioctl/</link>
+      <link>https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-ioctl/</link>
       <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://0xbekoo.github.io:58366/docs/winkernel-dev/wkd-ioctl/</guid>
+      <guid>https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-ioctl/</guid>
       <description>
         
         
@@ -1147,10 +1147,10 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&amp;#43;10h],rdx&lt;/co
     
     <item>
       <title>I/O Request Packets (IRP)</title>
-      <link>http://0xbekoo.github.io:58366/docs/winkernel-dev/wkd-irp/</link>
+      <link>https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-irp/</link>
       <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://0xbekoo.github.io:58366/docs/winkernel-dev/wkd-irp/</guid>
+      <guid>https://0xbekoo.github.io:56554/docs/winkernel-dev/wkd-irp/</guid>
       <description>
         
         
