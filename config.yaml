@@ -1,0 +1,7 @@
+permalinks:
+  about: "/about/"
+  
+redirects:
+  - from: "/"
+    to: "/about"
+    permanent: true

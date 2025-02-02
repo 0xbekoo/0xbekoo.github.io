@@ -1,0 +1,34 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>0xbekoo – Windbg</title>
+    <link>http://localhost:1313/tags/windbg/</link>
+    <description>Recent content in Windbg on 0xbekoo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 02 Feb 2025 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="http://localhost:1313/tags/windbg/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Windbg&#39;la Rootkit Dinamik Analizi Gerçekleştirme</title>
+      <link>http://localhost:1313/blog/rootkit-dynamic-anaylsis/</link>
+      <pubDate>Sun, 02 Feb 2025 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/blog/rootkit-dynamic-anaylsis/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Merhabalar efenimmm hayat karartan yeni bir bloga hoşgeldiniz. Bu blogta Windbg kullanarak bir rootkit&amp;rsquo;in dinamik analizini nasıl gerçekleştirebiliriz buna göz atacağız.&lt;/p&gt;
+&lt;p&gt;Bu blogta analiz sürecimizde benim tarafından kodlanan &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-resurrection&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Malware Resurrection&lt;/a&gt; projemi ele alacağım. Eğer dökümana göz attıysanız projede User-mode ve Kernel-mode olmak üzere iki kısımdan da yararlandığımı görmüşsünüzdür. Kernel-mode alanı için yazdığım .sys dosyasını bu blogta beraber analiz ederek, projenin arka planda neler yaptığına canlı bir şekilde bir malware analizcisi gibi göz atacağız.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>
