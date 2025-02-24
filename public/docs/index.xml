@@ -1,13 +1,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>0xbekoo – Documentation</title>
-    <link>http://localhost:1313/docs/</link>
+    <link>https://0xbekoo.github.io:64578/docs/</link>
     <description>Recent content in Documentation on 0xbekoo</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 28 Jan 2025 00:00:00 +0000</lastBuildDate>
     
-	  <atom:link href="http://localhost:1313/docs/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="https://0xbekoo.github.io:64578/docs/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,10 +16,10 @@
     
     <item>
       <title>UEFI Keylogger</title>
-      <link>http://localhost:1313/docs/uefi-dev/uefi-keylogger/</link>
+      <link>https://0xbekoo.github.io:64578/docs/uefi-dev/uefi-keylogger/</link>
       <pubDate>Tue, 28 Jan 2025 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/uefi-dev/uefi-keylogger/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/uefi-dev/uefi-keylogger/</guid>
       <description>
         
         
@@ -185,10 +184,10 @@
     
     <item>
       <title>Introduction to UEFI</title>
-      <link>http://localhost:1313/docs/uefi-dev/uefi-introduction/</link>
+      <link>https://0xbekoo.github.io:64578/docs/uefi-dev/uefi-introduction/</link>
       <pubDate>Sun, 19 Jan 2025 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/uefi-dev/uefi-introduction/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/uefi-dev/uefi-introduction/</guid>
       <description>
         
         
@@ -582,10 +581,10 @@
     
     <item>
       <title>System Service Descriptor Table</title>
-      <link>http://localhost:1313/docs/winkernel-dev/wkd-ssdt/</link>
+      <link>https://0xbekoo.github.io:64578/docs/winkernel-dev/wkd-ssdt/</link>
       <pubDate>Thu, 26 Dec 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/winkernel-dev/wkd-ssdt/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/winkernel-dev/wkd-ssdt/</guid>
       <description>
         
         
@@ -1036,10 +1035,10 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&amp;#43;10h],rdx&lt;/co
     
     <item>
       <title>Malware Resurrection</title>
-      <link>http://localhost:1313/docs/malware-dev/malware-resurrection/</link>
+      <link>https://0xbekoo.github.io:64578/docs/malware-dev/malware-resurrection/</link>
       <pubDate>Thu, 12 Sep 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/malware-dev/malware-resurrection/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/malware-dev/malware-resurrection/</guid>
       <description>
         
         
@@ -2736,10 +2735,10 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&amp;#43;10h],rdx&lt;/co
     
     <item>
       <title>Virtual Memory</title>
-      <link>http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/</link>
+      <link>https://0xbekoo.github.io:64578/docs/winkernel-dev/wkd-virtual-memory/</link>
       <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/winkernel-dev/wkd-virtual-memory/</guid>
       <description>
         
         
@@ -2952,10 +2951,10 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&amp;#43;10h],rdx&lt;/co
     
     <item>
       <title>Input/Output Control (IOCTL)</title>
-      <link>http://localhost:1313/docs/winkernel-dev/wkd-ioctl/</link>
+      <link>https://0xbekoo.github.io:64578/docs/winkernel-dev/wkd-ioctl/</link>
       <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/winkernel-dev/wkd-ioctl/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/winkernel-dev/wkd-ioctl/</guid>
       <description>
         
         
@@ -3412,10 +3411,10 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&amp;#43;10h],rdx&lt;/co
     
     <item>
       <title>I/O Request Packets (IRP)</title>
-      <link>http://localhost:1313/docs/winkernel-dev/wkd-irp/</link>
+      <link>https://0xbekoo.github.io:64578/docs/winkernel-dev/wkd-irp/</link>
       <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/winkernel-dev/wkd-irp/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/winkernel-dev/wkd-irp/</guid>
       <description>
         
         
@@ -3814,10 +3813,10 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&amp;#43;10h],rdx&lt;/co
     
     <item>
       <title>PDF Icon File Spoofing</title>
-      <link>http://localhost:1313/docs/malware-dev/file-icon-spoofing/</link>
+      <link>https://0xbekoo.github.io:64578/docs/malware-dev/file-icon-spoofing/</link>
       <pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/malware-dev/file-icon-spoofing/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/malware-dev/file-icon-spoofing/</guid>
       <description>
         
         
@@ -4035,10 +4034,10 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&amp;#43;10h],rdx&lt;/co
     
     <item>
       <title>API Hashing</title>
-      <link>http://localhost:1313/docs/malware-dev/api-hashing/</link>
+      <link>https://0xbekoo.github.io:64578/docs/malware-dev/api-hashing/</link>
       <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/malware-dev/api-hashing/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/malware-dev/api-hashing/</guid>
       <description>
         
         
@@ -4452,10 +4451,10 @@ ntdll!_IMAGE_OPTIONAL_HEADER64
     
     <item>
       <title>Direct Syscalls</title>
-      <link>http://localhost:1313/docs/malware-dev/direct-syscalls/</link>
+      <link>https://0xbekoo.github.io:64578/docs/malware-dev/direct-syscalls/</link>
       <pubDate>Mon, 04 Mar 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/malware-dev/direct-syscalls/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/malware-dev/direct-syscalls/</guid>
       <description>
         
         
@@ -4913,10 +4912,10 @@ ntdll!_IMAGE_OPTIONAL_HEADER64
     
     <item>
       <title>NTAPI Injection</title>
-      <link>http://localhost:1313/docs/malware-dev/ntapi-injection/</link>
+      <link>https://0xbekoo.github.io:64578/docs/malware-dev/ntapi-injection/</link>
       <pubDate>Wed, 07 Feb 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/malware-dev/ntapi-injection/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/malware-dev/ntapi-injection/</guid>
       <description>
         
         
@@ -5456,10 +5455,10 @@ ntdll!_IMAGE_OPTIONAL_HEADER64
     
     <item>
       <title>DLL Injection</title>
-      <link>http://localhost:1313/docs/malware-dev/dll-injection/</link>
+      <link>https://0xbekoo.github.io:64578/docs/malware-dev/dll-injection/</link>
       <pubDate>Sun, 04 Feb 2024 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/malware-dev/dll-injection/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/malware-dev/dll-injection/</guid>
       <description>
         
         
@@ -5619,10 +5618,10 @@ ntdll!_IMAGE_OPTIONAL_HEADER64
     
     <item>
       <title>Shellcode Injection</title>
-      <link>http://localhost:1313/docs/malware-dev/shellcode-injection/</link>
+      <link>https://0xbekoo.github.io:64578/docs/malware-dev/shellcode-injection/</link>
       <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/docs/malware-dev/shellcode-injection/</guid>
+      <guid>https://0xbekoo.github.io:64578/docs/malware-dev/shellcode-injection/</guid>
       <description>
         
         

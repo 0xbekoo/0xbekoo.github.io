@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=64578&amp;path=livereload" data-no-instant defer></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
@@ -13,23 +13,23 @@
 <title>Bypass Ptrace – 0xbekoo</title>
   <meta name="description" content="Merhabalar. Bu konumda ptrace’in nasıl bypass edilebileceğiniden bahsedeceğim.
 ptrace, bir process’in diğer bir process’i debug etmesini sağlayan bir sistem çağrısıdır. Bu sistem çağrısı sayesinde bir process’in diğer process’inin memory’sine erişebiliriz. Bu sayede process’in memory’sindeki verileri okuyabilir, yazabilir ve değiştirebiliriz.
-ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilmesi amacıyla kullanılır. Bu, hata ayıklama (debugging), sistem çağrılarını izleme, işlemi duraklatma, kaynak izleme ve benzeri geliştirme ve analiz amaçları için yaygın olarak kullanılan bir sistem aracıdır." /><link rel="canonical" href="http://localhost:1313/blog/bypass-ptrace/" itemprop="url" />
+ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilmesi amacıyla kullanılır. Bu, hata ayıklama (debugging), sistem çağrılarını izleme, işlemi duraklatma, kaynak izleme ve benzeri geliştirme ve analiz amaçları için yaygın olarak kullanılan bir sistem aracıdır." /><link rel="canonical" href="https://0xbekoo.github.io:64578/blog/bypass-ptrace/" itemprop="url" />
 
 <meta property="og:title" content="Bypass Ptrace" />
 <meta property="og:description" content="Merhabalar. Bu konumda ptrace’in nasıl bypass edilebileceğiniden bahsedeceğim.
 ptrace, bir process’in diğer bir process’i debug etmesini sağlayan bir sistem çağrısıdır. Bu sistem çağrısı sayesinde bir process’in diğer process’inin memory’sine erişebiliriz. Bu sayede process’in memory’sindeki verileri okuyabilir, yazabilir ve değiştirebiliriz.
 ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilmesi amacıyla kullanılır. Bu, hata ayıklama (debugging), sistem çağrılarını izleme, işlemi duraklatma, kaynak izleme ve benzeri geliştirme ve analiz amaçları için yaygın olarak kullanılan bir sistem aracıdır." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://localhost:1313/blog/bypass-ptrace/" /><meta property="article:section" content="blog" />
+<meta property="og:url" content="https://0xbekoo.github.io:64578/blog/bypass-ptrace/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2023-12-31T00:00:00+00:00" />
-<meta property="article:modified_time" content="2023-12-31T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-02-02T18:41:31+03:00" />
 
   <meta itemprop="name" content="Bypass Ptrace">
   <meta itemprop="description" content="Merhabalar. Bu konumda ptrace’in nasıl bypass edilebileceğiniden bahsedeceğim.
 ptrace, bir process’in diğer bir process’i debug etmesini sağlayan bir sistem çağrısıdır. Bu sistem çağrısı sayesinde bir process’in diğer process’inin memory’sine erişebiliriz. Bu sayede process’in memory’sindeki verileri okuyabilir, yazabilir ve değiştirebiliriz.
 ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilmesi amacıyla kullanılır. Bu, hata ayıklama (debugging), sistem çağrılarını izleme, işlemi duraklatma, kaynak izleme ve benzeri geliştirme ve analiz amaçları için yaygın olarak kullanılan bir sistem aracıdır.">
   <meta itemprop="datePublished" content="2023-12-31T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2023-12-31T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-02-02T18:41:31+03:00">
   <meta itemprop="wordCount" content="841">
   <meta itemprop="keywords" content="Reverse-Engineering,Ptrace,Radare2">
   <meta name="twitter:card" content="summary">
@@ -142,6 +142,13 @@ ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilme
     <ul class="hx-flex hx-flex-col hx-gap-1 md:hx-hidden">
       
       
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/about/"
+    
+  >About
+    </a></li>
           <li class="open"><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
@@ -153,9 +160,9 @@ ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilme
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/rootkit-dynamic-anaylsis/"
+    href="/blog/ssdt-hooking/"
     
-  >Windbg&#39;la Rootkit Dinamik Analizi Gerçekleştirme
+  >SSDT Hooking ile User-Mode Programda Sürücü Yükleme
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -362,13 +369,6 @@ ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilme
       </div>
             </li></ul>
       </div></li>
-          <li class=""><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/about/"
-    
-  >About
-    </a></li>
       <li class="[word-break:break-word] hx-mt-5 hx-mb-2 hx-px-2 hx-py-1.5 hx-text-sm hx-font-semibold hx-text-gray-900 first:hx-mt-0 dark:hx-text-gray-100">
         <span class="hx-cursor-default">More</span>
       </li>
@@ -585,7 +585,7 @@ C ile aşağıdaki basit kod ile ptrace’in kullanımı hakkında bilgi sahibi 
 
         </div>
         
-    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2023-12-31T00:00:00.000Z">December 31, 2023</time></div>
+    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-02-02T18:41:31.000Z">February 2, 2025</time></div>
         
         <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
         href="/blog/is-valorant-spyware/"

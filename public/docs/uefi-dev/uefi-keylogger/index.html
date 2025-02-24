@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=64578&amp;path=livereload" data-no-instant defer></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
@@ -14,7 +14,7 @@
   <meta name="description" content="Merhabalar. Bu blogta UEFI’de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI’yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği “Hello World” çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.
 Kabaca yapacağımız şey UEFI’de klavyeden basılan tuşları ekrana bastıran bir sürücü yazacağız.
 Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:
-#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Kodumuz oldukça basit. Detaylıca göz atalım:" /><link rel="canonical" href="http://localhost:1313/docs/uefi-dev/uefi-keylogger/" itemprop="url" />
+#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Kodumuz oldukça basit. Detaylıca göz atalım:" /><link rel="canonical" href="https://0xbekoo.github.io:64578/docs/uefi-dev/uefi-keylogger/" itemprop="url" />
 
 <meta property="og:title" content="UEFI Keylogger" />
 <meta property="og:description" content="Merhabalar. Bu blogta UEFI&rsquo;de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI&rsquo;yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği &ldquo;Hello World&rdquo; çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.
@@ -66,9 +66,9 @@ UefiMain(
 
 Kodumuz oldukça basit. Detaylıca göz atalım:" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://localhost:1313/docs/uefi-dev/uefi-keylogger/" /><meta property="article:section" content="docs" />
+<meta property="og:url" content="https://0xbekoo.github.io:64578/docs/uefi-dev/uefi-keylogger/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2025-01-28T00:00:00+00:00" />
-<meta property="article:modified_time" content="2025-01-28T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-02-02T18:41:31+03:00" />
 
   <meta itemprop="name" content="UEFI Keylogger">
   <meta itemprop="description" content="Merhabalar. Bu blogta UEFI’de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI’yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği “Hello World” çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.
@@ -76,7 +76,7 @@ Kabaca yapacağımız şey UEFI’de klavyeden basılan tuşları ekrana bastır
 Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:
 #include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Kodumuz oldukça basit. Detaylıca göz atalım:">
   <meta itemprop="datePublished" content="2025-01-28T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2025-01-28T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-02-02T18:41:31+03:00">
   <meta itemprop="wordCount" content="351">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="UEFI Keylogger">
@@ -192,6 +192,13 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
           <li class=""><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/about/"
+    
+  >About
+    </a></li>
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/"
     
   >Blogs
@@ -200,9 +207,9 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/rootkit-dynamic-anaylsis/"
+    href="/blog/ssdt-hooking/"
     
-  >Windbg&#39;la Rootkit Dinamik Analizi Gerçekleştirme
+  >SSDT Hooking ile User-Mode Programda Sürücü Yükleme
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -415,13 +422,6 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
       </div>
             </li></ul>
       </div></li>
-          <li class=""><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/about/"
-    
-  >About
-    </a></li>
       <li class="[word-break:break-word] hx-mt-5 hx-mb-2 hx-px-2 hx-py-1.5 hx-text-sm hx-font-semibold hx-text-gray-900 first:hx-mt-0 dark:hx-text-gray-100">
         <span class="hx-cursor-default">More</span>
       </li>
@@ -796,7 +796,7 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
 
         </div>
         
-    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-01-28T00:00:00.000Z">January 28, 2025</time></div>
+    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-02-02T18:41:31.000Z">February 2, 2025</time></div>
         <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
         href="/docs/uefi-dev/uefi-introduction/"
         title="Introduction to UEFI"
