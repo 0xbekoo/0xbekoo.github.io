@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>0xbekoo – Radare2</title>
-    <link>https://0xbekoo.github.io:1313/tags/radare2/</link>
+    <link>http://localhost:1313/tags/radare2/</link>
     <description>Recent content in Radare2 on 0xbekoo</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Wed, 17 Apr 2024 00:00:00 +0000</lastBuildDate>
     
-	  <atom:link href="https://0xbekoo.github.io:1313/tags/radare2/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="http://localhost:1313/tags/radare2/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,96 +17,112 @@
     
     <item>
       <title>Is Valorant Spyware?</title>
-      <link>https://0xbekoo.github.io:1313/blog/is-valorant-spyware/</link>
+      <link>http://localhost:1313/blog/is-valorant-spyware/</link>
       <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
       
-      <guid>https://0xbekoo.github.io:1313/blog/is-valorant-spyware/</guid>
+      <guid>http://localhost:1313/blog/is-valorant-spyware/</guid>
       <description>
         
         
-        &lt;h2&gt;Giriş&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;giriş&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#giri%c5%9f&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Valorant oyunu, çıkışından beri hem oyuncuların ilgisini çeken hem de tartışmalara neden olan bir yapım olmuştur. Özellikle oyunun anti-cheat sistemi olan Vanguard’ın, oyuncuların gizlilik haklarını ihlal ettiği ve spyware olarak adlandırılabilecek bir yazılım olduğu iddialarıyla sıkça gündeme gelmiştir. Bu iddialar, oyuncuların güvenlik endişelerini artırmış ve Valorant’ın popülaritesiyle birlikte bu konuda birçok tartışma başlatılmıştır.&lt;/p&gt;
-&lt;p&gt;Reddit ve diğer sosyal medya platformlarında yayılan bu iddialar, Valorant’ın geliştiricisi olan Riot Games’in, oyuncuların bilgisayarlarında istenmeyen izleme ve kontrol yeteneklerine sahip olduğu yönünde eleştirilmesine neden olmuştur. Ancak, bu iddiaların gerçekliği ve Vanguard’ın gerçekten bir spyware olup olmadığı konusu hala netlik kazanmamıştır. Bu yazıda, Valorant’ın spyware olduğu iddialarını ele alacak ve bu iddiala bir göz atacağız.&lt;/p&gt;
-&lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200&#34;&gt;
-  &lt;p class=&#34;hx-flex hx-items-center hx-font-medium&#34;&gt;&lt;svg height=16px class=&#34;hx-inline-block hx-align-middle hx-mr-2&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z&#34;/&gt;&lt;/svg&gt;Warning&lt;/p&gt;
-
-  &lt;div class=&#34;hx-w-full hx-min-w-0 hx-leading-7&#34;&gt;
-    &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;Bu yazıdaki analiz ve değerlendirmeler, yalnızca araştırma amaçlıdır ve herhangi bir suçlama içermemektedir. Valorant’ın güvenlik önlemleri ve Vanguard anti-cheat sistemi hakkındaki iddiaların objektif bir bakış açısıyla incelenmesi amaçlanmıştır.&lt;/p&gt;&lt;/div&gt;
-  &lt;/div&gt;
+        &lt;h3&gt;&lt;strong&gt;Understanding How Anti-Cheat Software Works&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;understanding-how-anti-cheat-software-works&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#understanding-how-anti-cheat-software-works&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;To begin our exploration, we first need to understand how anti-cheat software works. In general, anti-cheat software is developed for two main purposes: to prevent cheating within a game and to detect those who do.&lt;/p&gt;
+&lt;p&gt;We can categorize how this software operates into two main methods: &lt;strong&gt;server-side&lt;/strong&gt; and &lt;strong&gt;client-side&lt;/strong&gt;&lt;sup&gt;[1]&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Server-side&lt;/strong&gt; anti-cheat software typically monitors and analyzes the data a player sends to the game server. This data can include how the player is playing, what commands they are sending, and how quickly they react. Its goal is to detect discrepancies between normal gameplay behavior and potential cheat usage.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Client-side&lt;/strong&gt; anti-cheat, on the other hand, runs on the player&amp;rsquo;s own computer and can have complete access to their machine. It attempts to detect cheat programs running on the computer and can use various techniques to block or report them. Furthermore, this software often operates at the kernel level with full privileges and access. In other words, it has total control over the player&amp;rsquo;s computer.&lt;/p&gt;
+&lt;p&gt;Both types of anti-cheat have their advantages and disadvantages. Server-side anti-cheats are generally more reliable because they run on the server and are less susceptible to manipulation on the player&amp;rsquo;s end. Client-side anti-cheats, however, can provide more comprehensive control over the player&amp;rsquo;s computer, which can lead to privacy violations or security concerns—a topic we will discuss frequently in this article.&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/rings.png&#34; style=&#34;width: 100%&#34; /&gt;
 &lt;/div&gt;
-&lt;h2&gt;Anti-Cheat Yazılımları nasıl Çalışır?&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;anti-cheat-yazılımları-nasıl-çalışır&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#anti-cheat-yaz%c4%b1l%c4%b1mlar%c4%b1-nas%c4%b1l-%c3%a7al%c4%b1%c5%9f%c4%b1r&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Araştırmamıza Anti-Cheat yazılımların nasıl çalıştığını anlayarak başlamamız gerekiyor.&lt;/p&gt;
-&lt;p&gt;Genel olarak Anti-Cheat yazılımları, oyun içerisinde hile yapılmasını engellemek ve hile yapanları tespit etmek amacıyla geliştirilmiş yazılımlardır.&lt;/p&gt;
-&lt;p&gt;Bu yazılımların çalışma mantığını ikiye ayırabiliriz: server-side (sunucu taraflı) ve client-side (istemci taraflı) çalışma yöntemleri.&lt;sup&gt;[1]&lt;/sup&gt;&lt;/p&gt;
-&lt;p&gt;Server-side tabanlı anti-cheat yazılımları, genellikle oyuncunun oyun sunucusuna gönderdiği verileri izler ve analiz eder. Bu veriler, oyuncunun oyunu nasıl oynadığı, hangi komutları gönderdiği, ne kadar hızlı tepki verdiği gibi bilgileri içerebilir. Amacı, oyuncunun normal oyun davranışları ile potansiyel hile kullanımı arasındaki farkları tespit etmektir.&lt;/p&gt;
-&lt;p&gt;Client-side tabanlı anti-cheat yazılımları ise oyuncunun kendi bilgisayarında çalışır ve oyuncunun bilgisayarına tamamen erişimi olabilir. Böylece oyuncunun bilgisayarında çalışan hile programlarını tespit etmeye çalışır ve bunları engellemeye veya raporlamaya yönelik çeşitli teknikler kullanabilir. Ayrıca bu yazılımlar kernel seviyesinde tam yetkili ve erişimli olarak çalışır. Yani oyuncunun bilgisayarına tamamen hakimdir.&lt;/p&gt;
-&lt;p&gt;Her iki tür anti-cheat yazılımının avantajları ve dezavantajları vardır. Server-side anti-cheat yazılımları genellikle daha güvenilirdir çünkü sunucu tarafında çalışırlar ve oyuncuların kendi bilgisayarlarında yapabilecekleri manipülasyonlara daha az açıktır. Client-side tabanlı anti-cheat yazılımları ise oyuncunun bilgisayarında daha kapsamlı bir kontrol sağlayabilir ve bu, bu yazıda sıkça tartışacağımız gizlilik ihlallerine veya oyuncunun güvenliği konusunda endişelere neden olabilir.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Priv_rings.svg/1024px-Priv_rings.svg.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;İlk başlarda Anti-Cheat yazılımları Ring 3 seviyesinde çalışıyordu. Bilindiği gibi ring 3 alanı, User Mode olarak geçmektedir. Eğer bu konuya aşina değilseniz hızlı bir şekilde araştırmanızı tavsiye ederim.&lt;/p&gt;
-&lt;p&gt;User Mode alanında ayrıcalıklar çok kısıtlıdır; işletim sistemi üzerinde her ayrıcalığa sahip olmadığınız ve çok kısıtlı olduğunuz bir alan. Anti-Cheat yazılımları ise bu alanda çalışıyordu. Bu alanda doğrudan donanıma erişim sağlayamadığınız için ve belleğe erişim sağlayamadığınız için anti-cheat yazılımları herhangi bir tarama gerçekleşmeden önce gerekli izinlere sahip olması gerekirdi. Bunlarla beraber bu alanda anti-cheat yazılımları, diğer uygulamara göre izole bir şekilde çalışırdı ve bu yüzden başka bir uygulamaya ait olan datalara müdahale edemez ya da datayı değiştiremezdi&lt;sup&gt;[2]&lt;/sup&gt;&lt;/p&gt;
-&lt;p&gt;Fakat Cheater’lar, anti-cheat yazılımların Ring 3 seviyesinde çalıştığını bildikleri için daha sofistike yöntemler geliştirdiler. Yöntemleri ise hazırladıkları hileleri Ring 3 seviyesinde değil Ring 0 alanında çalıştırmaktı yani Kernel Mode alanında. Böylece hazırladıkları hileler daha fazla ayrıcalıklara sahip oluyordu ve tespit edilmesi ciddi anlamda zorlaşıyordu. Ring 0 yani Kernel Mode alanı, User Mode alanı gibi kısıtlamalara sahip değildir. User mode alana kıyasla daha fazla ayrıcalıklara sahiptir; herhangi bir instruction yürütülebilir ve herhangi bir bellek adresini rahatça okunabilir veya en önemlisi donanımla iletişime geçilebilir. Hatta Cheater’lar o kadar ileri seviyeye gitmişler ki, Ring 3 alanında çalışan Anti-Cheat yazılımlara ait verileri almak için bu yazılımların kullandığı system call’ları bile hooklayabiliyordı.&lt;sup&gt;[2]&lt;/sup&gt;&lt;/p&gt;
-&lt;p&gt;Oyun şirketleri ise bu yönteme karşı bir cevap vermesi gerekiyordu ve User mode alanında kısıtlı bir şekilde çalışan anti-cheat yazılımlarını kernel seviyesinde yani Ring 0 alanına taşıdılar. Ring 0’da çalışan bu yazılımlar, Ring 3 alanında olduğu gibi sistemi aynı şekilde tarayabiliyor ancak bunu direkt kernel seviyesinde yapıyor yani tamamen yüksek yetkiler ile. Bunun avantajı olduğu gibi de bu blogta baya tartışacağımız dezavantajı da vardır. Anti-Cheat yazılımların Ring 0 alanında çalışma avantajı, tespit edilemesi zor olan hileleri bile kolayca tespit etmesi ve oyunu hileye karşı daha güvenli tutmasıdır. Dezavantajı ise gizlilik problemi.&lt;/p&gt;
-&lt;p&gt;Düşünün ki, eğer bu yazılımlar sizi hilelerden korumak için yüksek yetkiler ile tarama yapıp ve her şeyi okuyabiliyorsa teorik olarak bilgisayarınızdaki her şeye de erişebilir anlamına da geliyor. Bu yazılımlar kernel seviyesinde çalışıyor. Yani yüksek ayrıcalıklarla sizin bilgisayarınızdaki anlık her şeyi okuyabilir ve erişebilirler. Sizlere şu soruyu yönlendirmek isterim, oynadığınız oyunda hilecilere katlanmak istemezsiniz ve bu hilecilere karşı bir önlem alınmasını istersiniz ama bununla beraber gizliliğinizi riske atmak ister miydiniz?&lt;/p&gt;
-&lt;h2&gt;Anti-Cheat yazılımların getirdiği Potansiyel Tehlikeler&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;anti-cheat-yazılımların-getirdiği-potansiyel-tehlikeler&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#anti-cheat-yaz%c4%b1l%c4%b1mlar%c4%b1n-getirdi%c4%9fi-potansiyel-tehlikeler&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Geçmiş yıllarda anti-cheat yazılımların gizlilik ilkelerini ihlal eden olaylar olmuştur. Bunlardan biri de 2013 yılında ESEA şirketinden bir geliştiricinin işletim sisteminin kernel seviyesini kullanarak oyuncuların bilgisayarından gizli ve büyük ölçekte bir bitcoin madenciliği gerçekleştirmesi bu konuya güzel örnektir. Geliştirici, 14.000 oyuncunun bilgisayarındaki GPU ile yerleştirdiği mining yazılımıyla yaklaşık 4.000$ elde etti&lt;sup&gt;[3]&lt;/sup&gt; ve bu olay ortaya çıktıktan sonra ESEA şirketi US Regulators (ABD Düzenleyicileri) tarafından 1.000.000 para cezası verildi. Bu olaylardan sonra ESEA şirketi bizzat kamuoyundan özür diledi ve ESEA şirketi mining ile elde edilen paraları ödül potları aracılığıyla oyunculara dağıttı ve American Cancer Society (Amerikan Kanser Derneği)’ne $7.427.10 bağışladı.&lt;sup&gt;[3]&lt;/sup&gt;&lt;/p&gt;
-&lt;p&gt;Bununla beraber bazı İşletim sistemi için problemlere neden olabilirler. Eğer sıklıkla oyun oynayan biriyseniz bu durumla belki karşılaşmış olabilirsiniz. Anti-Cheat yazılımları kernel sürücüsü olarak çalıştığı için sürücüde bulunan kodda küçük bir hata, işletim sistemin Blue Screen of Death (BSOD) benzeri çökmelere neden olabilir. Örneğin şu görsele bir bakabiliriz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Burada kullanıcı bilgisayarı açtığı anda yukarıda bahsettiğim SYSTEM THREAD EXCEPTION NOT HANDLED hata koduyla mavi hata ekrana düştüğünü belirtiyor. &lt;strong&gt;vgk.sys&lt;/strong&gt;, RIOT Games’a ait olan bir Vanguard anti-cheat yazılımın sürücü dosyasıdır.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Burada ise kullanıcı Counter Strike 2 oyununu oynadığı sürece yine aynı hata koduyla mavi ekrana düştüğünü ve çözüm aradığını belirtiyor.&lt;/p&gt;
-&lt;h2&gt;Valorant için Spyware iddiaları&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;valorant-için-spyware-iddiaları&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#valorant-i%c3%a7in-spyware-iddialar%c4%b1&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Valorant için bu iddiaların bulunmasındaki en büyük sebeplerden biri de Çin ülkesine ait olan Tencent şirketinin RIOT Games’ın %100’üne sahip olması, bu iddialara öncülük etmektedir. Tencent şirketi, Şubat 2011’de Riot Games’in yüzde 93 hissesi için 400 milyon yatırım yapmıştı ve 16 Aralık 2015’te kalan yüzde 7 hisse için de belirtilmeyen fiyat ile yatırım yaparak %100 hisseyi almıştır.[4]&lt;/p&gt;
-&lt;p&gt;Tencent şirketi, Çin hükümeti ile yakın ilişkileri olan bir şirkettir ve Çin hükümeti, internet üzerindeki tüm faaliyetleri kontrol etmek istemektedir. Bu durum, Tencent’in RIOT Games’ın %100’üne sahip olması ve Valorant’ın anti-cheat yazılımının kernel seviyesinde çalışması, bu yazılımın Çin hükümeti tarafından kullanılabileceği iddialarına neden olmuştur.&lt;/p&gt;
-&lt;p&gt;Bu tartışmaların başlangıcını 3-4 yıl öncesinde başladığını görebiliriz. Mesela r/privacy subreddit’inde denk geldiğim şu konuya bir göz atabiliriz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;İçerikte, Valorant’ın anti-cheat yazılımı olan Vanguard’ın tehlikeli olup olmayacağına dair bir soru sorulmuş. Yine içerikte bu yazılımın arka tarafta sürekli çalıştığı söyleniyor.&lt;/p&gt;
-&lt;p&gt;Öncelikle bu iddiaların doğruluğunu araştırarak başlamaya karar verdim ve RIOT’un kendi makalesi olan ‘Vanguard Nedir’ ile göz atarak başladım. Makalenin şu kısmı çok dikkatimi çekti:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Açıkçası bu metinler beni tatmin etmedi. Evet, RIOT makalesinde Vanguard’ın zaten bilgisayar açılışından itibaren çalıştığını açıkça söylüyor ancak bana soracak olursanız açıklama yetersiz.&lt;/p&gt;
-&lt;p&gt;Bu makale bana yetersiz geldiği için tekrardan reddit ortamlarına döndüm ve tekrar araştırmaya başladım. Daha sonra r/VALORANT subreddit’inde bu soruna yönelik açılan bir post&amp;rsquo;un altında u/RiotArkem&amp;rsquo;in uzun bir &lt;a href=&#34;https://www.reddit.com/r/VALORANT/comments/fzxdl7/comment/fn6yqbe/?utm_source=share&amp;amp;utm_medium=web3x&amp;amp;utm_name=web3xcss&amp;amp;utm_term=1&amp;amp;utm_content=share_button&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;açıklamasına&lt;/a&gt; denk geldim&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img12.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Bu açıklama, Vanguard üzerine okuduğum makaleye kıyasla daha açıklayıcıydı. Bir göz atalım.&lt;/p&gt;
-&lt;p&gt;vgk.sys sürücüsünün gerçekten bilgisayar başlangıcında çalıştığını söylüyor ancak oyun çalışmadığı sürece hiçbir şeyin taramadığını, sunucularla iletişim kurmadığını ve mümkün olduğunca az sistem kaynağı kullanarak çalıştığını söylüyor ve bu yazılımın istendiği zaman kaldırılabileceği söyleniyor.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;&amp;ldquo;Neden başlangıçtan itibaren çalışıyor?&amp;rdquo;&lt;/strong&gt; sorusuna karşılık ise sistem başlangıcında yüklenmediği sürece bilgisayarı güvenilir olarak kabul etmediği ve en önemlisi de anti-cheat yazılımları bypass etmenin yollarından biri olan anti-cheat yazılımların yüklenmesinden hemen önce hilenin yüklenmesi gibi yöntemler için çözüm olabileceği söylenmiş.&lt;/p&gt;
-&lt;p&gt;Ayrıca bu sürücünün güvenliğine ve ayrıcalıklarına da değinmiş. Güvenlik olarak, güvenlik araştırma ekiplerine incelettiklerini, sürücünün mümkün olduğunda az şeyler yaptığını ve sürücüye en az ayrıcalıklar verdiklerini söylemiş&lt;/p&gt;
-&lt;p&gt;Açıklamaya göz attığımızda orijinal makaleye kıyasla daha açıklayıcı ve güzel duruyor. Şimdi ise bu topladığımız bilgileri analize dökerek bir kontrol edelim.&lt;/p&gt;
-&lt;h2&gt;Analizin gerçekleşmesi&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;analizin-gerçekleşmesi&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#analizin-ger%c3%a7ekle%c5%9fmesi&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Şimdi temel bilgilerden sonra artık basitçe neler yapabileceğimizi çözdük ve artık yavaştan analize başlayabiliriz.&lt;/p&gt;
-&lt;p&gt;Öncelikle analize wireshark ile başlamak istedim. RIOT Client uygulaması başlatıldığında nerelere bağlantı kurduğunu görerek başlayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/video/wireshark-video.gif&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü gibi Client uygulaması çalıştırıldığında düşünüldüğünden daha fazla birçok yere veri gönderiliyor.&lt;/p&gt;
-&lt;p&gt;Burada gönderilen verilerin içeriğini göremeyiz çünkü videoda görülebileceği gibi veriler şifrelenmiş halde. Dolayasıyla bunun izinden gitmemiz pek mümkün olmayacaktır. Bu yüzden bende bireysel bağlantıların adreslerinden bir kaçına göz atmaya karar verdim:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Verilerin nereye gönderildiğine dair bir iz sürmeye çalıştığımda sonuca varamadım ancak The PC Security Channel adlı kanalın ‘Is Valorant Spyware?’ videosunun analizinde kendisinin birçok IP adresinin Amazon sunucularına ait olduğunu belirtiyor. Ayrıca bu konuyu hazırlarken ilham aldığım bahsi geçen videoya da göz atabilirsiniz. Gerçekten güzel ve açıklayıcı bir analiz gerçekleştiriyor.&lt;/p&gt;
-&lt;p&gt;Bağlantı sayılarına buradan da göz attığımızda çok kadar fazla bağlantı olduğunu görebiliyoruz ve maalesef bu iç açıcı bir şey değil. Kendi kendime bunun abarttığımı düşündüm ve bilgisayarımda yüklü olan Epic Games uygulaması için de kontrol etmek istedim ve sonuç:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img6.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü gibi RIOT Client uygulamasına kıyasla daha az bir bağlantı var. Yani RIOT Client uygulamasının cidden fazla veri gönderimi yaptığını anlayabiliyoruz.&lt;/p&gt;
-&lt;p&gt;Daha sonra yönümü .sys dosyasına çevirdim ve Process Explorer aracılığıyla vgk.sys’e kısaca bakmak istedim:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Aynı zamanda vgk.sys’in durumunu driverquery aracı ile daha hızlı kontrol edebiliriz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Fakat bir sorun var. Şuan işletim sisteminde RIOT’un herhangi bir uygulaması çalışmıyor - arka planda bile -. Bu, Riot Vanguard için de geçerli:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/video/process-explorer.gif&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;İşletim sistemimde RIOT’un tüm uygulamaları başlangıçta başlaması kapalı. Ancak yine de vgk.sys’in çalıştığını tespit ettim.&lt;/p&gt;
-&lt;p&gt;RIOT’un makalesinde zaten arka planda çalıştığını belirtse de RIOT ile ilgili tüm uygulamaların kapalı olmasına rağmen bu kernel sürücüsünün yine arka planda çalışması çok olanaksız. Oyun tamamen kapalı ise oyunlarda hileden koruyan bir yazılım beni neyden koruyabilir?&lt;/p&gt;
-&lt;p&gt;Araştırmalara, yukarıda Vanguard’ın eski lideri Arkhem’in bahsettiği şu kısmı ele alara devam etmek istiyorum:&lt;/p&gt;
+&lt;p&gt;Initially, anti-cheat software operated at the &lt;strong&gt;Ring 3&lt;/strong&gt; level. As you may know, Ring 3 is also known as &lt;strong&gt;User Mode&lt;/strong&gt;. (If you&amp;rsquo;re not familiar with this concept, I recommend doing a quick search.)&lt;/p&gt;
+&lt;p&gt;In User Mode, privileges are very limited. It&amp;rsquo;s an environment where you don&amp;rsquo;t have full privileges over the operating system and are highly restricted. Because they couldn&amp;rsquo;t directly access hardware or memory from this level, anti-cheat programs needed to have the necessary permissions before performing any scans. Moreover, in this mode, anti-cheat software ran in isolation from other applications, meaning it couldn&amp;rsquo;t interfere with or modify data belonging to another program&lt;sup&gt;[2]&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;However, cheaters, knowing that anti-cheat software was running at Ring 3, developed more sophisticated methods. Their tactic was to run their cheats not at Ring 3, but in the &lt;strong&gt;Ring 0&lt;/strong&gt; space—that is, in &lt;strong&gt;Kernel Mode&lt;/strong&gt;. This gave their cheats far greater privileges and made them significantly harder to detect. Unlike the restricted User Mode, Ring 0 (Kernel Mode) allows any instruction to be executed, any memory address to be read, and most importantly, direct communication with hardware. Cheaters even advanced to the point where they could &lt;strong&gt;hook the system calls&lt;/strong&gt; used by Ring 3 anti-cheat software to intercept its data&lt;sup&gt;[2]&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;Game companies had to respond to this tactic, so they moved their anti-cheat software from the restricted User Mode to the kernel level, into Ring 0. Software running in Ring 0 can scan the system just as before, but it does so directly from the kernel level, with complete and elevated privileges. This has its advantages, but also a significant disadvantage that we will discuss at length. The advantage of running anti-cheat in Ring 0 is its ability to easily detect even the most elusive cheats, keeping the game more secure. The disadvantage, however, is the privacy problem.&lt;/p&gt;
+&lt;p&gt;Consider this: if this software can scan and read everything with high privileges to protect you from cheaters, it theoretically means it can also access &lt;em&gt;everything&lt;/em&gt; on your computer. This software operates at the kernel level. This means it can read and access everything happening on your computer in real-time, with the highest privileges.&lt;/p&gt;
+&lt;p&gt;This brings me to a question for you: You don&amp;rsquo;t want to put up with cheaters in the games you play, and you want measures taken against them. But in exchange for that, would you be willing to risk your privacy?&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Potential Dangers posed by Anti-Cheat Software&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;potential-dangers-posed-by-anti-cheat-software&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#potential-dangers-posed-by-anti-cheat-software&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;There have been incidents in the past years that violated the privacy principles of anti-cheat software. A good example was in 2013, when a developer from ESEA used the kernel level of the operating system to mine bitcoins secretly and on a large scale from players&amp;rsquo; computers. The developer obtained about $4,000 from mining software that he planted on the GPUs of 14,000 players&lt;sup&gt;[3]&lt;/sup&gt; and after this incident was revealed, ESEA was fined $1,000,000 by the US Regulators. After these incidents, ESEA publicly apologized and ESEA distributed the mining money to players through prize pots and donated $7,427.10 to the American Cancer Society&lt;sup&gt;[3]&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;However, they can cause problems for some Operating systems. If you are a gamer, you may have encountered this situation. Since Anti-Cheat software works as a kernel driver, a small error in the code in the driver can cause Blue Screen of Death (BSOD) like crashes. Take a look at this image for example:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img1.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;In this case, as soon as the user turns on the computer, the blue error screen appears with the SYSTEM THREAD EXCEPTION NOT HANDLED error code I mentioned above. vgk.sys is a driver file for Vanguard anti-cheat software from RIOT Games.&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img2.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Here, the user states that as long as they play Counter Strike 2, they are blue screened with the same error code and are looking for a solution.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Spyware Allegations for Valorant&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;spyware-allegations-for-valorant&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#spyware-allegations-for-valorant&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;One of the biggest reasons for these claims for Valorant is that the Chinese company Tencent owns 100% of Riot Games, leading to these claims. Tencent invested 400 million for a 93 percent stake in Riot Games in February 2011, and on December 16, 2015, Tencent invested the remaining 7 percent at an unspecified price to acquire 100% ownership&lt;sup&gt;[4]&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;Tencent is a company with close ties to the Chinese government, which wants to control all activities on the internet. This, coupled with the fact that Tencent owns 100% of RIOT Games and that Valorant&amp;rsquo;s anti-cheat software runs at the kernel level, has led to allegations that this software could be used by the Chinese government.&lt;/p&gt;
+&lt;p&gt;We can see the beginning of these discussions starting 3-4 years ago. For example, take a look at this thread I came across in the r/privacy subreddit:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img3.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;OP asks whether Valorant&amp;rsquo;s anti-cheat software, Vanguard, could be dangerous. It also says that this software is constantly running in the background.&lt;/p&gt;
+&lt;p&gt;I decided to start by investigating the veracity of these claims and started with RIOT&amp;rsquo;s own article &amp;lsquo;What is Vanguard&amp;rsquo;. This part of the article caught my attention:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img4.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Frankly, I am not satisfied with these texts. Yes, the RIOT article clearly states that Vanguard is already running from bootup, but if you ask me, the explanation is insufficient.&lt;/p&gt;
+&lt;p&gt;Since this article was unsatisfactory to me, I went back to the reddit and started searching again. Then I came across &lt;a href=&#34;https://www.reddit.com/r/VALORANT/comments/fzxdl7/comment/fn6yqbe/&#34;&gt;a long explanation&lt;/a&gt; by u/RiotArkem under a post in the r/VALORANT subreddit about this problem:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img12.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;This explanation was more revealing than the article I read on Vanguard. Let&amp;rsquo;s take a look.&lt;/p&gt;
+&lt;p&gt;He says that the vgk.sys driver does indeed run at computer startup, but he says that it doesn&amp;rsquo;t scan anything unless the game is running, it doesn&amp;rsquo;t communicate with servers and it runs using as few system resources as possible, and he says that this software can be uninstalled at any time.&lt;/p&gt;
+&lt;p&gt;He also talked about the security and privileges of this driver. In terms of security, he said that they had their security investigation team look into it, that the driver did as little as possible, and that they gave the driver minimal privileges.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Performing Analysis&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;performing-analysis&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#performing-analysis&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Now, after the basics, we have figured out what we can do in a simple way and we can start the analysis slowly.&lt;/p&gt;
+&lt;p&gt;First of all, I wanted to start the analysis with wireshark. Let&amp;rsquo;s start by seeing where it connects when the RIOT Client application is launched:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/video/wireshark-video.gif&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As you can see, when the Client application is run, data is sent to many more places than you might think.&lt;/p&gt;
+&lt;p&gt;We can&amp;rsquo;t see the content of the data sent here because, as you can see in the video, the data is encrypted. So it will not be possible to trace this. So I decided to take a look at a few of the addresses of the individual links:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img5.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;When I tried to trace where the data was sent, I couldn&amp;rsquo;t find anything, but The PC Security Channel&amp;rsquo;s analysis of the &amp;lsquo;Is Valorant Spyware?&amp;rsquo; video tells that many of its IP addresses belong to Amazon servers. You can also take a look at the aforementioned video, which was my inspiration for this topic. It&amp;rsquo;s a really good and revealing analysis.&lt;/p&gt;
+&lt;p&gt;When we look at the number of connections here, we can see that there are a lot of connections and unfortunately it&amp;rsquo;s not encouraging. I thought to myself that this is an exaggeration and I wanted to check it for the Epic Games app installed on my PC and here is the result:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img6.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As you can see, there is less connection compared to the RIOT Client app. So we can see that the RIOT Client is really sending a lot of data.&lt;/p&gt;
+&lt;p&gt;I then turned my attention to the .sys file and took a brief look at vgk.sys via Process Explorer:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img7.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;We can also check the status of vgk.sys faster with the driverquery tool:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img8.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;But there is a problem - i think. Right now, no RIOT app runs on the operating system - not even in the background. This also applies to Riot Vanguard:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/video/process-explorer.gif&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;In my operating system, i turned off  RIOT services at the beginning. However, I saw that vgk.sys is running.&lt;/p&gt;
+&lt;p&gt;Although RIOT&amp;rsquo;s article states that it already runs in the background, it is highly unlikely that this kernel driver will still run in the background even if all RIOT-related applications are closed. If the game is completely closed, what can software that protects me from cheating in games protect me from?&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;d like to continue my research by addressing the part mentioned above by Arkhem, the former leader of Vanguard:&lt;/p&gt;
 &lt;blockquote&gt;
-  &lt;p&gt;&lt;i&gt;&amp;ldquo;Yes we run a driver at system startup, it doesn’t scan anything (unless the game is running), it’s designed to take up as few system resources as possible and it doesn’t communicate to our servers. You can remove it at anytime.&amp;quot;&lt;/i&gt;&lt;/p&gt;
-
+  &lt;p&gt;&lt;em&gt;“Yes we run a driver at system startup, it doesn’t scan anything (unless the game is running), it’s designed to take up as few system resources as possible and it doesn’t communicate to our servers. You can remove it at anytime.&amp;quot;&lt;/em&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;Yazılımın istendiği zaman kaldırabileceği belirtilmiş. Bunu tekrar okuduktan sonra Vanguard’ı kaldırdım ardından işletim sistemini yeniden başlattım ve vgk.sys’in yine sistemde olup olmadığını kontrol ettim ve sonuç:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/is-valorant-spyware/img9.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Gerçekten de Vanguard yazılımı kaldırıldığında vgk.sys sistemden kaldırılıyor. Bunu doğrulamış olduk.&lt;/p&gt;
-&lt;h2&gt;vgk.sys Sürücüsünü Analiz Etme&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;vgksys-sürücüsünü-analiz-etme&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#vgksys-s%c3%bcr%c3%bcc%c3%bcs%c3%bcn%c3%bc-analiz-etme&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;vgk.sys sürücüsünü yakından analiz etmeye başlayacaktım ancak maalesef bunun izinden süremedim. Çünkü RIOT’un hiçbir şekilde vgk.sys’i analiz etmemize fırsat vermediğini öğrendim.&lt;/p&gt;
-&lt;p&gt;İlk başta VALORANT oyununu sanal makineye kurdum ve sistemi yeniden başlattıktan sonra VANGUARD yazılımın başlatılmadığını fark ettim. Hatalardan olabileceğini düşünerek çeşitli yollar denedim ancak olmadı:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img10.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Sanal makinede valorant çalıştırmak istediğimde karşıma çıkan ekran buydu. Bunun sebebi ise vgk.sys sürücüsünün başlatılmaması.
-Sanal makinelerde hiçbir şekilde vgk.sys sürücüsünü başlatılmıyor ve analizde fark ettiğim bir diğer şey ise sanal makine olmasa bile eğer işletim sisteminizde debugging aktifse vgk.sys çalıştırılmıyor. Yani ana makinenizde çalışan vgk.sys dosyasını analiz etmek için debugging aktifleştirseniz bile kendini devre dışı bırakacaktır.&lt;/p&gt;
-&lt;p&gt;Dinamik analizine gidemediğim için statik analize yönelmeye karar verdim ve .sys dosyasının kullandığı fonksiyonlara göz atmak istedim:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/is-valorant-spyware/img11.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;API’lara göz attığımızda vgk.sys sürücüsü oyuncunun bilgisayarın çalışma ortamını kontrol edebileceğini, sistem saat ve sistem dizinini elde edebilecek API’lar kullandığı gözüme çarptı. Tabi ki dinamik analiz gerçekleştiremediğimiz bunların ne amaçla kullandığını da bilemeyiz.&lt;/p&gt;
-&lt;p&gt;Eğer fonksiyonların tamamına siz de göz atmak isterseniz aşağıya listenin tamamını ekliyorum:&lt;/p&gt;
+&lt;p&gt;He says that the software can be uninstalled at any time. After reading this again, I uninstalled Vanguard, then rebooted the OS and checked that vgk.sys was still on the system and the result:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img9.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Indeed, when the Vanguard software is uninstalled, vgk.sys is removed from the system. We have confirmed this.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Analyzing the vgk Driver&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;analyzing-the-vgk-driver&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#analyzing-the-vgk-driver&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;I was going to start a close analysis of the vgk.sys driver, but unfortunately I couldn&amp;rsquo;t pursue it because I found out that RIOT doesn&amp;rsquo;t allow us to analyze vgk.sys in any way.&lt;/p&gt;
+&lt;p&gt;At first, I installed the VALORANT game in the virtual machine and after rebooting the system I noticed that the VANGUARD software was not starting. I tried various ways thinking that it might be a bug, but it&amp;rsquo;s didn&amp;rsquo;t work:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img10.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;This is because the vgk.sys driver is not initialized. I noticed that if valorant is installed in any virtual machine, then vgk.sys will be not initialized. Also if debugging is enabled in the operating system, vgk.sys is not run. So even if you enable debugging to analyze the vgk.sys file running on your host machine, it will disable itself.&lt;/p&gt;
+&lt;p&gt;Since I couldn&amp;rsquo;t go to the dynamic analysis, I decided to go to the static analysis and I wanted to take a look at the functions used by the .sys file:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/is-valorant-spyware/img11.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;When we took a look at the APIs, I noticed that the vgk.sys driver uses APIs that allow the player to control the computer&amp;rsquo;s operating environment, obtain the system clock and system directory. Of course, since we cannot perform dynamic analysis, we cannot know what these are used for.&lt;/p&gt;
+&lt;p&gt;If you want to take a look at the full list of functions, here&amp;rsquo;s the list:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
 
 &lt;pre&gt;&lt;code&gt;ZwClose	
@@ -171,175 +187,14 @@ strnlen	&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-contain
   &lt;/button&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;Dediğim gibi dinamik olarak analiz yapamadığımız için burada kullanılan fonksiyonların ne işe yaradığını söylemek pek mümkün olmayacaktır.&lt;/p&gt;
-&lt;h2&gt;Sonuç&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;sonuç&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#sonu%c3%a7&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Analiz sonucunda, Vanguard’ın sürücüsü olan vgk.sys’in davranışlarını değerlendirdiğimizde, Valorant oyununun spyware olabileceği daha yakın olduğu düşünüyorum. Ancak, bu sonuç daha derin analizlerle doğrulanabilir veya reddedilebilir. Ayrıca RIOT’un bu konuda daha şeffaf olması gerektiğini düşünüyorum. Özellikle, Vanguard’ın ne yaptığı ve nasıl çalıştığı konusunda daha fazla bilgi sağlamaları önemlidir. Kullanıcıların gizlilik ve güvenlik endişelerini gidermek için RIOT’un daha açık bir iletişim politikası benimsemesi gerektiğini düşünüyorum.&lt;/p&gt;
-&lt;p&gt;Umarım sizler için faydalı bir konu olmuştur. Diğer konuda görüşmek üzere!&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Conclusion&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;conclusion&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#conclusion&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Based on the analysis of the behavior of Vanguard&amp;rsquo;s driver, vgk.sys, I think that the Valorant game is closer to being spyware. However, this conclusion can be confirmed or refuted by deeper analysis. I also think that RIOT should be more transparent about this issue. In particular, it is important that they provide more information about what Vanguard does and how it works. I think RIOT should adopt a more open communication policy to address users&amp;rsquo; privacy and security concerns.&lt;/p&gt;
 &lt;h1&gt;References&lt;/h1&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://helda.helsinki.fi/server/api/core/bitstreams/89d7c14b-58e0-441f-a0de-862254f95551/content&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;[1] - University of HELSINKI: Comparative Study of Anti-cheat Methods in Video Games&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.schellman.com/blog/cybersecurity/what-is-anti-cheat&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;[2] - Schellman: Understanding Anti-Cheat&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.theregister.com/2013/11/20/esea_gaming_bitcoin_fine/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;[3] - TheRegister: Gaming co ESEA hit by $1m fine for hidden Bitcoin mining enslaver&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://en.wikipedia.org/wiki/Riot_Games&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;[4] - EN Wikipedia: Riot Games&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Bypass Ptrace</title>
-      <link>https://0xbekoo.github.io:1313/blog/bypass-ptrace/</link>
-      <pubDate>Sun, 31 Dec 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://0xbekoo.github.io:1313/blog/bypass-ptrace/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Merhabalar. Bu konumda ptrace’in nasıl bypass edilebileceğiniden bahsedeceğim.&lt;/p&gt;
-&lt;p&gt;ptrace, bir process’in diğer bir process’i debug etmesini sağlayan bir sistem çağrısıdır. Bu sistem çağrısı sayesinde bir process’in diğer process’inin memory’sine erişebiliriz. Bu sayede process’in memory’sindeki verileri okuyabilir, yazabilir ve değiştirebiliriz.&lt;/p&gt;
-&lt;p&gt;ptrace, genellikle bir işlemin yürütme zamanında izlenmesi ve kontrol edilmesi amacıyla kullanılır. Bu, hata ayıklama (debugging), sistem çağrılarını izleme, işlemi duraklatma, kaynak izleme ve benzeri geliştirme ve analiz amaçları için yaygın olarak kullanılan bir sistem aracıdır.&lt;/p&gt;
-&lt;p&gt;Ptrace’in Kullanımı
-C ile aşağıdaki basit kod ile ptrace’in kullanımı hakkında bilgi sahibi olabiliriz:&lt;/p&gt;
-&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
-
-&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;stdio.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;sys/ptrace.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;main&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;ptrace&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PTRACE_TRACEME&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Debugging yok Security var!&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
-  &lt;button
-    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
-    title=&#34;Copy code&#34;
-  &gt;
-    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-  &lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;p&gt;Programıma baktığımızda ilk aşamada bir PTRACE_TRACEME parametresi ile ptrace çağrısı yapıldığını görüyoruz. Bu parametre, process’in kendisini izlemek için kullanacağımızı belirtir. Bu fonksiyonun geri dönüş değeri 0’dan küçükse, işlemi izlemek için izin verilmediği anlamına gelir. Bu durumda programımız Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım çıktısını verir. Eğer geri dönüş değeri 0 ise Debugging yok Security var! çıktısını verir.&lt;/p&gt;
-&lt;h2&gt;Fonksiyon Parametreleri&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;fonksiyon-parametreleri&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#fonksiyon-parametreleri&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;long ptrace(enum __ptrace_request request, pid_t pid, void *addr, void *data);&lt;/p&gt;
-&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
-
-&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;enum&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;__ptrace_request&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;request&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
-  &lt;button
-    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
-    title=&#34;Copy code&#34;
-  &gt;
-    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-  &lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;p&gt;ilk parametre, ptrace’in hangi işlemi yapacağını belirten bir değerdir. Biz örnek senaryo için PTRACE_TRACEME kullandık. Bu parametre, Process’in kendisini izlemek için kullanacağımızı belirtir. Yani ikinci bir process değil o an çalıştırılacak process’i izlemeye alacaktır.&lt;/p&gt;
-&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
-
-&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;pid_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pid&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
-  &lt;button
-    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
-    title=&#34;Copy code&#34;
-  &gt;
-    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-  &lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;p&gt;İkinci parametre, işlem kimliğidir. Bu değer, işlemi izlemek isteyen işlem tarafından kullanılır.&lt;/p&gt;
-&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
-
-&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;addr&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
-  &lt;button
-    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
-    title=&#34;Copy code&#34;
-  &gt;
-    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-  &lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;p&gt;Üçüncü parametre, işlemin adresidir. Bu değer, işlemi izlemek isteyen işlem tarafından kullanılır.&lt;/p&gt;
-&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
-
-&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;data&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
-  &lt;button
-    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
-    title=&#34;Copy code&#34;
-  &gt;
-    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-  &lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;p&gt;Dördüncü parametre, işlemin verisidir. Bu değer, işlemi izlemek isteyen işlem tarafından kullanılır.&lt;/p&gt;
-&lt;h2&gt;Ptrace’in Bypass Edilmesi&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;ptracein-bypass-edilmesi&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#ptracein-bypass-edilmesi&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Şimdi ise önemli kısma geldik. Kali Linux’ta &lt;code&gt;radare2 -w &amp;lt;program&amp;gt;&lt;/code&gt; komutuyla programımızı açıyoruz. Daha sonra aaa komutuyla programımızı analiz ediyoruz. afl komutuyla fonksiyonlarımızı görüntülüyoruz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Fonksiyonlarda main ve ptrace görmemiz yeterli olacaktır. Şimdi ise s main komutuyla main fonksiyonuna gidelim ve pdf komutuyla main fonksiyonumuzu görüntülüyelim:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;main içerisine baktığımızda ilk olarak prelog dediğimiz işlemin gerçekleştiğini görmekteyiz. Daha sonra ptrace fonksiyonun çağırıldığını görüyoruz ancak ondan önce bu fonksiyon için parametreler hazırlanıyor ve tüm parametrelere 0 değeri verilmiş. Fonksiyonun çağırılmasından sonra ise rax register’ın test instruction ile test edildiğini görmekteyiz.&lt;/p&gt;
-&lt;p&gt;Daha sonra jns (Jump if not Sign) ile eğer test edilen sonuç negatif bir sayı değil ise ( rax &amp;gt; 0 ) 0x00001186 adresine atlanıyor. Bu atlanılan kısımda Debugging yok Security Var! mesajı bastırılıyor. Yani bu kısım debugging edilmediğinde atlanılan bir kısım.&lt;/p&gt;
-&lt;p&gt;Eğer bu işlem başarısız olunursa yani sonuç negatif bir sayı ise 0x00001170 adresinden devam ediyor. Burası ise programın debugging edildiğinde atlanılan kısım. Bu kısımda ise Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım mesajı bastırılıyor ve program bitiriliyor. Yani bu kısmın decompiler’ı şu şekilde olabilir:&lt;/p&gt;
-&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
-
-&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;long&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rax&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;ptrace&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PTRACE_TRACEME&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;rax&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Debugging yok Security var!&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
-  &lt;button
-    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
-    title=&#34;Copy code&#34;
-  &gt;
-    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-  &lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;p&gt;Kodların source code’larını bilmediğimizi varsayarsak şuan biz bu programı Assembly kodları ile nasıl çalıştığını kabaca biliyoruz. bypass etmeden önce direkt programı çalıştıralım ve ne olduğuna bakalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü gibi debugger ile programı çalıştırdığımızda “Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım” mesajını alıyoruz. Şimdi ise bypass etmeye çalışalım.&lt;/p&gt;
-&lt;p&gt;Basit bir ptrace bypass etmek ile ilgili bloglarda genellikle rax register’ın değeri 0 yapılarak anlatılır. Bu da işe yarayan bir yöntemdir ancak ben burada farklı olarak sizlere farklı bir yöntem göstereceğim. Ayrıca bu yöntemin reverse engineering için sizlere daha iyi bir anlayış sağlayacağını ümit ediyorum.&lt;/p&gt;
-&lt;p&gt;Yapacağımız şey oldukça basit. Sadece karşılaştırmada kullanılan jns komutunu js olarak değiştirmek. Bunu neden yaptığımızı bu bypass sürecinde daha iyi anlayacağız. Let’s go!&lt;/p&gt;
-&lt;p&gt;Öncelikle programı çalıştırmadan s komutu ile 0x0000116e adresine gidelim. Burası jns ile değerin karşılaştırma yapıldığı kısım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Ardından buradaki assembly kodunu js olarak değiştirelim. Bunun için wx 0x78 komutunu kullanacağız. 0x78 değeri js instruction’a karşılık gelmektedir:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü gibi jns instruction’ı js instruction’ına çevrilmiş. Şimdi ise dc komutuyla programımızı çalıştıralım. Ancak ondan önce disassemble ettiğimiz main’in son haline bir göz atalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img6.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;main’in son haline baktığımızda fonksiyonun geri dönüş adresini karşılaştırdığımız kısımda jns değil js görmekteyiz. Böylece yapılacak işlemler tam tersine dönmüş oldu:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü gibi debugger içerisinde programı çalıştırdığımızda &lt;strong&gt;“Debugging yok Security var!”&lt;/strong&gt; mesajını alıyoruz. Bu da bize ptrace’in bypass edildiğini gösteriyor. Yaptığımız işlemden sonra programın decompiler’ı şu şekilde olabilir:&lt;/p&gt;
-&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
-
-&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;long&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rax&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;ptrace&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PTRACE_TRACEME&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;rax&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Debugging yok Security var!&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Dostum sanırım Debugging yapıyorsun hadi seni bir çıkışa alalım&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
-  &lt;button
-    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
-    title=&#34;Copy code&#34;
-  &gt;
-    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-  &lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;p&gt;Programı debugger ile çalıştırdığımız için bu if koşulun içerisine girecektir çünkü rax, -1 değerini alacaktır. js Instruction’u negatif değerleri kontrol etmek için kullanılır.&lt;/p&gt;
-&lt;p&gt;Bu değişikliklerin ardından program için potansiyel bir sorun oluşmakta. Size şunu sormak istiyorum debug etmeden normal şartlarda bu programı çalıştırdığımızda sizce ne olur? Gelin bir de buna bakalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bypass-ptrace/img8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Normal şekilde programı başlattığımızda hata mesajımızla karşılaşıyoruz. Zaten bunun sebebini detaylandırdım. Programı debugger ile çalıştırmadığımız için 0 değerinde kalıyor. Programı reverse ettiğimizde koşulu js olarak değiştirmiştik. Dolayasıyla programı çalıştırdığımızda hata mesajını almamak için rax’ın negatif bir değer alması gerekiyor; bunun için de debugger ile çalıştırılması gerekir.&lt;/p&gt;
-&lt;p&gt;Umarım faydalı olmuştur. Bir sonraki konumuzda görüşmek üzere. Hoşça kalın.&lt;/p&gt;
 
       </description>
     </item>

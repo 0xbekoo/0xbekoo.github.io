@@ -1,0 +1,619 @@
+---
+title: "Windows Kernel'da System Call Mekanizması"
+date: 2024-12-31
+authors:
+  - name: 0xbekoo
+    link: https://github.com/0xbekoo
+    image: https://github.com/0xbekoo.png
+tags:
+  - Reverse-Engineering
+  - Syscall
+  - Windows-kernel
+
+excludeSearch: true
+---
+
+Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel. 
+
+In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what's NTAPI, Syscall or SSDT etc. in this blog because i wrote many documents for these topics and if you're beginner in the topics, you can start with the documents mentioned.
+
+### **Static Analysis**
+
+When a syscall starts processing from ntdll.dll, the flow begins in **KiSystemCall64** from Windows Kernel and we will start in this part. 
+
+#### **Preparation Phase: KiSystemServiceUser**
+
+If we take a look at **KiSystemCall64/KiSystemCall64Shadow**, flow is transferred to **KiSystemServiceUser**:
+
+<div style="text-align: center;">
+  <img src="./Images/img1.png" style="width: 70%" />
+</div>
+
+
+In KiSystemServiceUser, it prepares to process the syscall:
+
+<div style="text-align: center;">
+  <img src="./Images/img2.png" style="width: 44%" />
+</div>
+
+We have to focus on **mov rbx,gs:188h** code. This offset corresponds to a critical structure that called **KPCR**. In the structure, it gets address of KTHREAD. 
+
+We can benefit article of Geoff Chappell<sup>[2]</sup> for the structure:
+
+<div style="text-align:center; font-size: 14px;">
+<i>
+The name KPCR stands for (Kernel) Processor Control Region. The kernel keeps a KPCR (formally a _KPCR) for each logical processor. The KPCR is highly specific to the processor architecture.
+</i>
+</div>
+
+KPCR structure points to gs:0 in x64 systems:
+
+```
+kd> dt nt!_KPCR
+   +0x000 NtTib            : _NT_TIB
+   +0x000 GdtBase          : Ptr64 _KGDTENTRY64
+   +0x008 TssBase          : Ptr64 _KTSS64
+   +0x010 UserRsp          : Uint8B
+   +0x018 Self             : Ptr64 _KPCR
+   +0x020 CurrentPrcb      : Ptr64 _KPRCB
+   +0x028 LockArray        : Ptr64 _KSPIN_LOCK_QUEUE
+   +0x030 Used_Self        : Ptr64 Void
+   +0x038 IdtBase          : Ptr64 _KIDTENTRY64
+   +0x040 Unused           : [2] Uint8B
+   +0x050 Irql             : UChar
+   +0x051 SecondLevelCacheAssociativity : UChar
+   +0x052 ObsoleteNumber   : UChar
+   +0x053 Fill0            : UChar
+   +0x054 Unused0          : [3] Uint4B
+   +0x060 MajorVersion     : Uint2B
+   +0x062 MinorVersion     : Uint2B
+   +0x064 StallScaleFactor : Uint4B
+   +0x068 Unused1          : [3] Ptr64 Void
+   +0x080 KernelReserved   : [15] Uint4B
+   +0x0bc SecondLevelCacheSize : Uint4B
+   +0x0c0 HalReserved      : [16] Uint4B
+   +0x100 Unused2          : Uint4B
+   +0x108 KdVersionBlock   : Ptr64 Void
+   +0x110 Unused3          : Ptr64 Void
+   +0x118 PcrAlign1        : [24] Uint4B
+   +0x180 Prcb             : _KPRCB
+```
+
+Now if we take a look at the code again, it gets 0x188 offset in KiSystemServiceUser. According the output of WinDBG, this offset corresponds to Prcb in the structure.
+
+```
+dt nt!_KPRCB
+   +0x000 MxCsr            : Uint4B
+   +0x004 LegacyNumber     : UChar
+   +0x005 ReservedMustBeZero : UChar
+   +0x006 InterruptRequest : UChar
+   +0x007 IdleHalt         : UChar
+   +0x008 CurrentThread    : Ptr64 _KTHREAD
+```
+
+We can see that 0x188 offset in PRCB corresponds to **CurrentThread**. Also we can benefit article of Geoff Chappell<sup>[3]</sup> again to understand that what's KTHREAD:
+
+<div style="text-align:center; font-size: 14px;">
+<i>
+The KTHREAD structure is the Kernel Core’s portion of the ETHREAD structure. The latter is the thread object as exposed through the Object Manager. The KTHREAD is the core of it.
+</i>
+</div>
+
+It's like equivalent of ETHREAD as Kernel Structure. Also one important detail in the structure is that it holds address of TEB:
+
+```
+kd> dt nt!_KTHREAD
+...
+   +0x080 SystemCallNumber : Uint4B
+   +0x084 ReadyTime        : Uint4B
+   +0x088 FirstArgument    : Ptr64
+...
+   +0x0f0 Teb              : Ptr64 Void
+```
+
+In the last part of KiSystemServiceUser, we can see that it sets **SystemCallNumber** flag from KTHREAD Structure:
+
+<div style="text-align: center;">
+  <img src="./Images/img3.png" style="width: 60%" />
+</div>
+
+Also notice that the **FirstParameter** flag of the structure sets with rcx.
+#### **Determination of the Systemcall: KiSystemServiceStart**
+
+When a syscall processed, it contains a **Table Identifier** information with Syscall Index:
+
+<div style="text-align: center;">
+  <img src="./Images/img4.png" style="width: 75%" />
+</div>
+
+Bits are read from right to left and according the diagram above, 0 - 11 bits contains Syscall Index, while 12 - 13 bits contains Table Identifier. After bits are not used. **KiSystemServiceStart** function determines these bits. In other words, this function extract the syscall number:
+
+<div style="text-align: center;">
+  <img src="./Images/img5.png" style="width: 70%" />
+</div>
+
+Firstly, it deletes Padding Bit with 7 bits shifting to reach Table Identifier and Syscall Number. After that, it gets Table Identifier value and Syscall number. I know that it seems to be confusing but trust me this section is really simple.
+
+We can create a scenario. Let's think that the syscall number is 0x26 (NtOpenProcess):
+
+```asm
+mov edi,eax     ; eax = 0x26 (0010 0110)
+shl edi,7
+```
+
+This processes here's exactly as shown below:
+
+<div style="text-align: center;">
+  <img src="./Images/img6.png" style="width: 85%" />
+</div>
+
+After shift 7 bits to right, the Padding bits are cleared, which means that edi register is taken 0 value. Let's get Table Identifier Value:
+
+```
+and edi,20h     ; edi = 0x20 (1000 00)
+```
+
+This process here's exactly as shown below:
+
+<div style="text-align: center;">
+  <img src="./Images/img7.png" style="width: 70%" />
+</div>
+
+So, we can see that the Table Identifier value is 0x0 for NtOpenProcess.
+
+But this isn't always in this case. If the SSN Number is between **0x1000** and **0x1FFF**, Table Identifier value will be 0x0 and these specific functions are related to GUI API's. But if the SSN Number is between **0x0** and **0xFFF**, the Table Identifier will be 0x0, as have been shown. These functions are related to ntdll.dll, such as NtOpenProcess.
+
+Now let's extract SSN Number:
+
+```
+and eax,0FFFh   // eax = 0x26 (0010 0110)
+```
+
+This process here's exactly as shown below:
+
+<div style="text-align: center;">
+  <img src="./Images/img8.png" style="width: 70%" />
+</div>
+
+The result **00100110** correspond to 0x26. That's all!
+
+Let's select a GUI API from **win32u.dll** and calculate its Table Identifier value:
+
+<div style="text-align: center;">
+  <img src="./Images/img9.png" style="width: 90%" />
+</div>
+
+Our target is **NtUserCreateWindowEx** and its SSN is 0x106F as we can see. Let's calculate:
+
+```
+mov edi,eax ; eax = 0x106F (0001 0000 0110 1111)
+shl edi,7
+```
+
+This process is exactly like this:
+
+<div style="text-align: center;">
+  <img src="./Images/img10.png" style="width: 90%" />
+</div>
+
+edi register is taken 0x20 value. Now it takes Table Identifier value:
+
+```
+and edi,20h ; edi = 0x20 (1000 00)
+```
+
+Or:
+
+<div style="text-align: center;">
+  <img src="./Images/img11.png" style="width: 40%" />
+</div>
+
+So, as we can see that Table Identifier value is 0x20.  Like i said, the value is not always 0x0.
+
+Lastly, let's extract the SSN Number:
+
+```
+and eax,0FFFh   ; eax = 0x106F
+```
+
+This process is exactly like this:
+
+<div style="text-align: center;">
+  <img src="./Images/img12.png" style="width: 70%" />
+</div>
+
+The result is **0001000001101111**, it correspond to 0x106F. 
+
+As we can see that **KiSystemServiceStart** has responsibility to determine Syscall Number.
+
+#### **Calculation of Kernel Routine: KiServiceSystemRepeat**
+
+Next section **KiServiceSystemRepeat** has responsibility to calculate kernel routine. Here's codes:
+
+<div style="text-align: center;">
+  <img src="./Images/img13.png" style="width: 50%" />
+</div>
+
+Firstly, it gets address of SSDT, as we can see. Then it compares 0x78 offset of KPCR structure with 0x80 value. This offset corresponds to **GuiThread**:
+
+```
+kd> dt nt!_KTHREAD
+   ...
+   +0x078 ThreadFlagsSpare : Pos 0, 2 Bits
+   +0x078 AutoAlignment    : Pos 2, 1 Bit
+   +0x078 DisableBoost     : Pos 3, 1 Bit
+   +0x078 AlertedByThreadId : Pos 4, 1 Bit
+   +0x078 QuantumDonation  : Pos 5, 1 Bit
+   +0x078 EnableStackSwap  : Pos 6, 1 Bit
+   +0x078 GuiThread        : Pos 7, 1 Bit
+```
+
+Thus it checks if GuiThread flag is set. if it is, then r11 will take address of **KeServiceDescriptorTableFilter**.
+
+But there's a interesting situation here.  We can see that when the thread first runs this routine, it does not know if a GUI related API is being processed. So, in this context, whatever output is, it will skip it. As we will see in the following analysis,  after calculation of kernel routine, it determines whether SSN number is GUI or not and if it is, will be redirected back to the beginning of this section.
+
+<div style="text-align: center;">
+  <img src="./Images/img14.png" style="width: 70%" />
+</div>
+
+After it get address of SSDT, it compares **r10+rdi+0x10. r10**. r10 contains address of SSDT, while rdi contains Table Identifier value. The purpose here, as I said, is to see if the SSN number is relevant to the GUI.
+
+Now comes the part where the magic happens:
+
+<div style="text-align: center;">
+  <img src="./Images/img15.png" style="width: 60%" />
+</div>
+
+If you read my SSDT Documentation, you can see that there are some formulas for the calculation. Now in here, you see their sources. 
+
+Let's remember first the formula:
+
+<div style="text-align:center; font-size: 17px;">
+<i>
+<b>
+	Offset = KiServiceTableAddress + 4 * SSN
+</b>
+</i>
+</div>
+
+Or we can see this formula in the code:
+
+```asm
+movsxd  r11, dword ptr [r10+rax*4]
+```
+
+It gets address Offset that correspond to original kernel routine from SSDT. 
+
+Next formula is:
+
+<div style="text-align:center; font-size: 17px;">
+<i>
+<b>
+	KernelRoutineAddress = KiServiceTableAddress + ( Offset >>> 4 )
+</b>
+</i>
+</div>
+
+Or:
+
+```asm
+mov     rax, r11
+sar     r11, 4 
+add     r10, r11 
+```
+
+It reaches the Kernel Routine address with this formula. 
+
+Then it checks edi register to 0x20 value:
+
+```asm
+cmp edi,20h
+jnz short loc_1406B8570
+```
+
+Again, the purpose here is to identify that the SSN Number is related to the GUI API:
+
+<div style="text-align: center;">
+  <img src="./Images/img16.png" style="width: 70%" />
+</div>
+
+So if it's, it will redirect to KiConvertToGuiThread function and as i said, it jumps to beginning of KiSystemServiceRepeat.
+
+Lastly, after the computation, the flow is transfered to **KiSystemServiceCopyEnd** function to direct kernel routine that computed. We can see this section in KiSystemServiceGdiTebAccess:
+
+<div style="text-align: center;">
+  <img src="./Images/img17.png" style="width: 40%" />
+</div>
+
+#### **Redirect to Kernel Routine: KiSystemServiceCopyEnd** 
+
+The interesting part of this function is that the flow is directed to the computed kernel routine address:
+
+<div style="text-align: center;">
+  <img src="./Images/img18.png" style="width: 80%" />
+</div>
+
+If the address belongs to any GUI function, the address is saved to r10 register before called KiSystemServiceCopyEnd in the function, KiSystemServiceGdiTebAccess at **0x1406B856A**. It then calls PsInvokeWin32Callout:
+
+```asm
+loc_1406B84FE:
+...
+mov rax, r11
+sar r11, 4          ; Shift Offset 4 bits to right
+add r10, r11        ; Sum the result with SSDT Address.
+cmp edi, 20h ; ' '
+
+[...]
+
+KiSystemServiceGdiTebAccess:
+...
+mov rsi, r10        ; Save the address of the routine
+
+; /* Call PsInvokeWin32Callout */ 
+mov  ecx, 7
+xor  edx, edx
+xor  r8, r8
+xor  r9, r9
+call PsInvokeWin32Callout
+...
+mov r10, rsi        ; Get the address
+```
+
+x#### **Static Analysis Result** 
+
+When we examine it with static analysis, we can understand that the syscall is processed as follows in the kernel area:
+
+Section 1 - **KiSystemServiceUser:** Get the CurrentThread structure from the KPRCB for the current thread, then it prepares the SystemCallNumber and FirstArgument flags. 
+<br>
+Section 2 - **KiSystemServiceStart:** It gets the number and Table Identifier of the syscall to be processed.
+<br>
+Section 3 - **KiSystemRepeat:** The most important section of the syscall process. It is determined whether the processed syscall is GUI related or not and the corresponding routine address is calculated.
+<br>
+Section 4 - **KiSystemServiceCopyEnd:** The last section of the syscall process. The flow is redirected to the calculated address and the processing is complete.
+
+
+### **Dynamic Analysis**
+
+#### **Adding Breakpoint to KiSystemCall64**
+
+We will start by reading the address of KiSystemCall64. For this, we can read its address with the following command:
+
+```
+kd> rdmsr c0000082
+msr[c0000082] = fffff802`5b21a1c0
+```
+
+Well, i started by adding a bp to KiSystemCall64 in WinDBG, buut don't add a bp there directly. PatchGuard will say hi:
+
+<div style="text-align: center;">
+  <img src="./Images/img19.png" style="width: 85%" />
+</div>
+
+So it gives BSOD. When I analyzed it over and over again, I realized why, and it was made clear to me by the person who <a hreh="https://stackoverflow.com/questions/65367333/breakpoint-setting-in-ntkisystemcall64-not-working">posted a thread on stackoverflow</a> about this problem.
+
+If you take a look at the first part of KiSystemCall64, you will see that the kernel stack required by the Windows kernel debugging mechanism is set. So the solution here would be to add a bp after this stack is set:
+
+<div style="text-align: center;">
+  <img src="./Images/img20.png" style="width: 85%" />
+</div>
+
+I didn't pay attention to this in the static analysis, but I understood it better in WinDbg. At the beginning we can see that the stack is done. When I add a bp in the part shown below, I observed that there was no problem:
+
+<div style="text-align: center;">
+  <img src="./Images/img21.png" style="width: 85%" />
+</div>
+
+Here's result:
+
+<div style="text-align: center;">
+  <img src="./Images/img22.png" style="width: 55%" />
+</div>
+
+Successfully triggering. Now we can analyze the random syscall to be processed!
+
+#### **KiSystemServiceUser**
+
+Before the analyze, now let's take a look at for whom the syscall was made:
+
+<div style="text-align: center;">
+  <img src="./Images/img24.png" style="width: 65%" />
+</div>
+
+We can see that the syscall is triggered for NtSetIoCompletion function.
+
+Now add bp to KiSystemServiceUser and keep the flow going:
+
+```
+kd> bp ntkrnlmp!KiSystemServiceUser
+kd> g
+Breakpoint 1 hit
+nt!KiSystemServiceUser:
+fffff802`5ac1264d c645ab02        mov     byte ptr [rbp-55h],2
+```
+
+Recall that in the first part of the function, it gets the CurrentThread from KPRCB. We can see these codes in WinDBG:
+
+<div style="text-align: center;">
+  <img src="./Images/img25.png" style="width: 65%" />
+</div>
+
+
+Once the address of the structure is obtained, we can see again that adjustments have been made in the last part of KiSystemServiceUser:
+
+<div style="text-align: center;">
+  <img src="./Images/img26.png" style="width: 65%" />
+</div>
+
+Let's see the transferred values: 
+
+<div style="text-align: center;">
+  <img src="./Images/img27.png" style="width: 75%" />
+</div>
+
+We can see that it set systemcall number and the FirstArgument flags, also the address of TEB.
+
+#### **KiSystemServiceStart**
+
+Now let's add bp to **KiSystemServiceStart** function which extracts syscall number and Table Identifier values: 
+
+```
+kd> g
+Breakpoint 4 hit
+nt!KiSystemServiceStart:
+fffff802`5ac12770 4889a390000000  mov     qword ptr [rbx+90h],rsp
+```
+
+Although we know what is done in this section, let's take a brief look: 
+
+<div style="text-align: center;">
+  <img src="./Images/img28.png" style="width: 75%" />
+</div>
+
+Now, since the syscall number triggered in my debugger is 0x1a3, let's repeat the operations with this value:
+
+```
+mov edi eax     ; eax = 0x1a3 (0001 1010 0011)
+shr edi,7
+```
+
+When these commands are executed, we should get the following result:
+
+<div style="text-align: center;">
+  <img src="./Images/img29.png" style="width: 95%" />
+</div>
+
+Our result will be 0000 0011 (3). We can run this part in WinDBG and verify the result:
+
+<div style="text-align: center;">
+  <img src="./Images/img31.png" style="width: 55%" />
+</div>
+
+Now let's get the Table Identifier after shifting operation:
+
+<div style="text-align: center;">
+  <img src="./Images/img30.png" style="width: 60%" />
+</div>
+
+As I explained before, if the Table Identifier value is 0, we can understand that the syscall belongs to the NTDLL API. Let's use WinDBG to verify:
+
+<div style="text-align: center;">
+  <img src="./Images/img32.png" style="width: 60%" />
+</div>
+
+Finally, the systemcall number will be retrieved:
+
+```
+and eax,0FFFh   ; eax = 0x1a3 (0001 1010 0011)
+```
+
+Or:
+
+<div style="text-align: center;">
+  <img src="./Images/img33.png" style="width: 60%" />
+</div>
+
+As a result of the operation, we get the value 0001 1010 0011, i.e. 0x1a3. Again, let's use WinDBG to verify:
+
+<div style="text-align: center;">
+  <img src="./Images/img34.png" style="width: 100%" />
+</div>
+
+As can be seen, the systemcall number is being retrieved. Now, after extracting the Syscall and Table Identifier values, we are done with this function and the flow goes to KiSystemServiceRepeat.
+
+#### **KiSystemServiceRepeat**
+
+After getting the Syscall and Table Identifier values, we know that the address will be calculated at this section.
+
+<div style="text-align: center;">
+  <img src="./Images/img35.png" style="width: 100%" />
+</div>
+
+After receiving the address of the SSDT, the syscall number is checked to see if it belongs to the GUI API or not. In any case, the thread will always skip this part because, as I explained before, the thread doesn't know if the API being processed is GUI related or not. In the future flow, if after calculations it is determined that the API being processed is GUI related, it will be redirected back to the beginning of this function.
+
+Once these conditions are skipped, the most important part comes. The calculation of the address is now done:
+
+<div style="text-align: center;">
+  <img src="./Images/img36.png" style="width: 73%" />
+</div>
+
+The r10 register contains the address of the SSDT. For r11 register, it calculates the offset corresponding to the absolute address of the API processed in the SSDT table. Let's remember our formula again:
+
+<div align="center" style="font-size: 17px">
+	<b>
+		<i>
+			Offset = KiServiceTableAddress + 4 * SSN
+		</i>
+	</b>
+</div>
+
+To verify, let's run the part where the offset is calculated and take a look at the value obtained:
+
+<div style="text-align: center;">
+  <img src="./Images/img37.png" style="width: 60%" />
+</div>
+
+Now let's run the part where it calculates the absolute address using the offset value and look at the calculated address:
+
+<div style="text-align: center;">
+  <img src="./Images/img38.png" style="width: 60%" />
+</div>
+
+Recall our formula again
+
+
+<div align="center" style="font-size: 17px">
+	<b>
+		<i>
+			KernelRoutineAddress = KiServiceTableAddress + ( Offset >>> 4 )
+		</i>
+	</b>
+</div>
+
+After the address calculation we see again that it compares edi's value with 0x20. We know what this means. In our case edi register contains 0 value. 
+
+After the jump, you will see that the flow redirects to KiSystemServiceGdiTebAccess:
+
+<div style="text-align: center;">
+  <img src="./Images/img39.png" style="width: 100%" />
+</div>
+
+We no longer need to look at the operations performed in this section. Because the address of the processed syscall has been determined and now it will prepare to redirect it there. However, as we saw in our static analysis, this redirection will take place to KiSystemServiceCopyEnd and when you look at the end of this function, you will see that it redirects behind KiSystemServiceCopyEnd:
+
+<div style="text-align: center;">
+  <img src="./Images/img40.png" style="width: 100%" />
+</div>
+
+Let's add a bp in the part, *jmp r11*, and take it forward and see where it leads:
+
+<div style="text-align: center;">
+  <img src="./Images/img41.png" style="width: 75%" />
+</div>
+
+You also will see that it redirects to KiSystemServiceCopyStart to copy some data. It will now redirect to KiSystemServiceCopyEnd to be redirected to the relevant address.
+
+#### **KiSystemServiceCopyEnd**
+
+In this section, it will redirect to the address:
+
+<div style="text-align: center;">
+  <img src="./Images/img42.png" style="width: 100%" />
+</div>
+
+Here, rax gets the address from r10 register then it calls the function:
+
+<div style="text-align: center;">
+  <img src="./Images/img43.png" style="width: 80%" />
+</div>
+
+We can see that it successfully redirects to NtSetIoCompletion.
+
+### **Conclusion**
+
+In this blog, we conducted both static and dynamic analysis of how the Windows kernel processes syscalls, specifically tracing the execution path starting from `KiSystemCall64`. We examined the internal mechanics of how Windows extracts the syscall number, determines the correct system service table, calculates the corresponding kernel routine, and finally invokes it.
+
+By diving into key functions like KiSystemServiceUser, KiSystemServiceStart, KiSystemServiceRepeat, and KiSystemServiceCopyEnd, we revealed how the kernel leverages structures like KPCR, KPRCB, and KTHREAD, and how the SSDT and Table Identifiers come into play during syscall dispatching.
+
+## **References**
+- 1 - **Alice Climent** -  [A Syscall Journey in the Windows Kernel](https://alice.climent-pommeret.red/posts/a-syscall-journey-in-the-windows-kernel/)
+* 2 - Geoff Chappell - [KPCR (amd64)](https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/amd64_x/kpcr.htm) 
+* 3 - Geoff Chappel - [KTHREAD](https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/ke/kthread/index.htm)

@@ -11,17 +11,13 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>UEFI Keylogger – 0xbekoo</title>
-  <meta name="description" content="Merhabalar. Bu blogta UEFI’de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI’yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği “Hello World” çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.
-Kabaca yapacağımız şey UEFI’de klavyeden basılan tuşları ekrana bastıran bir sürücü yazacağız.
-Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:
-#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Kodumuz oldukça basit. Detaylıca göz atalım:" /><link rel="canonical" href="https://0xbekoo.github.io:1313/docs/uefi-dev/uefi-keylogger/" itemprop="url" />
+  <meta name="description" content="In this documentation we will develop simple uefi keylogger.
+Coding #include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Now let’s take a look at the codes" /><link rel="canonical" href="http://localhost:1313/docs/uefi-dev/uefi-keylogger/" itemprop="url" />
 
 <meta property="og:title" content="UEFI Keylogger" />
-<meta property="og:description" content="Merhabalar. Bu blogta UEFI&rsquo;de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI&rsquo;yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği &ldquo;Hello World&rdquo; çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.
-Kabaca yapacağımız şey UEFI&rsquo;de klavyeden basılan tuşları ekrana bastıran bir sürücü yazacağız.
-Kodlama
-    KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:
-
+<meta property="og:description" content="In this documentation we will develop simple uefi keylogger.
+Coding
+    
 
 #include &lt;Uefi.h&gt;
 #include &lt;Library/UefiApplicationEntryPoint.h&gt;
@@ -64,26 +60,22 @@ UefiMain(
   
 
 
-Kodumuz oldukça basit. Detaylıca göz atalım:" />
+Now let&rsquo;s take a look at the codes" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://0xbekoo.github.io:1313/docs/uefi-dev/uefi-keylogger/" /><meta property="article:section" content="docs" />
+<meta property="og:url" content="http://localhost:1313/docs/uefi-dev/uefi-keylogger/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2025-01-28T00:00:00+00:00" />
 <meta property="article:modified_time" content="2025-01-28T00:00:00+00:00" />
 
   <meta itemprop="name" content="UEFI Keylogger">
-  <meta itemprop="description" content="Merhabalar. Bu blogta UEFI’de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI’yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği “Hello World” çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.
-Kabaca yapacağımız şey UEFI’de klavyeden basılan tuşları ekrana bastıran bir sürücü yazacağız.
-Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:
-#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Kodumuz oldukça basit. Detaylıca göz atalım:">
+  <meta itemprop="description" content="In this documentation we will develop simple uefi keylogger.
+Coding #include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Now let’s take a look at the codes">
   <meta itemprop="datePublished" content="2025-01-28T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-01-28T00:00:00+00:00">
-  <meta itemprop="wordCount" content="351">
+  <meta itemprop="wordCount" content="332">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="UEFI Keylogger">
-  <meta name="twitter:description" content="Merhabalar. Bu blogta UEFI’de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI’yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği “Hello World” çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.
-Kabaca yapacağımız şey UEFI’de klavyeden basılan tuşları ekrana bastıran bir sürücü yazacağız.
-Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:
-#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Kodumuz oldukça basit. Detaylıca göz atalım:">
+  <meta name="twitter:description" content="In this documentation we will develop simple uefi keylogger.
+Coding #include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Now let’s take a look at the codes">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -200,9 +192,41 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-4/"
+    
+  >PatchGuard Analysis - Part 4
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-3/"
+    
+  >PatchGuard Analysis - Part 3
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-2/"
+    
+  >PatchGuard Analysis - Part 2
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-1/"
+    
+  >PatchGuard Analysis - Part 1
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hooking/"
     
-  >SSDT Hooking ile User-Mode Programda Sürücü Yükleme
+  >Loading Driver from User-Mode Program via SSDT Hooking
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -210,13 +234,13 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/syscalls/"
     
-  >Windows Kernel&#39;da Syscall Araştırma Yolculuğum
+  >Reversing System Call Mechanism in Windows Kernel
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bare-metal-reversing-0x0/"
+    href="/blog/bare-metal-reversing/"
     
   >ARM Firmware Reverse Engineering
     </a>
@@ -235,14 +259,6 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
     href="/blog/is-valorant-spyware/"
     
   >Is Valorant Spyware?
-    </a>
-              
-            </li><li class="hx-flex hx-flex-col "><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bypass-ptrace/"
-    
-  >Bypass Ptrace
     </a>
               
             </li></ul>
@@ -264,7 +280,15 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
         <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
-        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col open"><a
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col open"><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       sidebar-active-item hx-bg-primary-100 hx-font-semibold hx-text-primary-800 contrast-more:hx-border contrast-more:hx-border-primary-500 dark:hx-bg-primary-400/10 dark:hx-text-primary-600 contrast-more:dark:hx-border-primary-500"
     href="/docs/uefi-dev/uefi-keylogger/"
@@ -274,21 +298,9 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
   
     <ul class='hx-flex hx-flex-col hx-gap-1 hx-relative before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] dark:before:hx-bg-neutral-800 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-pr-3 rtl:before:hx-right-0 ltr:hx-ml-3 rtl:hx-mr-3'><li>
               <a
-                href="#kodlama"
+                href="#"
                 class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Kodlama&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#s%c3%bcr%c3%bcc%c3%bcy%c3%bc-%c3%a7al%c4%b1%c5%9ft%c4%b1rma"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Sürücüyü Çalıştırma&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#sonu%c3%a7"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Sonuç&lt;/strong&gt;</a>
+              ></a>
             </li>
           </ul>
   
@@ -382,6 +394,14 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/winkernel-dev/wkd-ssdt/"
     
   >SSDT
@@ -445,7 +465,15 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
   >UEFI Development
         <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
     </a><div class="ltr:hx-pr-0 hx-overflow-hidden">
-        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col open"><a
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col open"><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       sidebar-active-item hx-bg-primary-100 hx-font-semibold hx-text-primary-800 contrast-more:hx-border contrast-more:hx-border-primary-500 dark:hx-bg-primary-400/10 dark:hx-text-primary-600 contrast-more:dark:hx-border-primary-500"
     href="/docs/uefi-dev/uefi-keylogger/"
@@ -540,6 +568,14 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/winkernel-dev/wkd-ssdt/"
     
   >SSDT
@@ -587,29 +623,60 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
     </div>
   
   
-    <div class="  hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-grow hx-flex-col"><button
+    <div class=" hx-justify-end hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-justify-items-start hx-grow">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>English</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/docs/uefi-dev/uefi-keylogger/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/docs/uefi-dev/uefi-keylogger/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish</a>
+        </li>
+      </ul>
+  </div><button
   title="Change theme"
   data-theme="light"
   class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
   type="button"
   aria-label="Change theme"
 >
-  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span class="group-data-[theme=light]:hx-hidden">Light</span><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg><span class="group-data-[theme=dark]:hx-hidden">Dark</span></div>
+  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></div>
 </button>
-</div></div></aside>
+</div></aside>
     
 <nav class="hextra-toc hx-order-last hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-px-4" aria-label="table of contents">
     <div class="hextra-scrollbar hx-sticky hx-top-16 hx-overflow-y-auto hx-pr-4 hx-pt-6 hx-text-sm [hyphens:auto] hx-max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4"><p class="hx-mb-4 hx-font-semibold hx-tracking-tight">On this page</p><ul>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kodlama">Kodlama
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#coding">Coding
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#s%c3%bcr%c3%bcc%c3%bcy%c3%bc-%c3%a7al%c4%b1%c5%9ft%c4%b1rma">Sürücüyü Çalıştırma
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#running-the-driver">Running the Driver
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#sonu%c3%a7">Sonuç
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#conclusion">Conclusion
         </a>
       </li></ul>
       <div class="hx-mt-8 hx-border-t hx-bg-white hx-pt-8 hx-shadow-[0_-12px_16px_white] dark:hx-bg-dark dark:hx-shadow-[0_-12px_16px_#111] hx-sticky hx-bottom-0 hx-flex hx-flex-col hx-items-start hx-gap-2 hx-pb-8 dark:hx-border-neutral-800 contrast-more:hx-border-t contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-border-neutral-400">
@@ -638,11 +705,9 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
 
         <div class="content">
           <h1>UEFI Keylogger</h1>
-          <p>Merhabalar. Bu blogta UEFI&rsquo;de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI&rsquo;yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği &ldquo;Hello World&rdquo; çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.</p>
-<p>Kabaca yapacağımız şey UEFI&rsquo;de klavyeden basılan tuşları ekrana bastıran bir sürücü yazacağız.</p>
-<h2><strong>Kodlama</strong><span class="hx-absolute -hx-mt-20" id="kodlama"></span>
-    <a href="#kodlama" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:</p>
-<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+          <p>In this documentation we will develop simple uefi keylogger.</p>
+<h3><strong>Coding</strong><span class="hx-absolute -hx-mt-20" id="coding"></span>
+    <a href="#coding" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;Uefi.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span class="cp">
@@ -688,7 +753,7 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
   </button>
 </div>
 </div>
-<p>Kodumuz oldukça basit. Detaylıca göz atalım:</p>
+<p>Now let&rsquo;s take a look at the codes</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">EFI_SIMPLE_TEXT_INPUT_PROTOCOL</span> <span class="o">*</span><span class="n">TextInput</span><span class="p">;</span>
@@ -702,8 +767,8 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
   </button>
 </div>
 </div>
-<p>Sürücümüzde <strong>EFI_SIMPLE_TEXT_INPUT_PROTOCOL</strong> protokolü ile bir pointer oluşturarak başlıyoruz. Bu pointer, klavyeden gelen girişleri yakalamak için kullanacağız. EFI_SIMPLE_TEXT_INPUT_PROTOCOL protokolü, klavye girişlerini okuma işlemini gerçekleştiren temel bir protokoldür.</p>
-<p>Daha sonra klavyeden basılan tuşları bir değişkene kaydetmek için EFI_INPUT_KEY tipinde bir değişken oluşturuyoruz.</p>
+<p>We start by creating a pointer in our driver with the EFI_SIMPLE_TEXT_INPUT_PROTOCOL protocol. We will use this pointer to capture input from the keyboard. The EFI_SIMPLE_TEXT_INPUT_PROTOCOL protocol is a basic protocol that reads keyboard input.</p>
+<p>We then create a variable of type EFI_INPUT_KEY to store the keys pressed from the keyboard in a variable.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">TextInput</span> <span class="o">=</span> <span class="n">SystemTable</span><span class="o">-&gt;</span><span class="n">ConIn</span><span class="p">;</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -716,7 +781,7 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
   </button>
 </div>
 </div>
-<p>Bu kısımda ise <strong>EFI_SIMPLE_TEXT_INPUT_PROTOCOL</strong>&rsquo;e erişim sağlıyoruz. ConIn, Console Input Protocol (Konsol Giriş Protokolü) için kullanılan bir üye değişkendir.</p>
+<p>In this section, we access EFI_SIMPLE_TEXT_INPUT_PROTOCOL. ConIn is a member variable for Console Input Protocol.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
@@ -742,10 +807,10 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
   </button>
 </div>
 </div>
-<p>Artık bir döngü ile basılan tuşları ekrana bastırmaya başlıyoruz. <strong>ReadKeyStroke</strong> ile basılan tuşları <strong>Key</strong> değişkenine aktarıyoruz.</p>
-<p>Eğer basılan tuş ESC (SCAN_ESC) tuşuysa sürücünün döngüden çıkmasını sağlıyoruz. Eğer değilse basılan tuşu ekrana bastırıyoruz.</p>
-<h2><strong>Sürücüyü Çalıştırma</strong><span class="hx-absolute -hx-mt-20" id="sürücüyü-çalıştırma"></span>
-    <a href="#s%c3%bcr%c3%bcc%c3%bcy%c3%bc-%c3%a7al%c4%b1%c5%9ft%c4%b1rma" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>KeyLogger.inf dosyasını oluşturalım ve aşağıdaki kodları yapıştıralım:</p>
+<p>Now we start printing the pressed keys on the screen with a loop. With ReadKeyStroke we pass the pressed keys to the Key variable.</p>
+<p>If the key pressed is the ESC (SCAN_ESC) key, the driver exits the loop. If it is not, then we print the pressed key on the screen.</p>
+<h3><strong>Running the Driver</strong><span class="hx-absolute -hx-mt-20" id="running-the-driver"></span>
+    <a href="#running-the-driver" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Create the KeyLogger.inf file and paste the following codes:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-inf" data-lang="inf"><span class="line"><span class="cl"><span class="k">[Defines]</span>
@@ -775,10 +840,10 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
   </button>
 </div>
 </div>
-<p>Aşağıdaki kodla projemizi build edelim:</p>
+<p>Now build the project via this code:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">Build -m ShellPkg<span class="se">\A</span>pplication<span class="se">\K</span>eyLogger<span class="se">\K</span>eyLogger.inf</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+<pre><code>Build -m ShellPkg\Application\KeyLogger\KeyLogger.inf</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
     title="Copy code"
@@ -788,16 +853,21 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
   </button>
 </div>
 </div>
-<p>Her şey tamam olduğuna göre sonuca bakabiliriz:</p>
-<p><img src="../../../images/posts/uefi-keylogger/img1.png" alt="" loading="lazy" /></p>
-<p>Gördüğünüz gibi klavyeden bastığım tuşlar ekrana bastırılıyor. ESC tuşuna basıldığında ise sürücü kapanıyor.</p>
-<h2><strong>Sonuç</strong><span class="hx-absolute -hx-mt-20" id="sonuç"></span>
-    <a href="#sonu%c3%a7" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Bu blogta UEFI sürücüsü ile basit bir Keylogger geliştirmeyi öğrendik. Blogun basit olduğunun farkındayım ancak daha yeni olduğumuz için ve UEFI projelerine adepte olabilmek için böyle basit projelerle ilerlemenin güzel olacağını düşünüyorum. İlerideki süreçlerde daha derin projelere girişeceğiz.</p>
+<p>Here&rsquo;s the result:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/uefi-keylogger/result.png" style="width: 35%" />
+</div>
+<h3><strong>Conclusion</strong><span class="hx-absolute -hx-mt-20" id="conclusion"></span>
+    <a href="#conclusion" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>In this documentation we have learned how to develop a simple Keylogger with a UEFI driver. I realize that the documentation is simple, but since we are new to UEFI projects, I think it would be nice to move forward with simple projects like this.</p>
 
         </div>
         
     <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-01-28T00:00:00.000Z">January 28, 2025</time></div>
         <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
+        href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+        title="UEFI to Windows Communication via NVRAM Variables"
+        class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-pr-4 rtl:hx-pl-4"
+      ><svg class="hx-inline hx-h-5 hx-shrink-0 ltr:hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>UEFI to Windows Communication via NVRAM Variables</a><a
         href="/docs/uefi-dev/uefi-introduction/"
         title="Introduction to UEFI"
         class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-ml-auto ltr:hx-pl-4 ltr:hx-text-right rtl:hx-mr-auto rtl:hx-pr-4 rtl:hx-text-left"

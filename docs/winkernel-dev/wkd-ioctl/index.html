@@ -11,32 +11,32 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>Input/Output Control (IOCTL) – 0xbekoo</title>
-  <meta name="description" content="Merhabalar, bu yazıda Windows Kernel Development’tan IOCTL mekanizmasını inceleyeceğiz.
-IOCTL Nedir? I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP’ler aracılığıyla gönderilir. Eğer IRP’ler hakkında bir bilginiz yoksa buraya tıklayarak IRP’ler hakkında bilgi alabilirsiniz.
-Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin IRP_MJ_DEVICE_CONTROL veya IRP_MJ_INTERNAL_DEVICE_CONTROL aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar." /><link rel="canonical" href="https://0xbekoo.github.io:1313/docs/winkernel-dev/wkd-ioctl/" itemprop="url" />
+  <meta name="description" content="In this documentation, we will discuss IOCTL mechanism on Windows.
+What is IOCTL? I/O Control Codes (IOCTLs) are a mechanism used for communication between user-mode applications and drivers, or between drivers within a stack. I/O control codes are sent via IRPs (I/O Request Packets), as mentioned in the previous section. If you are not familiar with IRPs, click here to learn more about them.
+In Windows, user-mode programs send IOCTL codes to drivers using the DeviceIoControl API. This API delivers the received IOCTL code to the driver through the IRP_MJ_DEVICE_CONTROL request. It’s important to note that this is not the only way the IOCTL mechanism is used. Advanced drivers can also generate requests using IRP_MJ_DEVICE_CONTROL or IRP_MJ_INTERNAL_DEVICE_CONTROL to send IOCTL requests to lower-level drivers in the stack." /><link rel="canonical" href="http://localhost:1313/docs/winkernel-dev/wkd-ioctl/" itemprop="url" />
 
 <meta property="og:title" content="Input/Output Control (IOCTL)" />
-<meta property="og:description" content="Merhabalar, bu yazıda Windows Kernel Development&rsquo;tan IOCTL mekanizmasını inceleyeceğiz.
-IOCTL Nedir?
-    I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP&rsquo;ler aracılığıyla gönderilir. Eğer IRP&rsquo;ler hakkında bir bilginiz yoksa buraya tıklayarak IRP&rsquo;ler hakkında bilgi alabilirsiniz.
-Windows&rsquo;ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin IRP_MJ_DEVICE_CONTROL veya IRP_MJ_INTERNAL_DEVICE_CONTROL aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar." />
+<meta property="og:description" content="In this documentation, we will discuss IOCTL mechanism on Windows.
+What is IOCTL?
+    I/O Control Codes (IOCTLs) are a mechanism used for communication between user-mode applications and drivers, or between drivers within a stack. I/O control codes are sent via IRPs (I/O Request Packets), as mentioned in the previous section. If you are not familiar with IRPs, click here to learn more about them.
+In Windows, user-mode programs send IOCTL codes to drivers using the DeviceIoControl API. This API delivers the received IOCTL code to the driver through the IRP_MJ_DEVICE_CONTROL request. It’s important to note that this is not the only way the IOCTL mechanism is used. Advanced drivers can also generate requests using IRP_MJ_DEVICE_CONTROL or IRP_MJ_INTERNAL_DEVICE_CONTROL to send IOCTL requests to lower-level drivers in the stack." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://0xbekoo.github.io:1313/docs/winkernel-dev/wkd-ioctl/" /><meta property="article:section" content="docs" />
+<meta property="og:url" content="http://localhost:1313/docs/winkernel-dev/wkd-ioctl/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2024-08-26T00:00:00+00:00" />
 <meta property="article:modified_time" content="2024-08-26T00:00:00+00:00" />
 
   <meta itemprop="name" content="Input/Output Control (IOCTL)">
-  <meta itemprop="description" content="Merhabalar, bu yazıda Windows Kernel Development’tan IOCTL mekanizmasını inceleyeceğiz.
-IOCTL Nedir? I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP’ler aracılığıyla gönderilir. Eğer IRP’ler hakkında bir bilginiz yoksa buraya tıklayarak IRP’ler hakkında bilgi alabilirsiniz.
-Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin IRP_MJ_DEVICE_CONTROL veya IRP_MJ_INTERNAL_DEVICE_CONTROL aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar.">
+  <meta itemprop="description" content="In this documentation, we will discuss IOCTL mechanism on Windows.
+What is IOCTL? I/O Control Codes (IOCTLs) are a mechanism used for communication between user-mode applications and drivers, or between drivers within a stack. I/O control codes are sent via IRPs (I/O Request Packets), as mentioned in the previous section. If you are not familiar with IRPs, click here to learn more about them.
+In Windows, user-mode programs send IOCTL codes to drivers using the DeviceIoControl API. This API delivers the received IOCTL code to the driver through the IRP_MJ_DEVICE_CONTROL request. It’s important to note that this is not the only way the IOCTL mechanism is used. Advanced drivers can also generate requests using IRP_MJ_DEVICE_CONTROL or IRP_MJ_INTERNAL_DEVICE_CONTROL to send IOCTL requests to lower-level drivers in the stack.">
   <meta itemprop="datePublished" content="2024-08-26T00:00:00+00:00">
   <meta itemprop="dateModified" content="2024-08-26T00:00:00+00:00">
-  <meta itemprop="wordCount" content="1553">
+  <meta itemprop="wordCount" content="1429">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Input/Output Control (IOCTL)">
-  <meta name="twitter:description" content="Merhabalar, bu yazıda Windows Kernel Development’tan IOCTL mekanizmasını inceleyeceğiz.
-IOCTL Nedir? I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP’ler aracılığıyla gönderilir. Eğer IRP’ler hakkında bir bilginiz yoksa buraya tıklayarak IRP’ler hakkında bilgi alabilirsiniz.
-Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin IRP_MJ_DEVICE_CONTROL veya IRP_MJ_INTERNAL_DEVICE_CONTROL aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar.">
+  <meta name="twitter:description" content="In this documentation, we will discuss IOCTL mechanism on Windows.
+What is IOCTL? I/O Control Codes (IOCTLs) are a mechanism used for communication between user-mode applications and drivers, or between drivers within a stack. I/O control codes are sent via IRPs (I/O Request Packets), as mentioned in the previous section. If you are not familiar with IRPs, click here to learn more about them.
+In Windows, user-mode programs send IOCTL codes to drivers using the DeviceIoControl API. This API delivers the received IOCTL code to the driver through the IRP_MJ_DEVICE_CONTROL request. It’s important to note that this is not the only way the IOCTL mechanism is used. Advanced drivers can also generate requests using IRP_MJ_DEVICE_CONTROL or IRP_MJ_INTERNAL_DEVICE_CONTROL to send IOCTL requests to lower-level drivers in the stack.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -153,9 +153,41 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-4/"
+    
+  >PatchGuard Analysis - Part 4
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-3/"
+    
+  >PatchGuard Analysis - Part 3
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-2/"
+    
+  >PatchGuard Analysis - Part 2
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-1/"
+    
+  >PatchGuard Analysis - Part 1
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hooking/"
     
-  >SSDT Hooking ile User-Mode Programda Sürücü Yükleme
+  >Loading Driver from User-Mode Program via SSDT Hooking
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -163,13 +195,13 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/syscalls/"
     
-  >Windows Kernel&#39;da Syscall Araştırma Yolculuğum
+  >Reversing System Call Mechanism in Windows Kernel
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bare-metal-reversing-0x0/"
+    href="/blog/bare-metal-reversing/"
     
   >ARM Firmware Reverse Engineering
     </a>
@@ -188,14 +220,6 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
     href="/blog/is-valorant-spyware/"
     
   >Is Valorant Spyware?
-    </a>
-              
-            </li><li class="hx-flex hx-flex-col "><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bypass-ptrace/"
-    
-  >Bypass Ptrace
     </a>
               
             </li></ul>
@@ -218,6 +242,14 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/uefi-keylogger/"
@@ -314,6 +346,14 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/winkernel-dev/wkd-ssdt/"
     
   >SSDT
@@ -337,33 +377,9 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   
     <ul class='hx-flex hx-flex-col hx-gap-1 hx-relative before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] dark:before:hx-bg-neutral-800 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-pr-3 rtl:before:hx-right-0 ltr:hx-ml-3 rtl:hx-mr-3'><li>
               <a
-                href="#ioctl-nedir"
+                href="#"
                 class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >IOCTL Nedir?</a>
-            </li>
-          <li>
-              <a
-                href="#code"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >Code</a>
-            </li>
-          <li>
-              <a
-                href="#s%c3%bcr%c3%bcc%c3%bc-ve-program%c4%b1n-%c3%a7al%c4%b1%c5%9ft%c4%b1r%c4%b1lmas%c4%b1"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >Sürücü ve Programın Çalıştırılması</a>
-            </li>
-          <li>
-              <a
-                href="#sonu%c3%a7"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >Sonuç</a>
-            </li>
-          <li>
-              <a
-                href="#references"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >References</a>
+              ></a>
             </li>
           </ul>
   
@@ -413,6 +429,14 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/uefi-keylogger/"
     
   >UEFI Keylogger
@@ -505,6 +529,14 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/winkernel-dev/wkd-ssdt/"
     
   >SSDT
@@ -552,45 +584,76 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
     </div>
   
   
-    <div class="  hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-grow hx-flex-col"><button
+    <div class=" hx-justify-end hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-justify-items-start hx-grow">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>English</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/docs/winkernel-dev/wkd-ioctl/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/docs/winkernel-dev/wkd-ioctl/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish</a>
+        </li>
+      </ul>
+  </div><button
   title="Change theme"
   data-theme="light"
   class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
   type="button"
   aria-label="Change theme"
 >
-  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span class="group-data-[theme=light]:hx-hidden">Light</span><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg><span class="group-data-[theme=dark]:hx-hidden">Dark</span></div>
+  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></div>
 </button>
-</div></div></aside>
+</div></aside>
     
 <nav class="hextra-toc hx-order-last hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-px-4" aria-label="table of contents">
     <div class="hextra-scrollbar hx-sticky hx-top-16 hx-overflow-y-auto hx-pr-4 hx-pt-6 hx-text-sm [hyphens:auto] hx-max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4"><p class="hx-mb-4 hx-font-semibold hx-tracking-tight">On this page</p><ul>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#ioctl-nedir">IOCTL Nedir?
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#what-is-ioctl">What is IOCTL?
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#code">Code
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#coding">Coding
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kernel-mode---driver">Kernel Mode - Driver
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kernel-mode-driver">Kernel Mode Driver
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#user-mode---program">User Mode - Program
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#user-mode-program">User Mode Program
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#s%c3%bcr%c3%bcc%c3%bc-ve-program%c4%b1n-%c3%a7al%c4%b1%c5%9ft%c4%b1r%c4%b1lmas%c4%b1">Sürücü ve Programın Çalıştırılması
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#running-the-project">Running the Project
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#sonu%c3%a7">Sonuç
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#conclusion">Conclusion
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#references">References
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#references">References
         </a>
       </li></ul>
       <div class="hx-mt-8 hx-border-t hx-bg-white hx-pt-8 hx-shadow-[0_-12px_16px_white] dark:hx-bg-dark dark:hx-shadow-[0_-12px_16px_#111] hx-sticky hx-bottom-0 hx-flex hx-flex-col hx-items-start hx-gap-2 hx-pb-8 dark:hx-border-neutral-800 contrast-more:hx-border-t contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-border-neutral-400">
@@ -619,18 +682,14 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
 
         <div class="content">
           <h1>Input/Output Control (IOCTL)</h1>
-          <p>Merhabalar, bu yazıda Windows Kernel Development&rsquo;tan IOCTL mekanizmasını inceleyeceğiz.</p>
-<h2>IOCTL Nedir?<span class="hx-absolute -hx-mt-20" id="ioctl-nedir"></span>
-    <a href="#ioctl-nedir" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP&rsquo;ler aracılığıyla gönderilir. Eğer IRP&rsquo;ler hakkında bir bilginiz yoksa <a href="https://0xbekoo.github.io/posts/wkd-irp/" target="_blank" rel="noopener">buraya</a> tıklayarak IRP&rsquo;ler hakkında bilgi alabilirsiniz.</p>
-<p>Windows&rsquo;ta User-mode programları, <code>DeviceIoControl</code> API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu <strong>IRP_MJ_DEVICE_CONTROL</strong> aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin <strong>IRP_MJ_DEVICE_CONTROL</strong> veya <strong>IRP_MJ_INTERNAL_DEVICE_CONTROL</strong> aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar.</p>
-<p>IOCTL kodları, genellikle sürücü geliştiricileri tarafından tanımlanan özel kodlar olabilir, ancak aynı zamanda Windows işletim sistemi tarafından belirli standart işlemler için önceden tanımlanmış kodlar da olabilir. Bu standart IOCTL kodları, Windows&rsquo;un donanım ve yazılım bileşenleri arasındaki iletişimi standartlaştırmak ve kolaylaştırmak amacıyla sağlanır. Örneğin, bazı IOCTL kodları, donanım cihazlarının özelliklerini sorgulama veya belirli işlemleri başlatma gibi genel görevler için kullanılır. Geliştiriciler, özel ihtiyaçlarına göre bu kodları özelleştirebilir veya yeni kodlar tanımlayabilirler, bu da esneklik ve genişletilebilirlik sağlar.</p>
-<h2>Code<span class="hx-absolute -hx-mt-20" id="code"></span>
-    <a href="#code" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Önceki konumuzda olduğu gibi user-mode program ve kernel-mode sürücümüzü oluşturacağız.</p>
-<p>Senaryoda <strong>IOCTL_MEM_ALLOCATE</strong> kodu aracılığıyla user-mode uygulaması sürücüye kernel-space alanında bellek ayırması için kod ve bir veri gönderecek. Öte yandan oluşturacağımız <strong>IOCTL_MEM_READ</strong> kodu ile sürücümüz, bellek adresten veriyi alıp user-mode programa gönderecek.</p>
-<p>Github linki için <a href="https://github.com/0xbekoo/WinKernelDev/tree/main/IOCTL" target="_blank" rel="noopener">buraya</a> tıklayabilirsiniz.</p>
-<h3>Kernel Mode - Driver<span class="hx-absolute -hx-mt-20" id="kernel-mode---driver"></span>
-    <a href="#kernel-mode---driver" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Öncekikle sürücümüzü kodlayarak başlayalım:</p>
-<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+          <p>In this documentation, we will discuss IOCTL mechanism on Windows.</p>
+<h3><strong>What is IOCTL?</strong><span class="hx-absolute -hx-mt-20" id="what-is-ioctl"></span>
+    <a href="#what-is-ioctl" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p><strong>I/O Control Codes (IOCTLs)</strong> are a mechanism used for communication between user-mode applications and drivers, or between drivers within a stack. I/O control codes are sent via IRPs (I/O Request Packets), as mentioned in the previous section. If you are not familiar with IRPs, click here to learn more about them.</p>
+<p>In Windows, user-mode programs send IOCTL codes to drivers using the DeviceIoControl API. This API delivers the received IOCTL code to the driver through the IRP_MJ_DEVICE_CONTROL request. It’s important to note that this is not the only way the IOCTL mechanism is used. Advanced drivers can also generate requests using IRP_MJ_DEVICE_CONTROL or IRP_MJ_INTERNAL_DEVICE_CONTROL to send IOCTL requests to lower-level drivers in the stack.</p>
+<p>IOCTL codes can be custom-defined by driver developers, but Windows also provides a set of predefined codes for common operations. These standard IOCTL codes are intended to standardize and simplify communication between hardware and software components. For example, some IOCTL codes are used for general tasks such as querying device properties or initiating specific operations. Developers can customize these codes or define new ones according to their specific needs, providing flexibility and extensibility.</p>
+<h3><strong>Coding</strong><span class="hx-absolute -hx-mt-20" id="coding"></span>
+    <a href="#coding" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><h4><strong>Kernel Mode Driver</strong><span class="hx-absolute -hx-mt-20" id="kernel-mode-driver"></span>
+    <a href="#kernel-mode-driver" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;main.h&#34;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
@@ -762,7 +821,7 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>Önceki IRP konusuna aşina olduysanız zaten hemen hemen benzer kod olduğunu anlamışsınızdır. Şimdi detaylıca göz atalım:</p>
+<p>If you are familiar with the previous IRP documentation, you will already understand that the code is almost identical. Let&rsquo;s take a closer look:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#define IOCTL_MEM_ALLOCATE \
@@ -779,20 +838,19 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>Her şeyden önce konumuzla ilgisi olan tanımladığımız IOCTL kodlarına bir bakalım.</p>
-<p><strong>CTL_CODE</strong> makrosu, IOCTL kodlarını tanımlamak için kullanılır ve bu makro, çeşitli parametrelerle birlikte bir IOCTL kodu oluşturur. Parametreler şunlardır:</p>
+<p>The <strong>CTL_CODE</strong> macro is used to define IOCTL codes, and it creates an IOCTL code from various parameters:</p>
 <ul>
 <li>
-<p><strong>DeviceType:</strong> Cihaz türünü belirtir. Bu, <strong>FILE_DEVICE_UNKNOWN</strong>, <strong>FILE_DEVICE_DISK</strong>, <strong>FILE_DEVICE_KEYBOARD</strong> gibi veya diğerlerinden biri olabilir. Burada kullandığımız FILE_DEVICE_UNKNOWN, belirli bir cihaz türü belirtmediğimiz ve genel bir cihaz tipi kullandığımız anlamına gelir.</p>
+<p><strong>DeviceType</strong> – Specifies the type of device. This can be FILE_DEVICE_UNKNOWN, FILE_DEVICE_DISK, FILE_DEVICE_KEYBOARD, and others. In our case, we use FILE_DEVICE_UNKNOWN to indicate that we’re not targeting a specific hardware type, but rather a generic device type.</p>
 </li>
 <li>
-<p><strong>FunctionCode:</strong> IOCTL işleminin benzersiz bir kodunu belirler. Bu, işlemi tanımlayan bir sayıdır ve genellikle uygulama veya sürücü tarafından belirlenen bir değerdir. Örneğin, 0x800 ve 0x801 gibi değerler olabilir.</p>
+<p><strong>FunctionCode</strong> – Specifies a unique code for the IOCTL operation. This is a number that identifies the operation and is typically defined by the application or driver developer. For example, it could be values like 0x800 or 0x801.</p>
 </li>
 <li>
-<p><strong>Method:</strong> IOCTL işleminin veriyi nasıl ileteceğini tanımlar. Bu parametreler <strong>METHOD_BUFFERED</strong>, <strong>METHOD_IN_DIRECT</strong>, <strong>METHOD_OUT_DIRECT</strong>, ve <strong>METHOD_NEITHER</strong> gibi seçenekler bulunur. Kodumuzdaki METHOD_BUFFERED seçeneği, verinin bir bellek tamponu aracılığıyla taşınmasını ifade eder.</p>
+<p><strong>Method</strong> – Defines how the IOCTL operation transfers data. Possible values include METHOD_BUFFERED,  METHOD_IN_DIRECT, METHOD_OUT_DIRECT, and METHOD_NEITHER.</p>
 </li>
 <li>
-<p><strong>Access:</strong> IOCTL işleminin hangi erişim izinlerine sahip olduğunu belirtir. Bu parametre için <strong>FILE_ANY_ACCESS</strong>, <strong>FILE_SHARE_READ</strong>, <strong>FILE_SHARE_WRITE</strong> gibi seçenekler kullanılabilir. Kodumuzdaki FILE_ANY_ACCESS, işlemin herhangi bir erişim iznine sahip olduğunu ifade eder.</p>
+<p><strong>Access</strong> – Specifies the access permissions required for the IOCTL operation. Examples include FILE_ANY_ACCESS, FILE_SHARE_READ, and FILE_SHARE_WRITE.</p>
 </li>
 </ul>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
@@ -810,13 +868,13 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>İlk olarak <code>DriverEntry</code> <strong>DeviceName</strong> ve <strong>SymName</strong> adında iki adet UNICODE_STRING tanımladık. Bu iki değişken, sürücümüzün adını ve sembolik adını tutmaktadır. Bu değişkenlerle, sürücümüzün adını ve sembolik adını belirlemek için kullanacağız.</p>
+<p>These store the driver’s device name and symbolic name, respectively, which we will use to identify and access the driver.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">Status</span> <span class="o">=</span> <span class="nf">IoCreateDevice</span><span class="p">(</span><span class="n">DriverObject</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">DeviceName</span><span class="p">,</span> <span class="n">FILE_DEVICE_UNKNOWN</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">FALSE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">DeviceObject</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nf">NT_SUCCESS</span><span class="p">(</span><span class="n">Status</span><span class="p">))</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Failed to Create I/O Device!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">Status</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Failed to Create I/O Device!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">Status</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
@@ -827,13 +885,13 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>Daha sonra <code>IoCreateDevice</code> fonksiyonu ile bir aygıt nesnesi oluşturuyoruz. Bu fonksiyon, sürücümüz için bir aygıt nesnesi oluşturur ve bu nesneyi DeviceObject değişkenine atar.</p>
+<p>Here, we call IoCreateDevice to create a device object for our driver. This object is stored in the DeviceObject variable.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">Status</span> <span class="o">=</span> <span class="nf">IoCreateSymbolicLink</span><span class="p">(</span><span class="o">&amp;</span><span class="n">SymName</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">DeviceName</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nf">NT_SUCCESS</span><span class="p">(</span><span class="n">Status</span><span class="p">))</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Failed to Create Symbolic Link!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">Status</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Failed to Create Symbolic Link!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">Status</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
@@ -844,7 +902,8 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p><code>IoCreateSymbolicLink</code> fonksiyonu ile sembolik bir bağlantı oluşturuyoruz. Bu sayede, user mode programımızda sürücünün adını ve sembolik adını kullanarak sürücümüze erişiyor olacağız.</p>
+<p>Next, we create a symbolic link using IoCreateSymbolicLink. This allows a user-mode program to access the driver via its symbolic name.</p>
+<p>We then set up the major function callbacks:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">DriverObject</span><span class="o">-&gt;</span><span class="n">MajorFunction</span><span class="p">[</span><span class="n">IRP_MJ_CREATE</span><span class="p">]</span> <span class="o">=</span> <span class="n">IoCreateClose</span><span class="p">;</span>
@@ -860,8 +919,7 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>Son olarak, sürücüde IRP istekleri için <strong>IRP_MJ_CREATE</strong>, <strong>IRP_MJ_CLOSE</strong> ve <strong>IRP_MJ_DEVICE_CONTROL</strong> fonksiyonlarını belirliyoruz. Bu fonksiyonlar, gelecek IRP isteklerini işleyecek olan fonksiyonlardır. Ayrıca, sürücümüzün yüklenmesi sırasında çağrılacak olan <code>UnloadDriver</code> fonksiyonunu belirliyoruz.</p>
-<p>Şimdi ise IOCTL kodlarını işleyecek fonksiyona göz atalım:</p>
+<p>Now we can take a look at IoControl:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">PIO_STACK_LOCATION</span> <span class="n">Stack</span> <span class="o">=</span> <span class="nf">IoGetCurrentIrpStackLocation</span><span class="p">(</span><span class="n">Irp</span><span class="p">);</span>
@@ -879,39 +937,52 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>İlk olarak <code>IoGetCurrentIrpStackLocation</code> fonksiyonu ile mevcut IRP yığın konumunu alıyoruz. Daha sonra, user-mode programımızın gönderdiği veriyi almak için <code>Irp-&gt;AssociatedIrp.SystemBuffer</code> kullanıyoruz. Ayrıca, IRP&rsquo;nin giriş ve çıkış veri boyutlarını almak için <code>Stack-&gt;Parameters.DeviceIoControl.OutputBufferLength</code> ve <code>Stack-&gt;Parameters.DeviceIoControl.InputBufferLength</code> kullanarak alıyoruz. Son olarak, bellek tahsis etmek için kullanacağımız <strong>TAG</strong> değerini tanımlıyoruz.</p>
+<ul>
+<li>
+<p>We get the current IRP stack location using IoGetCurrentIrpStackLocation.</p>
+</li>
+<li>
+<p>We retrieve data sent from user-mode via Irp-&gt;AssociatedIrp.SystemBuffer.</p>
+</li>
+<li>
+<p>We extract the input and output buffer sizes from the DeviceIoControl parameters.</p>
+</li>
+<li>
+<p>We define a memory allocation TAG to identify our memory block in pool tracking.</p>
+</li>
+</ul>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">switch</span> <span class="p">(</span><span class="n">Stack</span><span class="o">-&gt;</span><span class="n">Parameters</span><span class="p">.</span><span class="n">DeviceIoControl</span><span class="p">.</span><span class="n">IoControlCode</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nl">IOCTL_MEM_ALLOCATE</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">UserBuffer</span> <span class="o">||</span> <span class="mi">0</span> <span class="o">==</span> <span class="n">Length</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_INVALID_PARAMETER</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">			<span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">			<span class="k">break</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">		<span class="n">GlobalMemoryAddr</span> <span class="o">=</span> <span class="nf">ExAllocatePool2</span><span class="p">(</span><span class="n">POOL_FLAG_NON_PAGED</span><span class="p">,</span> <span class="n">Length</span><span class="p">,</span> <span class="n">Tag</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">GlobalMemoryAddr</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_INSUFFICIENT_RESOURCES</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">			<span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">			<span class="k">break</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">		<span class="nf">RtlCopyMemory</span><span class="p">(</span><span class="n">GlobalMemoryAddr</span><span class="p">,</span> <span class="n">UserBuffer</span><span class="p">,</span> <span class="n">Length</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">		<span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">		<span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="n">Length</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">		<span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nl">IOCTL_MEM_ALLOCATE</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">UserBuffer</span> <span class="o">||</span> <span class="mi">0</span> <span class="o">==</span> <span class="n">Length</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_INVALID_PARAMETER</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GlobalMemoryAddr</span> <span class="o">=</span> <span class="nf">ExAllocatePool2</span><span class="p">(</span><span class="n">POOL_FLAG_NON_PAGED</span><span class="p">,</span> <span class="n">Length</span><span class="p">,</span> <span class="n">Tag</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">GlobalMemoryAddr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_INSUFFICIENT_RESOURCES</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">RtlCopyMemory</span><span class="p">(</span><span class="n">GlobalMemoryAddr</span><span class="p">,</span> <span class="n">UserBuffer</span><span class="p">,</span> <span class="n">Length</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="n">Length</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">break</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nl">IOCTL_MEM_READ</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">		<span class="nf">RtlCopyMemory</span><span class="p">(</span><span class="n">UserBuffer</span><span class="p">,</span> <span class="n">GlobalMemoryAddr</span><span class="p">,</span> <span class="n">OutLength</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nl">IOCTL_MEM_READ</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">RtlCopyMemory</span><span class="p">(</span><span class="n">UserBuffer</span><span class="p">,</span> <span class="n">GlobalMemoryAddr</span><span class="p">,</span> <span class="n">OutLength</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="n">OutLength</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">break</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">		<span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">		<span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="n">OutLength</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">		<span class="k">break</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">	<span class="k">default</span><span class="o">:</span>
-</span></span><span class="line"><span class="cl">		<span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_INVALID_DEVICE_REQUEST</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">		<span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">		<span class="k">break</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">IoCompleteRequest</span><span class="p">(</span><span class="n">Irp</span><span class="p">,</span> <span class="n">IO_NO_INCREMENT</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+</span></span><span class="line"><span class="cl">    <span class="k">default</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_INVALID_DEVICE_REQUEST</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nf">IoCompleteRequest</span><span class="p">(</span><span class="n">Irp</span><span class="p">,</span> <span class="n">IO_NO_INCREMENT</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
     title="Copy code"
@@ -921,13 +992,39 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>İlk olarak <code>Stack-&gt;Parameters.DeviceIoControl.IoControlCode</code> ile user-mode&rsquo;ın gönderdiği IOCTL kodunu alıyoruz. Hangi kod gönderildiyse ona göre işlemleri yapacağız.</p>
-<p>Eğer <strong>IOCTL_MEM_ALLOCATE</strong> kodu gelmişse, öncelikle UserBuffer&rsquo;ın ve Length&rsquo;in kontrolünü yapıyoruz. Eğer UserBuffer NULL ise veya Length 0 ise, hatalı parametre hatası döndürüyoruz. Daha sonra, <code>ExAllocatePool2</code> fonksiyonu ile kernel-space tarafında bellek tahsis ediyoruz. Eğer bellek tahsis edilemezse, yetersiz kaynak hatası döndürüyoruz. Son olarak, <code>RtlCopyMemory</code> fonksiyonu ile user-mode&rsquo;dan gelen veriyi kernel-mode belleğe kopyalıyoruz.</p>
-<p>Eğer <strong>IOCTL_MEM_READ</strong> kodu gelmişse, kernel-space alanından ayrılan bellek adresinden veriyi alıp UserBuffer&rsquo;a kopyalıyoruz ve Output olarak veriyi user-mode programa gönderiyoruz.</p>
-<p><strong>default</strong> kısmında ise geçersiz bir IOCTL kodu gönderildiğinde hata döndürerek isteği bitiriyoruz.</p>
-<h3>User Mode - Program<span class="hx-absolute -hx-mt-20" id="user-mode---program"></span>
-    <a href="#user-mode---program" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Şimdi ise user-mode programımıza göz atalım:</p>
-<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+<p>We check IoControlCode to determine the requested operation.</p>
+<ul>
+<li>
+<p><strong>IOCTL_MEM_ALLOCATE</strong></p>
+<ul>
+<li>Validate input parameters.
+<br></li>
+<li>Allocate non-paged kernel memory using ExAllocatePool2.
+<br></li>
+<li>Copy user-mode data into kernel memory using RtlCopyMemory.</li>
+</ul>
+</li>
+</ul>
+<br>
+<ul>
+<li>
+<p><strong>IOCTL_MEM_READ</strong></p>
+<ul>
+<li>Copy data from the allocated kernel buffer back to user-mode.</li>
+</ul>
+</li>
+</ul>
+<br>
+<ul>
+<li>
+<p><strong>Default</strong></p>
+<ul>
+<li>Return an error for unsupported IOCTL codes.</li>
+</ul>
+</li>
+</ul>
+<h4><strong>User Mode Program</strong><span class="hx-absolute -hx-mt-20" id="user-mode-program"></span>
+    <a href="#user-mode-program" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;Windows.h&gt;</span><span class="cp">
@@ -978,10 +1075,13 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>User-mode kodumuzda bu. Şimdi detaylıca göz atalım:</p>
+<p>Let&rsquo;s see the code:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#define DEVICE_NAME L&#34;\\\\.\\MyDevice&#34;
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;Windows.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#define DEVICE_NAME L&#34;\\\\.\\MyDevice&#34;
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
 </span></span><span class="line"><span class="cl"><span class="cp">#define IOCTL_MEM_ALLOCATE \
 </span></span></span><span class="line"><span class="cl"><span class="cp">    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
@@ -997,13 +1097,18 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>User-mode programımızda ilk olarak iletişim kuracağımız sürücünün ismini ve yukarıda bahsettiğim aynı CTL kodlarını tanımlıyoruz.</p>
+<p>We define the device name and the same IOCTL codes that the driver understands.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">HandleDevice</span> <span class="o">=</span> <span class="nf">CreateFile</span><span class="p">(</span><span class="n">DEVICE_NAME</span><span class="p">,</span> <span class="n">GENERIC_WRITE</span> <span class="o">|</span> <span class="n">GENERIC_READ</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">OPEN_EXISTING</span><span class="p">,</span> <span class="n">FILE_ATTRIBUTE_NORMAL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">HANDLE</span> <span class="n">HandleDevice</span> <span class="o">=</span> <span class="nf">CreateFile</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">DEVICE_NAME</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GENERIC_WRITE</span> <span class="o">|</span> <span class="n">GENERIC_READ</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">OPEN_EXISTING</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">FILE_ATTRIBUTE_NORMAL</span><span class="p">,</span> <span class="nb">NULL</span>
+</span></span><span class="line"><span class="cl"><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">INVALID_HANDLE_VALUE</span> <span class="o">==</span> <span class="n">HandleDevice</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to connect Driver! Error Code: 0x%lx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="nf">GetLastError</span><span class="p">());</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to connect Driver! Error Code: 0x%lx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="nf">GetLastError</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
@@ -1014,14 +1119,21 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>Bu kısımda ise <strong>CreateFile</strong> aracılığıyla sürücümüzle iletişime geçiyoruz.</p>
+<p>Here, we connect to the driver using CreateFile.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">Result</span> <span class="o">=</span> <span class="nf">DeviceIoControl</span><span class="p">(</span><span class="n">HandleDevice</span><span class="p">,</span> <span class="n">IOCTL_MEM_ALLOCATE</span><span class="p">,</span> <span class="n">InBuffer</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">InBuffer</span><span class="p">),</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">InputBytesReturned</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Result</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to Allocate Memory! Error Code: 0x%lx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="nf">GetLastError</span><span class="p">());</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">CHAR</span> <span class="n">InBuffer</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&#34;Piyanis bana biraaak&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">CHAR</span> <span class="n">OutBuffer</span><span class="p">[</span><span class="k">sizeof</span><span class="p">(</span><span class="n">InBuffer</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="n">DWORD</span> <span class="n">InputBytesReturned</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">DWORD</span> <span class="n">OutputBytesReturned</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">BOOL</span> <span class="n">Result</span> <span class="o">=</span> <span class="nf">DeviceIoControl</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">HandleDevice</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">IOCTL_MEM_ALLOCATE</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">InBuffer</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">InBuffer</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="o">&amp;</span><span class="n">InputBytesReturned</span><span class="p">,</span> <span class="nb">NULL</span>
+</span></span><span class="line"><span class="cl"><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
     title="Copy code"
@@ -1031,14 +1143,19 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>Bu kısımda ise <code>DeviceIoControl</code> aracılığıyla sürücümüze <strong>IOCTL_MEM_ALLOCATE</strong> kodunu gönderiyoruz. Eğer IOCTL kodu başarılı bir şekilde gönderilmezse hata döndürüyoruz.</p>
-<p>Parametrelere dikkat edin. Bizim şuan bu kod parçasındaki amacımız kernel-space alanından bir bellek ayrımı yapmak ve gönderdiğimiz veriyi yazdırması. Veri göndermek için Input olarak verimizi ve uzunluğunu gönderiyoruz. Birazdan veri alırken bunu output için yaptığımızı göreceksiniz.</p>
+<p>We Send IOCTL_MEM_ALLOCATE to the driver with our input data. If the call fails, print the error and exit.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">Result</span> <span class="o">=</span> <span class="nf">DeviceIoControl</span><span class="p">(</span><span class="n">HandleDevice</span><span class="p">,</span> <span class="n">IOCTL_MEM_READ</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">OutBuffer</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">OutBuffer</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">OutputBytesReturned</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">Result</span> <span class="o">=</span> <span class="nf">DeviceIoControl</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">HandleDevice</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">IOCTL_MEM_READ</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">OutBuffer</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">OutBuffer</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="o">&amp;</span><span class="n">OutputBytesReturned</span><span class="p">,</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl"><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Result</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to get Data!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to get Data!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span><span class="line"><span class="cl"><span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Output Buffer: %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">OutBuffer</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
@@ -1050,19 +1167,17 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
   </button>
 </div>
 </div>
-<p>Artık verimiz kernel alanına yazıldı ve tekrar <strong>IOCTL_MEM_READ</strong> kodunu göndererek kernel-space alanından veriyi alıyoruz. Bu sefer ise sürücümüz bize veri göndereceği için göndereceği verileri OutBuffer değişkenie aktarıyoruz. Son olarak ise alınan veriyi ekrana yazdırıyoruz.</p>
-<p>Tekrardan parametrelere dikkat edin. Bu sefer Input parametreleri için NULL ve 0 gönderiyoruz. Çünkü sadece veri alacağız. Output olarak ise OutBuffer ve OutBuffer&rsquo;ın uzunluğunu veriyoruz.</p>
-<h2>Sürücü ve Programın Çalıştırılması<span class="hx-absolute -hx-mt-20" id="sürücü-ve-programın-çalıştırılması"></span>
-    <a href="#s%c3%bcr%c3%bcc%c3%bc-ve-program%c4%b1n-%c3%a7al%c4%b1%c5%9ft%c4%b1r%c4%b1lmas%c4%b1" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Öncelikle sürücümüzü sisteme yükleyip ardından çalıştıralım:</p>
-<p><img src="../../../images/posts/ioctl/img1.png" alt="" loading="lazy" /></p>
-<p>Ardından user-mode programını çalıştıralım:</p>
-<p><img src="../../../images/posts/ioctl/video.gif" alt="" loading="lazy" /></p>
-<p>Göründüğü gibi programımızı çalıştırdığımızda Windbg&rsquo;dan user-mode programın gönderdiği veriyi ekrana bastırdığını, ardından sürücünün user-mode programına gönderdiği veriyi ekrana bastırdığını görebiliriz.</p>
-<h2>Sonuç<span class="hx-absolute -hx-mt-20" id="sonuç"></span>
-    <a href="#sonu%c3%a7" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Bu konumuzda IOCTL hakkında bilgi verdim ve basit bir örnek üzerinden nasıl kullanıldığını gösterdim. Umarım bu mekanizmayi daha iyi anlamanıza yardımcı olmuştur.</p>
-<p>İyi çalışmalar dilerim 🚀🚀</p>
-<h2>References<span class="hx-absolute -hx-mt-20" id="references"></span>
-    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><ul>
+<p>Then we send anohter IOCTL Code, IOCTL_MEM_READ to retrieve the data from kernel memory. This time, no input buffer is provided (NULL, 0). The driver writes the result to OutBuffer, which we print to the console.</p>
+<h3><strong>Running the Project</strong><span class="hx-absolute -hx-mt-20" id="running-the-project"></span>
+    <a href="#running-the-project" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><div style="text-align: center;">
+  <img src="/images/posts/ioctl/video.gif" style="width: 100%" />
+</div>
+<p>As you can see, when we run our program, we can see that Windbg prints the data sent by the user-mode program to the screen, and then prints the data sent by the driver to the user-mode program to the screen.</p>
+<h3><strong>Conclusion</strong><span class="hx-absolute -hx-mt-20" id="conclusion"></span>
+    <a href="#conclusion" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>In this documentation, we have explored the complete process of implementing a simple Windows kernel-mode driver that communicates with a user-mode application using IOCTL (Input/Output Control) codes.</p>
+<p>We demonstrated how to define IOCTL codes using the CTL_CODE macro, create device and symbolic link objects in the kernel, and handle IRP requests in the driver. Specifically, we implemented memory allocation and memory reading operations in kernel space and exposed them to user-mode applications.</p>
+<h3><strong>References</strong><span class="hx-absolute -hx-mt-20" id="references"></span>
+    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><ul>
 <li><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/introduction-to-i-o-control-codes" target="_blank" rel="noopener">Windows Docs - Introduction to I/O Control Codes</a></li>
 <li><a href="https://learn.microsoft.com/en-us/windows/win32/devio/device-input-and-output-control-ioctl-" target="_blank" rel="noopener">Windows Docs - Device Input and Output Control</a></li>
 </ul>

@@ -11,16 +11,14 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>System Service Descriptor Table – 0xbekoo</title>
-  <meta name="description" content="Merhabalar bu yazıda System Service Descriptor Table inceleyeceğiz.
-SSDT Nedir? Basitçe SSDT (System Service Descriptor Table), işletim sistemi tarafından desteklenen sistem çağrılarının bir listesidir. Sistem çağrıları, bir uygulamanın çekirdek seviyesindeki işlevleri kullanması için yapılan çağrılardır.
-SSDT, Service Descriptor Table kernel bellek yapısının ilk üyesidir:
-typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:" /><link rel="canonical" href="https://0xbekoo.github.io:1313/docs/winkernel-dev/wkd-ssdt/" itemprop="url" />
+  <meta name="description" content="In this documentation we will discuss SSDT in the windows systems.
+What is SSDT? So, SSDT (System Service Descriptor Table) is a list of system calls supported by the operating system. Recall the syscalls. SSDT is the first member of the Service Descriptor Table kernel memory structure:
+typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT maps system calls (syscalls) to kernel API addresses. When a syscall is made by a user-mode program, it contains a service index. This index specifies which syscall to use. The operating system uses this index to parse the address of the corresponding function from the System Service Descriptor Table (SSDT) and redirects to the correct kernel function in ntoskrnl.exe. In case it sounds confusing, let me explain it in a diagram:" /><link rel="canonical" href="http://localhost:1313/docs/winkernel-dev/wkd-ssdt/" itemprop="url" />
 
 <meta property="og:title" content="System Service Descriptor Table" />
-<meta property="og:description" content="Merhabalar bu yazıda System Service Descriptor Table inceleyeceğiz.
-SSDT Nedir?
-    Basitçe SSDT (System Service Descriptor Table), işletim sistemi tarafından desteklenen sistem çağrılarının bir listesidir. Sistem çağrıları, bir uygulamanın çekirdek seviyesindeki işlevleri kullanması için yapılan çağrılardır.
-SSDT, Service Descriptor Table kernel bellek yapısının ilk üyesidir:
+<meta property="og:description" content="In this documentation we will discuss SSDT in the windows systems.
+What is SSDT?
+    So, SSDT (System Service Descriptor Table) is a list of system calls supported by the operating system.  Recall the syscalls. SSDT is the first member of the Service Descriptor Table kernel memory structure:
 
 
 typedef struct tagSERVICE_DESCRIPTOR_TABLE {
@@ -35,26 +33,24 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE {
   
 
 
-SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:" />
+SSDT maps system calls (syscalls) to kernel API addresses. When a syscall is made by a user-mode program, it contains a service index. This index specifies which syscall to use. The operating system uses this index to parse the address of the corresponding function from the System Service Descriptor Table (SSDT) and redirects to the correct kernel function in ntoskrnl.exe. In case it sounds confusing, let me explain it in a diagram:" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://0xbekoo.github.io:1313/docs/winkernel-dev/wkd-ssdt/" /><meta property="article:section" content="docs" />
+<meta property="og:url" content="http://localhost:1313/docs/winkernel-dev/wkd-ssdt/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2024-12-26T00:00:00+00:00" />
 <meta property="article:modified_time" content="2024-12-26T00:00:00+00:00" />
 
   <meta itemprop="name" content="System Service Descriptor Table">
-  <meta itemprop="description" content="Merhabalar bu yazıda System Service Descriptor Table inceleyeceğiz.
-SSDT Nedir? Basitçe SSDT (System Service Descriptor Table), işletim sistemi tarafından desteklenen sistem çağrılarının bir listesidir. Sistem çağrıları, bir uygulamanın çekirdek seviyesindeki işlevleri kullanması için yapılan çağrılardır.
-SSDT, Service Descriptor Table kernel bellek yapısının ilk üyesidir:
-typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:">
+  <meta itemprop="description" content="In this documentation we will discuss SSDT in the windows systems.
+What is SSDT? So, SSDT (System Service Descriptor Table) is a list of system calls supported by the operating system. Recall the syscalls. SSDT is the first member of the Service Descriptor Table kernel memory structure:
+typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT maps system calls (syscalls) to kernel API addresses. When a syscall is made by a user-mode program, it contains a service index. This index specifies which syscall to use. The operating system uses this index to parse the address of the corresponding function from the System Service Descriptor Table (SSDT) and redirects to the correct kernel function in ntoskrnl.exe. In case it sounds confusing, let me explain it in a diagram:">
   <meta itemprop="datePublished" content="2024-12-26T00:00:00+00:00">
   <meta itemprop="dateModified" content="2024-12-26T00:00:00+00:00">
-  <meta itemprop="wordCount" content="1876">
+  <meta itemprop="wordCount" content="1931">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="System Service Descriptor Table">
-  <meta name="twitter:description" content="Merhabalar bu yazıda System Service Descriptor Table inceleyeceğiz.
-SSDT Nedir? Basitçe SSDT (System Service Descriptor Table), işletim sistemi tarafından desteklenen sistem çağrılarının bir listesidir. Sistem çağrıları, bir uygulamanın çekirdek seviyesindeki işlevleri kullanması için yapılan çağrılardır.
-SSDT, Service Descriptor Table kernel bellek yapısının ilk üyesidir:
-typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:">
+  <meta name="twitter:description" content="In this documentation we will discuss SSDT in the windows systems.
+What is SSDT? So, SSDT (System Service Descriptor Table) is a list of system calls supported by the operating system. Recall the syscalls. SSDT is the first member of the Service Descriptor Table kernel memory structure:
+typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT maps system calls (syscalls) to kernel API addresses. When a syscall is made by a user-mode program, it contains a service index. This index specifies which syscall to use. The operating system uses this index to parse the address of the corresponding function from the System Service Descriptor Table (SSDT) and redirects to the correct kernel function in ntoskrnl.exe. In case it sounds confusing, let me explain it in a diagram:">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -171,9 +167,41 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-4/"
+    
+  >PatchGuard Analysis - Part 4
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-3/"
+    
+  >PatchGuard Analysis - Part 3
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-2/"
+    
+  >PatchGuard Analysis - Part 2
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-1/"
+    
+  >PatchGuard Analysis - Part 1
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hooking/"
     
-  >SSDT Hooking ile User-Mode Programda Sürücü Yükleme
+  >Loading Driver from User-Mode Program via SSDT Hooking
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -181,13 +209,13 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/syscalls/"
     
-  >Windows Kernel&#39;da Syscall Araştırma Yolculuğum
+  >Reversing System Call Mechanism in Windows Kernel
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bare-metal-reversing-0x0/"
+    href="/blog/bare-metal-reversing/"
     
   >ARM Firmware Reverse Engineering
     </a>
@@ -206,14 +234,6 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
     href="/blog/is-valorant-spyware/"
     
   >Is Valorant Spyware?
-    </a>
-              
-            </li><li class="hx-flex hx-flex-col "><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bypass-ptrace/"
-    
-  >Bypass Ptrace
     </a>
               
             </li></ul>
@@ -236,6 +256,14 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/uefi-keylogger/"
@@ -329,7 +357,15 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
         <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
-        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col open"><a
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col open"><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       sidebar-active-item hx-bg-primary-100 hx-font-semibold hx-text-primary-800 contrast-more:hx-border contrast-more:hx-border-primary-500 dark:hx-bg-primary-400/10 dark:hx-text-primary-600 contrast-more:dark:hx-border-primary-500"
     href="/docs/winkernel-dev/wkd-ssdt/"
@@ -339,45 +375,9 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   
     <ul class='hx-flex hx-flex-col hx-gap-1 hx-relative before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] dark:before:hx-bg-neutral-800 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-pr-3 rtl:before:hx-right-0 ltr:hx-ml-3 rtl:hx-mr-3'><li>
               <a
-                href="#ssdt-nedir"
+                href="#"
                 class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;SSDT Nedir?&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#windbg-ile-analiz"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Windbg ile Analiz&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#syscall-ile-routine-adresi-bulma"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Syscall ile Routine Adresi bulma&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#kodlama"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Kodlama&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#driverin-analiz-edilmesi"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Driver&amp;rsquo;in Analiz edilmesi&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#sonu%c3%a7"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Sonuç&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#references"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;References&lt;/strong&gt;</a>
+              ></a>
             </li>
           </ul>
   
@@ -441,6 +441,14 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
         <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
     </a><div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/uefi-keylogger/"
@@ -532,7 +540,15 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   >Windows Kernel Dev.
         <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
     </a><div class="ltr:hx-pr-0 hx-overflow-hidden">
-        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col open"><a
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col open"><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       sidebar-active-item hx-bg-primary-100 hx-font-semibold hx-text-primary-800 contrast-more:hx-border contrast-more:hx-border-primary-500 dark:hx-bg-primary-400/10 dark:hx-text-primary-600 contrast-more:dark:hx-border-primary-500"
     href="/docs/winkernel-dev/wkd-ssdt/"
@@ -582,45 +598,76 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
     </div>
   
   
-    <div class="  hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-grow hx-flex-col"><button
+    <div class=" hx-justify-end hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-justify-items-start hx-grow">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>English</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/docs/winkernel-dev/wkd-ssdt/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/docs/winkernel-dev/wkd-ssdt/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish</a>
+        </li>
+      </ul>
+  </div><button
   title="Change theme"
   data-theme="light"
   class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
   type="button"
   aria-label="Change theme"
 >
-  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span class="group-data-[theme=light]:hx-hidden">Light</span><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg><span class="group-data-[theme=dark]:hx-hidden">Dark</span></div>
+  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></div>
 </button>
-</div></div></aside>
+</div></aside>
     
 <nav class="hextra-toc hx-order-last hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-px-4" aria-label="table of contents">
     <div class="hextra-scrollbar hx-sticky hx-top-16 hx-overflow-y-auto hx-pr-4 hx-pt-6 hx-text-sm [hyphens:auto] hx-max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4"><p class="hx-mb-4 hx-font-semibold hx-tracking-tight">On this page</p><ul>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#ssdt-nedir">SSDT Nedir?
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#what-is-ssdt">What is SSDT?
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#windbg-ile-analiz">Windbg ile Analiz
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#analysis-with-windbg">Analysis with WinDBG
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#syscall-ile-routine-adresi-bulma">Syscall ile Routine Adresi bulma
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#finding-routine-address-with-syscall">Finding Routine Address with Syscall
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kodlama">Kodlama
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#coding">Coding
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#driverin-analiz-edilmesi">Driver’in Analiz edilmesi
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#analyzing-driver">Analyzing Driver
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#sonu%c3%a7">Sonuç
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#conclusion">Conclusion
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#references">References
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#references">References
         </a>
       </li></ul>
       <div class="hx-mt-8 hx-border-t hx-bg-white hx-pt-8 hx-shadow-[0_-12px_16px_white] dark:hx-bg-dark dark:hx-shadow-[0_-12px_16px_#111] hx-sticky hx-bottom-0 hx-flex hx-flex-col hx-items-start hx-gap-2 hx-pb-8 dark:hx-border-neutral-800 contrast-more:hx-border-t contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-border-neutral-400">
@@ -649,10 +696,9 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
 
         <div class="content">
           <h1>System Service Descriptor Table</h1>
-          <p>Merhabalar bu yazıda System Service Descriptor Table inceleyeceğiz.</p>
-<h2><strong>SSDT Nedir?</strong><span class="hx-absolute -hx-mt-20" id="ssdt-nedir"></span>
-    <a href="#ssdt-nedir" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Basitçe SSDT (System Service Descriptor Table), işletim sistemi tarafından desteklenen sistem çağrılarının bir listesidir. Sistem çağrıları, bir uygulamanın çekirdek seviyesindeki işlevleri kullanması için yapılan çağrılardır.</p>
-<p>SSDT, Service Descriptor Table kernel bellek yapısının ilk üyesidir:</p>
+          <p>In this documentation we will discuss SSDT in the windows systems.</p>
+<h3><strong>What is SSDT?</strong><span class="hx-absolute -hx-mt-20" id="what-is-ssdt"></span>
+    <a href="#what-is-ssdt" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>So, SSDT (System Service Descriptor Table) is a list of system calls supported by the operating system.  Recall the syscalls. SSDT is the first member of the Service Descriptor Table kernel memory structure:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">tagSERVICE_DESCRIPTOR_TABLE</span> <span class="p">{</span>
@@ -670,49 +716,58 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   </button>
 </div>
 </div>
-<p>SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:</p>
-<p><img src="../../../images/posts/ssdt/diagram.png" alt="" loading="lazy" /></p>
-<p>Diyelim ki User-Mode alanından CreateFile işlevini çağırdınız ve syscall numarası 0x2 olsun. Syscall yürütüldüğü zaman artık user-mode alanından çıkılır ve artık akış kernel alanından devam eder. Diagram&rsquo;dan bunu görebilirsiniz.</p>
-<p>Kernel alanına geçiş yapıldığında ilk durak <strong>SSDT</strong> (KiServiceTable) olacaktır. Burada tipik olarak Kernel Routine address&rsquo;lere erişmek için offset listesi barındırdığını düşünmenizi istiyorum. İlgili syscall numarası ile offset hesaplanır ve ardından ilgili Routine Address&rsquo;e yönlendirilir. Böylece NtCreateFile yürütülmüş olur. Hesaplama için ise aşağıdaki formül kullanılır:</p>
-<div align="center">
-    <br>
-    <b>
-    <i> Offset = KiServiceTableAddress + 4 * SSN </i>   
-    </b>
-    <br>
+<p>SSDT maps system calls (syscalls) to kernel API addresses. When a syscall is made by a user-mode program, it contains a service index. This index specifies which syscall to use. The operating system uses this index to parse the address of the corresponding function from the System Service Descriptor Table (SSDT) and redirects to the correct kernel function in ntoskrnl.exe. In case it sounds confusing, let me explain it in a diagram:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/diagram.png" style="width: 100%" />
 </div>
-<p>Yani arkadaşlar kısacası SSDT ve syscall&rsquo;lar, user-mode alanından gelen API çağrılarıyla bunlara karşılık gelen kernel routine adresler arasında bir köprü görevi görür. Bu sayede kernel, user-mode alanından gelen bir sistem çağrısına hangi işlevin yanıt vereceğini belirler.</p>
-<h2><strong>Windbg ile Analiz</strong><span class="hx-absolute -hx-mt-20" id="windbg-ile-analiz"></span>
-    <a href="#windbg-ile-analiz" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Konuyu teorik olarak bırakmak olmaz. Windbg ile bu SSDT&rsquo;ye bir göz atalım:</p>
-<p><img src="../../../images/posts/ssdt/img1.png" alt="" loading="lazy" /></p>
-<p>Çıktıda verilen ilk adres <strong>fffff800`798c7cb0</strong>, SSDT&rsquo;nin adresidir.</p>
-<p>SSDT&rsquo;nin bir tablo olduğunu düşünmenizi istemiştim. Şimdi ise elde ettiğimiz adresle tablodaki birkaç offset&rsquo;e göz atalım:</p>
-<p><img src="../../../images/posts/ssdt/img2.png" alt="" loading="lazy" /></p>
-<p>Tablodan ilk 5 offset göründüğü gibi sıralanmış durumda. Şimdi bu offset&rsquo;lerden <strong>056b3400</strong> alalım ve adresini hesaplayalım.</p>
-<p>Eğer Diagram&rsquo;a tekrar bakarsanız kernel routine adresine erişmek için aşağıdaki formül kullanılıyor:</p>
+<p>Let&rsquo;s say you call CreateFile from User-Mode and the syscall number is 0x2. When the syscall is executed, the flow continues from the kernel space. You can see this in the diagram.</p>
+<p>When switching to the kernel space, the first section will be SSDT (KiServiceTable). Here I would like you to think that it typically contains a list of offsets to access Kernel Routine Addresses. The offset is calculated with the corresponding syscall number and then redirected to the corresponding Routine Address. Thus NtCreateFile is executed. The following formula is used for the calculation:</p>
 <div align="center">
-    <br>
-    <b>
-    <i> KernelRoutineAddress = KiServiceTableAddress + ( Offset >>> 4 ) </i>   
-    </b>
-    <br>
+	<b>
+		<i> Offset = KiServiceTableAddress + 4 * SSN </i>
+	</b>
 </div>
-<p>Şimdi örnek olarak aldığımız offset&rsquo;i bu formül kullanarak routine adresine bir göz atalım:</p>
-<p><img src="../../../images/posts/ssdt/img3.png" alt="" loading="lazy" /></p>
-<p>Göründüğü gibi örnek olarak aldığımız offset, <strong>NtWaitForSingleObject</strong>&rsquo;e ait.</p>
-<h2><strong>Syscall ile Routine Adresi bulma</strong><span class="hx-absolute -hx-mt-20" id="syscall-ile-routine-adresi-bulma"></span>
-    <a href="#syscall-ile-routine-adresi-bulma" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Şimdi Syscall kullanarak Routine adresini nasıl bulabiliriz buna bir bakalım.</p>
-<p>Örnek olarak <strong>NtCreateFile</strong>&lsquo;dan bahsetmiştim. Windbg ile bu API&rsquo;a ait SSN numarasını <strong>ntdll.dll</strong>&lsquo;den bulabiliriz:</p>
-<p><img src="../../../images/posts/ssdt/img4.png" alt="" loading="lazy" /></p>
-<p>eax register&rsquo;a <strong>0x55</strong> değerinin aktarıldığını görüyoruz. Bu NtCreateFile&rsquo;in syscall numarasıdır.</p>
-<p>Şimdi bu syscall numarasını kullanarak offset&rsquo;i hesaplayıp ardından routine adresine erişelim:</p>
-<p><img src="../../../images/posts/ssdt/img5.png" alt="" loading="lazy" /></p>
-<p>Çıktıdan gördüğümüz üzere NtCreateFile&rsquo;in routine adresi <strong>fffff804`31a2d240</strong> olduğunu gösteriyor. Yaptığımız bu adımları kafamıza daha iyi oturtmak için şemasını tekrar oluşturabiliriz:</p>
-<p><img src="../../../images/posts/ssdt/diagram2.png" alt="" loading="lazy" /></p>
-<h2><strong>Kodlama</strong><span class="hx-absolute -hx-mt-20" id="kodlama"></span>
-    <a href="#kodlama" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Öğrendiğimiz şeyleri Kernel Driver kullanarak basitçe kodlayalım.</p>
-<p>Senaryomuz ise NtCreateFile ve NtWriteFile API&rsquo;larını kullanarak bir .txt dosyası oluşturacağız ve içerisine bir metin yazdıracağız ancak bu konuda öğrendiğimiz şekillerle API&rsquo;ların kernel routine adreslerini alıp API&rsquo;ları direkt routine adresten çalıştıracağız.</p>
-<p>Projenin github linki için <a href="https://github.com/0xbekoo/KernelDriver-SSDT" target="_blank" rel="noopener">buraya</a> tıklayabilirsiniz.</p>
+<p>In short, SSDT and syscalls act as a bridge between API calls from user-mode and the corresponding kernel routine addresses. In this way, the kernel determines which function responds to a system call from user-mode space.</p>
+<h3><strong>Analysis with WinDBG</strong><span class="hx-absolute -hx-mt-20" id="analysis-with-windbg"></span>
+    <a href="#analysis-with-windbg" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Now let&rsquo;s take a look at this SSDT with WinDBG:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img1.png" style="width: 65%" />
+</div>
+<p>The first address given in the output is fffff800798c7cb0, the address of the SSDT.</p>
+<p>I wanted you to think of SSDT as a table, so let&rsquo;s take a look at a few offsets in the table with the address:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img2.png" style="width: 45%" />
+</div>
+<p>The first 5 offsets from the table are sorted as shown. Now let&rsquo;s take 056b3400 from these offsets and calculate its address.</p>
+<p>If you look at the diagram again, the following formula is used to access the kernel routine address:</p>
+<div align="center">
+	<b>
+		<i> KernelRoutineAddress = KiServiceTableAddress + ( Offset >>> 4 ) </i>
+	</b>
+</div>
+<p>Now let&rsquo;s take a look at the address of the routine using this formula:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img3.png" style="width: 75%" />
+</div>
+<p>As you can see, the offset we took as an example belongs to NtWaitForSingleObject.</p>
+<h4><strong>Finding Routine Address with Syscall</strong><span class="hx-absolute -hx-mt-20" id="finding-routine-address-with-syscall"></span>
+    <a href="#finding-routine-address-with-syscall" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>Now let&rsquo;s see how we can find the Routine address using Syscall.</p>
+<p>I mentioned NtCreateFile as an example. With WinDBG we can find the SSN number of this API from ntdll.dll:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img4.png" style="width: 65%" />
+</div>
+<p>We see that 0x55 is passed to the eax register. This is the syscall number of NtCreateFile.</p>
+<p>Now let&rsquo;s calculate the offset using this syscall number and then access the routine address:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img5.png" style="width: 85%" />
+</div>
+<p>As we can see from the output, the routine address of NtCreateFile is fffff80431a2d240. We can recreate the diagram to better understand these steps:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/diagram2.png" style="width: 100%" />
+</div>
+<h3><strong>Coding</strong><span class="hx-absolute -hx-mt-20" id="coding"></span>
+    <a href="#coding" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Let&rsquo;s simply code what we have learned using the Kernel Driver.</p>
+<p>Our scenario is that we will create a .txt file using the NtCreateFile and NtWriteFile APIs and write some text in it, but we will take the kernel routine addresses of the APIs and run the APIs directly from the routine address.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#pragma warning(disable: 4083 4005)
@@ -763,16 +818,13 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
 </span></span><span class="line"><span class="cl">	<span class="kt">uint64_t</span> <span class="n">OffsetAddress</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="kt">uint32_t</span> <span class="n">Offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="c1">// Offset&#39;in adresini hesapla
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">OffsetAddress</span> <span class="o">=</span> <span class="n">KiServiceTableAddress</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">SSN</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">OffsetAddress</span> <span class="o">=</span> <span class="n">KiServiceTableAddress</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">SSN</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Offset Address: 0x%llx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">OffsetAddress</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="c1">// Hesaplanan adresten offseti oku
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">Offset</span> <span class="o">=</span> <span class="nf">ReadMemory</span><span class="p">(</span><span class="n">OffsetAddress</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Offset</span> <span class="o">=</span> <span class="nf">ReadMemory</span><span class="p">(</span><span class="n">OffsetAddress</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Offset: 0x%08x</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">Offset</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="c1">// Formülü uygulayarak kernel routine adresine eri?
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">RoutineAbsoluteAddress</span> <span class="o">=</span> <span class="n">KiServiceTableAddress</span> <span class="o">+</span> <span class="p">(</span><span class="n">Offset</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">RoutineAbsoluteAddress</span> <span class="o">=</span> <span class="n">KiServiceTableAddress</span> <span class="o">+</span> <span class="p">(</span><span class="n">Offset</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;The absolute address of %wZ is: 0x%llx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">APIName</span><span class="p">,</span> <span class="n">RoutineAbsoluteAddress</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">RoutineAbsoluteAddress</span><span class="p">;</span>
@@ -799,15 +851,13 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="nf">InitializeObjectAttributes</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ObjAttr</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">FileName</span><span class="p">,</span> <span class="n">OBJ_CASE_INSENSITIVE</span> <span class="o">|</span> <span class="n">OBJ_KERNEL_HANDLE</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>	
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="c1">// NtCreateFile&#39;in Routine adresini al 
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">Address</span> <span class="o">=</span> <span class="nf">GetAbsoluteAddress</span><span class="p">(</span><span class="n">SSN_NtCreateFile</span><span class="p">,</span> <span class="n">NtCreateFileName</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Address</span> <span class="o">=</span> <span class="nf">GetAbsoluteAddress</span><span class="p">(</span><span class="n">SSN_NtCreateFile</span><span class="p">,</span> <span class="n">NtCreateFileName</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">Address</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="n">STATUS_NOT_FOUND</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
 </span></span><span class="line"><span class="cl">	<span class="n">My_NtCreateFile</span> <span class="n">MyNtCreateFile</span> <span class="o">=</span> <span class="p">(</span><span class="n">My_NtCreateFile</span><span class="p">)</span><span class="n">Address</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="c1">// NtCreateFile&#39;i çağır
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">Status</span> <span class="o">=</span> <span class="nf">MyNtCreateFile</span><span class="p">(</span><span class="o">&amp;</span><span class="n">HandleFile</span><span class="p">,</span> <span class="n">GENERIC_WRITE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ObjAttr</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">IoStatusBlock</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">FILE_ATTRIBUTE_NORMAL</span><span class="p">,</span> \
+</span></span><span class="line"><span class="cl">	<span class="n">Status</span> <span class="o">=</span> <span class="nf">MyNtCreateFile</span><span class="p">(</span><span class="o">&amp;</span><span class="n">HandleFile</span><span class="p">,</span> <span class="n">GENERIC_WRITE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ObjAttr</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">IoStatusBlock</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">FILE_ATTRIBUTE_NORMAL</span><span class="p">,</span> \
 </span></span><span class="line"><span class="cl">								<span class="mi">0</span><span class="p">,</span> <span class="n">FILE_OVERWRITE_IF</span><span class="p">,</span> <span class="n">FILE_SYNCHRONOUS_IO_NONALERT</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nf">NT_SUCCESS</span><span class="p">(</span><span class="n">Status</span><span class="p">))</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">		<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Failed to Create File! Error: 0x%08x</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">Status</span><span class="p">);</span>
@@ -815,15 +865,13 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
 </span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Created File!</span><span class="se">\n\n</span><span class="s">&#34;</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="c1">// NtWriteFile&#39;in Routine adresini al 
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">Address</span> <span class="o">=</span> <span class="nf">GetAbsoluteAddress</span><span class="p">(</span><span class="n">SSN_NtWriteFile</span><span class="p">,</span> <span class="n">NtWriteFileName</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Address</span> <span class="o">=</span> <span class="nf">GetAbsoluteAddress</span><span class="p">(</span><span class="n">SSN_NtWriteFile</span><span class="p">,</span> <span class="n">NtWriteFileName</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">Address</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="n">STATUS_NOT_FOUND</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
 </span></span><span class="line"><span class="cl">	<span class="n">My_NtWriteFile</span> <span class="n">MyNtWriteFile</span> <span class="o">=</span> <span class="p">(</span><span class="n">My_NtWriteFile</span><span class="p">)</span><span class="n">Address</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	
-</span></span><span class="line"><span class="cl">	<span class="c1">// NtWriteFile&#39;i çağır
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">Status</span> <span class="o">=</span> <span class="nf">MyNtWriteFile</span><span class="p">(</span><span class="n">HandleFile</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">IoStatusBlock</span><span class="p">,</span> <span class="n">Data</span><span class="p">.</span><span class="n">Buffer</span><span class="p">,</span> <span class="n">Data</span><span class="p">.</span><span class="n">Length</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Status</span> <span class="o">=</span> <span class="nf">MyNtWriteFile</span><span class="p">(</span><span class="n">HandleFile</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">IoStatusBlock</span><span class="p">,</span> <span class="n">Data</span><span class="p">.</span><span class="n">Buffer</span><span class="p">,</span> <span class="n">Data</span><span class="p">.</span><span class="n">Length</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nf">NT_SUCCESS</span><span class="p">(</span><span class="n">Status</span><span class="p">))</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">		<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Failed to ZwWriteFile! Error: 0x%08x</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">Status</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
@@ -852,7 +900,7 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   </button>
 </div>
 </div>
-<p>Kodumuz bu şekilde. Detaylıca analiz etmeye başlayalım:</p>
+<p>This is our code. Let&rsquo;s start analyzing in detail:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#define KiServiceTableAddress 0xfffff800798c7cb0
@@ -867,11 +915,10 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   </button>
 </div>
 </div>
-<p>İlk olarak projede KiServiceTable&rsquo;in adresini ve iki API&rsquo;in SSN numaralarını tanımlanmıştır. Bu projeyi çalıştırırken aldığınız adresi ve SSN numaralarını buraya ekleyin.</p>
+<p>First, in the project, we define the address of the KiServiceTable and the SSN numbers of the two APIs. Change the address of SSDT and SSN numbers which you get from WinDbg.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// NtCreateFile&#39;in Routine adresini al 
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Address</span> <span class="o">=</span> <span class="nf">GetAbsoluteAddress</span><span class="p">(</span><span class="n">SSN_NtCreateFile</span><span class="p">,</span> <span class="n">NtCreateFileName</span><span class="p">);</span>
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">Address</span> <span class="o">=</span> <span class="nf">GetAbsoluteAddress</span><span class="p">(</span><span class="n">SSN_NtCreateFile</span><span class="p">,</span> <span class="n">NtCreateFileName</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">Address</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">STATUS_NOT_FOUND</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -884,11 +931,10 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   </button>
 </div>
 </div>
-<p>DriverEntry içerisine göz attığımızda ise tanımladığımız ve SSN numarası ve API&rsquo;in ismini alan *<em>GetAbsoluteAddress</em> fonksiyonunu çağırıyoruz. Bu API ile burada anlattığım yöntemler ile ilgili API&rsquo;in kernel routine adresini alacağız.</p>
+<p>In Driverentry, we call the GetAbsoluteAddress function with the SSN number and the name of the API. With this API, we will get the kernel routine address of the API.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// Offset&#39;in adresini hesapla
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">OffsetAddress</span> <span class="o">=</span> <span class="n">KiServiceTableAddress</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">SSN</span><span class="p">;</span>
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">OffsetAddress</span> <span class="o">=</span> <span class="n">KiServiceTableAddress</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">SSN</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Offset Address: 0x%llx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">OffsetAddress</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
@@ -899,11 +945,10 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   </button>
 </div>
 </div>
-<p><strong>GetAbsoluteAddress</strong> fonksiyonun içeriğine baktığımızda ise SSDT&rsquo;nin içerisinden Offset&rsquo;in adresini bulmak için önceden bahsettiğim hesaplamayı yapıyoruz. Daha sonra elde ettiğimiz offset adresini ekrana bastırıyoruz.</p>
+<p>When we look at the codes of the GetAbsoluteAddress function, we make the calculation mentioned before to find the address of the Offset in SSDT. Then we print the offset address.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// Hesaplanan adresten offseti oku
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Offset</span> <span class="o">=</span> <span class="nf">ReadMemory</span><span class="p">(</span><span class="n">OffsetAddress</span><span class="p">);</span>
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">Offset</span> <span class="o">=</span> <span class="nf">ReadMemory</span><span class="p">(</span><span class="n">OffsetAddress</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Offset: 0x%08x</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">Offset</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
@@ -914,11 +959,10 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   </button>
 </div>
 </div>
-<p>Daha sonra aldığımız offset&rsquo;in adresin içeriğini okuyarak offset&rsquo;i elde etmiş oluyoruz ve aynı şekilde offset&rsquo;i de ekrana bastırıyoruz.</p>
+<p>Then we obtain the offset by reading the content of the address we received and in the same way we print the offset to the screen.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// Formülü uygulayarak kernel routine adresine eriş
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">RoutineAbsoluteAddress</span> <span class="o">=</span> <span class="n">KiServiceTableAddress</span> <span class="o">+</span> <span class="p">(</span><span class="n">Offset</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">);</span>
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">RoutineAbsoluteAddress</span> <span class="o">=</span> <span class="n">KiServiceTableAddress</span> <span class="o">+</span> <span class="p">(</span><span class="n">Offset</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;The absolute address of %wZ is: 0x%llx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">APIName</span><span class="p">,</span> <span class="n">RoutineAbsoluteAddress</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
@@ -929,7 +973,7 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   </button>
 </div>
 </div>
-<p>Bu fonksiyonda son olarak ise formülü uygularak ilgili routine adresine erişmiş oluyoruz.</p>
+<p>Finally, we apply the formula to access the corresponding routine address.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">My_NtCreateFile</span> <span class="n">MyNtCreateFile</span> <span class="o">=</span> <span class="p">(</span><span class="n">My_NtCreateFile</span><span class="p">)</span><span class="n">Address</span><span class="p">;</span>
@@ -950,7 +994,7 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   </button>
 </div>
 </div>
-<p>NtCreateFile&rsquo;in routine adresini aldıktan sonra ise oluşturduğumuz MyNtCreateFile yapısına bu adresi veriyoruz ve ardından routine adresini kullanarak NtCreateFile API&rsquo;i çağırıyoruz.</p>
+<p>After getting the routine address of NtCreateFile, we give this address to the MyNtCreateFile structure we created and then call the NtCreateFile API using the routine address.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// NtWriteFile&#39;in Routine adresini al 
@@ -978,52 +1022,14 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   </button>
 </div>
 </div>
-<p>NtCreateFile&rsquo;i çalıştırdıktan sonra yine aynı işlemler ile NtWriteFile&rsquo;in routine adresini alıyor ve oluşturduğumuz yapıya adresi veriyoruz ve ardından NtWriteFile API&rsquo;i çalıştırıyoruz.</p>
-<h2><strong>Driver&rsquo;in Analiz edilmesi</strong><span class="hx-absolute -hx-mt-20" id="driverin-analiz-edilmesi"></span>
-    <a href="#driverin-analiz-edilmesi" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Tabi ki direkt olarak Driver&rsquo;i kodladıktan sonra direkt olarak sonucu göstermek yerine sisteme yükleyeceğimiz Driver&rsquo;i adım adım takip edip neler yaptığına beraber bir göz atalım. Böylece kafamızda daha iyi yer edineceğini düşünüyorum.</p>
-<p>Öncelikle sanal makinemize bağlı Windbg&rsquo;a Driver&rsquo;ımız için bir breakpoint ekleyeceğiz. Böylece kodladığımız Driver sisteme yüklendiğinde duracak.</p>
-<p>İlk olarak sanal makineye hazırladığımız .sys dosyasını yükleyelim:</p>
-<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
-
-<pre><code>sc create SSDT binPath=&#34;C:\Users\bekoo\Desktop\SSDT.sys&#34; type=kernel start=demand</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
-  <button
-    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
-    title="Copy code"
-  >
-    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
-    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
-  </button>
+<p>After running NtCreateFile, we get the routine address of NtWriteFile with the same codes and give the address to the structure we created and then run the NtWriteFile API.</p>
+<h4><strong>Analyzing Driver</strong><span class="hx-absolute -hx-mt-20" id="analyzing-driver"></span>
+    <a href="#analyzing-driver" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>Now let&rsquo;s follow Driver step by step and see what it does. I think this will help us to better understand it.</p>
+<p>Firstly add the bp to the driver name, then run it. After running it, we need to get an output on the WinDBG screen that bp is triggered:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img6.png" style="width: 75%" />
 </div>
-</div>
-<p>Daha sonra Windbg&rsquo;a dönüp bir breakpoint ekleyelim:</p>
-<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
-
-<pre><code>bp SSDT!DriverEntry</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
-  <button
-    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
-    title="Copy code"
-  >
-    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
-    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
-  </button>
-</div>
-</div>
-<p>Ardından ise sürücüyü çalıştıralım:</p>
-<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
-
-<pre><code>sc start SSDT</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
-  <button
-    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
-    title="Copy code"
-  >
-    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
-    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
-  </button>
-</div>
-</div>
-<p>Çalıştırdıktan sonra Windbg ekranında bp tetiklendiğine dair bir çıktı almamız gerekiyor:</p>
-<p><img src="../../../images/posts/ssdt/img6.png" alt="" loading="lazy" /></p>
-<p>Elde ettiğimiz adreslere göz atmak için <strong>GetAbsoluteAddress</strong> fonksiyonuna bir bp koyalım ve programı devam ettirelim:</p>
+<p>Then add a bp to GetAbsoluteAddress function to see the addresses we obtained and continue the program:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>kd&gt; bp SSDT!GetAbsoluteAddress
@@ -1040,49 +1046,56 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&#43;10h],rdx</code></pr
   </button>
 </div>
 </div>
-<p>GetAbsoluteAddress fonksiyonunda durdu. <strong>Disassembly</strong> ekranında GetAbsoluteAddress fonksiyonunu inceleyeceğiz. İlk durağımız Offset&rsquo;in adresini hesapladığımız kısım olacak:</p>
-<p><img src="../../../images/posts/ssdt/img7.png" alt="" loading="lazy" /></p>
-<p>İlk olarak eax register&rsquo;a fonksiyonun birinci parametresi olan <strong>SSN</strong> değişkenin değerini aktarıldığını görmekteyiz. Program ilk defa GetAbsoluteAddress fonksiyonuna girdiği için 0x55 yani NtCreateFile&rsquo;in ssn numarasını içerdiğini biliyoruz.</p>
-<p>Daha sonra alınan SSN numarası <strong>shl eax,2</strong> yani eax&rsquo;ın değerini 2 bit sola kaydırıyor. Ne yaptığını anlamamız için bu kısmın formülüne tekrar hatırlayalım:</p>
-<div align="center">
-    <br>
-    <b>
-    <i> Offset = KiServiceTableAddress + 4 * SSN </i>   
-    </b>
-    <br>
+<p>We can examine the GetAbsoluteAddress function in the Disassembly screen. Our first section will be the part where we calculate the address of Offset:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img7.png" style="width: 100%" />
 </div>
-<p>Şimdi sunu sorabilirsiniz: <strong>&ldquo;Formülde çarpma işlemi yapılıyor ama arka planda 2 bit sola kaydırılıyor&rdquo;</strong> diye.</p>
-<p>Sola kaydırma (shift left, shl) işlemi, bir sayıyı 2&rsquo;nin katları ile çarpmaya eşdeğerdir. Burada <strong>shl eax, 2</strong> komutu ile eax&rsquo;i 4 ile çarpıyor. Bunu doğrulamak için bu kısma bir breakpoint koyup eax&rsquo;ın ne sonuç aldığını görebiliriz:</p>
-<p><img src="../../../images/posts/ssdt/img9.png" alt="" loading="lazy" /></p>
-<p>Fotoğrafta göründüğü üzere <code>shl eax,2</code> işlemini yapan kısma bir bp koyup akışı burada durdurduğumuzda eax&rsquo;ın önceki ve işlemden sonraki değerini görebiliriz. Çalışmadan önce eax&rsquo;ın değeri 0x55 (Dec: 85) iken çalıştıktan sonra 0x154 (Dec: 340) sonucu elde ediliyor.</p>
-<p>Daha sonra <strong>cdqe</strong> komutu ile eax register&rsquo;ındaki değeri rax register&rsquo;ı için genişletiyor. Yani farklı anlatım ile 32 bitlik değeri 64 bit&rsquo;e dönüştürmek için kullanılıyor.</p>
-<p>Bu formülün son kısmında ise rcx&rsquo;e KiServiceTable&rsquo;in adresi aktarılıyor ve <strong>4 * SSN</strong> sonucunu saklayan rax register&rsquo;dan KiServiceTableAddress&rsquo;in değeri çıkartılıyor. Şimdi burada kafanızının yine karıştığının farkındayım.</p>
-<p>Burada tipik olarak her ne kadar da <strong>sub</strong> kullanılarak çıkartma işlemi yapılıyor olsa da rax&rsquo;tan rcx değerini çıkardığına dikkat edin. Yani farklı bir deyişle bu, KiServiceTableAddress&rsquo;in rax&rsquo;tan çıkarılması anlamına gelir. Yani bu işlem <strong>KiServiceTableAddress + 4 * SSN</strong> işlemi ile aynı sonucu verecektir. Kafanızın karıştığının farkındayım ancak kısaca şunu aklınızda tutabilirsiniz ki yaptırmak istediğimiz formül ile aynı sonucu verecektir.</p>
-<p>Offset&rsquo;in adresini görmek için ise <code>mov     qword ptr [OffsetAddress (rsp+40h)], rax</code> kısmına karşılık gelen adrese bir bp koyalım ve programı devam ettirelim. Elde ettiğimiz adrese bir göz atalım:</p>
-<p><img src="../../../images/posts/ssdt/img10.png" alt="" loading="lazy" /></p>
-<p>Adres olarak <strong>fffff8046a6c7e04</strong> alındığını görmekteyiz. Yukarıda zaten NtCreateFile ile örnek yapmıştık yani adresler uyuşuyor. Doğru adresi aldığından emin olabiliriz.</p>
-<p><img src="../../../images/posts/ssdt/img12.png" alt="" loading="lazy" /></p>
-<p>Son durağımız ise Routine adresini hesapladığımız formül kısmı olacak.</p>
-<p>SSDT&rsquo;ten NtCreateFile&rsquo;in offset alındıktan sonra eax&rsquo;a offset değeri veriliyor ve ardından 4 bit sağ kaydırdığını görüyoruz. Bu formülümüzün bir parçası.</p>
-<p>Daha sonra rcx&rsquo;e KiServiceTable&rsquo;in adresi veriliyor ve ardından rax&rsquo;tan rcx&rsquo;i çıkardığını (yukarıda bahsettiğim gibi kafanız karışmasın bunu toplama yapıyormuş gibi düşünelim) görmekteyiz. Böylece NtCreateFile&rsquo;in routine adresine erişmiş oluyoruz. Elde edilen adrese göz atalım:</p>
-<p><img src="../../../images/posts/ssdt/img13.png" alt="" loading="lazy" /></p>
-<p>Göründüğü gibi başarılı bir şekilde <strong>fffff8046ac2d240</strong> sonucunu elde ediyoruz. Şimdi ise DriverEntry&rsquo;de routine adresine yönlendirdiğimiz kısıma dönelim:</p>
-<p><img src="../../../images/posts/ssdt/img14.png" alt="" loading="lazy" /></p>
-<p>GetAbsoluteAddress çalıştıktan sonra alınan adresi oluşturduğumuz <strong>MyNtCreateFile</strong> yapısına aktarıldığını ve NtCreateFile için parametrelerin hazırlandığını ve en sonda routine adrese yönlendirildiğini görebiliriz. Routine adresin çağırıldığı yere breakpoint koyup akışı nereye yönlendirdiğine bir bakalım:</p>
-<p><img src="../../../images/posts/ssdt/img15.png" alt="" loading="lazy" /></p>
-<p>call yapıldığı kısma bir breakpoint koyup rax&rsquo;ın değerine baktığımızda elde ettiğimiz NtCreateFile&rsquo;in routine adresi olduğunu ve devam ettirdiğimizde rax&rsquo;ın adresine atlayan bir komut çalıştırılıyor ve akış NtCreateFile içerisine giderek devam ediyor.</p>
-<p>Driver&rsquo;in devamındaki kodlar aynı adımı içerdiği için driver&rsquo;i devam ettirebiliriz. Devam ettirmeden önce breakpoint&rsquo;leri kaldıralim ve ardından <code>g</code> komutuyla devam ettirelim:</p>
-<p><img src="../../../images/posts/ssdt/img16.png" alt="" loading="lazy" /></p>
-<p>Akışın devamında ise NtWriteFile API&rsquo;si için offset değeri ve routine adresini de görebiliriz.</p>
-<p>Son olarak ise gerçekten bir .txt oluşturulmuş ve içerisine veri yazılmış mı buna bakalım:</p>
-<p><img src="../../../images/posts/ssdt/img17.png" alt="" loading="lazy" /></p>
-<p>Başarılı bir şekilde <strong>C:\ssdt.txt</strong> oluşturulduğunu ve içerisine &lsquo;Hello SSDT!&rsquo; metni yazdırıldığını görebiliriz.</p>
-<h2><strong>Sonuç</strong><span class="hx-absolute -hx-mt-20" id="sonuç"></span>
-    <a href="#sonu%c3%a7" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Sonuç olarak, bu yazıda SSDT’nin WinDbg ortamında analizini gerçekleştirdik ve elde ettiğimiz bulguları kodlamaya döktük. Kodlama aşamasında, öğrendiğimiz formüller ile NtCreateFile ve NtWriteFile&rsquo;in routine adreslerini hesapladık. Bu adresleri kullanarak bir .txt dosyası oluşturduk ve içerisine metin yazdık. Son olarak ise windbg&rsquo;da kodladığımız driver&rsquo;i analiz etmiş olduk.</p>
-<p>Umarım bu konu sizler için faydalı olmuştur. Konu, ilk bakışta kafa karıştırıcı gibi görünebilir; ancak teoride kalmaması ve daha iyi anlaşılabilmesi için detayları mümkün olduğunca açıklamaya çalıştım.</p>
-<p>Hepinize iyi çalışmalar dilerim!</p>
-<h2><strong>References</strong><span class="hx-absolute -hx-mt-20" id="references"></span>
-    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><ul>
+<p>First, we see that the value of the SSN variable, which is the first parameter of the function, is transferred to the eax register. Since the program enters the GetAbsoluteAddress function for the first time, we know that 0x55, NtCreateFile, contains the SSN number.</p>
+<p>Then the received SSN number shl eax,2 shifts the value of eax 2 bits to the left. Let&rsquo;s look at the formula for this part again to understand what it does:</p>
+<div align="center">
+	<b>
+		<i> Offset = KiServiceTableAddress + 4 * SSN </i>
+	</b>
+</div>
+<p>Now you may ask this: &ldquo;The formula is multiplying, but in the background it is shifting 2 bits to the left&rdquo;.</p>
+<p>The shift left (shl) operation is equivalent to multiplying a number by a multiple of 2. Here shl eax, 2 multiplies eax by 4. To verify this, we can add a bp in this section and see what eax gets:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img9.png" style="width: 60%" />
+</div>
+<p>In this image, we can see the value of eax before and after the operation. Before the operation the value of eax is 0x55 (Dec: 85), after the operation the result is 0x154 (Dec: 340).</p>
+<p>In the last part of this formula, the address of KiServiceTable is passed to rcx and the value of KiServiceTableAddress is subtracted from the rax register which stores the result 4 * SSN. Now I realize that you are confused here again.</p>
+<p>Notice that it subtracts the value rcx from rax, even though subtraction is typically done using sub. So in other words, this means subtracting KiServiceTableAddress from rax. So this will give the same result as KiServiceTableAddress + 4 * SSN. I realize that you are confused, but you can keep in mind that it will give the same result as the formula we want to do.</p>
+<p>To see the address of the offset, mov qword ptr OffsetAddress (rsp+40h), add a bp at the address corresponding to rax and continue the program. Let&rsquo;s take a look at the address we get:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img10.png" style="width: 80%" />
+</div>
+<p>We see that the address is fffffff8046a6c7e04. We already did an example with NtCreateFile above, so the addresses match.</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img12.png" style="width: 85%" />
+</div>
+<p>Our last section will be the formula part where we calculate the Routine address. After taking the offset of NtCreateFile from SSDT, we give the offset value to eax and then we see that it shifts 4 bit right. This is part of our formula.</p>
+<p>Then rcx is given the address of KiServiceTable and then we see that it subtracts rcx from rax (as I mentioned above, don&rsquo;t get confused, think of it as addition). Thus, we have accessed the routine address of NtCreateFile. Let&rsquo;s take a look at the resulting address:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img13.png" style="width: 75%" />
+</div>
+<p>As you can see, we successfully get the result fffffff8046ac2d240. Let&rsquo;s add a bp where the routing address is called and see where it redirects the flow:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img15.png" style="width: 100%" />
+</div>
+<p>Theen let&rsquo;s see the result:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img16.png" style="width: 80%" />
+</div>
+<p>Finally, let&rsquo;s continue the driver and see if a .txt is actually created and data is written into it:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img17.png" style="width: 70%" />
+</div>
+<p>That&rsquo;s all!</p>
+<h3><strong>Conclusion</strong><span class="hx-absolute -hx-mt-20" id="conclusion"></span>
+    <a href="#conclusion" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>In this documantetion, we analyzed SSDT in WinDBG and coded the findings. In the coding phase, we calculated the routine addresses of NtCreateFile and NtWriteFile with the formulas we learned. Using these addresses, we created a .txt file and wrote text in it. Finally, we analyzed the driver we coded in windbg.</p>
+<p>I hope this documentation was useful for you. SSDT may seem confusing at first glance, but I have tried to explain the details as much as possible so that it does not remain theoretical and can be better understood.</p>
+<h3><strong>References</strong><span class="hx-absolute -hx-mt-20" id="references"></span>
+    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><ul>
 <li>
 <p><a href="https://www.ired.team/miscellaneous-reversing-forensics/windows-kernel-internals/glimpse-into-ssdt-in-windows-x64-kernel" target="_blank" rel="noopener">iRedTeam Notes - SSDT</a></p>
 </li>
@@ -1095,6 +1108,10 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&#43;10h],rdx</code></pr
         
     <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2024-12-26T00:00:00.000Z">December 26, 2024</time></div>
         <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
+        href="/docs/winkernel-dev/wkd-dpc/"
+        title="DPC"
+        class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-pr-4 rtl:hx-pl-4"
+      ><svg class="hx-inline hx-h-5 hx-shrink-0 ltr:hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>DPC</a><a
         href="/docs/winkernel-dev/wkd-virtual-memory/"
         title="Virtual Memory"
         class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-ml-auto ltr:hx-pl-4 ltr:hx-text-right rtl:hx-mr-auto rtl:hx-pr-4 rtl:hx-text-left"

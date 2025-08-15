@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>0xbekoo – IOT-Hacking</title>
-    <link>https://0xbekoo.github.io:1313/tags/iot-hacking/</link>
+    <link>http://localhost:1313/tags/iot-hacking/</link>
     <description>Recent content in IOT-Hacking on 0xbekoo</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Wed, 04 Dec 2024 00:00:00 +0000</lastBuildDate>
     
-	  <atom:link href="https://0xbekoo.github.io:1313/tags/iot-hacking/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="http://localhost:1313/tags/iot-hacking/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,32 +17,39 @@
     
     <item>
       <title>ARM Firmware Reverse Engineering</title>
-      <link>https://0xbekoo.github.io:1313/blog/bare-metal-reversing-0x0/</link>
+      <link>http://localhost:1313/blog/bare-metal-reversing/</link>
       <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
       
-      <guid>https://0xbekoo.github.io:1313/blog/bare-metal-reversing-0x0/</guid>
+      <guid>http://localhost:1313/blog/bare-metal-reversing/</guid>
       <description>
         
         
-        &lt;p&gt;Merhabalar. Bu yazıda Firmware Reverse Engineering&amp;rsquo;e devam ediyoruz. Bu blogta ise Bare Metal Reversing&amp;rsquo;e girişeceğiz.&lt;/p&gt;
-&lt;p&gt;Hatırlarsanız önceki konumuzda TP-LINK Archer AX 21 V4.6&amp;rsquo;ın 2024 yılında çıkmış Firmware&amp;rsquo;ini analiz etmiştik. Bu konuda ise işleri birazcık ileriye götüreceğiz.&lt;/p&gt;
-&lt;p&gt;Elimde bir Nucleo F030R8 kart (ARM Cortex M0 işlemcili) var ve bunu Firmware Reverse Engineering için değerlendirmek istedim. Bu blogta yapacağımız şey de bu kart&amp;rsquo;ı basitçe programlayacağız ve ardından firmware&amp;rsquo;ini reverse edip karta tekrar yükleyeceğiz. Tipik olarak bir Iot kartını hackliyor gibi düşünelim ancak daha basit bir senaryo ile.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/nucleo-card.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Elimdeki kart bu. Eğer elinizde nucleo&amp;rsquo;nun farklı bir kartı var ise de bu blogtaki adımları takip edebilirsiniz.&lt;/p&gt;
-&lt;p&gt;Açıkçası mikrodenetleyici kodlama konusunda kendimi geliştirmedim. Ancak bu konsept sürecinde beraber hem mikrodenetleyici kodlamaya hem de firmware reverse engineering alanlarında kendimizi geliştireceğiz.&lt;/p&gt;
-&lt;p&gt;Gerekli programlar ise CubeIde, CubeProgrammer ve Ghidra olacaktır. CubeIde ile kartımız için programlamayı yapacağız, Ghidra ile aldığımız firmware yani .bin dosyasını reverse edeceğiz ve son adımda CubeProgrammer ile reverse ettiğimiz firmware’i kartımıza yükleyeceğiz.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Kodlama&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kodlama&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#kodlama&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Yapacağımız kodlama tamamen basit. &lt;strong&gt;Nucleo F030R8&lt;/strong&gt; kartında bir adet User Button (Fotoğrafta mavi button&amp;rsquo;a göz atabilirsiniz) ve Green led (LD2) bulunmakta. Button&amp;rsquo;a basıldığında Green Led&amp;rsquo;i yakan bir kodlama yapacağız. Daha sonra Ghidra kullanarak IDE&amp;rsquo;den aldığımız firmware reverse ederek bu programın çalışma prensibini tersine çevireceğiz. Yani reverse ettikten sonra button&amp;rsquo;a basmadığımız durumlarda Green led&amp;rsquo;i yakacak.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/bare-metal-reversing-0x0/img1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;CubeIDE&amp;rsquo;de projeyi oluşturduktan sonra &lt;strong&gt;.ioc&lt;/strong&gt; dosyasına yönlenebiliriz. Kart üzerindeki button ve led ile çalışacağımız için fotoğraftan da görüldüğü üzere ayarlamalar zaten IDE tarafından yapılmış durumda. Bu yüzden burada yapacağımız ekstra bir şey yok. Benim kartımdan User Button &lt;strong&gt;PC13&lt;/strong&gt;&amp;lsquo;da ve Led2 ise &lt;strong&gt;PA5&lt;/strong&gt;&amp;lsquo;de bulunmakta.&lt;/p&gt;
-&lt;p&gt;Kodlamaya geçmeden önce oluşturduğumuz projede ufak bir ayar yapmamız gerekecek. Firmware&amp;rsquo;i analiz edeceğimiz için programın karta yüklenmesiyle .bin dosyasını almamız gerekecek:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/bare-metal-reversing-0x0/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Oluşturduğumuz projeye sağ tıklayalım ve &lt;strong&gt;Properties&lt;/strong&gt; seçeğine tıklayalım. Daha sonra &lt;strong&gt;C/C++ Build &amp;gt; Settings &amp;gt; MCU/MPU Post Build Outputs&lt;/strong&gt;&amp;lsquo;a gidelim ve &lt;strong&gt;Convert to binary file (-O binary)&lt;/strong&gt; seçeneğini aktifleştirelim.&lt;/p&gt;
-&lt;p&gt;Şimdi ise IDE&amp;rsquo;nin en solunda bulunan &lt;strong&gt;Project Explorer&lt;/strong&gt; sekmesinde &lt;strong&gt;Core &amp;gt; Src &amp;gt; main.c&lt;/strong&gt; projesine yönelelim. Bu bizim ana projemiz.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;main.c&lt;/strong&gt; içerisinde kodlamaya geçmeden önce oluşturulmuş &lt;strong&gt;MX_GPIO_Init&lt;/strong&gt; fonksiyonuna göz atabiliriz. Bu fonksiyon, IDE tarafından hazırlanan pin&amp;rsquo;lerin konfigurasyonunu içerir:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../images/posts/bare-metal-reversing-0x0/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü üzere &lt;strong&gt;F030R8&lt;/strong&gt; kartı için User Button&amp;rsquo;a GPIOA olarak B1_Pin (GPIO_PIN_13) ve LED2 için ise GPIOA ve LD2_PIN (GPIO_PIN_5) olarak ayarlanmış. Eğer farklı bir kartta iseniz bu ayarları kontrol edebilirsiniz.&lt;/p&gt;
-&lt;p&gt;Şimdi ise main fonksiyonuna dönelim ve kodlamalara başlayalım:&lt;/p&gt;
+        &lt;p&gt;Hello everyone. In this blog we continue with Firmware Reverse Engineering.
+We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.&lt;/p&gt;
+&lt;p&gt;I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let&amp;rsquo;s think typically like hacking an IoT board but with a simpler scenario:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/nucleo-card.jpg&#34; style=&#34;width: 70%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;This is the card I have. If you have a different board of nucleo, you can follow the steps in this blog.&lt;/p&gt;
+&lt;p&gt;Obviously, I have not developed myself in microcontroller coding, but during this concept process, we will develop ourselves both in microcontroller coding and firmware reverse engineering.&lt;/p&gt;
+&lt;p&gt;The necessary programs will be CubeIde, CubeProgrammer and Ghidra. With CubeIde we will do the programming for our board, with Ghidra we will reverse the firmware and in the last step we will load the firmware that we reverse with CubeProgrammer on our board.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Coding&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;coding&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#coding&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The coding we will do is completely simple. The Nucleo F030R8 board has a User Button (you can take a look at the blue button in the photo) and a Green led (LD2). We will coding that lights the Green Led when the button is pressed, then we will reverse the firmware with using Ghidra.&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img1.png&#34; style=&#34;width: 90%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;After creating the project in CubeIDE, we can focus on the .ioc file. Since we will work with the button and led on the board, as you can see from the photo, the adjustments have already been made by the IDE. So there is nothing extra to do here. From my card, User Button is on PC13 and Led2 is on PA5.&lt;/p&gt;
+&lt;p&gt;Before we start coding, we will need to make a small adjustment to the project we have created. Since we will analyze the firmware, we will need to get the .bin file by loading the program on the card:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img3.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Right click on the project and select Properties. Then go to C/C++ Build &amp;gt; Settings &amp;gt; MCU/MPU Post Build Outputs and enable Convert to binary file (-O binary) option. Now, in the Project Explorer tab on the far left of the IDE, go to Core &amp;gt; Src &amp;gt; main.c project. This is our main project.&lt;/p&gt;
+&lt;p&gt;Before coding in main.c, we can take a look at the MX_GPIO_Init function. This function contains the configuration of the pins prepared by the IDE:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img2.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As it can be seen, the User Button for the F030R8 board is set to B1_Pin (GPIO_PIN_13) as GPIOA and GPIOA and LD2_PIN (GPIO_PIN_5) for LED2. If you are on a different board you can check these settings.&lt;/p&gt;
+&lt;p&gt;Now let&amp;rsquo;s return to the main function and start coding:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
 
 &lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;cm&#34;&gt;/* USER CODE BEGIN 2 */&lt;/span&gt;
@@ -64,7 +71,7 @@
   &lt;/button&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;Göründüğü üzere kod gayet basit bir durumda. Şimdi tek tek ele alalım:&lt;/p&gt;
+&lt;p&gt;The code is really simple. Now Let&amp;rsquo;s take a look at the codes one by one:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
 
 &lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;ButtonStatus&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;HAL_GPIO_ReadPin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;B1_GPIO_Port&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;B1_Pin&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
@@ -77,9 +84,8 @@
   &lt;/button&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;İlk olarak main&amp;rsquo;in while içerisinde &lt;strong&gt;HAL_GPIO_ReadPin&lt;/strong&gt; fonksiyonunu kullanıyoruz.Bu fonksiyon ilgili pinin durumunu okumak için kullanılıyor ve iki parametre almaktadır. İlk parametre, pinin bulunduğu GPIO portunu belirtir. STM32 mikrodenetleyicilerinde, GPIO pinleri belirli portlara (A, B, C, vb.) bağlıdır. Örneğin, GPIOA, GPIOB, GPIOC gibi portlar bulunur. Bu parametre, pinin hangi portta yer aldığını belirtmek için kullanılır. Kodumuzda ise &lt;strong&gt;GPIOA&lt;/strong&gt; olduğunu belirtiyoruz.&lt;/p&gt;
-&lt;p&gt;İkinci parametre ise okumak istediğiniz GPIO pinini belirtir. Her portun üzerinde birden fazla pin bulunabilir (örneğin, port A&amp;rsquo;da PA0, PA1, PA2 vb.). Bu parametre, hangi pinin durumunu okuyacağınızı belirtir. Kodumuzda ise B1_Pin yani &lt;strong&gt;GPIO_PIN_13&lt;/strong&gt; olduğunu belirtiyoruz.&lt;/p&gt;
-&lt;p&gt;Son olarak ise bu fonksiyonun dönüş adresi &lt;strong&gt;uint8_t&lt;/strong&gt; tipinde olan ButtonStatus değişkenine aktarılır. Yani kısaca bu fonksiyon, belirtilen pin&amp;rsquo;deki durumu okur ve ButtonStatus değişkenine sonucu aktarır.&lt;/p&gt;
+&lt;p&gt;Firstly, we use the HAL_GPIO_ReadPin function in the while section of main. This function is used to read the state of the corresponding pin and takes two parameters. The first parameter specifies the GPIO port where the pin is located. In STM32 microcontrollers, GPIO pins are connected to specific ports (A, B, C, etc.). There are, for example, GPIOA, GPIOB, GPIOC, etc. This parameter is used to specify which port the pin is located on. In our code, we specify that it is GPIOA. The second parameter specifies the GPIO pin you want to read. Each port can have more than one pin on it (for example, port A has PA0, PA1, PA2, etc.). This parameter specifies which pin you want to read the status of. In our code, we specify that it is B1_Pin, GPIO_PIN_13.&lt;/p&gt;
+&lt;p&gt;Finally, the return address of this function is passed to the ButtonStatus variable of type uint8_t. So, this function reads the status on the specified pin and passes the result to the ButtonStatus variable.&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
 
 &lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ButtonStatus&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;==&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
@@ -95,94 +101,139 @@
   &lt;/button&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;Pin okumasından sonra bir if karşılaştırması yapıyoruz. ButtonStatus&amp;rsquo;a atanan değer eğer sıfır ise &lt;strong&gt;HAL_GPIO_WritePin&lt;/strong&gt;  ile LED2 için işlem yapıyor.&lt;/p&gt;
-&lt;p&gt;ButtonStatus değerinin 0 olması demek Button&amp;rsquo;a basıldığı anlamına gelmektedir. 1 olması durumunda Button&amp;rsquo;a basılmadığı anlamına gelir. Yani biz bu if içerisinde Button&amp;rsquo;a basıldığında Led&amp;rsquo;in yanmasını sağlayacağız.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;HAL_GPIO_WritePin&lt;/strong&gt; fonksiyonu, belirli bir GPIO pinini t1 - HIGH durumu) veya &amp;ldquo;reset&amp;rdquo; (0 - LOW durumu) durumuna getirmek için kullanılır.&lt;/p&gt;
-&lt;p&gt;İlk parametre, önceden anlatıldığı gibi hangi GPIO portunun kullanılacağını belirtir ve kodumuzda GPIOA olarak belirttim. İkinci parametre, ayarlanacak veya sıfırlanacak GPIO pinini belirtir ve tanımlanan GPIO_PIN_5 değerini taşıyan LD2_PIN değişkeni verdim. Son olarak üçüncü parametre ise Pinin durumu belirtilir. İf içerisindeki amacımız led&amp;rsquo;i yakmak olduğu için &lt;strong&gt;SET&lt;/strong&gt; değerini verebiliriz. Bu ilgili pinin durumunu 1 olarak ayarlayacaktır.&lt;/p&gt;
-&lt;p&gt;Eğer button&amp;rsquo;a basılmadığı sürece yine &lt;strong&gt;HAL_GPIO_WritePin&lt;/strong&gt; fonksiyonunu kullanıyoruz ancak son parametresi &lt;strong&gt;RESET&lt;/strong&gt; olarak belirtiliyor. Bu, button&amp;rsquo;a basılmadığı zaman ilgili pini 0 olarak ayarlar. Böylece button&amp;rsquo;a basılmadığı zaman led yanmayacaktır.&lt;/p&gt;
-&lt;p&gt;Şimdi ise bu kodu kartımıza yükleyelim ve sonuca bir bakalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/video/coding.gif&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü gibi sorunsuz bir şekilde programımız çalışıyor. Button&amp;rsquo;a tıkladığım anda green Led yanmakta. Şimdi ise Ghidra&amp;rsquo;ya dönelim ve aldığımız .bin dosyasını ghidra&amp;rsquo;da analiz etmeye başlayalım. Oluşturulan .bin dosyası Debug dosyasının altında olacaktır:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Firmware Reversing&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;firmware-reversing&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#firmware-reversing&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;.bin dosyasını ghidra&amp;rsquo;da &lt;strong&gt;File &amp;gt; Import File&lt;/strong&gt; tıklayarak .bin dosyamızı seçelim ancak direkt olarak çıkan ekranı kapatmayın önemli ayarlamaları yapmamız gerekecek.&lt;/p&gt;
-&lt;p&gt;Öncelikle Languages kısmını ayarlayarak başlayalım ve filter alanına &lt;strong&gt;ARM&lt;/strong&gt; diye aratalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Ben Language olarak &lt;strong&gt;Cortex 32-bit, Little Endian&lt;/strong&gt; olarak seçtim. Eğer aynı karta sahip iseniz bu seçeneği, farklı karta sahip iseniz kartınıza uygun olarak dil seçimini yapın. Daha sonra OK diyerek bu Language sekmesinden çıkabilirsiniz.&lt;/p&gt;
-&lt;p&gt;Daha sonra aynı ekrandan &lt;strong&gt;Options&lt;/strong&gt; kısmına tıklayalım ve burada yapacağımız ayar gerçekten önemli. Burada Base Address gibi ayarlamalar yapacağız.&lt;/p&gt;
-&lt;p&gt;İlk olarak base address ayarını yapmamız gerekecek. **ki ama bir firmware&amp;rsquo;in Base Addresini nasıl bulabiliriz? diye bir soru gelebilir. En iyi yöntem cihazın memory haritasına bakmak olacaktır.&lt;/p&gt;
-&lt;p&gt;ARM tabanlı bir kartta çalışıyoruz. Nucleo&amp;rsquo;nun datasheet&amp;rsquo;leri aracılığıyla Base Address&amp;rsquo;i bulabiliriz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img6.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Yukarıdaki fotoğraf &lt;strong&gt;STM32F030x4/x6/x8/xC&lt;/strong&gt; kartlarının memory haritası. Benim kartım bu cihazlar arasından olduğundan dolayı bu memory haritasından yararlanmam gerekecek:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Fotoğrafa daha detaylı baktığımızda Flash memory alanın &lt;strong&gt;0x8000000&lt;/strong&gt; olduğunu görebiliriz. ARM Tabanlı işlemcilerin Base Address&amp;rsquo;in çoğu zaten bu adrestedir ancak yine de farklı karta sahip iseniz datasheet ile adresine bakmakta fayda olacaktır.&lt;/p&gt;
-&lt;p&gt;Daha sonra datasheet ile elde ettiğimiz adresi Ghidra&amp;rsquo;nın Options sekmesinden &lt;strong&gt;Base Address&lt;/strong&gt; alanına yazalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Block Name ismine &lt;strong&gt;flash&lt;/strong&gt; olarak verdim. Sizde böyle yapabilirsiniz. Diğer ayarlara dokunmamıza gerek yok sadece &lt;strong&gt;Block Name&lt;/strong&gt; ve &lt;strong&gt;Base Address&lt;/strong&gt; değerlerini vermemiz yeterlidir. OK button&amp;rsquo;a tıklayalım ve artık ekranda .bin dosyasına çift tıklayalım.&lt;/p&gt;
-&lt;p&gt;Fakat birkaç daha ayar yapmamız gerekecek. CodeBrowser ekranı açıldığında ekranın ortasında bulunan &lt;strong&gt;Memory Map&lt;/strong&gt; kısmına tıklayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img9.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Daha sonra bu ekranda sağ üste bulunan &amp;lsquo;+&amp;rsquo; işaretine tıklayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img10.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Yine burada birkaç bellek alanı ayarlamamız gerekecek. İlk olarak &lt;strong&gt;Flash Memory&lt;/strong&gt; alanını ayarlamamız gerekecek. Peki nedir bu?&lt;/p&gt;
-&lt;p&gt;Flash Mirror, firmware&amp;rsquo;in çalıştırılabilir kodunun genellikle saklandığı alanı temsil eder. Çoğu gömülü sistemde, bu bölge işlemciye bağlı olarak 0x0 adresinden başlar ve firmware&amp;rsquo;in yüklenip çalıştırılacağı yerdir. Flash bölgesi kod bölgesini (örneğin, main fonksiyon, başlangıç kodları, vb.) içerir&lt;/p&gt;
-&lt;p&gt;Yinede offset&amp;rsquo;i doğrulamak için datasheet&amp;rsquo;e bakabiliriz. Yukarıda paylaştığım fotoğrafa tekrar göz atarsak benim kart için 0x0 alanında olduğunu görebiliriz. Şimdi ise bu alanı ayarlayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img11.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Block Name&lt;/strong&gt; alanına &amp;lsquo;flash_mirror&amp;rsquo; ismini verebiliriz. &lt;strong&gt;Start Addr&lt;/strong&gt; alanına ise default olarak 0&amp;rsquo;da bırakalım. &lt;strong&gt;Length&lt;/strong&gt; alanını ise okla gösterildiği gibi flash ismi ile ayarladığımız alanın boyutu ile aynı olacak şekilde ayarlayın. Daha sonra Execute kutucuğunu işaretleyelim. &lt;strong&gt;Block Types&lt;/strong&gt; alanında File Bytes kutucuğunu işaretleyelim ve &lt;strong&gt;File Offsett&lt;/strong&gt; değerini 0 olarak bırakalım ve bitirmek için OK tuşuna basalım.&lt;/p&gt;
-&lt;p&gt;Son alanımızı ayarlamak için yine &amp;lsquo;+&amp;rsquo; tuşuna basalım. Bu sefer ise SRAM alanını ayarlayacağız. Genel olarak adresi &lt;strong&gt;0x20000000&lt;/strong&gt;&amp;lsquo;dir ancak yine de bunu doğrulamak için kartımızın dahasheet&amp;rsquo;ine bakabiliriz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img12.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü üzere 0x20000000 adresinde olduğunu görebiliyoruz. Şimdi SRAM&amp;rsquo;in de alanını ayarlayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img13.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Block Name&lt;/strong&gt; alanına &amp;lsquo;RAM&amp;rsquo; ismini verebiliriz. &lt;strong&gt;Start Addr&lt;/strong&gt; alanına 20000000 değerini verelim. &lt;strong&gt;Length&lt;/strong&gt; değerine ise 80000 verelim. Daha sonra OK diyerek ekranı kapatalım.&lt;/p&gt;
-&lt;p&gt;İşlemlerimiz bitti. Şimdi ise ekranın sol üstünde bulunan kaydetme tuşuna basalım ve Memory Map ekranını kapatalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img14.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Son bir işlemimiz kaldı. Ekranı kapattıktan sonra Ghidra&amp;rsquo;nın sol üstündeki bar&amp;rsquo;dan &lt;strong&gt;Analysis &amp;gt; Auto Analyze&amp;rsquo;&lt;project&gt;.bin&amp;rsquo;&lt;/strong&gt; kısmına gidelim ve bu ekranda &lt;strong&gt;&amp;lsquo;ARM Aggressive Instruction Finder (Prototype)&amp;rsquo;&lt;/strong&gt; seçeceğini aktifleştirelim ve &amp;lsquo;Analyze&amp;rsquo; button&amp;rsquo;a tıklayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img15.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Artık her şey için hazırız. Şimdi ise Disassembly ekranından en üst tarafa bir göz atalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img16.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Eğer benim gibi yeni iseniz burada işaretlenenleri gördüğünüzde biraz kafanız karışabilir ama aslında basit.&lt;/p&gt;
-&lt;p&gt;Fotoğrafta gördüğünüz bu alana &amp;lsquo;vektör tablosu&amp;rsquo; deniyor. CPU, sistem başlatıldığında ilk olarak buradan Stack Pointer’ı (yığın işaretçisi) yükler. Yani tablonun ilk adresi, sistemin yığın belleğinin başlangıç adresini gösterir. Daha sonra işlemci, bu tabloda tanımlı olan Reset Handler (Reset İşleyicisi) adresine sıçrayarak çalışmaya başlar.&lt;/p&gt;
-&lt;p&gt;Vektör tablosu, mikrodenetleyicinin işletim sırasında karşılaşabileceği tüm kesme (interrupt) ve hata (fault) durumlarına nasıl tepki vereceğini tanımlar. Örneğin:&lt;/p&gt;
+&lt;p&gt;After the pin reading, we make an if comparison. If the value assigned to ButtonStatus is zero, it lights the led. If the ButtonStatus value is 0, it means that the Button is pressed. If it is 1, it means that the Button is not pressed.&lt;/p&gt;
+&lt;p&gt;The first parameter of the function - HAL_GPIO_WritePin - specifies which GPIO port to use as previously described and I specified it as GPIOA in our code. The second parameter specifies the GPIO pin to be set or reset and I gave the LD2_PIN variable with the defined value GPIO_PIN_5. Finally, the third parameter specifies the state of the pin.&lt;/p&gt;
+&lt;p&gt;If the button is not pressed, we still use the HAL_GPIO_WritePin function but the last parameter is specified as RESET. This sets the corresponding pin to 0 when the button is not pressed. Thus, the led will not light up when the button is not pressed.&lt;/p&gt;
+&lt;p&gt;Now let&amp;rsquo;s load this code on our board and see the result:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/coding.gif&#34; style=&#34;width: 60%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As it seems, our board is running perfect. As soon as I click on the button, the green LED lights up. Now let&amp;rsquo;s go back to Ghidra and start analyzing the .bin file. The generated .bin file will be under the Debug file:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img4.png&#34; style=&#34;width: 30%&#34; /&gt;
+&lt;/div&gt;
+&lt;h3&gt;&lt;strong&gt;Firmware Reversing&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;firmware-reversing&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#firmware-reversing&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Let&amp;rsquo;s select our .bin file by clicking File &amp;gt; Import File in Ghidra, but do not close the screen that appears directly, we will need to make important adjustments.&lt;/p&gt;
+&lt;p&gt;First of all, let&amp;rsquo;s start by setting the Languages section and search for ARM in the filter field:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img5.png&#34; style=&#34;width: 90%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;I chose Cortex 32-bit, Little Endian as the Language. If you have the same board, choose this option, if you have different boards, choose the language according to your board. Then you can exit this Language tab by saying OK.&lt;/p&gt;
+&lt;p&gt;Then let&amp;rsquo;s click on Options from the same screen and the setting we will make here is really important. Here we will make adjustments such as Base Address.&lt;/p&gt;
+&lt;p&gt;First we will need to set the base address. **But how can we find the Base Address of a firmware? The best method would be to look at the memory map of the device.&lt;/p&gt;
+&lt;p&gt;We are working on an ARM based board. We can find the Base Address through Nucleo&amp;rsquo;s datasheets:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img6.png&#34; style=&#34;width: 80%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;The photo above is the memory map of the STM32F030x4/x6/x6/x8/xC boards. Since my board is among these devices, I will need to make use of this memory map:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img7.png&#34; style=&#34;width: 60%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;When we look at the photo in more detail, we can see that the Flash memory field is 0x8000000. Most of the Base Address of ARM-based processors is already at this address, but if you still have a different board, it will be useful to look at the address with the datasheet.&lt;/p&gt;
+&lt;p&gt;Then let&amp;rsquo;s write the address we obtained with the datasheet in the Base Address field from Ghidra&amp;rsquo;s Options tab:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img8.png&#34; style=&#34;width: 60%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;I gave the Block Name as flash, you can do the same. We don&amp;rsquo;t need to touch other settings, we just need to give Block Name and Base Address values. Click the OK button and double click on the .bin file on the screen.&lt;/p&gt;
+&lt;p&gt;But we will need to make a few more settings. When the CodeBrowser screen opens, click on the Memory Map section in the middle of the screen:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img9.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Then click on the &amp;lsquo;+&amp;rsquo; sign at the top right of this screen:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img10.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Again, we will need to set a few memory areas here. First, we will need to set the Flash Memory area. So what is this? Flash Mirror represents the area where the executable code of the firmware is usually stored. In most embedded systems, this region starts at address 0x0 depending on the processor and is where the firmware will be loaded and executed. The Flash region contains the code region (e.g. main function, startup code, etc.)&lt;/p&gt;
+&lt;p&gt;We can still look at the datasheet to verify the offset. If we take a look again at the photo I shared above, we can see that it is in the 0x0 field for my board. Now let&amp;rsquo;s set this field:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img11.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;We can name the Block Name field &amp;lsquo;flash_mirror&amp;rsquo;. Then let&amp;rsquo;s give the Start Addr field at 0 by default. Set the Length field to be the same as the size of the field we set with the flash name as shown with the arrow. Then check the Execute box. In the Block Types field, check the File Bytes box and leave the File Offsett value at 0 and press OK to finish.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s press the &amp;lsquo;+&amp;rsquo; key again to set our last field. This time we will set the SRAM field. Generally its address is 0x20000000, but we can still check our board&amp;rsquo;s datasheet to verify this:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img12.png&#34; style=&#34;width: 50%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As you can see, it is located at address 0x20000000. Now let&amp;rsquo;s set the SRAM area:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img13.png&#34; style=&#34;width: 70%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;We can name the Block Name field as &amp;lsquo;RAM&amp;rsquo;. Let&amp;rsquo;s give the value 20000000 to the Start Addr field, and lastly give 80000 to the Length value. Then close the screen.&lt;/p&gt;
+&lt;p&gt;We are done. Now let&amp;rsquo;s press the save button at the top left of the screen and close the Memory Map screen:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img14.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;We have one last operation left. After closing the screen, go to Analysis &amp;gt; Auto Analyze&amp;rsquo;.bin&amp;rsquo; from the bar on the top left of Ghidra and activate the &amp;lsquo;ARM Aggressive Instruction Finder (Prototype)&amp;rsquo; option on this screen and click on the &amp;lsquo;Analyze&amp;rsquo; button:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img15.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Now we are ready for everything. Now let&amp;rsquo;s take a look at the top side from the Disassembly screen:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img16.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;If you are new like me, you might be a bit confused when you see what is marked here, but it is actually simple. This area you see in the photo is called the &amp;lsquo;vector table&amp;rsquo;. This is where the CPU first loads the Stack Pointer when the system starts up. So the first address of the table is the starting address of the system&amp;rsquo;s stack memory. The processor then jumps to the Reset Handler address defined in this table.&lt;/p&gt;
+&lt;p&gt;The vector table defines how the microcontroller reacts to all interrupt and fault conditions that the microcontroller may encounter during operation. For example:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Reset:&lt;/strong&gt; CPU yeniden başlatıldığında çalışacak kodun adresini belirler. Bu, genellikle sistemin ilk ayarlarını yapan başlatma fonksiyonudur.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;NMI (Non-Maskable Interrupt):&lt;/strong&gt; Maskelenemeyen, yani her zaman işlenmesi gereken bir kesme durumudur.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;HardFault:&lt;/strong&gt; Kritik bir hata meydana geldiğinde çağrılan işleyicidir.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;BusFault:&lt;/strong&gt; Bellek erişim hataları gibi donanım sorunlarını yönetir.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;UsageFault:&lt;/strong&gt; Yanlış talimat veya matematiksel hatalar gibi yazılımla ilgili sorunlar için işleyici sağlar.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Reset:&lt;/strong&gt; Determines the address of the code that will run when the CPU is restarted. This is the initialization function that usually initializes the system.
+&lt;br&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;NMI (Non-Maskable Interrupt):&lt;/strong&gt; An interrupt that cannot be masked, i.e. it must always be handled.
+&lt;br&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;HardFault:&lt;/strong&gt; A handler that is called when a critical error occurs.
+&lt;br&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;BusFault:&lt;/strong&gt; Handles hardware problems such as memory access errors.
+&lt;br&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;UsageFault:&lt;/strong&gt; Provides handlers for software-related problems such as incorrect instructions or mathematical errors.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Bizim burada ilgileneceğimiz kısım &lt;strong&gt;Reset&lt;/strong&gt; alanı olacaktır. &lt;strong&gt;Reset&lt;/strong&gt; vektörü, C Programın giriş bölümüne benzer şekilde basit kurulum kodları içermektedir. Bu vektör içerisinde main fonksiyon çağırıldığı için buradan ana fonksiyonu bulacağız.&lt;/p&gt;
-&lt;p&gt;Şimdi Reset vektör ile işaretlenen adrese çift tıklayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img17.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Assembly kodlarını okuyan hayatsız bir birey olmak yerine normal bir insan gibi decompiler ile bakabiliriz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img18.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Burada umursamadığımız birkaç döngü vs. kullanıldığını ve fonksiyon çağırıldığını görmekteyiz. Çağırılan üç fonksiyonundan ikisine göz attım ancak bir şey anlamadım ve son çağırılan fonksiyona göz attığımda main fonksiyon olduğunu doğruladım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img19.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Daha anlaşılır gözükmesi için Fonksiyon adlarını vs. güncelledim. Fonksiyona baktığımızda zaten kodlama yaptığımız esnada anlatmıştım. Bir farklılık bulunmamakta. Şimdi Assembly kodlarına dönüp Patch işlemi yapacağız.&lt;/p&gt;
-&lt;p&gt;Yapacağımız şey de basit. if koşulundaki &amp;lsquo;0&amp;rsquo; değerini &amp;lsquo;1&amp;rsquo; ile değiştireceğiz. Böylece button&amp;rsquo;a basmadığımız zamanlarda led yanmış olacak.&lt;/p&gt;
-&lt;p&gt;main fonksiyonun Dissassembly ekranında if koşuluna karşılık gelen instruction&amp;rsquo;u bulalım ve sağ tıklayıp &lt;strong&gt;Patch Instruction&lt;/strong&gt; seçeceğine tıklayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img20.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Daha sonra 0x0 değerini &lt;strong&gt;0x1&lt;/strong&gt; olarak değiştirelim ve enter tuşuna basalım. Bu işlemden sonra Decompiler&amp;rsquo;dan kontrol ettiğimizde sonuç şu şekilde olmalı:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img21.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Her şey bu kadar. Şimdi Ghidra ekranında sol üstünde **File &amp;gt; &lt;strong&gt;Save &amp;lsquo;.bin&amp;rsquo; As&amp;hellip;&lt;/strong&gt; sekmesine tıklayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img22.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Sonu &amp;lsquo;.bin&amp;rsquo; ile bitecek şekilde bir isim vererek projeyi kaydedin.&lt;/p&gt;
-&lt;p&gt;Son olarak CodeBrowser ekranını kapatın ve kaydettiğiniz projeye sağ tıklayıp export diyerek projeyi bilgisayara kaydedin:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img23.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Şimdi bu reverse ettiğimiz .bin dosyasını CubeProgrammer aracılığıyla kartımıza yükleyeceğiz.&lt;/p&gt;
-&lt;p&gt;CubeProgrammer&amp;rsquo;i başlatalım ve programın sağ üstündeki &lt;strong&gt;Connect&lt;/strong&gt; buttonu ile kartımızı bağlayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img24.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü gibi kartımıza bağlandığında memory address&amp;rsquo;leri vs görmekteyiz.&lt;/p&gt;
-&lt;p&gt;Programda &amp;lsquo;Open File&amp;rsquo; seçeceğine tıklayarak reverse ettiğimiz .bin dosyasını seçelim ve ardından &amp;lsquo;Download&amp;rsquo; seçeceğine tıklayarak reverse ettiğimiz firmware&amp;rsquo;i kartımıza yükleyelim:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/img25.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü gibi ekranda &amp;lsquo;File Download Complete&amp;rsquo; mesajı alıyoruz. Tebrikler artık elimizde reverse edilmiş bir firmware ile çalışan  kartımız var!&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Sonuç&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;sonuç&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#sonu%c3%a7&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Şimdi kartın son haliyle bir kez daha göz atalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/bare-metal-reversing-0x0/video/reversing.gif&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Videodan göründüğü üzere Button&amp;rsquo;a basmadığımız durumlarda Led yanıyor. Eğer button&amp;rsquo;a basarsak led sönüyor.&lt;/p&gt;
-&lt;p&gt;Temel olarak yaptığımız şey oldukça basitti. Basitçe kartımızı button&amp;rsquo;a basıldığında led yakacak şekilde kodladık ve Ghidra ile kartın firmware&amp;rsquo;ini reverse ederek kodladığımızın tersini yapacak şekilde ayarladık ve karta tekrar yükledik.&lt;/p&gt;
-&lt;p&gt;Umarım içerik sizin için faydalı olmuştur. Eğer konuyu daha detaylı araştırmak isterseniz &lt;strong&gt;referans olarak bıraktığım kaynaklara göz atabilirsiniz.&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;İyi çalışmalar dilerim efenimmm.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;References&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;ul&gt;
+&lt;p&gt;The part we will be interested in here will be the Reset field. The Reset vector contains simple setup codes, similar to the introduction section of the C Program. Since the main function is called in this vector, we will find the main function here.&lt;/p&gt;
+&lt;p&gt;Now double click on the address marked with the Reset vector:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img17.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Now let&amp;rsquo;s check the decompiler:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img18.jpg&#34; style=&#34;width: 80%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Here we see a few loops etc. being used and functions being called. I took a look at two of the three functions called but I didn&amp;rsquo;t understand anything and when I took a look at the last function called I confirmed that it was the main function:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img19.png&#34; style=&#34;width: 80%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;I updated the function names etc. to make it more understandable. When we look at the function, I already explained it when we were coding. There is no difference. Now we will return to Assembly codes and do Patch operation.&lt;/p&gt;
+&lt;p&gt;We will replace the &amp;lsquo;0&amp;rsquo; value in the if condition with &amp;lsquo;1&amp;rsquo;. So the led will be on when we don&amp;rsquo;t press the button. Let&amp;rsquo;s find the instruction corresponding to the if condition in the Dissassembly screen of the main function and right click and select Patch Instruction:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img20.png&#34; style=&#34;width: 80%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Then change 0x0 to 0x1 and press enter. After this process, when we check it from the Decompiler, the result should be as follows:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img21.png&#34; style=&#34;width: 60%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Now click on **File &amp;gt; Save &amp;lsquo;.bin&amp;rsquo; As&amp;hellip; at the top left of the Ghidra screen:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img22.png&#34; style=&#34;width: 50%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Save the project by giving it a name ending with &amp;lsquo;.bin&amp;rsquo;.&lt;/p&gt;
+&lt;p&gt;Finally, close the CodeBrowser screen and save the project:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img23.png&#34; style=&#34;width: 80%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Now we will upload this reversed .bin file to our board via CubeProgrammer.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s start CubeProgrammer and connect our board with the Connect button on the top right of the program:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img24.png&#34; style=&#34;width: 90%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As you can see, we see the memory addresses etc. when connected to our board.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s select the .bin file that we have reversed by clicking on the &amp;lsquo;Open File&amp;rsquo; option in the program and then click on the &amp;lsquo;Download&amp;rsquo; option to upload the firmware we have reversed to our card:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/img25.png&#34; style=&#34;width: 90%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As you can see, we get the message &amp;lsquo;File Download Complete&amp;rsquo; on the screen.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;The Result&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;the-result&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#the-result&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/bare-metal-reversing-0x0/reversing.gif&#34; style=&#34;width: 60%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As it can be seen from the video, the Led lights up when we do not press the Button. If we press the button, the led goes out.&lt;/p&gt;
+&lt;p&gt;Basically what we did was quite simple. We simply coded our card to turn on the led when the button is pressed, and we reversed the firmware of the card with Ghidra and adjusted it to do the opposite of what we coded and reinstalled it on the card.&lt;/p&gt;
+&lt;p&gt;I hope the content was useful for you. If you want to investigate the subject in more detail, you can take a look at the resources I left as a reference.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;References&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=q4CxE5P6RUE&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Stacksmashing - Bare-metal ARM Firmware Reverse Engineering with Ghidra&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
@@ -199,73 +250,104 @@
     
     <item>
       <title>Router Firmware Reverse Engineering</title>
-      <link>https://0xbekoo.github.io:1313/blog/router-firmware-reversing/</link>
+      <link>http://localhost:1313/blog/router-firmware-reversing/</link>
       <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
       
-      <guid>https://0xbekoo.github.io:1313/blog/router-firmware-reversing/</guid>
+      <guid>http://localhost:1313/blog/router-firmware-reversing/</guid>
       <description>
         
         
-        &lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/headerphoto.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link&amp;rsquo;in &lt;a href=&#34;https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Archer AX 21 V4.6&lt;/a&gt; modemin firmware&amp;rsquo;i reverse edeceğiz. Firmware indirmek için &lt;a href=&#34;https://www.tp-link.com/us/support/download/archer-ax21/#Firmware&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;TP-Link&amp;rsquo;in orijinal sayfasına&lt;/a&gt; göz atabilirsiniz.&lt;/p&gt;
+        &lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/headerphoto.jpg&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&amp;rsquo;s &lt;a href=&#34;https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/&#34;&gt;Archer AX 21 V4.6&lt;/a&gt; modem. You can check TP-Link&amp;rsquo;s original page to &lt;a href=&#34;https://www.tp-link.com/us/support/download/archer-ax21/#Firmware&#34;&gt;download the firmware&lt;/a&gt;.&lt;/p&gt;
 &lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200&#34;&gt;
   &lt;p class=&#34;hx-flex hx-items-center hx-font-medium&#34;&gt;&lt;svg height=16px class=&#34;hx-inline-block hx-align-middle hx-mr-2&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z&#34;/&gt;&lt;/svg&gt;Warning&lt;/p&gt;
 
   &lt;div class=&#34;hx-w-full hx-min-w-0 hx-leading-7&#34;&gt;
-    &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.&lt;/p&gt;&lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;Öncelikle indirdiğimiz Firmware&amp;rsquo;in bilgilerine göz atalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/firmware-info.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Görüldüğü üzere 14 Kasım 2024 yılında yayınlanmış. Yani neredeyse 1 ay önce yayınlanmış bir firmware. Birkaç hatanın düzeltildiği, optimizelerin yapıldığı ve yeni şeyler eklendiğini görebiliriz.&lt;/p&gt;
-&lt;p&gt;Fiziksel olarak bu router&amp;rsquo;a sahip olmadığım için bu blogta sadece firmware analiz ederek yelteneceğim.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Linux Versiyonu Bulma&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;linux-versiyonu-bulma&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#linux-versiyonu-bulma&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Özellikle firmware reverse engineering&amp;rsquo;de sıklıkla kullanılan &lt;strong&gt;binwalk&lt;/strong&gt; denilen aracı kullanacağız. Bu araç bize firmware için çeşitli bilgiler sunabilir.&lt;/p&gt;
-&lt;p&gt;Öncelikle binwalk&amp;rsquo;a analiz edeceğimiz firmware verelim:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Evett okumaya üşendiğimiz birkaç karmaşık gibi görünen çıktılar elde ettik. Peki nedir bunlar efenimm?&lt;/p&gt;
-&lt;p&gt;Bu gördüğünüz çıktılar ilgili firmware&amp;rsquo;in offsetlerini içermektedir. Ancak sadece offset değerleri verilmiyor yanlarında bu alanlar için açıklama da veriyor bu binwalk aracı. Gözümüz hemen bu çıktıdaki Decimal ve Hexdecimal değerlerine kaysın:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;İşte offset değerleri bunlar. Hem decimal hem de hexdecimal olarak binwalk aracı bize bunları gösteriyor. Şimdi ilk odağımızı Bootloader (U-Boot)&amp;lsquo;a yönlendirelim ve mimarisine bir göz atalım.&lt;/p&gt;
-&lt;p&gt;Bu etapta &lt;strong&gt;dd&lt;/strong&gt; aracını kullanabiliriz. Bunun için aşağıdaki komutu çalıştıralım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Verdiğimiz değerlere dikkat edelim. &lt;strong&gt;if&lt;/strong&gt; ile hedef firmware&amp;rsquo;i veriyoruz. &lt;strong&gt;of&lt;/strong&gt; ile çoğaltılan veriyi nasıl kaydedeceğimizi belirtiyoruz. &lt;strong&gt;skip&lt;/strong&gt; ile ise belirli bir byte miktarını atlayarak kopyalama işlemine başlıyor. &lt;strong&gt;8212&lt;/strong&gt; değeri verdiğime dikkat edin. Bu ise, dd aracın 8212 byte kadar sonrasındaki verileri kopyalacağı anlamına gelir. Bu değer binwalk&amp;rsquo;tan bulduğumuz uImage&amp;rsquo;ın offset değeri.&lt;/p&gt;
-&lt;p&gt;Bu kopyalama sonucunda &lt;strong&gt;uImage&lt;/strong&gt; adlı bir dosya elde edeceğiz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Kopyaladığımız dosyayı incelediğimizde &lt;strong&gt;u-boot Legacy uImage&lt;/strong&gt; olduğunu doğrulayabiliriz. Ayrıca arch&amp;rsquo;ın MIPS olduğunu da görebiliriz.&lt;/p&gt;
-&lt;p&gt;Linux versiyonu aramak için ise tekrar binwalk çıktımıza bir göz atalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Tekrar offsetlere göz atarsak LZMA ile sıkıştırılmış bölüme gidebiliriz. &lt;strong&gt;.lzma&lt;/strong&gt; uzantılı olarak dosyayı alalım ve dosyayı çıkartalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img6.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Bu adımlardan sonra elimizde &lt;strong&gt;files&lt;/strong&gt; olarak bir dosya elimizde olmalı. Amacımız sadece &lt;strong&gt;strings&lt;/strong&gt; ile Linux versiyonuna göz atmak olacak:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Kullanılan Linux versiyonu &lt;strong&gt;3.10.108&lt;/strong&gt; ve GCC için ise &lt;strong&gt;4.6.3&lt;/strong&gt; kullanılmakta. Bu ikisi de eski versiyondur.&lt;/p&gt;
-&lt;p&gt;Linux&amp;rsquo;un &lt;a href=&#34;https://lwn.net/Articles/738167/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;3.10.108 versiyonu&lt;/a&gt; &lt;strong&gt;5 Kasım 2017&lt;/strong&gt; yılında çıkmış:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;GCC&amp;rsquo;nin &lt;a href=&#34;https://lwn.net/Articles/738167/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;4.6.3 versiyonu&lt;/a&gt; ise &lt;strong&gt;1 Mart 2012&lt;/strong&gt; yılında çıkmış:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img9.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Açıkçası ben &lt;strong&gt;Firmware Reverse Engineering&lt;/strong&gt; alanında yeni olsam da, 2024 yılında sunulmuş bir firmware&amp;rsquo;in eski Linux ve GCC versiyonu kullanmasını mantıklı bulmadım. Bu security açısından risk oluşturabilecek bir şey.&lt;/p&gt;
-&lt;p&gt;Bunu gördüğüm zaman kendime şunu sordum: &lt;strong&gt;&amp;ldquo;Bunu farklı firmalar da yapıyor mu ve normal mi?&amp;rdquo;&lt;/strong&gt;. Her ne kadar da bunun normal olmadığını düşünsem de farklı bir firmanın Router Firmware&amp;rsquo;ini analiz ederek Linux versiyonunu karşılaştırmak istedim. Daha sonra kısa araştırmadan sonra ASUS&amp;rsquo;un &lt;a href=&#34;https://www.asus.com/tr/networking-iot-servers/wifi-routers/asus-wifi-routers/rt-ax58u/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;RT-AX58U&lt;/a&gt; Router Firmware&amp;rsquo;i analiz etmeye karar verdim.&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.asus.com/networking-iot-servers/wifi-6/all-series/rt-ax58u/helpdesk_bios?model2Name=RT-AX58U&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Bu Firmware&lt;/a&gt; için bilgiler ise şu şekilde:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img10.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Aynı şekilde bu Firmware ise neredeyse 1 ay önce çıkmış. Odağımızın dağılmaması için hızlıca bulduğum sonucu paylaşacağım. Fakat size tavsiyem daha çok pratik yapmak isterseniz bu blogu okuduktan sonra benim gibi ASUS Router&amp;rsquo;ın bu Firmware&amp;rsquo;ini analiz edebilirsiniz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img11.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Sonuca baktığımızda bu Firmware için Linux&amp;rsquo;un &lt;strong&gt;4.19.183&lt;/strong&gt; ve GCC&amp;rsquo;nin &lt;strong&gt;9.2.0&lt;/strong&gt; versiyonu kullanılmakta.&lt;/p&gt;
-&lt;p&gt;Linux&amp;rsquo;un &lt;a href=&#34;https://lwn.net/Articles/850356/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;4.19.183 versiyonu&lt;/a&gt; &lt;strong&gt;24 Mart 2021&lt;/strong&gt;&amp;lsquo;de çıkmış:
-&lt;img src=&#34;../../../images/posts/reversing-router/img12.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;GCC&amp;rsquo;nin &lt;a href=&#34;https://gcc.gnu.org/gcc-9/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;9.2.0 versiyonu&lt;/a&gt; ise &lt;strong&gt;12 Ağustos 2019&lt;/strong&gt; yılında çıkmış&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img13.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;ASUS RT-AX58U&amp;rsquo;un bu Firmware&amp;rsquo;inde ise analiz ettiğimiz TP-LINK Firmware&amp;rsquo;ına kıyasla daha yakın bir tarihteki sürümler kullanıldığını görebiliriz ancak yine de bu sürümlerde eski.&lt;/p&gt;
-&lt;p&gt;Bunun nedenini ilerideki bloglarda tartışabiliriz. Şimdi analizimize devam edelim.&lt;/p&gt;
-&lt;p&gt;Analizimiz sonucunda bu Firmware için bulduğumuz Linux sürümü &lt;strong&gt;3.10.108&lt;/strong&gt;&amp;lsquo;dır. Şimdi ise bu Firmware&amp;rsquo;in Linux dosyalarına bir göz atalım.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Linux Dosyalarını Bulma&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;linux-dosyalarını-bulma&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#linux-dosyalar%c4%b1n%c4%b1-bulma&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;binwalk ile elde ettiğimiz offset çıktılarına bir tekrar göz atalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Burada Linux dosyalarını bulmak için &lt;strong&gt;Squashfs&lt;/strong&gt; alanına yönelebiliriz. Çoğunlukla Linux dosyaları burada bulunurlar.&lt;/p&gt;
-&lt;p&gt;Yine aynı şekilde &lt;strong&gt;.sqfs&lt;/strong&gt; uzantısı ile kopyalayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img14.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Tekrarlamaktan zarar gelmez, &lt;strong&gt;3106242&lt;/strong&gt; offset değerini verdiğime dikkat edin. Burası &lt;strong&gt;Squashfs&lt;/strong&gt; ile sıkıştırılmış alanın offset değeri.&lt;/p&gt;
-&lt;p&gt;Dosyayı incelediğimizde zaten &lt;strong&gt;Squashfs&lt;/strong&gt; ile sıkıştırıldığını doğrulayabiliriz. Şimdi ise bunu çıkartmamız gerekecek ancak eğer kurulu değilse &lt;strong&gt;Squashfs-tools&lt;/strong&gt; paketi indirilmesi gerekiyor. Debian sistemlerde aşağıdaki komutla indirebilirsiniz:&lt;/p&gt;
+&lt;p&gt;First, let&amp;rsquo;s take a look at the information of the firmware we downloaded:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/firmware-info.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As you can see, it was released on November 14, 2024. So it&amp;rsquo;s a firmware released almost 1 month ago. We can see that a few bugs have been fixed, optimizations have been made and new things have been added.&lt;/p&gt;
+&lt;p&gt;Since I don&amp;rsquo;t physically own this router, I will only analyze the firmware in this blog.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Finding Linux Version&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;finding-linux-version&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#finding-linux-version&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;We will use a tool called binwalk, which is often used especially in firmware reverse engineering. This tool can provide us with various information about the firmware.&lt;/p&gt;
+&lt;p&gt;First, let&amp;rsquo;s give binwalk the firmware we are going to analyze:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img2.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Yeaap, we have some complicated outputs&amp;hellip;&lt;/p&gt;
+&lt;p&gt;These outputs contain the offsets of the related firmware. However, this binwalk tool does not only give offset values, it also gives explanations for these fields. Let&amp;rsquo;s take a look at the Decimal and Hexdecimal values in this output:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img3.png&#34; style=&#34;width: 35%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;These are the offset values. binwalk tool shows them to us in both decimal and hexdecimal. Now let&amp;rsquo;s first focus on the Bootloader (U-Boot) and take a look at its architecture.&lt;/p&gt;
+&lt;p&gt;At this stage we can use the dd tool. Let&amp;rsquo;s run the following command:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img4.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Let&amp;rsquo;s pay attention to the values we give. with &amp;lsquo;if&amp;rsquo;, we give the target firmware. with &amp;lsquo;of&amp;rsquo;, we specify how to save the replicated data. with &amp;lsquo;skip&amp;rsquo;, we skip a certain amount of bytes and start the copying process. Notice that we gave a value of 8212. This means that dd will copy data up to 8212 bytes after the tool. This value is the offset of the uImage we found from binwalk.&lt;/p&gt;
+&lt;p&gt;This copy will result in a file called uImage:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img5.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Analyzing the copied file we can verify that it is u-boot Legacy uImage. We can also see that arch is MIPS.&lt;/p&gt;
+&lt;p&gt;To look for the Linux version, let&amp;rsquo;s take a look at our binwalk output again:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img2.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;If we look at the offsets again, we can go to the compressed partition with LZMA. Let&amp;rsquo;s take the file with the .lzma extension and extract the file:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img6.png&#34; style=&#34;width: 80%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;After these steps we should have a file as &lt;strong&gt;files&lt;/strong&gt;. Our goal will be to browse the Linux version with strings only:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img7.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;The Linux version used is 3.10.108 and 4.6.3 for GCC. Both of these are old versions.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://lwn.net/Articles/738167/&#34;&gt;Linux version 3.10.108&lt;/a&gt; was released on November 5, 2017:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img8.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;a href=&#34;https://gcc.gnu.org/gcc-4.6/&#34;&gt;Version 4.6.3 of GCC&lt;/a&gt; was released on March 1, 2012:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img9.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;To be honest, even though I am new to Firmware Reverse Engineering, I didn&amp;rsquo;t find it logical that a firmware released in 2024 would use an old Linux and GCC version. This could be a security risk.&lt;/p&gt;
+&lt;p&gt;When I saw this, I asked myself: &amp;ldquo;Do other companies do this and is it normal?&amp;rdquo;. Although I didn&amp;rsquo;t think it was normal, I wanted to analyze a different company&amp;rsquo;s router firmware and compare it with the Linux version. After a short research, I decided to analyze ASUS&amp;rsquo;s RT-AX58U Router Firmware.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.asus.com/networking-iot-servers/wifi-6/all-series/rt-ax58u/helpdesk_bios?model2Name=RT-AX58U&#34;&gt;The information&lt;/a&gt; for this firmware is as follows:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img10.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Likewise, this Firmware was released almost 1 month ago. I will share the result I found quickly so that we don&amp;rsquo;t get distracted. But if you want to practice more, I recommend you to analyze this Firmware of ASUS Router like me after reading this blog:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img11.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As a result, Linux version 4.19.183 and GCC version 9.2.0 are used for this firmware.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://lwn.net/Articles/850356/&#34;&gt;Linux version 4.19.183&lt;/a&gt; was released on March 24, 2021:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img12.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;a href=&#34;https://gcc.gnu.org/gcc-9/&#34;&gt;Version 9.2.0 of GCC&lt;/a&gt; was released on August 12, 2019&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img13.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;In this Firmware of the ASUS RT-AX58U we can see that it uses more recent versions compared to the TP-LINK Firmware we analyzed.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Finding Linux Files&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;finding-linux-files&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#finding-linux-files&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Let&amp;rsquo;s take a look again at the offset outputs we obtained with binwalk:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img2.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Here we can navigate to Squashfs to find Linux files. This is where most Linux files are located.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s copy them in the same way with the .sqfs extension:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img14.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Analyzing the file we can verify that it is already compressed with Squashfs. Now we will need to extract it, but the Squashfs-tools package needs to be downloaded if it is not installed. On Debian systems you can download it with the following command:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
 
 &lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install squashfs-tools -y&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
@@ -278,31 +360,41 @@
   &lt;/button&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;İndirdikten sonra &lt;strong&gt;unsquashfs&lt;/strong&gt; ile çıkartalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img15.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Çıkarma işleminden sonra &lt;strong&gt;squashfs-root&lt;/strong&gt; adlı bir dosya elde ediyoruz. İçerisine göz atalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img16.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü üzere Linux dosyalarına eriştik. Bu kısımda yapabileceğimiz birçok şey bulunuyor. Bir bug, hashler veya şifreler gibi artık analiziniz neye dayanıyorsa ona göre araştırma yaparak ilerleyebilirsiniz. Mesela &lt;strong&gt;/etc/shadow&lt;/strong&gt; içerisindeki şifrelere göz atabiliriz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img17.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Benim gibi yeni iseniz bu Linux dosyalarını araştırabilir ve diğer offset bölümlerini kopyalayıp göz atabilirsiniz.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Simüle Etme&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;simüle-etme&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#sim%c3%bcle-etme&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Son olarak ise Firmware&amp;rsquo;i emule (simüle) edelim. Bunun için &lt;strong&gt;chroot&lt;/strong&gt; ve &lt;strong&gt;qemu&lt;/strong&gt; kullanabiliriz. Fakat ondan önce Firmware&amp;rsquo;in mimarisini bilmemiz gerekiyor.&lt;/p&gt;
-&lt;p&gt;Linux versiyonunu ararken uImage&amp;rsquo;a göz attığımızda mimarinin &lt;strong&gt;MIPS&lt;/strong&gt; olduğunu zaten görmüştük. Ancak yine de çıktıyı bir kez daha kontrol edelim:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü üzere MIPS olduğunu görebiliriz. Ayrıca da Little Endian.&lt;/p&gt;
-&lt;p&gt;Qemu kullanacağımız için &lt;strong&gt;/usr/bin/qemu-mipsel-static&lt;/strong&gt; programını squashfs-root dosyasına kopyalayalım ve ardından chroot çalıştıralım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img18.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Başarılı bir şekilde simüle etmiş olduk. Busybox&amp;rsquo;ın sürümüne göz attığımızda da &lt;strong&gt;1.19.4&lt;/strong&gt; kullanıldığını görmekteyiz. Bu da 2012 yılında çıkmış bir eski sürümdür.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Sonuç&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;sonuç&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#sonu%c3%a7&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Firmware Reverse Engineering için ilk blogumda basitçe bir firmware&amp;rsquo;in nasıl analiz edebileceğimizi gördük. Eğer araştırmalara devam etmek isterseniz konu içerisinde bahsettiğim ASUS&amp;rsquo;un Firmware&amp;rsquo;ini analiz edebilirsiniz. Ayrıca da referanslara da göz atabilirsiniz.&lt;/p&gt;
-&lt;p&gt;Umarım bu konu işinize yaramıştır efenimmm iyi çalışmalarr.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;References&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;ul&gt;
+&lt;p&gt;After downloading, extract it with unsquashfs: command:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img15.png&#34; style=&#34;width: 80%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;After extraction we get a file named squashfs-root. Let&amp;rsquo;s take a look inside&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img16.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As you can see, we have accessed the Linux files. There are many things we can do in this section. You can search for a bug, hashes or passwords, whatever your analysis is based on. For example, we can take a look at the passwords in /etc/shadow:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img17.png&#34; style=&#34;width: 40%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;If you are new like me you can search for these Linux files and copy and browse other offset sections.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Simulating&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;simulating&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#simulating&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Finally, let&amp;rsquo;s emulate (simulate) the firmware. We can use chroot and qemu for this. But before that we need to know the architecture of the firmware.&lt;/p&gt;
+&lt;p&gt;When we browsed uImage looking for the Linux version, we already saw that the architecture is MIPS. But let&amp;rsquo;s check the output one more time:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img5.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;We can see that it&amp;rsquo;s MIPS. It is also Little Endian.&lt;/p&gt;
+&lt;p&gt;Since we are going to use Qemu, let&amp;rsquo;s copy /usr/bin/qemu-mipsel-static to squashfs-root and then run chroot:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img18.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;When we take a look at the version of Busybox, we see that 1.19.4 is used. This is an old version released in 2012.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Conclusion&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;conclusion&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#conclusion&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;In this blog, we discussed the fundamental steps of analyzing a router&amp;rsquo;s firmware, using a recently released TP-Link device as our case study. We demonstrated how to use common Linux tools like binwalk, dd, strings, and unsquashfs to dissect the firmware file, extract its core components like the kernel and the filesystem, and identify the software versions within.&lt;/p&gt;
+&lt;p&gt;Our most striking discovery was that a firmware released in 2024 is built upon a Linux kernel from 2017 (3.10.108) and a GCC toolchain from 2012 (4.6.3). As our comparison with a more up-to-date ASUS firmware showed, this practice is a choice, not a necessity, and it represents a significant security liability. Such outdated components are often rife with known, unpatched vulnerabilities that could be exploited by attackers.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;References&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://embeddedbits.org/reverse-engineering-my-routers-firmware-with-binwalk-embeddedbits/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Embeddedbits - Reverse engineering my router&amp;rsquo;s firmware with binwalk&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://embeddedbits.org/reverse-engineering-my-routers-firmware-with-binwalk-embeddedbits/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Embeddedbits - Reverse engineering my router’s firmware with binwalk&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=zs86OYea8Wk&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;John Hammond -  Getting Started in Firmware Analysis &amp;amp; IoT Reverse Engineering&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=zs86OYea8Wk&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;John Hammond - Getting Started in Firmware Analysis &amp;amp; IoT Reverse Engineering&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=oqk3cU7ekag&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Engineer Man - Simple Firmware Reverse Engineering&lt;/a&gt;&lt;/p&gt;

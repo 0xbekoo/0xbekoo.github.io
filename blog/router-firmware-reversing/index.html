@@ -11,37 +11,32 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>Router Firmware Reverse Engineering – 0xbekoo</title>
-  <meta name="description" content="
-Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link’in Archer AX 21 V4.6 modemin firmware’i reverse edeceğiz. Firmware indirmek için TP-Link’in orijinal sayfasına göz atabilirsiniz.
-Warning
-Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır." /><link rel="canonical" href="https://0xbekoo.github.io:1313/blog/router-firmware-reversing/" itemprop="url" />
+  <meta name="description" content=" Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link’s Archer AX 21 V4.6 modem. You can check TP-Link’s original page to download the firmware.
+Warning" /><link rel="canonical" href="http://localhost:1313/blog/router-firmware-reversing/" itemprop="url" />
 
 <meta property="og:title" content="Router Firmware Reverse Engineering" />
 <meta property="og:description" content="
-Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link&rsquo;in Archer AX 21 V4.6 modemin firmware&rsquo;i reverse edeceğiz. Firmware indirmek için TP-Link&rsquo;in orijinal sayfasına göz atabilirsiniz.
-
-  Warning
-
   
-    Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır." />
+
+Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&rsquo;s Archer AX 21 V4.6 modem. You can check TP-Link&rsquo;s original page to download the firmware.
+
+  Warning" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://0xbekoo.github.io:1313/blog/router-firmware-reversing/" /><meta property="article:section" content="blog" />
+<meta property="og:url" content="http://localhost:1313/blog/router-firmware-reversing/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2024-12-03T00:00:00+00:00" />
 <meta property="article:modified_time" content="2024-12-03T00:00:00+00:00" />
 
   <meta itemprop="name" content="Router Firmware Reverse Engineering">
-  <meta itemprop="description" content="Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link’in Archer AX 21 V4.6 modemin firmware’i reverse edeceğiz. Firmware indirmek için TP-Link’in orijinal sayfasına göz atabilirsiniz.
-Warning
-Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.">
+  <meta itemprop="description" content="Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link’s Archer AX 21 V4.6 modem. You can check TP-Link’s original page to download the firmware.
+Warning">
   <meta itemprop="datePublished" content="2024-12-03T00:00:00+00:00">
   <meta itemprop="dateModified" content="2024-12-03T00:00:00+00:00">
-  <meta itemprop="wordCount" content="861">
+  <meta itemprop="wordCount" content="1112">
   <meta itemprop="keywords" content="Reverse-Engineering,Firmware-Reversing,IOT-Hacking,Firmware,Router">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Router Firmware Reverse Engineering">
-  <meta name="twitter:description" content="Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link’in Archer AX 21 V4.6 modemin firmware’i reverse edeceğiz. Firmware indirmek için TP-Link’in orijinal sayfasına göz atabilirsiniz.
-Warning
-Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.">
+  <meta name="twitter:description" content="Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link’s Archer AX 21 V4.6 modem. You can check TP-Link’s original page to download the firmware.
+Warning">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -158,9 +153,41 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-4/"
+    
+  >PatchGuard Analysis - Part 4
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-3/"
+    
+  >PatchGuard Analysis - Part 3
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-2/"
+    
+  >PatchGuard Analysis - Part 2
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-1/"
+    
+  >PatchGuard Analysis - Part 1
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hooking/"
     
-  >SSDT Hooking ile User-Mode Programda Sürücü Yükleme
+  >Loading Driver from User-Mode Program via SSDT Hooking
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -168,13 +195,13 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/syscalls/"
     
-  >Windows Kernel&#39;da Syscall Araştırma Yolculuğum
+  >Reversing System Call Mechanism in Windows Kernel
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bare-metal-reversing-0x0/"
+    href="/blog/bare-metal-reversing/"
     
   >ARM Firmware Reverse Engineering
     </a>
@@ -189,33 +216,9 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
   
     <ul class='hx-flex hx-flex-col hx-gap-1 hx-relative before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] dark:before:hx-bg-neutral-800 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-pr-3 rtl:before:hx-right-0 ltr:hx-ml-3 rtl:hx-mr-3'><li>
               <a
-                href="#linux-versiyonu-bulma"
+                href="#"
                 class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Linux Versiyonu Bulma&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#linux-dosyalar%c4%b1n%c4%b1-bulma"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Linux Dosyalarını Bulma&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#sim%c3%bcle-etme"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Simüle Etme&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#sonu%c3%a7"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Sonuç&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#references"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;References&lt;/strong&gt;</a>
+              ></a>
             </li>
           </ul>
   
@@ -226,14 +229,6 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
     href="/blog/is-valorant-spyware/"
     
   >Is Valorant Spyware?
-    </a>
-              
-            </li><li class="hx-flex hx-flex-col "><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bypass-ptrace/"
-    
-  >Bypass Ptrace
     </a>
               
             </li></ul>
@@ -256,6 +251,14 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/uefi-keylogger/"
@@ -352,6 +355,14 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/winkernel-dev/wkd-ssdt/"
     
   >SSDT
@@ -408,37 +419,68 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
     <div class="max-xl:hx-hidden hx-h-0 hx-w-64 hx-shrink-0"></div></div>
   
   
-    <div class="md:hx-hidden  hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-grow hx-flex-col"><button
+    <div class="md:hx-hidden hx-justify-end hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-justify-items-start hx-grow">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>English</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/blog/router-firmware-reversing/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/blog/router-firmware-reversing/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish</a>
+        </li>
+      </ul>
+  </div><button
   title="Change theme"
   data-theme="light"
   class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
   type="button"
   aria-label="Change theme"
 >
-  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span class="group-data-[theme=light]:hx-hidden">Light</span><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg><span class="group-data-[theme=dark]:hx-hidden">Dark</span></div>
+  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></div>
 </button>
-</div></div></aside>
+</div></aside>
     
 <nav class="hextra-toc hx-order-last hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-px-4" aria-label="table of contents">
     <div class="hextra-scrollbar hx-sticky hx-top-16 hx-overflow-y-auto hx-pr-4 hx-pt-6 hx-text-sm [hyphens:auto] hx-max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4"><p class="hx-mb-4 hx-font-semibold hx-tracking-tight">On this page</p><ul>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#linux-versiyonu-bulma">Linux Versiyonu Bulma
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#finding-linux-version">Finding Linux Version
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#linux-dosyalar%c4%b1n%c4%b1-bulma">Linux Dosyalarını Bulma
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#finding-linux-files">Finding Linux Files
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#sim%c3%bcle-etme">Simüle Etme
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#simulating">Simulating
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#sonu%c3%a7">Sonuç
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#conclusion">Conclusion
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#references">References
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#references">References
         </a>
       </li></ul>
       <div class="hx-mt-8 hx-border-t hx-bg-white hx-pt-8 hx-shadow-[0_-12px_16px_white] dark:hx-bg-dark dark:hx-shadow-[0_-12px_16px_#111] hx-sticky hx-bottom-0 hx-flex hx-flex-col hx-items-start hx-gap-2 hx-pb-8 dark:hx-border-neutral-800 contrast-more:hx-border-t contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-border-neutral-400">
@@ -471,66 +513,97 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
                   <div class="group-hover:hx-underline">0xbekoo</div>
                 </a></div>
         <div class="content">
-          <p><img src="../../../images/posts/reversing-router/headerphoto.jpg" alt="" loading="lazy" /></p>
-<p>Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link&rsquo;in <a href="https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/" target="_blank" rel="noopener">Archer AX 21 V4.6</a> modemin firmware&rsquo;i reverse edeceğiz. Firmware indirmek için <a href="https://www.tp-link.com/us/support/download/archer-ax21/#Firmware" target="_blank" rel="noopener">TP-Link&rsquo;in orijinal sayfasına</a> göz atabilirsiniz.</p>
+          <div style="text-align: center;">
+  <img src="/images/posts/reversing-router/headerphoto.jpg" style="width: 100%" />
+</div>
+<p>Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&rsquo;s <a href="https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/">Archer AX 21 V4.6</a> modem. You can check TP-Link&rsquo;s original page to <a href="https://www.tp-link.com/us/support/download/archer-ax21/#Firmware">download the firmware</a>.</p>
 <div class="hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200">
   <p class="hx-flex hx-items-center hx-font-medium"><svg height=16px class="hx-inline-block hx-align-middle hx-mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Warning</p>
 
   <div class="hx-w-full hx-min-w-0 hx-leading-7">
-    <div class="hx-mt-6 hx-leading-7 first:hx-mt-0"><p>Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.</p></div>
+    <div class="hx-mt-6 hx-leading-7 first:hx-mt-0"><p>The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.</p></div>
   </div>
 </div>
-<p>Öncelikle indirdiğimiz Firmware&rsquo;in bilgilerine göz atalım:</p>
-<p><img src="../../../images/posts/reversing-router/firmware-info.png" alt="" loading="lazy" /></p>
-<p>Görüldüğü üzere 14 Kasım 2024 yılında yayınlanmış. Yani neredeyse 1 ay önce yayınlanmış bir firmware. Birkaç hatanın düzeltildiği, optimizelerin yapıldığı ve yeni şeyler eklendiğini görebiliriz.</p>
-<p>Fiziksel olarak bu router&rsquo;a sahip olmadığım için bu blogta sadece firmware analiz ederek yelteneceğim.</p>
-<h2><strong>Linux Versiyonu Bulma</strong><span class="hx-absolute -hx-mt-20" id="linux-versiyonu-bulma"></span>
-    <a href="#linux-versiyonu-bulma" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Özellikle firmware reverse engineering&rsquo;de sıklıkla kullanılan <strong>binwalk</strong> denilen aracı kullanacağız. Bu araç bize firmware için çeşitli bilgiler sunabilir.</p>
-<p>Öncelikle binwalk&rsquo;a analiz edeceğimiz firmware verelim:</p>
-<p><img src="../../../images/posts/reversing-router/img2.png" alt="" loading="lazy" /></p>
-<p>Evett okumaya üşendiğimiz birkaç karmaşık gibi görünen çıktılar elde ettik. Peki nedir bunlar efenimm?</p>
-<p>Bu gördüğünüz çıktılar ilgili firmware&rsquo;in offsetlerini içermektedir. Ancak sadece offset değerleri verilmiyor yanlarında bu alanlar için açıklama da veriyor bu binwalk aracı. Gözümüz hemen bu çıktıdaki Decimal ve Hexdecimal değerlerine kaysın:</p>
-<p><img src="../../../images/posts/reversing-router/img3.png" alt="" loading="lazy" /></p>
-<p>İşte offset değerleri bunlar. Hem decimal hem de hexdecimal olarak binwalk aracı bize bunları gösteriyor. Şimdi ilk odağımızı Bootloader (U-Boot)&lsquo;a yönlendirelim ve mimarisine bir göz atalım.</p>
-<p>Bu etapta <strong>dd</strong> aracını kullanabiliriz. Bunun için aşağıdaki komutu çalıştıralım:</p>
-<p><img src="../../../images/posts/reversing-router/img4.png" alt="" loading="lazy" /></p>
-<p>Verdiğimiz değerlere dikkat edelim. <strong>if</strong> ile hedef firmware&rsquo;i veriyoruz. <strong>of</strong> ile çoğaltılan veriyi nasıl kaydedeceğimizi belirtiyoruz. <strong>skip</strong> ile ise belirli bir byte miktarını atlayarak kopyalama işlemine başlıyor. <strong>8212</strong> değeri verdiğime dikkat edin. Bu ise, dd aracın 8212 byte kadar sonrasındaki verileri kopyalacağı anlamına gelir. Bu değer binwalk&rsquo;tan bulduğumuz uImage&rsquo;ın offset değeri.</p>
-<p>Bu kopyalama sonucunda <strong>uImage</strong> adlı bir dosya elde edeceğiz:</p>
-<p><img src="../../../images/posts/reversing-router/img5.png" alt="" loading="lazy" /></p>
-<p>Kopyaladığımız dosyayı incelediğimizde <strong>u-boot Legacy uImage</strong> olduğunu doğrulayabiliriz. Ayrıca arch&rsquo;ın MIPS olduğunu da görebiliriz.</p>
-<p>Linux versiyonu aramak için ise tekrar binwalk çıktımıza bir göz atalım:</p>
-<p><img src="../../../images/posts/reversing-router/img2.png" alt="" loading="lazy" /></p>
-<p>Tekrar offsetlere göz atarsak LZMA ile sıkıştırılmış bölüme gidebiliriz. <strong>.lzma</strong> uzantılı olarak dosyayı alalım ve dosyayı çıkartalım:</p>
-<p><img src="../../../images/posts/reversing-router/img6.png" alt="" loading="lazy" /></p>
-<p>Bu adımlardan sonra elimizde <strong>files</strong> olarak bir dosya elimizde olmalı. Amacımız sadece <strong>strings</strong> ile Linux versiyonuna göz atmak olacak:</p>
-<p><img src="../../../images/posts/reversing-router/img7.png" alt="" loading="lazy" /></p>
-<p>Kullanılan Linux versiyonu <strong>3.10.108</strong> ve GCC için ise <strong>4.6.3</strong> kullanılmakta. Bu ikisi de eski versiyondur.</p>
-<p>Linux&rsquo;un <a href="https://lwn.net/Articles/738167/" target="_blank" rel="noopener">3.10.108 versiyonu</a> <strong>5 Kasım 2017</strong> yılında çıkmış:</p>
-<p><img src="../../../images/posts/reversing-router/img8.png" alt="" loading="lazy" /></p>
-<p>GCC&rsquo;nin <a href="https://lwn.net/Articles/738167/" target="_blank" rel="noopener">4.6.3 versiyonu</a> ise <strong>1 Mart 2012</strong> yılında çıkmış:</p>
-<p><img src="../../../images/posts/reversing-router/img9.png" alt="" loading="lazy" /></p>
-<p>Açıkçası ben <strong>Firmware Reverse Engineering</strong> alanında yeni olsam da, 2024 yılında sunulmuş bir firmware&rsquo;in eski Linux ve GCC versiyonu kullanmasını mantıklı bulmadım. Bu security açısından risk oluşturabilecek bir şey.</p>
-<p>Bunu gördüğüm zaman kendime şunu sordum: <strong>&ldquo;Bunu farklı firmalar da yapıyor mu ve normal mi?&rdquo;</strong>. Her ne kadar da bunun normal olmadığını düşünsem de farklı bir firmanın Router Firmware&rsquo;ini analiz ederek Linux versiyonunu karşılaştırmak istedim. Daha sonra kısa araştırmadan sonra ASUS&rsquo;un <a href="https://www.asus.com/tr/networking-iot-servers/wifi-routers/asus-wifi-routers/rt-ax58u/" target="_blank" rel="noopener">RT-AX58U</a> Router Firmware&rsquo;i analiz etmeye karar verdim.</p>
-<p><a href="https://www.asus.com/networking-iot-servers/wifi-6/all-series/rt-ax58u/helpdesk_bios?model2Name=RT-AX58U" target="_blank" rel="noopener">Bu Firmware</a> için bilgiler ise şu şekilde:</p>
-<p><img src="../../../images/posts/reversing-router/img10.png" alt="" loading="lazy" /></p>
-<p>Aynı şekilde bu Firmware ise neredeyse 1 ay önce çıkmış. Odağımızın dağılmaması için hızlıca bulduğum sonucu paylaşacağım. Fakat size tavsiyem daha çok pratik yapmak isterseniz bu blogu okuduktan sonra benim gibi ASUS Router&rsquo;ın bu Firmware&rsquo;ini analiz edebilirsiniz:</p>
-<p><img src="../../../images/posts/reversing-router/img11.png" alt="" loading="lazy" /></p>
-<p>Sonuca baktığımızda bu Firmware için Linux&rsquo;un <strong>4.19.183</strong> ve GCC&rsquo;nin <strong>9.2.0</strong> versiyonu kullanılmakta.</p>
-<p>Linux&rsquo;un <a href="https://lwn.net/Articles/850356/" target="_blank" rel="noopener">4.19.183 versiyonu</a> <strong>24 Mart 2021</strong>&lsquo;de çıkmış:
-<img src="../../../images/posts/reversing-router/img12.png" alt="" loading="lazy" /></p>
-<p>GCC&rsquo;nin <a href="https://gcc.gnu.org/gcc-9/" target="_blank" rel="noopener">9.2.0 versiyonu</a> ise <strong>12 Ağustos 2019</strong> yılında çıkmış</p>
-<p><img src="../../../images/posts/reversing-router/img13.png" alt="" loading="lazy" /></p>
-<p>ASUS RT-AX58U&rsquo;un bu Firmware&rsquo;inde ise analiz ettiğimiz TP-LINK Firmware&rsquo;ına kıyasla daha yakın bir tarihteki sürümler kullanıldığını görebiliriz ancak yine de bu sürümlerde eski.</p>
-<p>Bunun nedenini ilerideki bloglarda tartışabiliriz. Şimdi analizimize devam edelim.</p>
-<p>Analizimiz sonucunda bu Firmware için bulduğumuz Linux sürümü <strong>3.10.108</strong>&lsquo;dır. Şimdi ise bu Firmware&rsquo;in Linux dosyalarına bir göz atalım.</p>
-<h2><strong>Linux Dosyalarını Bulma</strong><span class="hx-absolute -hx-mt-20" id="linux-dosyalarını-bulma"></span>
-    <a href="#linux-dosyalar%c4%b1n%c4%b1-bulma" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>binwalk ile elde ettiğimiz offset çıktılarına bir tekrar göz atalım:</p>
-<p><img src="../../../images/posts/reversing-router/img2.png" alt="" loading="lazy" /></p>
-<p>Burada Linux dosyalarını bulmak için <strong>Squashfs</strong> alanına yönelebiliriz. Çoğunlukla Linux dosyaları burada bulunurlar.</p>
-<p>Yine aynı şekilde <strong>.sqfs</strong> uzantısı ile kopyalayalım:</p>
-<p><img src="../../../images/posts/reversing-router/img14.png" alt="" loading="lazy" /></p>
-<p>Tekrarlamaktan zarar gelmez, <strong>3106242</strong> offset değerini verdiğime dikkat edin. Burası <strong>Squashfs</strong> ile sıkıştırılmış alanın offset değeri.</p>
-<p>Dosyayı incelediğimizde zaten <strong>Squashfs</strong> ile sıkıştırıldığını doğrulayabiliriz. Şimdi ise bunu çıkartmamız gerekecek ancak eğer kurulu değilse <strong>Squashfs-tools</strong> paketi indirilmesi gerekiyor. Debian sistemlerde aşağıdaki komutla indirebilirsiniz:</p>
+<p>First, let&rsquo;s take a look at the information of the firmware we downloaded:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/firmware-info.png" style="width: 100%" />
+</div>
+<p>As you can see, it was released on November 14, 2024. So it&rsquo;s a firmware released almost 1 month ago. We can see that a few bugs have been fixed, optimizations have been made and new things have been added.</p>
+<p>Since I don&rsquo;t physically own this router, I will only analyze the firmware in this blog.</p>
+<h3><strong>Finding Linux Version</strong><span class="hx-absolute -hx-mt-20" id="finding-linux-version"></span>
+    <a href="#finding-linux-version" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>We will use a tool called binwalk, which is often used especially in firmware reverse engineering. This tool can provide us with various information about the firmware.</p>
+<p>First, let&rsquo;s give binwalk the firmware we are going to analyze:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img2.png" style="width: 100%" />
+</div>
+<p>Yeaap, we have some complicated outputs&hellip;</p>
+<p>These outputs contain the offsets of the related firmware. However, this binwalk tool does not only give offset values, it also gives explanations for these fields. Let&rsquo;s take a look at the Decimal and Hexdecimal values in this output:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img3.png" style="width: 35%" />
+</div>
+<p>These are the offset values. binwalk tool shows them to us in both decimal and hexdecimal. Now let&rsquo;s first focus on the Bootloader (U-Boot) and take a look at its architecture.</p>
+<p>At this stage we can use the dd tool. Let&rsquo;s run the following command:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img4.png" style="width: 100%" />
+</div>
+<p>Let&rsquo;s pay attention to the values we give. with &lsquo;if&rsquo;, we give the target firmware. with &lsquo;of&rsquo;, we specify how to save the replicated data. with &lsquo;skip&rsquo;, we skip a certain amount of bytes and start the copying process. Notice that we gave a value of 8212. This means that dd will copy data up to 8212 bytes after the tool. This value is the offset of the uImage we found from binwalk.</p>
+<p>This copy will result in a file called uImage:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img5.png" style="width: 100%" />
+</div>
+<p>Analyzing the copied file we can verify that it is u-boot Legacy uImage. We can also see that arch is MIPS.</p>
+<p>To look for the Linux version, let&rsquo;s take a look at our binwalk output again:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img2.png" style="width: 100%" />
+</div>
+<p>If we look at the offsets again, we can go to the compressed partition with LZMA. Let&rsquo;s take the file with the .lzma extension and extract the file:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img6.png" style="width: 80%" />
+</div>
+<p>After these steps we should have a file as <strong>files</strong>. Our goal will be to browse the Linux version with strings only:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img7.png" style="width: 100%" />
+</div>
+<p>The Linux version used is 3.10.108 and 4.6.3 for GCC. Both of these are old versions.</p>
+<p><a href="https://lwn.net/Articles/738167/">Linux version 3.10.108</a> was released on November 5, 2017:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img8.png" style="width: 100%" />
+</div>
+<p><a href="https://gcc.gnu.org/gcc-4.6/">Version 4.6.3 of GCC</a> was released on March 1, 2012:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img9.png" style="width: 100%" />
+</div>
+<p>To be honest, even though I am new to Firmware Reverse Engineering, I didn&rsquo;t find it logical that a firmware released in 2024 would use an old Linux and GCC version. This could be a security risk.</p>
+<p>When I saw this, I asked myself: &ldquo;Do other companies do this and is it normal?&rdquo;. Although I didn&rsquo;t think it was normal, I wanted to analyze a different company&rsquo;s router firmware and compare it with the Linux version. After a short research, I decided to analyze ASUS&rsquo;s RT-AX58U Router Firmware.</p>
+<p><a href="https://www.asus.com/networking-iot-servers/wifi-6/all-series/rt-ax58u/helpdesk_bios?model2Name=RT-AX58U">The information</a> for this firmware is as follows:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img10.png" style="width: 100%" />
+</div>
+<p>Likewise, this Firmware was released almost 1 month ago. I will share the result I found quickly so that we don&rsquo;t get distracted. But if you want to practice more, I recommend you to analyze this Firmware of ASUS Router like me after reading this blog:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img11.png" style="width: 100%" />
+</div>
+<p>As a result, Linux version 4.19.183 and GCC version 9.2.0 are used for this firmware.</p>
+<p><a href="https://lwn.net/Articles/850356/">Linux version 4.19.183</a> was released on March 24, 2021:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img12.png" style="width: 100%" />
+</div>
+<p><a href="https://gcc.gnu.org/gcc-9/">Version 9.2.0 of GCC</a> was released on August 12, 2019</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img13.png" style="width: 100%" />
+</div>
+<p>In this Firmware of the ASUS RT-AX58U we can see that it uses more recent versions compared to the TP-LINK Firmware we analyzed.</p>
+<h3><strong>Finding Linux Files</strong><span class="hx-absolute -hx-mt-20" id="finding-linux-files"></span>
+    <a href="#finding-linux-files" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Let&rsquo;s take a look again at the offset outputs we obtained with binwalk:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img2.png" style="width: 100%" />
+</div>
+<p>Here we can navigate to Squashfs to find Linux files. This is where most Linux files are located.</p>
+<p>Let&rsquo;s copy them in the same way with the .sqfs extension:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img14.png" style="width: 100%" />
+</div>
+<p>Analyzing the file we can verify that it is already compressed with Squashfs. Now we will need to extract it, but the Squashfs-tools package needs to be downloaded if it is not installed. On Debian systems you can download it with the following command:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt install squashfs-tools -y</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -543,31 +616,41 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
   </button>
 </div>
 </div>
-<p>İndirdikten sonra <strong>unsquashfs</strong> ile çıkartalım:</p>
-<p><img src="../../../images/posts/reversing-router/img15.png" alt="" loading="lazy" /></p>
-<p>Çıkarma işleminden sonra <strong>squashfs-root</strong> adlı bir dosya elde ediyoruz. İçerisine göz atalım:</p>
-<p><img src="../../../images/posts/reversing-router/img16.png" alt="" loading="lazy" /></p>
-<p>Göründüğü üzere Linux dosyalarına eriştik. Bu kısımda yapabileceğimiz birçok şey bulunuyor. Bir bug, hashler veya şifreler gibi artık analiziniz neye dayanıyorsa ona göre araştırma yaparak ilerleyebilirsiniz. Mesela <strong>/etc/shadow</strong> içerisindeki şifrelere göz atabiliriz:</p>
-<p><img src="../../../images/posts/reversing-router/img17.png" alt="" loading="lazy" /></p>
-<p>Benim gibi yeni iseniz bu Linux dosyalarını araştırabilir ve diğer offset bölümlerini kopyalayıp göz atabilirsiniz.</p>
-<h2><strong>Simüle Etme</strong><span class="hx-absolute -hx-mt-20" id="simüle-etme"></span>
-    <a href="#sim%c3%bcle-etme" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Son olarak ise Firmware&rsquo;i emule (simüle) edelim. Bunun için <strong>chroot</strong> ve <strong>qemu</strong> kullanabiliriz. Fakat ondan önce Firmware&rsquo;in mimarisini bilmemiz gerekiyor.</p>
-<p>Linux versiyonunu ararken uImage&rsquo;a göz attığımızda mimarinin <strong>MIPS</strong> olduğunu zaten görmüştük. Ancak yine de çıktıyı bir kez daha kontrol edelim:</p>
-<p><img src="../../../images/posts/reversing-router/img5.png" alt="" loading="lazy" /></p>
-<p>Göründüğü üzere MIPS olduğunu görebiliriz. Ayrıca da Little Endian.</p>
-<p>Qemu kullanacağımız için <strong>/usr/bin/qemu-mipsel-static</strong> programını squashfs-root dosyasına kopyalayalım ve ardından chroot çalıştıralım:</p>
-<p><img src="../../../images/posts/reversing-router/img18.png" alt="" loading="lazy" /></p>
-<p>Başarılı bir şekilde simüle etmiş olduk. Busybox&rsquo;ın sürümüne göz attığımızda da <strong>1.19.4</strong> kullanıldığını görmekteyiz. Bu da 2012 yılında çıkmış bir eski sürümdür.</p>
-<h2><strong>Sonuç</strong><span class="hx-absolute -hx-mt-20" id="sonuç"></span>
-    <a href="#sonu%c3%a7" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Firmware Reverse Engineering için ilk blogumda basitçe bir firmware&rsquo;in nasıl analiz edebileceğimizi gördük. Eğer araştırmalara devam etmek isterseniz konu içerisinde bahsettiğim ASUS&rsquo;un Firmware&rsquo;ini analiz edebilirsiniz. Ayrıca da referanslara da göz atabilirsiniz.</p>
-<p>Umarım bu konu işinize yaramıştır efenimmm iyi çalışmalarr.</p>
-<h2><strong>References</strong><span class="hx-absolute -hx-mt-20" id="references"></span>
-    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><ul>
+<p>After downloading, extract it with unsquashfs: command:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img15.png" style="width: 80%" />
+</div>
+<p>After extraction we get a file named squashfs-root. Let&rsquo;s take a look inside</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img16.png" style="width: 100%" />
+</div>
+<p>As you can see, we have accessed the Linux files. There are many things we can do in this section. You can search for a bug, hashes or passwords, whatever your analysis is based on. For example, we can take a look at the passwords in /etc/shadow:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img17.png" style="width: 40%" />
+</div>
+<p>If you are new like me you can search for these Linux files and copy and browse other offset sections.</p>
+<h3><strong>Simulating</strong><span class="hx-absolute -hx-mt-20" id="simulating"></span>
+    <a href="#simulating" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Finally, let&rsquo;s emulate (simulate) the firmware. We can use chroot and qemu for this. But before that we need to know the architecture of the firmware.</p>
+<p>When we browsed uImage looking for the Linux version, we already saw that the architecture is MIPS. But let&rsquo;s check the output one more time:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img5.png" style="width: 100%" />
+</div>
+<p>We can see that it&rsquo;s MIPS. It is also Little Endian.</p>
+<p>Since we are going to use Qemu, let&rsquo;s copy /usr/bin/qemu-mipsel-static to squashfs-root and then run chroot:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/reversing-router/img18.png" style="width: 100%" />
+</div>
+<p>When we take a look at the version of Busybox, we see that 1.19.4 is used. This is an old version released in 2012.</p>
+<h3><strong>Conclusion</strong><span class="hx-absolute -hx-mt-20" id="conclusion"></span>
+    <a href="#conclusion" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>In this blog, we discussed the fundamental steps of analyzing a router&rsquo;s firmware, using a recently released TP-Link device as our case study. We demonstrated how to use common Linux tools like binwalk, dd, strings, and unsquashfs to dissect the firmware file, extract its core components like the kernel and the filesystem, and identify the software versions within.</p>
+<p>Our most striking discovery was that a firmware released in 2024 is built upon a Linux kernel from 2017 (3.10.108) and a GCC toolchain from 2012 (4.6.3). As our comparison with a more up-to-date ASUS firmware showed, this practice is a choice, not a necessity, and it represents a significant security liability. Such outdated components are often rife with known, unpatched vulnerabilities that could be exploited by attackers.</p>
+<h3><strong>References</strong><span class="hx-absolute -hx-mt-20" id="references"></span>
+    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><ul>
 <li>
-<p><a href="https://embeddedbits.org/reverse-engineering-my-routers-firmware-with-binwalk-embeddedbits/" target="_blank" rel="noopener">Embeddedbits - Reverse engineering my router&rsquo;s firmware with binwalk</a></p>
+<p><a href="https://embeddedbits.org/reverse-engineering-my-routers-firmware-with-binwalk-embeddedbits/" target="_blank" rel="noopener">Embeddedbits - Reverse engineering my router’s firmware with binwalk</a></p>
 </li>
 <li>
-<p><a href="https://www.youtube.com/watch?v=zs86OYea8Wk" target="_blank" rel="noopener">John Hammond -  Getting Started in Firmware Analysis &amp; IoT Reverse Engineering</a></p>
+<p><a href="https://www.youtube.com/watch?v=zs86OYea8Wk" target="_blank" rel="noopener">John Hammond - Getting Started in Firmware Analysis &amp; IoT Reverse Engineering</a></p>
 </li>
 <li>
 <p><a href="https://www.youtube.com/watch?v=oqk3cU7ekag" target="_blank" rel="noopener">Engineer Man - Simple Firmware Reverse Engineering</a></p>
@@ -583,7 +666,7 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
         title="Is Valorant Spyware?"
         class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-pr-4 rtl:hx-pl-4"
       ><svg class="hx-inline hx-h-5 hx-shrink-0 ltr:hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>Is Valorant Spyware?</a><a
-        href="/blog/bare-metal-reversing-0x0/"
+        href="/blog/bare-metal-reversing/"
         title="ARM Firmware Reverse Engineering"
         class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-ml-auto ltr:hx-pl-4 ltr:hx-text-right rtl:hx-mr-auto rtl:hx-pr-4 rtl:hx-text-left"
       >ARM Firmware Reverse Engineering<svg class="hx-inline hx-h-5 hx-shrink-0 rtl:-hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a></div>
@@ -592,7 +675,38 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
     </article>
   </div>
 
-      <footer class="hextra-footer hx-bg-gray-100 hx-pb-[env(safe-area-inset-bottom)] dark:hx-bg-neutral-900 print:hx-bg-transparent"><div class="hx-mx-auto hx-flex hx-gap-2 hx-py-2 hx-px-4 hx-max-w-screen-xl"><button
+      <footer class="hextra-footer hx-bg-gray-100 hx-pb-[env(safe-area-inset-bottom)] dark:hx-bg-neutral-900 print:hx-bg-transparent"><div class="hx-mx-auto hx-flex hx-gap-2 hx-py-2 hx-px-4 hx-max-w-screen-xl"><div class="hx-flex hx-justify-items-start ">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>English</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/blog/router-firmware-reversing/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/blog/router-firmware-reversing/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish</a>
+        </li>
+      </ul>
+  </div><button
   title="Change theme"
   data-theme="light"
   class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"

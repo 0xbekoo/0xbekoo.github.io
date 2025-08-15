@@ -10,34 +10,29 @@
 <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
-<title>Windows Kernel&#39;da Syscall Araştırma Yolculuğum – 0xbekoo</title>
-  <meta name="description" content="Giriş Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.
-Birkaç gün önce SSDT tablosu üzerine bir döküman paylaşmıştım. Bu dökümanda temel olarak SSDT’nin ne olduğunu, adreslerin nasıl hesaplandığı vs anlatmıştım. Dökümanın son kısmında ise öğrendiğimiz şeylerin bir kernel sürücüsünü hazırlamıştık.
-Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğer benim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel’da Syscall’ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!" /><link rel="canonical" href="https://0xbekoo.github.io:1313/blog/syscalls/" itemprop="url" />
+<title>Reversing System Call Mechanism in Windows Kernel – 0xbekoo</title>
+  <meta name="description" content="Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel.
+In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what’s NTAPI, Syscall or SSDT etc. in this blog because i wrote many documents for these topics and if you’re beginner in the topics, you can start with the documents mentioned." /><link rel="canonical" href="http://localhost:1313/blog/syscalls/" itemprop="url" />
 
-<meta property="og:title" content="Windows Kernel&#39;da Syscall Araştırma Yolculuğum" />
-<meta property="og:description" content="Giriş
-    Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.
-Birkaç gün önce SSDT tablosu üzerine bir döküman paylaşmıştım. Bu dökümanda temel olarak SSDT&rsquo;nin ne olduğunu, adreslerin nasıl hesaplandığı vs anlatmıştım. Dökümanın son kısmında ise öğrendiğimiz şeylerin bir kernel sürücüsünü hazırlamıştık.
-Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğer benim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel&rsquo;da Syscall&rsquo;ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!" />
+<meta property="og:title" content="Reversing System Call Mechanism in Windows Kernel" />
+<meta property="og:description" content="Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel.
+In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what&rsquo;s NTAPI, Syscall or SSDT etc. in this blog because i wrote many documents for these topics and if you&rsquo;re beginner in the topics, you can start with the documents mentioned." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://0xbekoo.github.io:1313/blog/syscalls/" /><meta property="article:section" content="blog" />
+<meta property="og:url" content="http://localhost:1313/blog/syscalls/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2024-12-31T00:00:00+00:00" />
 <meta property="article:modified_time" content="2024-12-31T00:00:00+00:00" />
 
-  <meta itemprop="name" content="Windows Kernel&#39;da Syscall Araştırma Yolculuğum">
-  <meta itemprop="description" content="Giriş Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.
-Birkaç gün önce SSDT tablosu üzerine bir döküman paylaşmıştım. Bu dökümanda temel olarak SSDT’nin ne olduğunu, adreslerin nasıl hesaplandığı vs anlatmıştım. Dökümanın son kısmında ise öğrendiğimiz şeylerin bir kernel sürücüsünü hazırlamıştık.
-Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğer benim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel’da Syscall’ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!">
+  <meta itemprop="name" content="Reversing System Call Mechanism in Windows Kernel">
+  <meta itemprop="description" content="Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel.
+In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what’s NTAPI, Syscall or SSDT etc. in this blog because i wrote many documents for these topics and if you’re beginner in the topics, you can start with the documents mentioned.">
   <meta itemprop="datePublished" content="2024-12-31T00:00:00+00:00">
   <meta itemprop="dateModified" content="2024-12-31T00:00:00+00:00">
-  <meta itemprop="wordCount" content="2540">
+  <meta itemprop="wordCount" content="2585">
   <meta itemprop="keywords" content="Reverse-Engineering,Syscall,Windows-Kernel">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Windows Kernel&#39;da Syscall Araştırma Yolculuğum">
-  <meta name="twitter:description" content="Giriş Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.
-Birkaç gün önce SSDT tablosu üzerine bir döküman paylaşmıştım. Bu dökümanda temel olarak SSDT’nin ne olduğunu, adreslerin nasıl hesaplandığı vs anlatmıştım. Dökümanın son kısmında ise öğrendiğimiz şeylerin bir kernel sürücüsünü hazırlamıştık.
-Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğer benim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel’da Syscall’ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!">
+  <meta name="twitter:title" content="Reversing System Call Mechanism in Windows Kernel">
+  <meta name="twitter:description" content="Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel.
+In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what’s NTAPI, Syscall or SSDT etc. in this blog because i wrote many documents for these topics and if you’re beginner in the topics, you can start with the documents mentioned.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -154,9 +149,41 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-4/"
+    
+  >PatchGuard Analysis - Part 4
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-3/"
+    
+  >PatchGuard Analysis - Part 3
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-2/"
+    
+  >PatchGuard Analysis - Part 2
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-1/"
+    
+  >PatchGuard Analysis - Part 1
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hooking/"
     
-  >SSDT Hooking ile User-Mode Programda Sürücü Yükleme
+  >Loading Driver from User-Mode Program via SSDT Hooking
     </a>
               
             </li><li class="hx-flex hx-flex-col open"><a
@@ -164,32 +191,20 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
       sidebar-active-item hx-bg-primary-100 hx-font-semibold hx-text-primary-800 contrast-more:hx-border contrast-more:hx-border-primary-500 dark:hx-bg-primary-400/10 dark:hx-text-primary-600 contrast-more:dark:hx-border-primary-500"
     href="/blog/syscalls/"
     
-  >Windows Kernel&#39;da Syscall Araştırma Yolculuğum
+  >Reversing System Call Mechanism in Windows Kernel
     </a>
   
     <ul class='hx-flex hx-flex-col hx-gap-1 hx-relative before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] dark:before:hx-bg-neutral-800 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-pr-3 rtl:before:hx-right-0 ltr:hx-ml-3 rtl:hx-mr-3'><li>
               <a
-                href="#giri%c5%9f"
+                href="#"
                 class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Giriş&lt;/strong&gt;</a>
+              ></a>
             </li>
           <li>
               <a
-                href="#statik-analiz"
+                href="#references"
                 class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Statik Analiz&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#dinamik-analiz"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Dinamik Analiz&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#sonu%c3%a7"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Sonuç&lt;/strong&gt;</a>
+              >&lt;strong&gt;References&lt;/strong&gt;</a>
             </li>
           </ul>
   
@@ -197,7 +212,7 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
             </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bare-metal-reversing-0x0/"
+    href="/blog/bare-metal-reversing/"
     
   >ARM Firmware Reverse Engineering
     </a>
@@ -216,14 +231,6 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
     href="/blog/is-valorant-spyware/"
     
   >Is Valorant Spyware?
-    </a>
-              
-            </li><li class="hx-flex hx-flex-col "><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bypass-ptrace/"
-    
-  >Bypass Ptrace
     </a>
               
             </li></ul>
@@ -246,6 +253,14 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/uefi-keylogger/"
@@ -342,6 +357,14 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/winkernel-dev/wkd-ssdt/"
     
   >SSDT
@@ -398,73 +421,100 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
     <div class="max-xl:hx-hidden hx-h-0 hx-w-64 hx-shrink-0"></div></div>
   
   
-    <div class="md:hx-hidden  hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-grow hx-flex-col"><button
+    <div class="md:hx-hidden hx-justify-end hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-justify-items-start hx-grow">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>English</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/blog/syscalls/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/blog/syscalls/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish</a>
+        </li>
+      </ul>
+  </div><button
   title="Change theme"
   data-theme="light"
   class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
   type="button"
   aria-label="Change theme"
 >
-  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span class="group-data-[theme=light]:hx-hidden">Light</span><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg><span class="group-data-[theme=dark]:hx-hidden">Dark</span></div>
+  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></div>
 </button>
-</div></div></aside>
+</div></aside>
     
 <nav class="hextra-toc hx-order-last hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-px-4" aria-label="table of contents">
     <div class="hextra-scrollbar hx-sticky hx-top-16 hx-overflow-y-auto hx-pr-4 hx-pt-6 hx-text-sm [hyphens:auto] hx-max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4"><p class="hx-mb-4 hx-font-semibold hx-tracking-tight">On this page</p><ul>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#giri%c5%9f">Giriş
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#static-analysis">Static Analysis
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#statik-analiz">Statik Analiz
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#preparation-phase-kisystemserviceuser">Preparation Phase: KiSystemServiceUser
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kisystemserviceuser">KiSystemServiceUser
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#determination-of-the-systemcall-kisystemservicestart">Determination of the Systemcall: KiSystemServiceStart
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#syscall-numaras%c4%b1n%c4%b1n-belirlenmesi-kisystemservicestart">Syscall Numarasının Belirlenmesi: KiSystemServiceStart
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#calculation-of-kernel-routine-kiservicesystemrepeat">Calculation of Kernel Routine: KiServiceSystemRepeat
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kernel-rutinin-hesaplanmas%c4%b1-kiservicesystemrepeat">Kernel Rutinin Hesaplanması: KiServiceSystemRepeat
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#redirect-to-kernel-routine-kisystemservicecopyend">Redirect to Kernel Routine: KiSystemServiceCopyEnd
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kernel-rutine-y%c3%b6nlendirme-kisystemservicecopyend">Kernel Rutine Yönlendirme: KiSystemServiceCopyEnd
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#dynamic-analysis">Dynamic Analysis
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#statik-analiz-sonucu">Statik Analiz Sonucu
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#adding-breakpoint-to-kisystemcall64">Adding Breakpoint to KiSystemCall64
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#dinamik-analiz">Dinamik Analiz
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kisystemserviceuser">KiSystemServiceUser
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kisystemcall64e-breakpoint-eklemek">KiSystemCall64’e Breakpoint Eklemek
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kisystemservicestart">KiSystemServiceStart
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kisystemserviceuser-1">KiSystemServiceUser
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kisystemservicerepeat">KiSystemServiceRepeat
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kisystemservicestart">KiSystemServiceStart
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kisystemservicecopyend">KiSystemServiceCopyEnd
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kisystemservicerepeat">KiSystemServiceRepeat
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#conclusion">Conclusion
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kisystemservicecopyend">KiSystemServiceCopyEnd
-        </a>
-      </li>
-      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#sonu%c3%a7">Sonuç
+        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#references">References
         </a>
       </li></ul>
       <div class="hx-mt-8 hx-border-t hx-bg-white hx-pt-8 hx-shadow-[0_-12px_16px_white] dark:hx-bg-dark dark:hx-shadow-[0_-12px_16px_#111] hx-sticky hx-bottom-0 hx-flex hx-flex-col hx-items-start hx-gap-2 hx-pb-8 dark:hx-border-neutral-800 contrast-more:hx-border-t contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-border-neutral-400">
@@ -485,10 +535,10 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
   <div class="hx-mt-1.5 hx-flex hx-items-center hx-gap-1 hx-overflow-hidden hx-text-sm hx-text-gray-500 dark:hx-text-gray-400 contrast-more:hx-text-current">
         <div class="hx-whitespace-nowrap hx-transition-colors hx-min-w-[24px] hx-overflow-hidden hx-text-ellipsis hover:hx-text-gray-900 dark:hover:hx-text-gray-100">
           <a href="/blog/">Blogs</a>
-        </div><svg class="hx-w-3.5 hx-shrink-0 rtl:-hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg><div class="hx-whitespace-nowrap hx-transition-colors hx-font-medium hx-text-gray-700 contrast-more:hx-font-bold contrast-more:hx-text-current dark:hx-text-gray-100 contrast-more:dark:hx-text-current">Windows Kernel&#39;da Syscall Araştırma Yolculuğum</div>
+        </div><svg class="hx-w-3.5 hx-shrink-0 rtl:-hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg><div class="hx-whitespace-nowrap hx-transition-colors hx-font-medium hx-text-gray-700 contrast-more:hx-font-bold contrast-more:hx-text-current dark:hx-text-gray-100 contrast-more:dark:hx-text-current">Reversing System Call Mechanism in Windows Kernel</div>
   </div>
 
-        <h1 class="hx-mt-2 hx-text-4xl hx-font-bold hx-tracking-tight hx-text-slate-900 dark:hx-text-slate-100">Windows Kernel&#39;da Syscall Araştırma Yolculuğum</h1>
+        <h1 class="hx-mt-2 hx-text-4xl hx-font-bold hx-tracking-tight hx-text-slate-900 dark:hx-text-slate-100">Reversing System Call Mechanism in Windows Kernel</h1>
         <div class="hx-mt-4 hx-mb-16 hx-text-gray-500 hx-text-sm hx-flex hx-items-center hx-flex-wrap hx-gap-y-2"><span class="hx-mr-1">December 31, 2024</span><span class="hx-mx-1">·</span><a
                   href="https://github.com/0xbekoo" target="_blank"
                   class="hx-group hx-inline-flex hx-items-center hx-text-current hx-gap-x-1.5 hx-mx-1"
@@ -497,26 +547,27 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
                   <div class="group-hover:hx-underline">0xbekoo</div>
                 </a></div>
         <div class="content">
-          <h2><strong>Giriş</strong><span class="hx-absolute -hx-mt-20" id="giriş"></span>
-    <a href="#giri%c5%9f" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.</p>
-<p>Birkaç gün önce SSDT tablosu üzerine bir <a href="https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/" target="_blank" rel="noopener">döküman</a> paylaşmıştım. Bu dökümanda temel olarak SSDT&rsquo;nin ne olduğunu, adreslerin nasıl hesaplandığı vs anlatmıştım. Dökümanın son kısmında ise öğrendiğimiz şeylerin bir kernel sürücüsünü hazırlamıştık.</p>
-<p>Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğer benim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel&rsquo;da Syscall&rsquo;ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!</p>
-<p>Bu blogta, temel bilgiler olan NTAPI&rsquo;ların ne olduğu ve syscall&rsquo;ın nasıl işlendiği vs. gibi konulara yer vermeyeceğim. Zira <a href="https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/" target="_blank" rel="noopener"><strong>NTAPI Injection</strong></a> dökümanında NTAPI&rsquo;in ne olduğunu, <a href="https://0xbekoo.github.io/docs/malware-dev/direct-syscalls" target="_blank" rel="noopener"><strong>Direct Systemcalls</strong></a> dökümanında bir syscall&rsquo;ın nasıl işlendiğini ve  temel olarak <a href="https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/" target="_blank" rel="noopener"><strong>SSDT</strong></a> dökümanında SSDT ve kernel&rsquo;da syscall&rsquo;ın nasıl işlendiğini daha önceden anlattım. Eğer temel şeylerle öğrenmeye başlayacaksınız bu dökümanlardan başlamak sizin için daha iyi olacaktır. Bu blogta nihai amacımız kernel alanında bir syscall&rsquo;ın nasıl işlendiğini detaylı bir şekilde görmek olacak.</p>
-<h2><strong>Statik Analiz</strong><span class="hx-absolute -hx-mt-20" id="statik-analiz"></span>
-    <a href="#statik-analiz" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Bir syscall işlendiğinde, ntdll.dll&rsquo;den syscall yapıldığında kernel alanına geçişte ilk durağın KiSystemCall64 olduğunu biliyoruz. Statik olarak analizimizi buradan başlayacağız. IDA ortamında ntoskrnl.exe analiz etmekle başlayalım.</p>
-<h3><strong>KiSystemServiceUser</strong><span class="hx-absolute -hx-mt-20" id="kisystemserviceuser"></span>
-    <a href="#kisystemserviceuser" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p><strong>KiSystemCall64/KiSystemCall64Shadow</strong> kodlarına göz attığınızda akışın <strong>KiSystemServiceUser</strong>&lsquo;a doğru yönlendiğini göreceksiniz:</p>
-<p><img src="../../../images/posts/syscall-journey/img1.png" alt="" loading="lazy" /></p>
-<p><strong>KiSystemServiceUser</strong>&lsquo;da syscall&rsquo;ın işlenmesi için hazırlıklar yapılıyor:</p>
-<p><img src="../../../images/posts/syscall-journey/img2.png" alt="" loading="lazy" /></p>
-<p>Burada odağımızı <code>mov rbx,gs:188h</code> kısmına çevirmemiz gerekiyor çünkü önemli bir yapı olan _KPCR yapısı içerisinden bir KTHREAD yapısı alınmakta.</p>
-<p>Bu yapının ne olduğunu anlamak için <a href="https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/amd64_x/kpcr.htm" target="_blank" rel="noopener">Geoff Chappell, Software Analyst</a>&lsquo;ın açıklamasından yararlanabiliriz:</p>
-<blockquote>
-  <p>&ldquo;KPCR yapısı, <strong>Kernel Processor Control Region</strong> anlamına gelir. Kernel, her mantıksal işlemci için bir KPCR yapısı tutar. KPCR, işlemci mimarisine son derece özeldir.&rdquo;</p>
-
-</blockquote>
-<p>Yani kısaca aklımızda şöyle kalabilir bu yapıda işlemciye özel verileri saklamak için kullanılır. Yani baya önemli bir yapı.</p>
-<p>x64 sistemlerde KPCR yapısı, gs:0 alanına işaret eder:</p>
+          <p>Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel.</p>
+<p>In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what&rsquo;s <a href="https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/">NTAPI</a>, <a href="https://0xbekoo.github.io/docs/malware-dev/direct-syscalls/">Syscall</a> or <a href="https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/">SSDT</a> etc. in this blog because i wrote many documents for these topics and if you&rsquo;re beginner in the topics, you can start with the documents mentioned.</p>
+<h3><strong>Static Analysis</strong><span class="hx-absolute -hx-mt-20" id="static-analysis"></span>
+    <a href="#static-analysis" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>When a syscall starts processing from ntdll.dll, the flow begins in <strong>KiSystemCall64</strong> from Windows Kernel and we will start in this part.</p>
+<h4><strong>Preparation Phase: KiSystemServiceUser</strong><span class="hx-absolute -hx-mt-20" id="preparation-phase-kisystemserviceuser"></span>
+    <a href="#preparation-phase-kisystemserviceuser" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>If we take a look at <strong>KiSystemCall64/KiSystemCall64Shadow</strong>, flow is transferred to <strong>KiSystemServiceUser</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img1.png" style="width:80%" />
+</div>
+<p>In KiSystemServiceUser, it prepares to process the syscall:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img2.png" style="width: 44%" />
+</div>
+<p>We have to focus on <strong>mov rbx,gs:188h</strong> code. This offset corresponds to a critical structure that called <strong>KPCR</strong>. In the structure, it gets address of KTHREAD.</p>
+<p>We can benefit article of Geoff Chappell<sup>[2]</sup> for the structure:</p>
+<div style="text-align:center; font-size: 14px;">
+<i>
+The name KPCR stands for (Kernel) Processor Control Region. The kernel keeps a KPCR (formally a _KPCR) for each logical processor. The KPCR is highly specific to the processor architecture.
+</i>
+</div>
+<p>KPCR structure points to gs:0 in x64 systems:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>kd&gt; dt nt!_KPCR
@@ -556,7 +607,7 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
   </button>
 </div>
 </div>
-<p>Şimdi odağımızı çevirdiğimiz koda baktığımızda ilk olarak <strong>gs:188</strong> işaret edilen bölüm alınmakta. Windbg&rsquo;dan elde ettiğimiz çıktı ile KPCR yapıya baktığımızda bu kısmın <strong>0x180 Prcb _KPRCB</strong> alanından bir bölüme işaret ettiğini anlayabiliriz:</p>
+<p>Now if we take a look at the code again, it gets 0x188 offset in KiSystemServiceUser. According the output of WinDBG, this offset corresponds to Prcb in the structure.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>dt nt!_KPRCB
@@ -575,12 +626,13 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
   </button>
 </div>
 </div>
-<p><code>gs:188h</code> olduğu için KRPCB yapısından KTHREAD yapısına işaret eden <strong>+0x008 CurrentThread</strong> alınmakta. <strong>KTHREAD</strong> yapısının ne olduğunu anlamak için yine <a href="https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/ke/kthread/index.htm" target="_blank" rel="noopener">Geoff Chappell</a>&lsquo;in makalesinden yararlanabiliriz:</p>
-<blockquote>
-  <p>&ldquo;KTHREAD yapısı, ETHREAD yapısının çekirdek kısmıdır. ETHREAD, Nesne Yöneticisi (Object Manager) aracılığıyla sunulan iş parçacığı nesnesidir. KTHREAD ise bunun temel çekirdeğini oluşturur.&rdquo;</p>
-
-</blockquote>
-<p>Yani bildiğimiz ETHREAD yapısının kernel versiyonu. Thread yürütme/yönetimi için Kernel tarafından ihtiyaç duyulan birçok önemli bilgiyi içeriyor bu yapı. Bunlardan biri de bu yapıda TEB&rsquo;in adresi bulunmasıdır:</p>
+<p>We can see that 0x188 offset in PRCB corresponds to <strong>CurrentThread</strong>. Also we can benefit article of Geoff Chappell<sup>[3]</sup> again to understand that what&rsquo;s KTHREAD:</p>
+<div style="text-align:center; font-size: 14px;">
+<i>
+The KTHREAD structure is the Kernel Core’s portion of the ETHREAD structure. The latter is the thread object as exposed through the Object Manager. The KTHREAD is the core of it.
+</i>
+</div>
+<p>It&rsquo;s like equivalent of ETHREAD as Kernel Structure. Also one important detail in the structure is that it holds address of TEB:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>kd&gt; dt nt!_KTHREAD
@@ -599,21 +651,22 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
   </button>
 </div>
 </div>
-<p><strong>KiSystemServiceUser</strong>&lsquo;ın son kısımlarında ise KTHREAD yapısından <strong>SystemCallNumber</strong> ve <strong>FirstArgument</strong> bayrakların ayarlandığını görebiliriz:</p>
-<p><img src="../../../images/posts/syscall-journey/img3.png" alt="" loading="lazy" /></p>
-<p>Bundan sonra akış <strong>KiSystemServiceStart</strong>&lsquo;a yönlendiriliyor.</p>
-<h3>Syscall Numarasının Belirlenmesi: <strong>KiSystemServiceStart</strong><span class="hx-absolute -hx-mt-20" id="syscall-numarasının-belirlenmesi-kisystemservicestart"></span>
-    <a href="#syscall-numaras%c4%b1n%c4%b1n-belirlenmesi-kisystemservicestart" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Yapılan syscall&rsquo;ın ilk temelleri burada atılmaya başlanıyor.</p>
-<p>Bir syscall yapıldığında, içerdiği syscall index&rsquo;le beraber <strong>Table Identifier</strong> bilgisi de içermektedir. Kafanız karışmaması için bunu bir fotoğraf üzerinden anlatayım:</p>
-<p><img src="../../../images/posts/syscall-journey/byte-diagram.png" alt="" loading="lazy" /></p>
-<p>Bitler sağdan sola okunduğundan 0 ila 11 bit System Call Index&rsquo;ın bitini barındırır. 12 ila 13 bit arası ise Table Identifier&rsquo;ın biti barındırır. Bundan sonraki bitler kullanılmaz. Şimdi ki durağımız olan <strong>KiSystemServiceStart</strong> tam da bu konuyla alakalı:</p>
-<p><img src="../../../images/posts/syscall-journey/img4.png" alt="" loading="lazy" /></p>
-<p>Şimdi kafanızda daha iyi oturması için bir senaryo oluşturalım. Diyelim ki ntdll.dll&rsquo;den NtOpenProcess için syscall yapıldı. Bu senaryoda Syscall&rsquo;ın yapılmasını şöyle düşünmenizi istiyorum: içi beyaz sünger dolu kutu gibi düşünmenizi istiyorum.</p>
-<p>Diyelim ki biri tarafından içinde iki tane hediye olan bu kutuyu aldınız. İçini açtığınızda en üstünde gereksiz beyaz sünger olduğunu gördüğünüz. Beyaz süngerin altında ise iki tane hediye bulunmakta. Normal bir insan gibi  üsteki süngerleri kaldırır ve altında duran hediyeleri alırız demi?</p>
-<p>Syscall çağırısı kernel alanından KiSystemServiceStart&rsquo;a ulaştıktan sonra KiSystemServiceStart fonksiyonu aynen bunu yapıyor. Bu gereksiz süngerleri (kabaca kullanılmayan bitleri) kaldırıyor ve ilk olarak birinci eşyayı (Table Identifier) ve ikinci eşyayı (System Call Index) alıyor.</p>
-<p>Bu örnekten sonra fonksiyona tekrar göz atalım:</p>
-<p><img src="../../../images/posts/syscall-journey/img5.png" alt="" loading="lazy" /></p>
-<p>Örneğimizde NtOpenProcess&rsquo;i söylemiştim. NtOpenProcess&rsquo;in ssn numarası <strong>0x26</strong>&lsquo;dır. Yani bu kısımda eax&rsquo;ın 26h değeri barındırdığını düşünürsek:</p>
+<p>In the last part of KiSystemServiceUser, we can see that it sets <strong>SystemCallNumber</strong> flag from KTHREAD Structure:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img3.png" style="width: 60%" />
+</div>
+<p>Also notice that the <strong>FirstParameter</strong> flag of the structure sets with rcx.</p>
+<h4><strong>Determination of the Systemcall: KiSystemServiceStart</strong><span class="hx-absolute -hx-mt-20" id="determination-of-the-systemcall-kisystemservicestart"></span>
+    <a href="#determination-of-the-systemcall-kisystemservicestart" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>When a syscall processed, it contains a <strong>Table Identifier</strong> information with Syscall Index:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img4.png" style="width: 75%" />
+</div>
+<p>Bits are read from right to left and according the diagram above, 0 - 11 bits contains Syscall Index, while 12 - 13 bits contains Table Identifier. After bits are not used. <strong>KiSystemServiceStart</strong> function determines these bits. In other words, this function extract the syscall number:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img5.png" style="width: 70%" />
+</div>
+<p>Firstly, it deletes Padding Bit with 7 bits shifting to reach Table Identifier and Syscall Number. After that, it gets Table Identifier value and Syscall number. I know that it seems to be confusing but trust me this section is really simple.</p>
+<p>We can create a scenario. Let&rsquo;s think that the syscall number is 0x26 (NtOpenProcess):</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nf">mov</span> <span class="no">edi</span><span class="p">,</span><span class="no">eax</span>     <span class="c1">; eax = 0x26 (0010 0110)
@@ -627,9 +680,11 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
   </button>
 </div>
 </div>
-<p>Burada yapılan işlem tam olarak aşağıda gösterildiği gibidir:</p>
-<p><img src="../../../images/posts/syscall-journey/img6.png" alt="" loading="lazy" /></p>
-<p>Yani 7 bit sağ kaydırmadan sonra elde ettiğimiz değer tamamen 0 oluyor ve edi register&rsquo;ı 0x0 değeri almış olur. Gereksiz bitleri kaldırdığımıza göre Table Identifier&rsquo;ı alalım:</p>
+<p>This processes here&rsquo;s exactly as shown below:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img6.png" style="width: 85%" />
+</div>
+<p>After shift 7 bits to right, the Padding bits are cleared, which means that edi register is taken 0 value. Let&rsquo;s get Table Identifier Value:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>and edi,20h     ; edi = 0x20 (1000 00)</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -642,12 +697,13 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
   </button>
 </div>
 </div>
-<p>Burada yapılan işlem tam olarak aşağıda gösterildiği gibidir:</p>
-<p><img src="../../../images/posts/syscall-journey/img7.png" alt="" loading="lazy" /></p>
-<p>Yani NtOpenProcess için alacağımız Table Identifier&rsquo;ın sonucu 0x0 olacaktır.</p>
-<p>Fakat bu durum her zaman böyle değildir. SSN numarası eğer 1000h ile 1FFFh arasındaysa Table Identifier değeri 0x20 olacaktır. Bu API&rsquo;lar Windows GUI ile ilgilidir.</p>
-<p>Eğer ki Syscall Numarası 0h ile FFFh arasındaysa, örneğimizde olduğu gibi Table Identifier değeri 0x0 olacaktır. Bu API&rsquo;lar ise ntdll.dll ile ilgilidir.</p>
-<p>Şimdi ise Systemcall numarasının alındığı kısma geldik:</p>
+<p>This process here&rsquo;s exactly as shown below:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img7.png" style="width: 70%" />
+</div>
+<p>So, we can see that the Table Identifier value is 0x0 for NtOpenProcess.</p>
+<p>But this isn&rsquo;t always in this case. If the SSN Number is between <strong>0x1000</strong> and <strong>0x1FFF</strong>, Table Identifier value will be 0x0 and these specific functions are related to GUI API&rsquo;s. But if the SSN Number is between <strong>0x0</strong> and <strong>0xFFF</strong>, the Table Identifier will be 0x0, as have been shown. These functions are related to ntdll.dll, such as NtOpenProcess.</p>
+<p>Now let&rsquo;s extract SSN Number:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>and eax,0FFFh   // eax = 0x26 (0010 0110)</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -660,12 +716,16 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
   </button>
 </div>
 </div>
-<p>Burada yapılan işlem ise aşağıda gösterilmiştir:</p>
-<p><img src="../../../images/posts/syscall-journey/img8.png" alt="" loading="lazy" /></p>
-<p><strong>0010 0110</strong> (Hex: 0x26) sonucunu elde ediyoruz. Bu ise NtOpenProcess&rsquo;in Systemcall numarasıdır.</p>
-<p>Kafamızda daha iyi oturması için herhangi bir GUI ile alakalı bir API seçelim ve bu adımları ona da uygulayalım. <strong>win32u.dll</strong>&lsquo;den GUI ile alakalı bir API seçelim ve bu seçtiğimiz API&rsquo;in Table Identifier değerini ve SSN&rsquo;i hesaplayalım:</p>
-<p><img src="../../../images/posts/syscall-journey/img16.png" alt="" loading="lazy" /></p>
-<p><strong>NtUserCreateWindowEx</strong> GUI ile alakalı bir API&rsquo;dir ve win32u.dll&rsquo;in içinde bulunur. SSN Numarası ise <strong>106F</strong>. Bunun işlendiği varsayarsak:</p>
+<p>This process here&rsquo;s exactly as shown below:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img8.png" style="width: 70%" />
+</div>
+<p>The result <strong>00100110</strong> correspond to 0x26. That&rsquo;s all!</p>
+<p>Let&rsquo;s select a GUI API from <strong>win32u.dll</strong> and calculate its Table Identifier value:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img9.png" style="width: 90%" />
+</div>
+<p>Our target is <strong>NtUserCreateWindowEx</strong> and its SSN is 0x106F as we can see. Let&rsquo;s calculate:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>mov edi,eax ; eax = 0x106F (0001 0000 0110 1111)
@@ -679,9 +739,11 @@ shl edi,7</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx
   </button>
 </div>
 </div>
-<p>Bu işlem tam olarak şöyle:</p>
-<p><img src="../../../images/posts/syscall-journey/img17.png" alt="" loading="lazy" /></p>
-<p>7 bit sola kaydırdığımızda aldığımız sonuç <strong>20h</strong> oluyor. Daha sonra Table Identifier değerini alalım:</p>
+<p>This process is exactly like this:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img10.png" style="width: 90%" />
+</div>
+<p>edi register is taken 0x20 value. Now it takes Table Identifier value:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>and edi,20h ; edi = 0x20 (1000 00)</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -694,11 +756,12 @@ shl edi,7</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx
   </button>
 </div>
 </div>
-<p>Bu kodda yapılan işlem aşağdaki gibidir:</p>
-<p><img src="../../../images/posts/syscall-journey/img18.png" alt="" loading="lazy" /></p>
-<p>Yani Table Identifier değeri 0x20 (32) oluyor.</p>
-<p>Yani her zaman Table Identifier değeri 0x0 olmuyor. Önceden anlattığım gibi, eğer GUI ile alakalı bir API&rsquo;in ssn numarası işleniyorsa table Identifier değeri 0x20 olacaktır. 0x0 olması takdirde ntdll.dll&rsquo;in içerisinden bir API olduğunu anlayabiliriz.</p>
-<p>Son olarak GUI API&rsquo;in SSN numarasını çıkaralım:</p>
+<p>Or:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img11.png" style="width: 40%" />
+</div>
+<p>So, as we can see that Table Identifier value is 0x20.  Like i said, the value is not always 0x0.</p>
+<p>Lastly, let&rsquo;s extract the SSN Number:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>and eax,0FFFh   ; eax = 0x106F</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -711,18 +774,21 @@ shl edi,7</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx
   </button>
 </div>
 </div>
-<p>Bu kodda yapılan işlem aşağıdaki gibidir:</p>
-<p><img src="../../../images/posts/syscall-journey/img19.png" alt="" loading="lazy" /></p>
-<p>Sonucumuz <strong>0001000001101111</strong> yani 0x106F değerine denk gelmektedir.</p>
-<p>Böylece <strong>KiSystemServiceStart</strong> fonksiyonunun amacı, işlenilen syscall&rsquo;ı ve Table Identifier değerlerini çıkarmak. Bu kısımdan sonra artık akış <strong>KiSystemServiceRepeat</strong>&rsquo;e yöneliyor.</p>
-<h3>Kernel Rutinin Hesaplanması: <strong>KiServiceSystemRepeat</strong><span class="hx-absolute -hx-mt-20" id="kernel-rutinin-hesaplanması-kiservicesystemrepeat"></span>
-    <a href="#kernel-rutinin-hesaplanmas%c4%b1-kiservicesystemrepeat" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Artık Syscall numarası belirlendikten sonra bu fonksiyonda ilk olarak SSDT&rsquo;nin adresi alınmakta:</p>
-<p><img src="../../../images/posts/syscall-journey/img9.png" alt="" loading="lazy" /></p>
-<p>Fakat ilgi çeken kısım ise SSDT&rsquo;nin adresi alındıktan sonra rbx&rsquo;in değerleri kontrol ediliyor. Hatırlayalım, rbx register&rsquo;ı hangi adresi tutuyordu?</p>
-<p><strong>KiSystemServiceUser</strong> başlığında gördüğümüz gibi rbx register&rsquo;ı, _KPRCB altında <code>+0x008 CurrentThread    : Ptr64 _KTHREAD</code> yapıyı tutmakta. Bu yapıda neyi kontrol ettiğine bir bakalım:</p>
+<p>This process is exactly like this:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img12.png" style="width: 70%" />
+</div>
+<p>The result is <strong>0001000001101111</strong>, it correspond to 0x106F.</p>
+<p>As we can see that <strong>KiSystemServiceStart</strong> has responsibility to determine Syscall Number.</p>
+<h4><strong>Calculation of Kernel Routine: KiServiceSystemRepeat</strong><span class="hx-absolute -hx-mt-20" id="calculation-of-kernel-routine-kiservicesystemrepeat"></span>
+    <a href="#calculation-of-kernel-routine-kiservicesystemrepeat" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>Next section <strong>KiServiceSystemRepeat</strong> has responsibility to calculate kernel routine. Here&rsquo;s codes:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img13.png" style="width: 50%" />
+</div>
+<p>Firstly, it gets address of SSDT, as we can see. Then it compares 0x78 offset of KPCR structure with 0x80 value. This offset corresponds to <strong>GuiThread</strong>:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<pre><code>&gt; dt nt!_KTHREAD
+<pre><code>kd&gt; dt nt!_KTHREAD
    ...
    &#43;0x078 ThreadFlagsSpare : Pos 0, 2 Bits
    &#43;0x078 AutoAlignment    : Pos 2, 1 Bit
@@ -740,27 +806,29 @@ shl edi,7</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx
   </button>
 </div>
 </div>
-<p>Bu yapıdan <strong>GuiThread</strong> flag&rsquo;ın ayarlanıp ayarlanmadığını kontrol edilmektedir. Eğer ayarlanmamışsa direkt bu koşullardan atlanır.</p>
-<p>İşin garip kısmı da ileride de göreceğimiz gibi, thread ilk olarak bu rutini çalıştırdığında GUI ile alakalı bir API&rsquo;in işlenip işlenmediğini bilmiyor. Yani bir farklı deyişle, Kernel henüz mevcut Thread&rsquo;ın bir GUI fonksiyonu işleyip işlemediğini bilmiyor. Dolayasıyla sonuç ne olursa olsun ilk kısımda burası her zaman atlanacaktır. İlerideki  analizde göreceksiniz ki hesaplamalardan sonra akış, eğer GUI ile alakalı bir API işleniyorsa bu kısma tekrardan yönlendirilecek.</p>
-<p><img src="../../../images/posts/syscall-journey/img10.png" alt="" loading="lazy" /></p>
-<p>SSDT&rsquo;nin adresi alındıktan sonra  bir karşılaştırma yapılıyor. Açıklamadan göreceğiniz üzere Syscall numarası, <strong>r10+rdi+10h</strong> adresindeki değerle karşılaştırıyor. r10 register&rsquo;ı SSDT adresini barındırırken rdi değeri ise yukarıda gördüğümüz gibi Table Identifier sonucunu taşımaktadır. Örneğimizin yine NtOpenProcess olduğunu düşünürsek Table Identifier&rsquo;ın 0x0 olduğunu varsayabiliriz.</p>
-<p>Bu koşulun amacı alınan syscall numarasının GUI ile alakalı bir API&rsquo;a ait olup olmadığıdır. Eğer ait ise <strong>loc_14068DAC7</strong> fonksiyonuna yönlendirilir. Değilse işlemlere devam edilir.</p>
-<p>Şimdi ise büyünün gerçekleştiği kısma geliyoruz:</p>
-<p><img src="../../../images/posts/syscall-journey/img11.png" alt="" loading="lazy" /></p>
-<p>Eğer SSDT dökümanımı okuduysanız SSDT tablosunu kullanarak mutlak adrese erişmek için bazı formüller kullanıyorduk. Bu formülleri de iredteam kaynağından almıştım. Bu kısım tam olarak bununla ilgili. Detaya geçmeden önce formülleri bir hatırlayalım.</p>
-<p>İlk olarak offset&rsquo;i hesaplıyorduk:</p>
-<div align="center">
-<br>
-<b>
+<p>Thus it checks if GuiThread flag is set. if it is, then r11 will take address of <strong>KeServiceDescriptorTableFilter</strong>.</p>
+<p>But there&rsquo;s a interesting situation here.  We can see that when the thread first runs this routine, it does not know if a GUI related API is being processed. So, in this context, whatever output is, it will skip it. As we will see in the following analysis,  after calculation of kernel routine, it determines whether SSN number is GUI or not and if it is, will be redirected back to the beginning of this section.</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img14.png" style="width: 70%" />
+</div>
+<p>After it get address of SSDT, it compares <strong>r10+rdi+0x10. r10</strong>. r10 contains address of SSDT, while rdi contains Table Identifier value. The purpose here, as I said, is to see if the SSN number is relevant to the GUI.</p>
+<p>Now comes the part where the magic happens:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img15.png" style="width: 60%" />
+</div>
+<p>If you read my SSDT Documentation, you can see that there are some formulas for the calculation. Now in here, you see their sources.</p>
+<p>Let&rsquo;s remember first the formula:</p>
+<div style="text-align:center; font-size: 17px;">
 <i>
-Offset = KiServiceTableAddress + 4 * SSN
+<b>
+	Offset = KiServiceTableAddress + 4 * SSN
 </b>
 </i>
 </div>
-<p>Buradaki formülün karşılığını assembly kodlarında görebiliriz:</p>
+<p>Or we can see this formula in the code:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<pre><code>movsxd  r11, dword ptr [r10&#43;rax*4] ; Offset&#39;i hesapla</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nf">movsxd</span>  <span class="no">r11</span><span class="p">,</span> <span class="no">dword</span> <span class="no">ptr</span> <span class="p">[</span><span class="no">r10</span><span class="err">+</span><span class="no">rax</span><span class="p">*</span><span class="mi">4</span><span class="p">]</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
     title="Copy code"
@@ -770,22 +838,21 @@ Offset = KiServiceTableAddress + 4 * SSN
   </button>
 </div>
 </div>
-<p>r10 register&rsquo;da SSDT adresi, rax&rsquo;ta SSN numarası bulunmakta.</p>
-<p>Yine SSDT dökümanında, elde ettiğimiz offset değeri ile ilgili kernel rutini hesaplıyorduk:</p>
-<div align="center">
-<br>
-<b>
+<p>It gets address Offset that correspond to original kernel routine from SSDT.</p>
+<p>Next formula is:</p>
+<div style="text-align:center; font-size: 17px;">
 <i>
- KernelRoutineAddress = KiServiceTableAddress + ( Offset >>> 4 )
+<b>
+	KernelRoutineAddress = KiServiceTableAddress + ( Offset >>> 4 )
 </b>
 </i>
 </div>
-<p>Bu kısmın assembly karşılığı ise şu şekilde:</p>
+<p>Or:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<pre><code>mov     rax, r11
-sar     r11, 4          ; Elde edilen offset değerini 4 bit sağ kaydır
-add     r10, r11        ; Kaydırma sonucunu SSDT adresiyle toplayarak mutlak adresi hesapla</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nf">mov</span>     <span class="no">rax</span><span class="p">,</span> <span class="no">r11</span>
+</span></span><span class="line"><span class="cl"><span class="nf">sar</span>     <span class="no">r11</span><span class="p">,</span> <span class="mi">4</span> 
+</span></span><span class="line"><span class="cl"><span class="no">add</span>     <span class="no">r10</span><span class="p">,</span> <span class="no">r11</span> </span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
     title="Copy code"
@@ -795,12 +862,12 @@ add     r10, r11        ; Kaydırma sonucunu SSDT adresiyle toplayarak mutlak ad
   </button>
 </div>
 </div>
-<p>Yani SSDT&rsquo;te öğrendiğimiz formüller kullanılarak asıl adres hesaplanıyor. Böylece canlı bir şekilde de formülleri görmüş olduk.</p>
-<p>Daha sonra edi register&rsquo;ın değeri <strong>0x20</strong> değeri ile karşılaştırılıyor:</p>
+<p>It reaches the Kernel Routine address with this formula.</p>
+<p>Then it checks edi register to 0x20 value:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
-<pre><code>cmp edi,20h
-jnz short loc_14068D270</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nf">cmp</span> <span class="no">edi</span><span class="p">,</span><span class="mi">20</span><span class="no">h</span>
+</span></span><span class="line"><span class="cl"><span class="nf">jnz</span> <span class="no">short</span> <span class="no">loc_1406B8570</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
     title="Copy code"
@@ -810,29 +877,65 @@ jnz short loc_14068D270</code></pre><div class="hextra-code-copy-btn-container h
   </button>
 </div>
 </div>
-<p>Artık bunun ne anlama geldiğini biliyoruz. İşlenilen API&rsquo;in GUI API&rsquo;a ait olup olmadığı kontrol ediliyor. Bunun için de alınan Table Identifier değeri kullanılıyor. Eğer işlenilen API, GUI ile alakalı ise bu kısma yönlendiriliyor:</p>
-<p><img src="../../../images/posts/syscall-journey/img12.png" alt="" loading="lazy" /></p>
-<p>Bu başlıkta ilk olarak bahsettiğim konuya geldik. Eğer edi gerçekten 0x20 ise, bu bir GUI API&rsquo;in işlendiğini gösterir ve mevcut thread&rsquo;ı <strong>KiConvertGuiThread</strong> ile bir GUI Thread&rsquo;e dönüştürür. Sonrada akış tekrardan KiSystemServiceRepeat&rsquo;e yönlendirilir</p>
-<p>Artık işlenilen syscall&rsquo;ın GUI ile alakalı olup olmadığı belirlendiğinde ve hesaplamalar yapıldıktan sonra akış KiSystemServiceGdiTebAccess&rsquo;e yönlendirilir. Ardından hesaplanılan adrese yönlendirmek için akış <strong>KiSystemServiceCopyEnd</strong>&lsquo;den devam ediyor:</p>
-<p><img src="../../../images/posts/syscall-journey/img13.png" alt="" loading="lazy" /></p>
-<p><strong>KiSystemServiceCopyEnd</strong>&rsquo;nin adresine yönlendirmeden önce bu adresi rax&rsquo;ın değeri kadarıyla çıkartıyor yani akış, KiSystemServiceCopyStart kısmına aktarılıyor.</p>
-<h3><strong>Kernel Rutine Yönlendirme: KiSystemServiceCopyEnd</strong><span class="hx-absolute -hx-mt-20" id="kernel-rutine-yönlendirme-kisystemservicecopyend"></span>
-    <a href="#kernel-rutine-y%c3%b6nlendirme-kisystemservicecopyend" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p><img src="../../../images/posts/syscall-journey/img14.png" alt="" loading="lazy" /></p>
-<p>Bu fonksiyonda dikkatimizi çeken kısım ise akış, hesaplanan kernel rutin adresine yönlendirilmesidir:</p>
-<p><img src="../../../images/posts/syscall-journey/img15.png" alt="" loading="lazy" /></p>
-<p>r10 register&rsquo;da hesaplanan rutin adresi bulunmaktadır. rax register&rsquo;a adres aktarılarak adres çağrılıyor.</p>
-<h3><strong>Statik Analiz Sonucu</strong><span class="hx-absolute -hx-mt-20" id="statik-analiz-sonucu"></span>
-    <a href="#statik-analiz-sonucu" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Statik analizle incelediğimizde kernel alanında syscall&rsquo;ın şu şekilde işlendiğini anlayabiliriz:</p>
-<ul>
-<li><strong>Durak 1 - KiSystemServiceUser</strong>: Geçerli Thread için KPRCB yapısından CurrentThread yapı alınır, <strong>SystemCallNumber</strong> ve <strong>FirstArgument</strong> bayrakları ayarlanır.</li>
-<li><strong>Durak 2 - KiSystemServiceStart</strong>: İşlenilecek syscall&rsquo;ın numarasını ve Table Identifier değerlerini çıkarır.</li>
-<li><strong>Durak 3 - KiSystemRepeat</strong>: Syscall işlenme sürecin en önemli durağı. İşlenilen syscall&rsquo;ın GUI ile ilgili olup olmadığı belirlenir ve ilgili rutin adres hesaplanır.</li>
-<li><strong>Durak 4 - KiSystemServiceCopyEnd</strong>: Artık syscall işlenme sürecin son durağı. Akış, hesaplanılan adrese yönlendirilir ve işlemler tamamlanmış olur.</li>
-</ul>
-<h2><strong>Dinamik Analiz</strong><span class="hx-absolute -hx-mt-20" id="dinamik-analiz"></span>
-    <a href="#dinamik-analiz" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Sanal makinemize bağlı Windbg ile bu süreçleri yakından takip edebiliriz. Statik analizde öğrendiğimiz şeyleri dinamik olarak da görelim.</p>
-<h3><strong>KiSystemCall64</strong>&rsquo;e Breakpoint Eklemek<span class="hx-absolute -hx-mt-20" id="kisystemcall64e-breakpoint-eklemek"></span>
-    <a href="#kisystemcall64e-breakpoint-eklemek" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>KiSystemCall64&rsquo;ün adresini okuyarak başlayabiliriz. Bunun için aşağıdaki komut ile adresini okuyabiliriz:</p>
+<p>Again, the purpose here is to identify that the SSN Number is related to the GUI API:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img16.png" style="width: 70%" />
+</div>
+<p>So if it&rsquo;s, it will redirect to KiConvertToGuiThread function and as i said, it jumps to beginning of KiSystemServiceRepeat.</p>
+<p>Lastly, after the computation, the flow is transfered to <strong>KiSystemServiceCopyEnd</strong> function to direct kernel routine that computed. We can see this section in KiSystemServiceGdiTebAccess:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img17.png" style="width: 40%" />
+</div>
+<h4><strong>Redirect to Kernel Routine: KiSystemServiceCopyEnd</strong><span class="hx-absolute -hx-mt-20" id="redirect-to-kernel-routine-kisystemservicecopyend"></span>
+    <a href="#redirect-to-kernel-routine-kisystemservicecopyend" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>The interesting part of this function is that the flow is directed to the computed kernel routine address:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img18.png" style="width: 80%" />
+</div>
+<p>If the address belongs to any GUI function, the address is saved to r10 register before called KiSystemServiceCopyEnd in the function, KiSystemServiceGdiTebAccess at <strong>0x1406B856A</strong>. It then calls PsInvokeWin32Callout:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nl">loc_1406B84FE:</span>
+</span></span><span class="line"><span class="cl"><span class="na">...</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span> <span class="no">rax</span><span class="p">,</span> <span class="no">r11</span>
+</span></span><span class="line"><span class="cl"><span class="nf">sar</span> <span class="no">r11</span><span class="p">,</span> <span class="mi">4</span>          <span class="c1">; Shift Offset 4 bits to right
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">add</span> <span class="no">r10</span><span class="p">,</span> <span class="no">r11</span>        <span class="c1">; Sum the result with SSDT Address.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">cmp</span> <span class="no">edi</span><span class="p">,</span> <span class="mi">20</span><span class="no">h</span> <span class="c1">; &#39; &#39;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="err">[</span><span class="na">...</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nl">KiSystemServiceGdiTebAccess:</span>
+</span></span><span class="line"><span class="cl"><span class="na">...</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span> <span class="no">rsi</span><span class="p">,</span> <span class="no">r10</span>        <span class="c1">; Save the address of the routine
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">; /* Call PsInvokeWin32Callout */ 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">mov</span>  <span class="no">ecx</span><span class="p">,</span> <span class="mi">7</span>
+</span></span><span class="line"><span class="cl"><span class="nf">xor</span>  <span class="no">edx</span><span class="p">,</span> <span class="no">edx</span>
+</span></span><span class="line"><span class="cl"><span class="nf">xor</span>  <span class="no">r8</span><span class="p">,</span> <span class="no">r8</span>
+</span></span><span class="line"><span class="cl"><span class="nf">xor</span>  <span class="no">r9</span><span class="p">,</span> <span class="no">r9</span>
+</span></span><span class="line"><span class="cl"><span class="nf">call</span> <span class="no">PsInvokeWin32Callout</span>
+</span></span><span class="line"><span class="cl"><span class="na">...</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span> <span class="no">r10</span><span class="p">,</span> <span class="no">rsi</span>        <span class="err">;</span> <span class="no">Get</span> <span class="no">the</span> <span class="no">address</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>x#### <strong>Static Analysis Result</strong></p>
+<p>When we examine it with static analysis, we can understand that the syscall is processed as follows in the kernel area:</p>
+<p>Section 1 - <strong>KiSystemServiceUser:</strong> Get the CurrentThread structure from the KPRCB for the current thread, then it prepares the SystemCallNumber and FirstArgument flags.
+<br>
+Section 2 - <strong>KiSystemServiceStart:</strong> It gets the number and Table Identifier of the syscall to be processed.
+<br>
+Section 3 - <strong>KiSystemRepeat:</strong> The most important section of the syscall process. It is determined whether the processed syscall is GUI related or not and the corresponding routine address is calculated.
+<br>
+Section 4 - <strong>KiSystemServiceCopyEnd:</strong> The last section of the syscall process. The flow is redirected to the calculated address and the processing is complete.</p>
+<h3><strong>Dynamic Analysis</strong><span class="hx-absolute -hx-mt-20" id="dynamic-analysis"></span>
+    <a href="#dynamic-analysis" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><h4><strong>Adding Breakpoint to KiSystemCall64</strong><span class="hx-absolute -hx-mt-20" id="adding-breakpoint-to-kisystemcall64"></span>
+    <a href="#adding-breakpoint-to-kisystemcall64" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>We will start by reading the address of KiSystemCall64. For this, we can read its address with the following command:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>kd&gt; rdmsr c0000082
@@ -846,21 +949,31 @@ msr[c0000082] = fffff802`5b21a1c0</code></pre><div class="hextra-code-copy-btn-c
   </button>
 </div>
 </div>
-<p>İlk olarak windbg’da KiSystemCall64’e bp koyarak başlamıştım ancak sakın direkt olarak buraya bir bp koymayın yoksa PatchGuard selam verecektir:</p>
-<p><img src="../../../images/posts/syscall-journey/img20.png" alt="" loading="lazy" /></p>
-<p>Yani BSOD veriyor. Tekrar tekrar analiz ettiğimde nedenini anladım. Ayrıca bunu anlamamda stackoverflow&rsquo;da bu sorunun üzerine <a href="https://stackoverflow.com/questions/65367333/breakpoint-setting-in-ntkisystemcall64-not-working" target="_blank" rel="noopener">konu açan</a> kişi sayesinde netleştirmiş oldum.</p>
-<p>KiSystemCall64 kısmın ilk kısımlarına göz atarsanız Windows çekirdek hata ayıklama mekanizması tarafından gerekli olan kernel stack&rsquo;ın ayarlandığını göreceksiniz. Yani buradaki çözüm bu stack ayarlandıktan sonraki kısma bir bp koymak olacaktır:</p>
-<p><img src="../../../images/posts/syscall-journey/img21.png" alt="" loading="lazy" /></p>
-<p>Statik analizde buna dikkat etmemiştim ancak windbg&rsquo;da daha iyi anladım. İlk başlarda stack ayarlamanın yapıldığını görebiliriz. Aşağıda gösterilen kısma bir bp koyduğumda bir sıkıntı olmadığını gözlemledim:</p>
-<p><img src="../../../images/posts/syscall-journey/img22.png" alt="" loading="lazy" /></p>
-<p>İşte sonucu:</p>
-<p><img src="../../../images/posts/syscall-journey/img23.png" alt="" loading="lazy" /></p>
-<p>Başarılı bir şekilde tetikleniyor. Artık işlenilecek rastgele syscall&rsquo;ı analiz edebiliriz!</p>
-<h3><strong>KiSystemServiceUser</strong><span class="hx-absolute -hx-mt-20" id="kisystemserviceuser-1"></span>
-    <a href="#kisystemserviceuser-1" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Analize başlamadan önce bilmediğimiz bir syscall yapıldığı için hangi API için syscall yapıldığına göz atalım:</p>
-<p><img src="../../../images/posts/syscall-journey/img24.png" alt="" loading="lazy" /></p>
-<p>Hızlı bir şekilde formülleri kullandığımızda, benim için <strong>1a3</strong> numaralı NtSetIoCompletion API&rsquo;i tetiklenmiş.</p>
-<p>Statik analizimizde ilk durağın <strong>KiSystemServiceUser</strong> olduğunu görmüştük. Buraya bir bp koyarak akışı devam ettirelim:</p>
+<p>Well, i started by adding a bp to KiSystemCall64 in WinDBG, buut don&rsquo;t add a bp there directly. PatchGuard will say hi:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img19.png" style="width: 85%" />
+</div>
+<p>So it gives BSOD. When I analyzed it over and over again, I realized why, and it was made clear to me by the person who <a hreh="https://stackoverflow.com/questions/65367333/breakpoint-setting-in-ntkisystemcall64-not-working">posted a thread on stackoverflow</a> about this problem.</p>
+<p>If you take a look at the first part of KiSystemCall64, you will see that the kernel stack required by the Windows kernel debugging mechanism is set. So the solution here would be to add a bp after this stack is set:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img20.png" style="width: 85%" />
+</div>
+<p>I didn&rsquo;t pay attention to this in the static analysis, but I understood it better in WinDbg. At the beginning we can see that the stack is done. When I add a bp in the part shown below, I observed that there was no problem:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img21.png" style="width: 85%" />
+</div>
+<p>Here&rsquo;s result:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img22.png" style="width: 55%" />
+</div>
+<p>Successfully triggering. Now we can analyze the random syscall to be processed!</p>
+<h4><strong>KiSystemServiceUser</strong><span class="hx-absolute -hx-mt-20" id="kisystemserviceuser"></span>
+    <a href="#kisystemserviceuser" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>Before the analyze, now let&rsquo;s take a look at for whom the syscall was made:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img24.png" style="width: 65%" />
+</div>
+<p>We can see that the syscall is triggered for NtSetIoCompletion function.</p>
+<p>Now add bp to KiSystemServiceUser and keep the flow going:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>kd&gt; bp ntkrnlmp!KiSystemServiceUser
@@ -877,15 +990,21 @@ fffff802`5ac1264d c645ab02        mov     byte ptr [rbp-55h],2</code></pre><div 
   </button>
 </div>
 </div>
-<p>Bu API&rsquo;in ilk kısımlarında _KPRCB içerisinden KTHREAD yapısına işaret eden Current Thread yapının alındığını görmüştük. Windbg&rsquo;da bunu görebiliriz:</p>
-<p><img src="../../../images/posts/syscall-journey/img25.png" alt="" loading="lazy" /></p>
-<p>Yapının adresi alındıktan sonra <strong>KiSystemServiceUser</strong>&lsquo;ın son kısmında ayarlamalar yapıldığını tekrar görebiliriz:</p>
-<p><img src="../../../images/posts/syscall-journey/img26.png" alt="" loading="lazy" /></p>
-<p>Bu ayarlamarın yapıldıktan sonraki kısmına bir bp koyalım ve aktarılan değerlere göz atalım:</p>
-<p><img src="../../../images/posts/syscall-journey/img27.png" alt="" loading="lazy" /></p>
-<p>Ayarlanan Systemcall numarası ve FirstArgument bayrakların değerlerini görebiliriz. Ayrıca Teb&rsquo;in adresini de.</p>
-<h3><strong>KiSystemServiceStart</strong><span class="hx-absolute -hx-mt-20" id="kisystemservicestart"></span>
-    <a href="#kisystemservicestart" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Artık syscall ve Table Identifier değerlerini çıkaran <strong>KiSystemServiceStart</strong> API&rsquo;a bp koyalım:</p>
+<p>Recall that in the first part of the function, it gets the CurrentThread from KPRCB. We can see these codes in WinDBG:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img25.png" style="width: 65%" />
+</div>
+<p>Once the address of the structure is obtained, we can see again that adjustments have been made in the last part of KiSystemServiceUser:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img26.png" style="width: 65%" />
+</div>
+<p>Let&rsquo;s see the transferred values:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img27.png" style="width: 75%" />
+</div>
+<p>We can see that it set systemcall number and the FirstArgument flags, also the address of TEB.</p>
+<h4><strong>KiSystemServiceStart</strong><span class="hx-absolute -hx-mt-20" id="kisystemservicestart"></span>
+    <a href="#kisystemservicestart" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>Now let&rsquo;s add bp to <strong>KiSystemServiceStart</strong> function which extracts syscall number and Table Identifier values:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>kd&gt; g
@@ -901,9 +1020,11 @@ fffff802`5ac12770 4889a390000000  mov     qword ptr [rbx&#43;90h],rsp</code></pr
   </button>
 </div>
 </div>
-<p>Bu kısımda artık neler yapıldığını bilsek de bir kısaca göz atalım:</p>
-<p><img src="../../../images/posts/syscall-journey/img28.png" alt="" loading="lazy" /></p>
-<p>Şimdi benim debugger&rsquo;da tetiklenen syscall numarası 0x1a3 olduğu için bu değerle yapılan işlemleri tekrar edelim. Tekrardan zarar gelmez:</p>
+<p>Although we know what is done in this section, let&rsquo;s take a brief look:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img28.png" style="width: 75%" />
+</div>
+<p>Now, since the syscall number triggered in my debugger is 0x1a3, let&rsquo;s repeat the operations with this value:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>mov edi eax     ; eax = 0x1a3 (0001 1010 0011)
@@ -917,16 +1038,23 @@ shr edi,7</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx
   </button>
 </div>
 </div>
-<p>Bu komutlar çalıştığında şu sonucu almamız gerekecek:</p>
-<p><img src="../../../images/posts/syscall-journey/img29.png" alt="" loading="lazy" /></p>
-<p>Sonucumuz 0000 0011 (3) olacaktır. Windbg&rsquo;da bu kısmı çalıştırıp sonucu doğrulayabiliriz:</p>
-<p><img src="../../../images/posts/syscall-journey/img31.png" alt="" loading="lazy" /></p>
-<p>Çıktıdan gördüğümüz gibi kaydırma işleminden sonra <strong>3</strong> değeri alınıyor.</p>
-<p>Şimdi kaydırma işleminden sonra Table Identifier&rsquo;ı alalım:</p>
-<p><img src="../../../images/posts/syscall-journey/img30.png" alt="" loading="lazy" /></p>
-<p>Sonucumuz <strong>0</strong>. Önceden anlattığım gibi eğer Table Identifier değeri 0 ise ntdll.dll API&rsquo;a ait olduğunu anlayabiliriz. Doğrulamak için windbg&rsquo;ı kullanalım:</p>
-<p><img src="../../../images/posts/syscall-journey/img32.png" alt="" loading="lazy" /></p>
-<p>Son olarak ise Systemcall numarası alınacak:</p>
+<p>When these commands are executed, we should get the following result:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img29.png" style="width: 95%" />
+</div>
+<p>Our result will be 0000 0011 (3). We can run this part in WinDBG and verify the result:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img31.png" style="width: 55%" />
+</div>
+<p>Now let&rsquo;s get the Table Identifier after shifting operation:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img30.png" style="width: 60%" />
+</div>
+<p>As I explained before, if the Table Identifier value is 0, we can understand that the syscall belongs to the NTDLL API. Let&rsquo;s use WinDBG to verify:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img32.png" style="width: 60%" />
+</div>
+<p>Finally, the systemcall number will be retrieved:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>and eax,0FFFh   ; eax = 0x1a3 (0001 1010 0011)</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -939,79 +1067,135 @@ shr edi,7</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx
   </button>
 </div>
 </div>
-<p>Aşağıda bu işlem gösterilmiştir:</p>
-<p><img src="../../../images/posts/syscall-journey/img33.png" alt="" loading="lazy" /></p>
-<p>İşlem sonucunda <strong>0001 1010 0011</strong> yani 0x1a3 değerini elde ediyoruz. Yine doğrulamak için Windbg&rsquo;ı kullanalım:</p>
-<p><img src="../../../images/posts/syscall-journey/img34.png" alt="" loading="lazy" /></p>
-<p>Göründüğü üzere systemcall numarası alınmakta. Artık Syscall ve Table Identifier değerleri çıkarıldıktan sonra bu fonksiyonla işimiz bitiyor ve akış, <strong>KiSystemServiceRepeat</strong>&rsquo;e yöneliyor.</p>
-<h3><strong>KiSystemServiceRepeat</strong><span class="hx-absolute -hx-mt-20" id="kisystemservicerepeat"></span>
-    <a href="#kisystemservicerepeat" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Syscall ve Table Identifier değerleride alındıktan sonra artık bu durakta adresin hesaplanacağını biliyoruz.</p>
-<p><img src="../../../images/posts/syscall-journey/img35.png" alt="" loading="lazy" /></p>
-<p>Tekrar etmekten zarar gelmez, SSDT&rsquo;nin adresi alınması ardından işlenilen syscall numaranın GUI API&rsquo;a ait olup olunmadığı karşılaştırılıyor. Ne olursa olsun thread ilk defa bu kısma gerdiğinde her zaman bu kısmı atlayacak çünkü önceden de anlattığım gibi, thread ilk defa bu kısma geldiğinde işlenilen API&rsquo;in GUI ile alakalı olup olmadığını bilmiyor. İlerideki akışta hesaplamalardan sonra işlenilen API&rsquo;in GUI ile alakalı olduğu tespit edildiğinde bu fonksiyonun başına tekrar yönlendirilecek.</p>
-<p>Bu koşullar atladığında en önemli kısım geliyor. Artık adresin hesaplanması yapılıyor:</p>
-<p><img src="../../../images/posts/syscall-journey/img36.png" alt="" loading="lazy" /></p>
-<p>r10 register&rsquo;da SSDT&rsquo;nin adresi bulunmakta. r11 register&rsquo;a SSDT tablosunda işlenilen API&rsquo;in mutlak adresine karşılık gelen Offset hesaplanıyor. Formülümüzü tekrardan hatırlayalım:</p>
-<div align="center">
-<br>
-<b>
-<i>
-Offset = KiServiceTableAddress + 4 * SSN
-</b>
-</i>
+<p>Or:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img33.png" style="width: 60%" />
 </div>
-<p>Doğrulamak için offset&rsquo;in hesaplandığı kısmı çalıştırıp elde edilen değere göz atalım:</p>
-<p><img src="../../../images/posts/syscall-journey/img37.png" alt="" loading="lazy" /></p>
-<p>Elde edilen offset değerin <strong>0x637dd01</strong> olduğunu görebiliriz.</p>
-<p>Şimdi ise offset değerini kullanarak mutlak adresi hesapladığı kısmi çalıştıralım ve hesaplanan adrese bakalım:</p>
-<p><img src="../../../images/posts/syscall-journey/img38.png" alt="" loading="lazy" /></p>
-<p>Formülümüzü tekrar hatırlayalım arkadaşlar:</p>
-<div align="center">
-<br>
-<b>
-<i>
- KernelRoutineAddress = KiServiceTableAddress + ( Offset >>> 4 )
-</b>
-</i>
+<p>As a result of the operation, we get the value 0001 1010 0011, i.e. 0x1a3. Again, let&rsquo;s use WinDBG to verify:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img34.png" style="width: 100%" />
 </div>
-<p>Bu formül ile hesaplamadan sonra <strong>0xfffff8025aeffa80</strong> adresi elde ettim ve kontrol ettiğimde NtSetIoCompletion&rsquo;a ait olduğunu doğruladım.</p>
-<p>Adres hesaplamasından sonra edi&rsquo;nin değeri 0x20 ile karşılaştırdığını tekrar görüyoruz. Artık bunun ne anlama geldiğini biliyoruzdur.</p>
-<p>Eğer sizde tetiklenen Syscall numarası GUI ile alakalı bir API&rsquo;a ait ise bu koşul sağlanacaktır. Benimkinde tetiklenen API, GUI ile ilgili olmadığından burası atlanacaktır.</p>
-<p>Atlamadan sonra akışın <strong>KiSystemServiceGdiTebAccess</strong>&rsquo;e yönlendirdiğini göreceksiniz:</p>
-<p><img src="../../../images/posts/syscall-journey/img39.png" alt="" loading="lazy" /></p>
-<p>Artık bu kısımlarda yapılan işlemlere göz atmamıza gerek yok. Zira artık işlenilen syscall&rsquo;ın adresi belirlendi ve artık buraya yönlendirimeye hazırlanılacak. Ancak statik analizimizde gördüğümüz gibi bu yönlendirme <strong>KiSystemServiceCopyEnd</strong>&rsquo;e gerçekleşecek ve bu fonksiyonun sonuna göz attığınızda KiSystemServiceCopyEnd&rsquo;in gerisine yönlendirdiğini göreceksiniz:</p>
-<p><img src="../../../images/posts/syscall-journey/img40.png" alt="" loading="lazy" /></p>
-<p>jmp r11 olan kısma bir bp koyalım ve akış bu kısma geldiğinde bir ileri götürelim ve nereye yönlendirdiğine bir bakalım:</p>
-<p><img src="../../../images/posts/syscall-journey/img41.png" alt="" loading="lazy" /></p>
-<p>Bazı verilerin kopyalanması için <strong>KiSystemServiceCopyStart</strong>&lsquo;a yönlendirdiğini göreceksiniz. Artık bu kısımdan sonra ilgili adrese yönlendirilmek üzere <strong>KiSystemServiceCopyEnd</strong>&rsquo;e yönlenecek.</p>
-<h3><strong>KiSystemServiceCopyEnd</strong><span class="hx-absolute -hx-mt-20" id="kisystemservicecopyend"></span>
-    <a href="#kisystemservicecopyend" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Artık syscall işlenmesi bitti ve hesaplanan adresi yönlendirme noktasına geldik:</p>
-<p><img src="../../../images/posts/syscall-journey/img42.png" alt="" loading="lazy" /></p>
-<p>Burada dikkatimizi çeken kısım rax register&rsquo;a r10&rsquo;un değeri verilmesi. r10 register&rsquo;ı hesaplanan adresi taşımakta. Adresin çağırıldığı noktaya bp koyalım ve bir ileri götürelim:</p>
-<p><img src="../../../images/posts/syscall-journey/img43.png" alt="" loading="lazy" /></p>
-<p>Başarılı bir şekilde NtSetIoCompletion&rsquo;a yönlendirdiğini görebiliriz.</p>
-<h2><strong>Sonuç</strong><span class="hx-absolute -hx-mt-20" id="sonuç"></span>
-    <a href="#sonu%c3%a7" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Arkadaşlar umarım bu blog size yararlı olmuştur.</p>
-<p>Ek olarak, bu analizimde zorlandığım süreçte bana cidden katkısı olan Alice&rsquo;in <a href="https://alice.climent-pommeret.red/posts/a-syscall-journey-in-the-windows-kernel/" target="_blank" rel="noopener">Syscall yolcuğu</a> ile alakalı bloguna da göz atabilirsiniz. Gerçekten bu kaynak sayesinde analiz sırasında anlamadığım noktaları anlamamda çok katkısı oldu.</p>
+<p>As can be seen, the systemcall number is being retrieved. Now, after extracting the Syscall and Table Identifier values, we are done with this function and the flow goes to KiSystemServiceRepeat.</p>
+<h4><strong>KiSystemServiceRepeat</strong><span class="hx-absolute -hx-mt-20" id="kisystemservicerepeat"></span>
+    <a href="#kisystemservicerepeat" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>After getting the Syscall and Table Identifier values, we know that the address will be calculated at this section.</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img35.png" style="width: 100%" />
+</div>
+<p>After receiving the address of the SSDT, the syscall number is checked to see if it belongs to the GUI API or not. In any case, the thread will always skip this part because, as I explained before, the thread doesn&rsquo;t know if the API being processed is GUI related or not. In the future flow, if after calculations it is determined that the API being processed is GUI related, it will be redirected back to the beginning of this function.</p>
+<p>Once these conditions are skipped, the most important part comes. The calculation of the address is now done:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img36.png" style="width: 73%" />
+</div>
+<p>The r10 register contains the address of the SSDT. For r11 register, it calculates the offset corresponding to the absolute address of the API processed in the SSDT table. Let&rsquo;s remember our formula again:</p>
+<div align="center" style="font-size: 17px">
+	<b>
+		<i>
+			Offset = KiServiceTableAddress + 4 * SSN
+		</i>
+	</b>
+</div>
+<p>To verify, let&rsquo;s run the part where the offset is calculated and take a look at the value obtained:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img37.png" style="width: 60%" />
+</div>
+<p>Now let&rsquo;s run the part where it calculates the absolute address using the offset value and look at the calculated address:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img38.png" style="width: 60%" />
+</div>
+<p>Recall our formula again</p>
+<div align="center" style="font-size: 17px">
+	<b>
+		<i>
+			KernelRoutineAddress = KiServiceTableAddress + ( Offset >>> 4 )
+		</i>
+	</b>
+</div>
+<p>After the address calculation we see again that it compares edi&rsquo;s value with 0x20. We know what this means. In our case edi register contains 0 value.</p>
+<p>After the jump, you will see that the flow redirects to KiSystemServiceGdiTebAccess:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img39.png" style="width: 100%" />
+</div>
+<p>We no longer need to look at the operations performed in this section. Because the address of the processed syscall has been determined and now it will prepare to redirect it there. However, as we saw in our static analysis, this redirection will take place to KiSystemServiceCopyEnd and when you look at the end of this function, you will see that it redirects behind KiSystemServiceCopyEnd:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img40.png" style="width: 100%" />
+</div>
+<p>Let&rsquo;s add a bp in the part, <em>jmp r11</em>, and take it forward and see where it leads:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img41.png" style="width: 75%" />
+</div>
+<p>You also will see that it redirects to KiSystemServiceCopyStart to copy some data. It will now redirect to KiSystemServiceCopyEnd to be redirected to the relevant address.</p>
+<h4><strong>KiSystemServiceCopyEnd</strong><span class="hx-absolute -hx-mt-20" id="kisystemservicecopyend"></span>
+    <a href="#kisystemservicecopyend" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>In this section, it will redirect to the address:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img42.png" style="width: 100%" />
+</div>
+<p>Here, rax gets the address from r10 register then it calls the function:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/syscall-journey/syscall-en-blog/img43.png" style="width: 80%" />
+</div>
+<p>We can see that it successfully redirects to NtSetIoCompletion.</p>
+<h3><strong>Conclusion</strong><span class="hx-absolute -hx-mt-20" id="conclusion"></span>
+    <a href="#conclusion" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>In this blog, we conducted both static and dynamic analysis of how the Windows kernel processes syscalls, specifically tracing the execution path starting from <code>KiSystemCall64</code>. We examined the internal mechanics of how Windows extracts the syscall number, determines the correct system service table, calculates the corresponding kernel routine, and finally invokes it.</p>
+<p>By diving into key functions like KiSystemServiceUser, KiSystemServiceStart, KiSystemServiceRepeat, and KiSystemServiceCopyEnd, we revealed how the kernel leverages structures like KPCR, KPRCB, and KTHREAD, and how the SSDT and Table Identifiers come into play during syscall dispatching.</p>
+<h2><strong>References</strong><span class="hx-absolute -hx-mt-20" id="references"></span>
+    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><ul>
+<li>1 - <strong>Alice Climent</strong> -  <a href="https://alice.climent-pommeret.red/posts/a-syscall-journey-in-the-windows-kernel/" target="_blank" rel="noopener">A Syscall Journey in the Windows Kernel</a></li>
+</ul>
+<ul>
+<li>2 - Geoff Chappell - <a href="https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/amd64_x/kpcr.htm" target="_blank" rel="noopener">KPCR (amd64)</a></li>
+<li>3 - Geoff Chappel - <a href="https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/ke/kthread/index.htm" target="_blank" rel="noopener">KTHREAD</a></li>
+</ul>
 
         </div>
         
     <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2024-12-31T00:00:00.000Z">December 31, 2024</time></div>
         
         <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
-        href="/blog/bare-metal-reversing-0x0/"
+        href="/blog/bare-metal-reversing/"
         title="ARM Firmware Reverse Engineering"
         class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-pr-4 rtl:hx-pl-4"
       ><svg class="hx-inline hx-h-5 hx-shrink-0 ltr:hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>ARM Firmware Reverse Engineering</a><a
         href="/blog/ssdt-hooking/"
-        title="SSDT Hooking ile User-Mode Programda Sürücü Yükleme"
+        title="Loading Driver from User-Mode Program via SSDT Hooking"
         class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-ml-auto ltr:hx-pl-4 ltr:hx-text-right rtl:hx-mr-auto rtl:hx-pr-4 rtl:hx-text-left"
-      >SSDT Hooking ile User-Mode Programda Sürücü Yükleme<svg class="hx-inline hx-h-5 hx-shrink-0 rtl:-hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a></div>
+      >Loading Driver from User-Mode Program via SSDT Hooking<svg class="hx-inline hx-h-5 hx-shrink-0 rtl:-hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a></div>
         
       </main>
     </article>
   </div>
 
-      <footer class="hextra-footer hx-bg-gray-100 hx-pb-[env(safe-area-inset-bottom)] dark:hx-bg-neutral-900 print:hx-bg-transparent"><div class="hx-mx-auto hx-flex hx-gap-2 hx-py-2 hx-px-4 hx-max-w-screen-xl"><button
+      <footer class="hextra-footer hx-bg-gray-100 hx-pb-[env(safe-area-inset-bottom)] dark:hx-bg-neutral-900 print:hx-bg-transparent"><div class="hx-mx-auto hx-flex hx-gap-2 hx-py-2 hx-px-4 hx-max-w-screen-xl"><div class="hx-flex hx-justify-items-start ">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>English</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/blog/syscalls/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/blog/syscalls/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish</a>
+        </li>
+      </ul>
+  </div><button
   title="Change theme"
   data-theme="light"
   class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"

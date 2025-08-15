@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon shortcut" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+<link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
+<title>PatchGuard Analysis - Part 1 – 0xbekoo</title>
+  <meta name="description" content="Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.
+Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer." /><link rel="canonical" href="http://localhost:1313/blog/patchguard-analysis-part-1/" itemprop="url" />
+
+<meta property="og:title" content="PatchGuard Analysis - Part 1" />
+<meta property="og:description" content="Introduction
+    Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.
+Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://localhost:1313/blog/patchguard-analysis-part-1/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2025-08-06T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-08-06T00:00:00+00:00" />
+
+  <meta itemprop="name" content="PatchGuard Analysis - Part 1">
+  <meta itemprop="description" content="Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.
+Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer.">
+  <meta itemprop="datePublished" content="2025-08-06T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-08-06T00:00:00+00:00">
+  <meta itemprop="wordCount" content="3603">
+  <meta itemprop="keywords" content="Reverse-Engineering,PatchGuard,Reversing-PatchGuard,Windows-Internals,Analyzing-of-Windows-Kernel">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="PatchGuard Analysis - Part 1">
+  <meta name="twitter:description" content="Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.
+Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer.">
+
+    <link href="/css/compiled/main.css" rel="stylesheet" />
+
+
+
+  <link href="/css/custom.css" rel="stylesheet" />
+
+
+  <script>
+     
+    const defaultTheme = 'system';
+
+    const setDarkTheme = () => {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
+    }
+    const setLightTheme = () => {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.style.colorScheme = "light";
+    }
+
+    if ("color-theme" in localStorage) {
+      localStorage.getItem("color-theme") === "dark" ? setDarkTheme() : setLightTheme();
+    } else {
+      defaultTheme === "dark" ? setDarkTheme() : setLightTheme();
+      if (defaultTheme === "system") {
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? setDarkTheme() : setLightTheme();
+      }
+    }
+  </script>
+
+  
+</head>
+<body dir="ltr"><div class="nav-container hx-sticky hx-top-0 hx-z-20 hx-w-full hx-bg-transparent print:hx-hidden">
+  <div class="nav-container-blur hx-pointer-events-none hx-absolute hx-z-[-1] hx-h-full hx-w-full hx-bg-white dark:hx-bg-dark hx-shadow-[0_2px_4px_rgba(0,0,0,.02),0_1px_0_rgba(0,0,0,.06)] contrast-more:hx-shadow-[0_0_0_1px_#000] dark:hx-shadow-[0_-1px_0_rgba(255,255,255,.1)_inset] contrast-more:dark:hx-shadow-[0_0_0_1px_#fff]"></div>
+
+  <nav class="hx-mx-auto hx-flex hx-items-center hx-justify-end hx-gap-2 hx-h-16 hx-px-6 hx-max-w-[90rem]">
+    <a class="hx-flex hx-items-center hover:hx-opacity-75 ltr:hx-mr-auto rtl:hx-ml-auto" href="/">
+        <span class="hx-mx-2 hx-font-extrabold hx-inline hx-select-none" title="0xbekoo">0xbekoo</span>
+    </a><a
+            title="Documentation"
+            href="/docs"
+            
+            class="hx-text-sm contrast-more:hx-text-gray-700 contrast-more:dark:hx-text-gray-100 hx-relative -hx-ml-2 hx-hidden hx-whitespace-nowrap hx-p-2 md:hx-inline-block hx-text-gray-600 hover:hx-text-gray-800 dark:hx-text-gray-400 dark:hover:hx-text-gray-200"
+          >
+            <span class="hx-text-center">Documentation</span>
+          </a><a
+            title="Blogs"
+            href="/blog"
+            
+            class="hx-text-sm contrast-more:hx-text-gray-700 contrast-more:dark:hx-text-gray-100 hx-relative -hx-ml-2 hx-hidden hx-whitespace-nowrap hx-p-2 md:hx-inline-block hx-font-medium"
+          >
+            <span class="hx-text-center">Blogs</span>
+          </a><a
+            title="About"
+            href="/about"
+            
+            class="hx-text-sm contrast-more:hx-text-gray-700 contrast-more:dark:hx-text-gray-100 hx-relative -hx-ml-2 hx-hidden hx-whitespace-nowrap hx-p-2 md:hx-inline-block hx-text-gray-600 hover:hx-text-gray-800 dark:hx-text-gray-400 dark:hover:hx-text-gray-200"
+          >
+            <span class="hx-text-center">About</span>
+          </a>
+          <a class="hx-p-2 hx-text-current" target="_blank" rel="noreferrer" href="https://github.com/0xbekoo" title="GitHub"><svg height=24 fill="currentColor" viewBox="3 3 18 18">
+  <path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path>
+</svg>
+<span class="hx-sr-only">GitHub</span>
+          </a>
+          <a class="hx-p-2 hx-text-current" target="_blank" rel="noreferrer" href="https://x.com/0xbekooo" title="Twitter"><svg height=24 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"></path></svg><span class="hx-sr-only">Twitter</span>
+          </a><button type="button" aria-label="Menu" class="hamburger-menu -hx-mr-2 hx-rounded hx-p-2 active:hx-bg-gray-400/20 md:hx-hidden"><svg height=24 fill="none" viewBox="0 0 24 24" stroke="currentColor"><g><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8H20"></path></g><g><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16H20"></path></g></svg></button>
+  </nav>
+</div>
+
+  <div class="hx-mx-auto hx-flex hx-max-w-screen-xl">
+    <div class="mobile-menu-overlay [transition:background-color_1.5s_ease] hx-fixed hx-inset-0 hx-z-10 hx-bg-black/80 dark:hx-bg-black/60 hx-hidden"></div>
+<aside class="sidebar-container hx-flex hx-flex-col print:hx-hidden md:hx-top-16 md:hx-shrink-0 md:hx-w-64 md:hx-self-start max-md:[transform:translate3d(0,-100%,0)] md:hx-hidden xl:hx-block">
+  
+  <div class="hx-px-4 hx-pt-4 md:hx-hidden">
+    <div class="search-wrapper hx-relative md:hx-w-64">
+  <div class="hx-relative hx-flex hx-items-center hx-text-gray-900 contrast-more:hx-text-gray-800 dark:hx-text-gray-300 contrast-more:dark:hx-text-gray-300">
+    <input
+      placeholder="Search..."
+      class="search-input hx-block hx-w-full hx-appearance-none hx-rounded-lg hx-px-3 hx-py-2 hx-transition-colors hx-text-base hx-leading-tight md:hx-text-sm hx-bg-black/[.05] dark:hx-bg-gray-50/10 focus:hx-bg-white dark:focus:hx-bg-dark placeholder:hx-text-gray-500 dark:placeholder:hx-text-gray-400 contrast-more:hx-border contrast-more:hx-border-current"
+      type="search"
+      value=""
+      spellcheck="false"
+    />
+    <kbd
+      class="hx-absolute hx-my-1.5 hx-select-none ltr:hx-right-1.5 rtl:hx-left-1.5 hx-h-5 hx-rounded hx-bg-white hx-px-1.5 hx-font-mono hx-text-[10px] hx-font-medium hx-text-gray-500 hx-border dark:hx-border-gray-100/20 dark:hx-bg-dark/50 contrast-more:hx-border-current contrast-more:hx-text-current contrast-more:dark:hx-border-current hx-items-center hx-gap-1 hx-transition-opacity hx-pointer-events-none hx-hidden sm:hx-flex"
+    >
+      CTRL K
+    </kbd>
+  </div>
+
+  <div>
+    <ul
+      class="search-results hextra-scrollbar hx-hidden hx-border hx-border-gray-200 hx-bg-white hx-text-gray-100 dark:hx-border-neutral-800 dark:hx-bg-neutral-900 hx-absolute hx-top-full hx-z-20 hx-mt-2 hx-overflow-auto hx-overscroll-contain hx-rounded-xl hx-py-2.5 hx-shadow-xl hx-max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)] md:hx-max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)] hx-inset-x-0 ltr:md:hx-left-auto rtl:md:hx-right-auto contrast-more:hx-border contrast-more:hx-border-gray-900 contrast-more:dark:hx-border-gray-50 hx-w-screen hx-min-h-[100px] hx-max-w-[min(calc(100vw-2rem),calc(100%+20rem))]"
+      style="transition: max-height 0.2s ease 0s;"
+    ></ul>
+  </div>
+</div>
+
+  </div>
+  <div class="hextra-scrollbar hx-overflow-y-auto hx-overflow-x-hidden hx-p-4 hx-grow md:hx-h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
+    <ul class="hx-flex hx-flex-col hx-gap-1 md:hx-hidden">
+      
+      
+          <li class="open"><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/"
+    
+  >Blogs
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
+    </a><div class="ltr:hx-pr-0 hx-overflow-hidden">
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-4/"
+    
+  >PatchGuard Analysis - Part 4
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-3/"
+    
+  >PatchGuard Analysis - Part 3
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-2/"
+    
+  >PatchGuard Analysis - Part 2
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col open"><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      sidebar-active-item hx-bg-primary-100 hx-font-semibold hx-text-primary-800 contrast-more:hx-border contrast-more:hx-border-primary-500 dark:hx-bg-primary-400/10 dark:hx-text-primary-600 contrast-more:dark:hx-border-primary-500"
+    href="/blog/patchguard-analysis-part-1/"
+    
+  >PatchGuard Analysis - Part 1
+    </a>
+  
+    <ul class='hx-flex hx-flex-col hx-gap-1 hx-relative before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] dark:before:hx-bg-neutral-800 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-pr-3 rtl:before:hx-right-0 ltr:hx-ml-3 rtl:hx-mr-3'><li>
+              <a
+                href="#"
+                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
+              ></a>
+            </li>
+          </ul>
+  
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/ssdt-hooking/"
+    
+  >Loading Driver from User-Mode Program via SSDT Hooking
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/syscalls/"
+    
+  >Reversing System Call Mechanism in Windows Kernel
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/bare-metal-reversing/"
+    
+  >ARM Firmware Reverse Engineering
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/router-firmware-reversing/"
+    
+  >Router Firmware Reverse Engineering
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/is-valorant-spyware/"
+    
+  >Is Valorant Spyware?
+    </a>
+              
+            </li></ul>
+      </div></li>
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/"
+    
+  >Documentation
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
+    </a><div class="ltr:hx-pr-0 hx-overflow-hidden">
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/"
+    
+  >UEFI Development
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
+    </a>
+              <div class="ltr:hx-pr-0 hx-overflow-hidden">
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/uefi-keylogger/"
+    
+  >UEFI Keylogger
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/uefi-introduction/"
+    
+  >Introduction to UEFI
+    </a>
+              
+            </li></ul>
+      </div>
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/malware-dev/"
+    
+  >Malware Development
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
+    </a>
+              <div class="ltr:hx-pr-0 hx-overflow-hidden">
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/malware-dev/malware-resurrection/"
+    
+  >Malware Resurrection
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/malware-dev/file-icon-spoofing/"
+    
+  >PDF Icon File Spoofing
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/malware-dev/api-hashing/"
+    
+  >API Hashing
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/malware-dev/direct-syscalls/"
+    
+  >Direct Syscalls
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/malware-dev/ntapi-injection/"
+    
+  >NTAPI Injection
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/malware-dev/dll-injection/"
+    
+  >DLL Injection
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/malware-dev/shellcode-injection/"
+    
+  >Shellcode Injection
+    </a>
+              
+            </li></ul>
+      </div>
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/"
+    
+  >Windows Kernel Dev.
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
+    </a>
+              <div class="ltr:hx-pr-0 hx-overflow-hidden">
+        <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-ssdt/"
+    
+  >SSDT
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-virtual-memory/"
+    
+  >Virtual Memory
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-ioctl/"
+    
+  >IOCTL
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-irp/"
+    
+  >IRP
+    </a>
+              
+            </li></ul>
+      </div>
+            </li></ul>
+      </div></li>
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/about/"
+    
+  >About
+    </a></li>
+      <li class="[word-break:break-word] hx-mt-5 hx-mb-2 hx-px-2 hx-py-1.5 hx-text-sm hx-font-semibold hx-text-gray-900 first:hx-mt-0 dark:hx-text-gray-100">
+        <span class="hx-cursor-default">More</span>
+      </li>
+    
+      <li><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/about/"
+    
+  >About</a></li>
+    
+    </ul>
+
+    <div class="max-xl:hx-hidden hx-h-0 hx-w-64 hx-shrink-0"></div></div>
+  
+  
+    <div class="md:hx-hidden hx-justify-end hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-justify-items-start hx-grow">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>English</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/blog/patchguard-analysis-part-1/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/blog/patchguard-analysis-part-1/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish</a>
+        </li>
+      </ul>
+  </div><button
+  title="Change theme"
+  data-theme="light"
+  class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
+  type="button"
+  aria-label="Change theme"
+>
+  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></div>
+</button>
+</div></aside>
+    
+<nav class="hextra-toc hx-order-last hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-px-4" aria-label="table of contents">
+    <div class="hextra-scrollbar hx-sticky hx-top-16 hx-overflow-y-auto hx-pr-4 hx-pt-6 hx-text-sm [hyphens:auto] hx-max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4"><p class="hx-mb-4 hx-font-semibold hx-tracking-tight">On this page</p><ul>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#introduction">Introduction
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kifilterfibercontext-function">KiFilterFiberContext Function
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#method-1-calling-from-keinitamd64specificstate">Method 1: Calling from KeInitAmd64SpecificState
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#method-2-calling-from-explicensewatchinitworker">Method 2: Calling from ExpLicenseWatchInitWorker
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#decompiling-kifilterfibercontext">Decompiling KiFilterFiberContext
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#initilization-patchguard-context">Initilization PatchGuard Context
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-12 rtl:hx-pr-12 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#patchguard-context">PatchGuard Context
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-16 rtl:hx-pr-16 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#first-section">First Section
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-16 rtl:hx-pr-16 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#second-section">Second Section
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-16 rtl:hx-pr-16 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#third-section">Third Section
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-12 rtl:hx-pr-12 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#initilization-of-patchguard">Initilization of PatchGuard
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-16 rtl:hx-pr-16 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#method-0-inserting-a-timer">Method 0: Inserting a timer
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-16 rtl:hx-pr-16 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#method-1-and-2-hiding-dpc">Method 1 and 2: Hiding DPC
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-16 rtl:hx-pr-16 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#method-3-system-thread">Method 3: System Thread
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-16 rtl:hx-pr-16 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#method-4-asynchronous-procedure-call">Method 4: Asynchronous Procedure Call
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-16 rtl:hx-pr-16 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#method-5-hook-a-regular-dpc">Method 5: Hook a Regular DPC
+        </a>
+      </li>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-16 rtl:hx-pr-16 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#method-7-nothingless">Method 7: Nothingless
+        </a>
+      </li></ul>
+      <div class="hx-mt-8 hx-border-t hx-bg-white hx-pt-8 hx-shadow-[0_-12px_16px_white] dark:hx-bg-dark dark:hx-shadow-[0_-12px_16px_#111] hx-sticky hx-bottom-0 hx-flex hx-flex-col hx-items-start hx-gap-2 hx-pb-8 dark:hx-border-neutral-800 contrast-more:hx-border-t contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-border-neutral-400">
+        <button aria-hidden="true" id="backToTop" onClick="scrollUp();" class="hx-transition-all hx-duration-75 hx-opacity-0 hx-text-xs hx-font-medium hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-100 contrast-more:hx-text-gray-800 contrast-more:dark:hx-text-gray-50">
+          <span>Scroll to top</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="hx-inline ltr:hx-ml-1 rtl:hx-mr-1 hx-h-3.5 hx-w-3.5 hx-border hx-rounded-full hx-border-gray-500 hover:hx-border-gray-900 dark:hx-border-gray-400 dark:hover:hx-border-gray-100 contrast-more:hx-border-gray-800 contrast-more:dark:hx-border-gray-50">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+
+    <article class="hx-w-full hx-break-words hx-flex hx-min-h-[calc(100vh-var(--navbar-height))] hx-min-w-0 hx-justify-center hx-pb-8 hx-pr-[calc(env(safe-area-inset-right)-1.5rem)]">
+      <main class="hx-w-full hx-min-w-0 hx-max-w-6xl hx-px-6 hx-pt-4 md:hx-px-12">
+        
+  <div class="hx-mt-1.5 hx-flex hx-items-center hx-gap-1 hx-overflow-hidden hx-text-sm hx-text-gray-500 dark:hx-text-gray-400 contrast-more:hx-text-current">
+        <div class="hx-whitespace-nowrap hx-transition-colors hx-min-w-[24px] hx-overflow-hidden hx-text-ellipsis hover:hx-text-gray-900 dark:hover:hx-text-gray-100">
+          <a href="/blog/">Blogs</a>
+        </div><svg class="hx-w-3.5 hx-shrink-0 rtl:-hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg><div class="hx-whitespace-nowrap hx-transition-colors hx-font-medium hx-text-gray-700 contrast-more:hx-font-bold contrast-more:hx-text-current dark:hx-text-gray-100 contrast-more:dark:hx-text-current">PatchGuard Analysis - Part 1</div>
+  </div>
+
+        <h1 class="hx-mt-2 hx-text-4xl hx-font-bold hx-tracking-tight hx-text-slate-900 dark:hx-text-slate-100">PatchGuard Analysis - Part 1</h1>
+        <div class="hx-mt-4 hx-mb-16 hx-text-gray-500 hx-text-sm hx-flex hx-items-center hx-flex-wrap hx-gap-y-2"><span class="hx-mr-1">August 6, 2025</span><span class="hx-mx-1">·</span><a
+                  href="https://github.com/0xbekoo" target="_blank"
+                  class="hx-group hx-inline-flex hx-items-center hx-text-current hx-gap-x-1.5 hx-mx-1"
+                  title="0xbekoo"
+                ><img src="https://github.com/0xbekoo.png" alt="0xbekoo" class="hx-inline-block hx-h-4 hx-w-4 hx-rounded-full" loading="lazy" />
+                  <div class="group-hover:hx-underline">0xbekoo</div>
+                </a></div>
+        <div class="content">
+          <h3><strong>Introduction</strong><span class="hx-absolute -hx-mt-20" id="introduction"></span>
+    <a href="#introduction" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.</p>
+<p>Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer.</p>
+<p>In this article, we present a high-level analysis of PatchGuard, covering its initialization phase and general operational behavior. The goal is to provide an architectural overview and outline the methodologies and tools used throughout the analysis. This introduction aims to define the scope of the work and lay the foundation for the in-depth technical discussion that follows.</p>
+<h3><strong>KiFilterFiberContext Function</strong><span class="hx-absolute -hx-mt-20" id="kifilterfibercontext-function"></span>
+    <a href="#kifilterfibercontext-function" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>The initialization and startup of PatchGuard are managed by KiFilterFiberContext. This function is not only responsible for these tasks but also controls certain flags related to initialization and other operations. For example, <strong>Kernel-Debugging</strong>. If someone attach the debugger in the system, KiFilterFiberContext will not start the PatchGuard. Also, the function calls some procedure which initialize arguments, as we will see later. The point is that this function really important for the PatchGuard.</p>
+<p>KiFilterFiberContext is called twice in beginning of boot before loading any user-driver. Let’s see the methods:</p>
+<h4>Method 1: Calling from KeInitAmd64SpecificState<span class="hx-absolute -hx-mt-20" id="method-1-calling-from-keinitamd64specificstate"></span>
+    <a href="#method-1-calling-from-keinitamd64specificstate" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>In beginning, <strong>KeInitAmd64SpecificState</strong> checking some flags:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img1.png" style="width: 50%" />
+</div>
+<p>We can see that the function checks <strong>InitSafeBootMode</strong>, <strong>KdDebuggerNotPresent</strong> and <strong>KdPitchDebugger</strong> flags. The flags, on the contrary, are used for division operations, not for directing exits. If debugging is enabled on the system, These flags will set to 0, but they will set to 1 in normal scenario.</p>
+<p>these After that, the registers taken these values:</p>
+<ul>
+<li>**rax =&gt; 0x80000000</li>
+<li>rdx =&gt; 0x80000000</li>
+<li>r8d =&gt; 0xfffffff</li>
+</ul>
+<p>In this context the debugging flags are used in the computation, as we can see. The main goal here is that the function calls KiFilterFiberContext with an intentional trigger error.  This method is actually provides confidential process.</p>
+<p>According AMD64 Documentation, <em>If a positive result is greater than 7FFFFFFFH or a negative result is less than 80000000H</em>, then the divide error is triggered. it will this computation:</p>
+<p>After the computation, it will trigger the error and KiFilterFiberContext will be executed:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img2.png" style="width: 50%" />
+</div>
+<p>If you take a look in KeInitAmd64SpecificState, you will see that there is actually an exception handler:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img51.png" style="width: 50%" />
+</div>
+<p>So, in this case the function will be called.</p>
+<h4>Method 2: Calling from ExpLicenseWatchInitWorker<span class="hx-absolute -hx-mt-20" id="method-2-calling-from-explicensewatchinitworker"></span>
+    <a href="#method-2-calling-from-explicensewatchinitworker" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>KiFilterFiberContext also can called from <strong>ExpLicenseWatchInitWorker</strong> function but it’s not called directly like previous method which we saw. <strong>ExpLicenseWatchInitWorker</strong> function called before <strong>KeInitAmd64SpecificState</strong> function and it decides whether to call KiFilterFiberContext with probability of 4%. This method is actually used by many mechanism of PatchGuard: They often takes random values with <strong>rdtsc</strong> instruction which as we will see later.</p>
+<p>In beginning of the function, it takes address of PRCB (Process Register Control Block) and it processes the HalReserved Fields in PRCB (we will see later this section):</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img5.png" style="width: 40%" />
+</div>
+<p>As we can see, it takes two values from HalReserved fields and clears the values.</p>
+<p>After that it takes random value with rdtsc instruction. This instruction is used for Read-Time Stamp Counter:</p>
+<div style="text-align:center">
+<p style="font-size: 14px; text-align:center;"><b>
+“The TSD bit allows software to control the privilege level at which the time-stamp counter can be read. When TSD is cleared to 0, software running at any privilege level can read the time-stamp counter using the RDTSC or RDTSCP instructions”
+</b><sup>[1]</sup></p>
+</div>
+<p>The random value multiplied by constant value <strong>0x51eb851f:</strong></p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img11.png" style="width: 40%" />
+</div>
+<p>And then it will call KiFilterFiberContext with probability of 4%:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img4.png" style="width: 60%" />
+</div>
+<p>You can see that KiFilterFiberContext called with one parameter which a structure in rcx. KiFilterFiberContext is called with a structure.  This structure is named <em>‘KI_FILTER_PARAM’</em> in literature and the structure contain these:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">_KI_FILTER_FIBER_PARAM</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">CHAR</span> <span class="n">code_prefetch_rcx_retn</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span> <span class="c1">// prefetchw byte ptr [rcx]; retn;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">CHAR</span> <span class="n">padding</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span> <span class="c1">// Align
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">PVOID</span> <span class="n">pPsCreateSystemThread</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">PVOID</span> <span class="n">UcpRetrieveCurrentConfigSettings</span><span class="o">+</span><span class="mh">0x174</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">PVOID</span> <span class="n">pKiBalanceSetManagerPeriodicDpc</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span><span class="n">KI_FILTER_FIBER_PARAM</span><span class="p">,</span> <span class="o">*</span><span class="n">PKI_FILTER_FIBER_PARAM</span><span class="p">;</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>The HalReserved fields is prepared from KiLockServiceTable function. But when you look at codes of KiLockServiceTable you can’t see any codes for this operation. Again, it uses a exception handler to obfuscate, but instead of triggering a fault, it calls directly a function:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img12.png" style="width: 30%" />
+</div>
+<p>The handler itself is actually a stub to the function <strong>KiFatalExceptionFilter:</strong></p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img13.png" style="width: 50%" />
+</div>
+<p>In these codes, it firstly gets address of PRCB and the structure. You can see that rbx register is takes address which named ‘KiServiceTablesLocked’ but this is a misleading operation. There is actually address of the structure <strong>KI FILTER FIBER PARAM</strong> .</p>
+<p>Also we can verify if the address KiServiceTablesLocked is not misleading with WinDbg:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img52.png" style="width: 65%" />
+</div>
+<p>I placed a bp in the first part of ExpLicenseWatchInitWorker and got the address of the structure corresponding to the offset 0x78 of the structure. Now let&rsquo;s check this address:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nf">kd</span><span class="err">&gt;</span> <span class="no">dps</span> <span class="no">fffff803</span><span class="err">`</span><span class="mi">0</span><span class="no">c3e71f8</span> <span class="no">L1</span>
+</span></span><span class="line"><span class="cl"><span class="nf">fffff803</span><span class="err">`</span><span class="mi">0</span><span class="no">c3e71f8</span>  <span class="no">fffff803</span><span class="err">`</span><span class="mi">7</span><span class="no">d566010</span> <span class="no">nt</span><span class="p">!</span><span class="no">KiServiceTablesLocked</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>As you can see, it holds KiServiceTablesLocked. Now let&rsquo;s take a look at the content of this structure:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img53.png" style="width: 80%" />
+</div>
+<p>So we can verify that this structure is KI_FILTER_FIBER_PARAM. If we take a look at the other used HalReserved field, we can also verify that it holds the address of the KiFilterFiberContext:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img54.png" style="width: 70%" />
+</div>
+<p>Before contining on to the next header, I need to add an important note that calling KiFilterFiberContext with this structure is only performed by ExpLicenseWatchIntWorker. The KeInitAmd64SpecificState function calls it directly with NULL.</p>
+<h4><strong>Decompiling KiFilterFiberContext</strong><span class="hx-absolute -hx-mt-20" id="decompiling-kifilterfibercontext"></span>
+    <a href="#decompiling-kifilterfibercontext" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>This function’s mainly job is to call initialization routine which named ‘KiInitializePatchGuardContext’ in literature and then the parameters will initialize. These parameters will determine which method to use to trigger a Patchguard check.</p>
+<p>Firstly, it disables Debugger in beginning:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img9.png" style="width: 50%" />
+</div>
+<p>An important detail is that KiFilterFiberContext contain a small callback function, which isn’t found in ntoskrnl. The function takes a pointer which named ‘PatchGuardTVCallBack’ as a parameter:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img10.png" style="width: 60%" />
+</div>
+<p>This pointer which Argument1 of <strong>ExNotifyCallback</strong> is initialized in SecInitializeKernelIntegrityCheck function from mssecflt.sys.</p>
+<p>KiFilterFiberContext calls the function called <strong>KiInitPatchGuardContext</strong> with three methods to initialize the PatchGuard Context; <strong>the first time</strong> occurs no matter what, <strong>the second time</strong> with only 50% chance, and <strong>third time</strong> with a new method which we will see later. Here&rsquo;s a pseudocode for KiFilterFiberContext:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">g_GlobalCtxPointer</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">KpgApiRegistered</span> <span class="o">&amp;&amp;!</span><span class="n">pKiFilterFiberParam</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">PsIntegrityCheckEnabled</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="cm">/* Initialize ObjectAttributes */</span>
+</span></span><span class="line"><span class="cl">	    <span class="n">ObjectAttributes</span><span class="p">.</span><span class="n">Length</span> <span class="o">=</span> <span class="mi">48</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	    <span class="n">ObjectAttributes</span><span class="p">.</span><span class="n">ObjectName</span> <span class="o">=</span> <span class="p">(</span><span class="n">PUNICODE_STRING</span><span class="p">)</span><span class="sa">L</span><span class="s">&#34;TV&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ObjectAttributes</span><span class="p">.</span><span class="n">RootDirectory</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ObjectAttributes</span><span class="p">.</span><span class="n">Attributes</span> <span class="o">=</span> <span class="mi">64</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	    <span class="o">&amp;</span><span class="n">ObjectAttributes</span><span class="p">.</span><span class="n">SecurityDescriptor</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	    
+</span></span><span class="line"><span class="cl">		<span class="n">Status</span> <span class="o">=</span> <span class="nf">ExCreateCallback</span><span class="p">(</span><span class="o">&amp;</span><span class="n">CallbackObject</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ObjectAttributes</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">Status</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">ExNotifyCallback</span><span class="p">(</span><span class="n">CallbackObject</span><span class="p">,</span> <span class="n">PatchGuardTVCallBack</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">KpgApiConsumerRanges</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	        <span class="nf">ObfDereferenceObject</span><span class="p">(</span><span class="n">CallbackObject</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span> 
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">...</span>
+</span></span><span class="line"><span class="cl">	<span class="cm">/* Initialize First Context */</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Result</span> <span class="o">=</span> <span class="nf">KeExpandKernelStackAndCallout</span><span class="p">(</span><span class="n">KiInitPatchGuardContext</span><span class="p">,</span> <span class="n">ParameterArray</span><span class="p">,</span> <span class="mh">0xC000u</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">Result</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">random5</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="p">...</span>
+</span></span><span class="line"><span class="cl">			<span class="cm">/* Initialize second context */</span>
+</span></span><span class="line"><span class="cl">			<span class="n">Result</span> <span class="o">=</span> <span class="nf">KeExpandKernelStackAndCallout</span><span class="p">(</span><span class="n">KiInitPatchGuardContext</span><span class="p">,</span> <span class="n">ParameterArray</span><span class="p">,</span> <span class="mh">0xC000u</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">Result</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">g_GlobalCtxPointer</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">pKiFilterFiberParam</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nf">KiSwInterruptPresent</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">KpgApiRegistered</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="p">...</span>
+</span></span><span class="line"><span class="cl">				<span class="n">Result</span> <span class="o">=</span> <span class="nf">KeExpandKernelStackAndCallout</span><span class="p">(</span><span class="n">KiInitPatchGuardContext</span><span class="p">,</span> <span class="n">ParameterArray</span><span class="p">,</span> <span class="mh">0xC000u</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">				
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>This function is called with <strong>KeExpandKernelStackAndCallout</strong> function. KeExpandKernelStackAndCallout function calls the function which given function as parameter 1 with guaranteed amount of stack space.<sup>[2]</sup></p>
+<p>One detail that I did not add in the pseudocode is that random values are generated before each KiInitPatchGuardContext is called. As we discussed in ExpLicenseWatchInitWorker, here again, random values are generated for the parameters via the rdtsc instruction. Generally, It uses <strong>rdtsc</strong> to get timestamp values, then performs bitwise operations like rotate-right, XOR, and modulo to generate seemingly random values.</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img46.png" style="width: 70%" />
+</div>
+<p>It passes the Arguments from Parameter Array to KiInitPatchGuardContext and then it calls it.</p>
+<p>We can also see these arguments dynamically when the function is called for the <strong>first time</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img47.png" style="width: 70%" />
+</div>
+<p>Parameters are prepared and KiInitPatchGuardContext is called. The values received are as follows:</p>
+<ul>
+<li>RCX =&gt; 1 (as Argument 1)</li>
+<li>RDX =&gt; 5 (as Argument 2)</li>
+<li>R8 =&gt; 2 (as Argument 3)</li>
+<li>R9 =&gt; 0 (as Argument 4)</li>
+<li>RSP+0x20 =&gt;1 (as Argument 5)</li>
+</ul>
+<p>The argument 5 is passed to Stack:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img48.png" style="width: 70%" />
+</div>
+<p>Don&rsquo;t worry. We will see what these arguments are used for. For now it will be enough to know them.</p>
+<h4><strong>Initilization PatchGuard Context</strong><span class="hx-absolute -hx-mt-20" id="initilization-patchguard-context"></span>
+    <a href="#initilization-patchguard-context" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>As we see in KiFilterFiberContext, it calls KiInitPatchGuardContext in three methods but we have to understand the sections of PatchGuard context before continue.</p>
+<h5><strong>PatchGuard Context</strong><span class="hx-absolute -hx-mt-20" id="patchguard-context"></span>
+    <a href="#patchguard-context" class="subheading-anchor" aria-label="Permalink for this section"></a></h5><p>The structure of PatchGuard context is separated in three sections: <strong>The first section</strong> which size 0x928 contains core content of PatchGuard mechanisms. <strong>The second section</strong> is contains data recipient that keeps original original data for later use. <strong>The third section</strong> is contains information about data to check.</p>
+<h6><strong>First Section</strong><span class="hx-absolute -hx-mt-20" id="first-section"></span>
+    <a href="#first-section" class="subheading-anchor" aria-label="Permalink for this section"></a></h6><ul>
+<li><strong>CmpAppendDllSection</strong></li>
+</ul>
+<p>The beginning of PatchGuard structure context is holds the code of CmpAppendDllSection function, which copied directly into the structure. We can see this operation in <strong>loc_140BD65C4</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img16.png" style="width: 68%" />
+</div>
+<p>After it gets address of <strong>CmpAppendDllSection</strong>, it copies the instructions to r14.</p>
+<p>CmpAppendDllSection function is used later when integrity check is triggered by PatchGuard. This function is actually important because it’s primary job is to decrypt (with xor) the rest of PatchGuard context structure with a randomly generated key:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img14.png" style="width: 50%" />
+</div>
+<p>CmpAppendDllSection function gets two parameter: <strong>QWORD Parameter (Address of the current instruction)</strong> and <strong>INT64 Parameter (The Key)</strong>. The function decrypt the context structure of PatchGuard with generated key (rdx). But the interesting part is that the generated key will passed as a parameter in DeferredContext function, as we will see later.</p>
+<br>
+<ul>
+<li><strong>NTAPI Pointers</strong></li>
+</ul>
+<p>Next section of structure is about NTAPI Pointers. The structure holds many function pointers (more than 100) from ntoskrnl. Then PatchGuard routines will use them independently of a relocation.</p>
+<p>These pointers are initialized in <strong>0x140BD66C9</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img17.png" style="width: 80%" />
+</div>
+<br>
+<ul>
+<li><strong>Global Variables</strong></li>
+</ul>
+<p>This section of structure contains many global variables such as <strong>PsLoadedModuleList</strong>, KiWaitNever or <strong>KiWaitAlways</strong>. These values are initialized randomly at boot time and the random values are used to encode and decode by PatchGuard DPC Pointers, as we will see later.</p>
+<p>These variables are initialized in <strong>loc_140BD6F20</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img18.png" style="width: 80%" />
+</div>
+<br>
+<ul>
+<li><strong>Flags</strong></li>
+</ul>
+<p>The last part of first section holds main flags. It is used as a bitmap representing booleans, such as (Non-exhaustive list):</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<pre><code>BIT 6 0x40 Only one processor 
+BIT 8 0x100 Use of KiDpcDispatch 
+BIT 9 0x200 Use of KiTimerDispatch 
+BIT 15 0x8000 Use of KeSetEvent 
+BIT 18 0x40000 Related to the ntoskrnl routines checksum 
+BIT 20 0x100000 Should DR7 be cleared 
+BIT 24 0x1000000 loc_1402F4907 
+BIT 27 0x8000000 Should PTE be restored loc_1402F117F 
+BIT 28 0x10000000 Scheduling method 7, use of KiInterruptThunk 
+BIT 30 0x40000000 loc_1408A836F Again, scheduling method 7 
+BIT 31 0x80000000 Result of KiSwInterruptPresent
+...</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<br>
+<h6><strong>Second Section</strong><span class="hx-absolute -hx-mt-20" id="second-section"></span>
+    <a href="#second-section" class="subheading-anchor" aria-label="Permalink for this section"></a></h6><ul>
+<li><strong>Critical Kernel Routines Save</strong></li>
+</ul>
+<p>The entire code of the critical kernel routines is saved to a structure named <strong>qword_140E00210</strong>. We will see later that these functions are restored just before triggering KeBugCheck. In Windows 11, The members of this structure are as follows:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img55.png" style="width: 60%" />
+</div>
+<p>But it doesn&rsquo;t end there. In future processes, the address of xHalHaltSystem is added to the structure. We can see this process at <strong>0x140BD4449</strong> or <strong>0x140BD56CF</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img56.png" style="width: 80%" />
+</div>
+<p>So all the members of this structure are as follows:</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left"><strong>Field</strong></th>
+          <th style="text-align: left">Routine</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><strong>Hal</strong></td>
+          <td style="text-align: left"><strong>xHalHaltSystem</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KeBugCheckEx</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KeBugCheck2</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KiBugCheckDebugBreak</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KiDebugTrapOrFault</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>DbgBreakPointWithStatus</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>RtlCaptureContext</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KeQueryCurrentStackInformation</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KiSaveProcessorControlState</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>memmove</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>IoSaveBugCheckProgress</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KeIsEmptyAffinityEx</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>VfNotifyVerifierOfEvent</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>_guard_check_icall_no_overrides</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KeGuardDispatchICall</strong></td>
+      </tr>
+  </tbody>
+</table>
+<h6><strong>Third Section</strong><span class="hx-absolute -hx-mt-20" id="third-section"></span>
+    <a href="#third-section" class="subheading-anchor" aria-label="Permalink for this section"></a></h6><ul>
+<li><strong>Criticial Structure for Checks</strong></li>
+</ul>
+<p>Here&rsquo;s a prototype of one structure:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">pg_crit_struct_check_data</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl"><span class="n">ULONG64</span> <span class="n">KeBugCheckType_0x0</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl"><span class="n">ULONG64</span> <span class="n">pData_0x8</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl"><span class="n">ULONG32</span> <span class="n">szData_0x10</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl"><span class="n">ULONG32</span> <span class="n">hash_0x14</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl"><span class="n">LONG64</span> <span class="n">specific</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span> 
+</span></span><span class="line"><span class="cl"><span class="p">};</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>First member KeBugCheckType is distinguish structures type. Second and third members are used for the data that checked.</p>
+<p>The important member is checksum result and the checksum is computed during initilization of PatchGuard. Like i said it is important because the cheksum will used as a reference when PatchGuard will check integrity of the corresponding structure.</p>
+<p>And the last member is related to specific to data.</p>
+<p>We can trace this structure in <strong>loc_140BD3795</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img19.png" style="width: 80%" />
+</div>
+<p>In this section, the structure is prepared.  The members of structure is used frequently with KeBugCheckEx. Here&rsquo;s a example:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img20.png" style="width: 80%" />
+</div>
+<p>Also we can verify this structure with WinDBG. We can focus this section from <strong>loc_140BD3795</strong>:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<pre><code>lea     rax, [rsp&#43;2568h&#43;var_1BD0]
+mov     [rsp&#43;2568h&#43;var_1370], rsi</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>In this section, rax register gets address of structure:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img21.png" style="width: 80%" />
+</div>
+<p>Well, let&rsquo;s check this address:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img22.png" style="width: 80%" />
+</div>
+<p>The <em>rsp+0x9A8</em> that correspond to pData_0x8 or szData_0x10 member of the structure is prepared in this part:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nf">lea</span>     <span class="no">rax</span><span class="p">,</span> <span class="p">[</span><span class="no">rsp</span><span class="err">+</span><span class="mi">2568</span><span class="no">h</span><span class="err">+</span><span class="no">BugCheckParameter2</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span>     <span class="p">[</span><span class="no">rsp</span><span class="err">+</span><span class="mi">2568</span><span class="no">h</span><span class="err">+</span><span class="no">BugCheckParameter4</span><span class="p">],</span> <span class="no">rax</span>
+</span></span><span class="line"><span class="cl"><span class="nf">call</span>    <span class="no">LdrResFindResource</span>
+</span></span><span class="line"><span class="cl"><span class="na">...</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Or:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img23.png" style="width: 90%" />
+</div>
+<p>As we can see, the BugCheckParameter2 member is prepared before running LdrResFindResource.</p>
+<h5><strong>Initilization of PatchGuard</strong><span class="hx-absolute -hx-mt-20" id="initilization-of-patchguard"></span>
+    <a href="#initilization-of-patchguard" class="subheading-anchor" aria-label="Permalink for this section"></a></h5><p>Now, we will take a look at the parameters. Remember that we have examined the parameters under the heading of <strong>Decompiling KiFilterFiberContext</strong>. In this section, we will see exactly what these parameters do.</p>
+<p>KiInitPatchGuardContext is responsible for initialization of most PatchGuard contexts. The choice of which method is to be used is done regarding the argument given to this function.</p>
+<ul>
+<li><strong>Argument 1: Index for DPC Method</strong></li>
+<li><strong>Argument 2: Scheduling Method</strong></li>
+<li><strong>Argument 3: Random value used to determine the maximum size to be checked</strong></li>
+<li><strong>Argument 4: Pointer to the structure from ExpLicenseWatchInitWorker (only 4 % chance)</strong></li>
+<li><strong>Argument 5: Boolean to decide whether or not the integrity of nt routines has to be checked</strong></li>
+</ul>
+<p>The <strong>second</strong> and <strong>fourth</strong> arguments are important in our case. The fourth parameter is given randomly in KiFilterFiberContext.</p>
+<p>We can take a look again at the parameters we obtained with the analysis:</p>
+<ul>
+<li>RCX =&gt; 1 (as Argument 1)</li>
+<li>RDX =&gt; 5 (as Argument 2)</li>
+<li>R8 =&gt; 2 (as Argument 3)</li>
+<li>R9 =&gt; 0 (as Argument 4)</li>
+<li>RSP+0x20 =&gt;1 (as Argument 5)</li>
+</ul>
+<p>Like i said, these parameters are given randomly. So, in another calls, the parameters may different.</p>
+<h6><strong>Method 0: Inserting a timer</strong><span class="hx-absolute -hx-mt-20" id="method-0-inserting-a-timer"></span>
+    <a href="#method-0-inserting-a-timer" class="subheading-anchor" aria-label="Permalink for this section"></a></h6><p>The main idea is that PatchGuard will initialize a PatchGuard Context Structure and DPC. Before I continue, I should mention that if you are not familiar with DPC, you can have a quick look at my document on DPC.</p>
+<p>Firstly it will set a timer. Then, the timer is queued by <strong>KeSetCoalescableTimer</strong> in <strong>0x140BF97F6</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img24.png" style="width: 90%" />
+</div>
+<p>And then the DPC will fired by Timer from the first argument between 2 - 2'10 following the call. TolerableDelay parameter of the function is prepared randomly between 0 and 0.001 second.</p>
+<h6><strong>Method 1 and 2: Hiding DPC</strong><span class="hx-absolute -hx-mt-20" id="method-1-and-2-hiding-dpc"></span>
+    <a href="#method-1-and-2-hiding-dpc" class="subheading-anchor" aria-label="Permalink for this section"></a></h6><ul>
+<li><strong>AcpiReserved (0x140BF97DD)</strong></li>
+</ul>
+<p>In Method 1, it hides the pointer of DPC in the field AcpiReserved from PRCB:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img26.png" style="width: 90%" />
+</div>
+<ul>
+<li><strong>HalReserved (loc_140BF97C9)</strong></li>
+</ul>
+<p>And in method 2, it hides the pointer of DPC in the HalReserved Field from PRCB:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img28.png" style="width: 90%" />
+</div>
+<p>Remember that this array (HalReserved) was also used to keep the structure KI_FILTER_FIBER_PARAM when KiFilterFiberContext is called from ExpLicenseWatchInitWorker:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img5.png" style="width: 40%" />
+</div>
+<p>The function uses the 0x78 offset of the HalReserved array to store the address of the structure. We can check this array with WinDbg:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<pre><code>kd&gt; dt nt!_KPRCB fffff8026f748180&#43;0x80
+   &#43;0x000 MxCsr            : 0
+   &#43;0x004 LegacyNumber     : 0 &#39;&#39;
+   &#43;0x005 ReservedMustBeZero : 0 &#39;&#39;
+   ...
+   &#43;0x048 HalReserved      : [8] 1
+   &#43;0x088 MinorVersion     : 0x7000
+   &#43;0x08a MajorVersion     : 0xee23
+   ...</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>And for DPC, it uses the 0x80 offset of the array.</p>
+<p>This DPC is queued by HalpMcaQueueDpc and checks are done when HAL timer clock interrupt occurs.</p>
+<h6><strong>Method 3: System Thread</strong><span class="hx-absolute -hx-mt-20" id="method-3-system-thread"></span>
+    <a href="#method-3-system-thread" class="subheading-anchor" aria-label="Permalink for this section"></a></h6><p>In this method, it needs the KI_FILTER_FIBER_PARAM structure. Remember that this structure contains pointer of <strong>PsCreateSystemThread</strong>. This pointer is used to create new system thread in <strong>0x140BFAC24</strong> (I will named this function to Pg_InitMethodSystemThread like Tetrane) and in this function, it uses the address <strong>0x14068F650</strong> as a StartParameter. Also remember that the structure contains address of this function:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img29.png" style="width: 90%" />
+</div>
+<p><strong>Pg_InitMethodSystemThread</strong> is called directly in <strong>0x140BF671B</strong> of KiInitPatchGuardContext:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img30.png" style="width: 90%" />
+</div>
+<br>
+<ul>
+<li><strong>Obfuscatıon Mechanism from Pg_InitMethodSystemThread</strong></li>
+</ul>
+<p>In <strong>Pg_InitMethodSystemThread</strong>, one particularly interesting aspect is the obfuscation mechanism implemented to hinder detection. Traditionally, some techniques used to identify PatchGuard threads rely on checking the <strong>StartAddress</strong> and <strong>Win32StartAddress</strong> fields in the ETHREAD structure. To counter this, in Windows systems, these fields are intentionally overwritten with common, non-suspicious function pointers.</p>
+<p>Immediately after creating the thread, PatchGuard retrieves a pointer to the corresponding <code>ETHREAD</code> structure—<strong>without acquiring any locks</strong>—and proceeds to modify both <code>StartAddress</code> and <code>Win32StartAddress</code> fields with one of several benign-looking function pointers:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img31.png" style="width: 50%" />
+</div>
+<p>off_140C63540 is actually an array which contains these pointers:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img32.png" style="width: 60%" />
+</div>
+<p>The last entry is the right one. So, we can realize that there is only one out of seven chance that fields in the ETHREAD structure are correct.</p>
+<h6><strong>Method 4: Asynchronous Procedure Call</strong><span class="hx-absolute -hx-mt-20" id="method-4-asynchronous-procedure-call"></span>
+    <a href="#method-4-asynchronous-procedure-call" class="subheading-anchor" aria-label="Permalink for this section"></a></h6><p>In method 4, it initializes a PatchGuard context and an APC Structure, and it inserts it to an existing system thread. <strong>NormalArgument</strong> is set to XHalTimerWatchdogStop, while <strong>KernelRoutine</strong> is set to KiDispatchCallout.</p>
+<p>These arguments are set at <strong>0x140BD9617</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img33.png" style="width: 100%" />
+</div>
+<h6><strong>Method 5: Hook a Regular DPC</strong><span class="hx-absolute -hx-mt-20" id="method-5-hook-a-regular-dpc"></span>
+    <a href="#method-5-hook-a-regular-dpc" class="subheading-anchor" aria-label="Permalink for this section"></a></h6><p>Method 5 requires the <strong>KI_FILTER_FIBER_PARAM</strong> structure, just like Method 3. If this structure isn&rsquo;t available, the system falls back to <strong>Method 0</strong>. In this method, the last field of the structure — which points to
+KiBalanceSetManagerPeriodicDpc` — is used. This variable refers to a <strong>KDPC</strong> structure, and it&rsquo;s initialized during system startup by <strong>KiInitSystem</strong> in <strong>0x140C1A303</strong>, as we can see:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nl">loc_140C1A13A:</span>
+</span></span><span class="line"><span class="cl"><span class="na">...</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span> <span class="no">dword</span> <span class="no">ptr</span> <span class="no">cs</span><span class="p">:</span><span class="no">KiBalanceSetManagerPeriodicDpc</span><span class="p">,</span> <span class="mi">113</span><span class="no">h</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span> <span class="no">cs</span><span class="p">:</span><span class="no">KiBalanceSetManagerPeriodicDpc.DpcData</span><span class="p">,</span> <span class="no">rdi</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span> <span class="no">cs</span><span class="p">:</span><span class="no">KiBalanceSetManagerPeriodicDpc.ProcessorHistory</span><span class="p">,</span> <span class="no">rdi</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>What makes this method interesting is that it targets a <strong>legitimate DPC</strong> that the system queues regularly — roughly every second — through <strong>KiUpdateTime</strong>. From <strong>0x14026D299</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img35.png" style="width: 75%" />
+</div>
+<p>PatchGuard hooks this DPC by replacing its original routine with its own. As a result, instead of always running the system&rsquo;s original routine, PatchGuard replaces it <strong>every 120 executions</strong> with its own custom DPC routine.</p>
+<p>This allows PatchGuard to periodically run its integrity checks without disrupting the system&rsquo;s normal behavior — and more importantly, it helps avoid detection. Here&rsquo;s a diagram:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/diagram-m5.png" style="width: 105%" />
+</div>
+<h6><strong>Method 7: Nothingless</strong><span class="hx-absolute -hx-mt-20" id="method-7-nothingless"></span>
+    <a href="#method-7-nothingless" class="subheading-anchor" aria-label="Permalink for this section"></a></h6><p>(For Method 6, there&rsquo;s no description in this article.)</p>
+<p>As you can understand on the header, this method 7 actually is this: nothing. Seems like this method is actually does nothing.</p>
+<p>When the index 7 is given to KiInitPatchGuardContext, it will do two things. The first of them is that it is initializes a DPC to be queued but don&rsquo;t used this DPC and clears this DPC. And the second of them is that it will initialize PatchGuard context structure. This global structure is actually in cleartext in memory.</p>
+<p>In method 7, a DPC is initialized and the routine is defined as one of KiInterruptThunk or KiMachineCheckControl functions. These functions contains 16 stubs, respectively to the function FsRtlTruncateSmallMcb and KiDecodeMcaFault. In KiInitPatchGuardContext, it is uses KiInterruptThunk function but there are some references for KiMachineCheckControl in PatchGuard routines.</p>
+<p>First of all, it generates a random value (between 0 and 0xf) with rdtsc then this random value is used as an index in the stubs. These stubs are repeated 8 times and the random value is used to selects one of them. We can take a look an example from <strong>0x140BCBADF</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img57.png" style="width: 100%" />
+</div>
+<p>This section specifies a stub from KiMachineCheckControl. The received random value is shifted 3 bits right and a stub index between 0 and 0xF is determined.</p>
+<p>There are two stubs from KiInterruptThunk. One of them (0x1406AFE60):</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nf">$$1</span> <span class="no">proc</span> <span class="no">near</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">xor</span> <span class="no">eax</span><span class="p">,</span> <span class="no">eax</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">mov</span> <span class="no">dr7</span><span class="p">,</span> <span class="no">rax</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">jmp</span> <span class="no">FsRtlTruncateSmallMcb</span>
+</span></span><span class="line"><span class="cl"><span class="nf">$$1</span> <span class="no">endp</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>And the second one (0x1406AFE70):</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nf">$$2</span> <span class="no">proc</span> <span class="no">near</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">xor</span>     <span class="no">eax</span><span class="p">,</span> <span class="no">eax</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">nop</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">nop</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">nop</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">jmp</span>     <span class="no">FsRtlTruncateSmallMcb</span>
+</span></span><span class="line"><span class="cl"><span class="nf">$$2</span> <span class="no">endp</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>I should also mention here that these two stubs have the same size (thanks to the NOP instructions).</p>
+<p>Coming back to the method, this method doesn&rsquo;t seem to do anything and that&rsquo;s exactly the problem. Compared to other methods, it seems to have no purpose, but there are some really important parts to this method. Let&rsquo;s take a closer look at this method.</p>
+<ul>
+<li><strong>First Check: Test Flag 0x8000000</strong></li>
+</ul>
+<p>If we can check any stub of KiInterruptThunk, we can notice that there&rsquo;s a test flag with 0x8000000 at <strong>0x140BF8859</strong>:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nl">loc_140BF8859:</span>
+</span></span><span class="line"><span class="cl"><span class="na">...</span>
+</span></span><span class="line"><span class="cl"><span class="nf">test</span>    <span class="p">[</span><span class="no">rsp</span><span class="err">+</span><span class="mi">2568</span><span class="no">h</span><span class="err">+</span><span class="no">var_150</span><span class="p">],</span> <span class="mi">8000000</span><span class="no">h</span>
+</span></span><span class="line"><span class="cl"><span class="nf">jz</span>      <span class="no">short</span> <span class="no">loc_140BF88E1</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>This flag comes from <strong>0x140BD5661:</strong></p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img38.png" style="width: 75%" />
+</div>
+<p>Also in this case, it uses 0x10000000 in Windows 10 RS4, according to Tetrane. We can see this flag at <strong>0x1408A82901</strong> from Windows 10 RS4:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nl">loc_1408A8291:</span>
+</span></span><span class="line"><span class="cl"><span class="nf">test</span> <span class="p">[</span><span class="no">rsp</span><span class="err">+</span><span class="mi">2238</span><span class="no">h</span><span class="err">+</span><span class="no">var_140</span><span class="p">],</span> <span class="mi">10000000</span><span class="no">h</span>
+</span></span><span class="line"><span class="cl"><span class="nf">jz</span> <span class="no">short</span> <span class="no">loc_1408A830E</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>Flags may vary according to Windows versions.</p>
+<ul>
+<li><strong>Second Check: Test Flag 0x20000000</strong></li>
+</ul>
+<p>Also there&rsquo;s a second check. In  <strong>0x140BF893D</strong>, it decides whether or not the method dispatcher should be taken with 0x20000000 flag:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img40.png" style="width: 75%" />
+</div>
+<p>Likewise this second flag is set at <strong>0x140BD7937</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img58.png" style="width: 50%" />
+</div>
+<p>One Different detail is that r13d is checked with the value 7. As we can understand, it is checked whether is the selected method 7. Then the second flag is created with a few modifications.</p>
+<p>In Windows 10 RS4, it uses flag as 0x40000000 in <strong>0x1408A836F</strong>:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img41.png" style="width: 65%" />
+</div>
+<ul>
+<li><strong>Third Check: From a Stack Variable</strong></li>
+</ul>
+<p>Lastly, we can see third check at <strong>0x140BF9E3F</strong>. It will decide to call <strong>KeSetEvent</strong> with specific parameters:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img42.png" style="width: 65%" />
+</div>
+<p>It is directly set to zero, i.e. NULL. However, this is not always the case. If method 3 is selected and the creation of the system thread is successful, this variable will be given the StartContext pointer given to PsCreateSystemThread, as we saw before:</p>
+<div style="text-align: center;">
+  <img src="/images/PatchGuard/img59.png" style="width: 85%" />
+</div>
+<p>Thus, if this variable is not set to NULL, the created thread will wait for this object and KeSetEvent will notify it.</p>
+<p>jump to 0x140BF9E3F occurs from  <strong>0x140BF9E33</strong>:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nl">loc_140BF9E33:</span>
+</span></span><span class="line"><span class="cl"><span class="nf">cli</span>
+</span></span><span class="line"><span class="cl"><span class="nf">cmp</span> <span class="no">byte</span> <span class="no">ptr</span> <span class="no">cs</span><span class="p">:</span><span class="no">KdDebuggerNotPresent</span><span class="p">,</span> <span class="no">r10b</span>
+</span></span><span class="line"><span class="cl"><span class="nf">jnz</span> <span class="no">short</span> <span class="no">loc_140BF9E3F</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>If the variable isn&rsquo;t equal to 0x20000000 flag, it will jump to 0x140BF9E33 (Check the header of &lsquo;<strong>Second Check: Test Flag 0x20000000</strong>&rsquo;)</p>
+<p>As we&rsquo;ve already discussed, it initializes a global PatchGuard context structure when the 7 index is given to KiInitPatchGuardContext. and And this global PatchGuard context is actually used by other new methods (compared to Windows 8.1). The structure can be accessed through a global pointer at <strong>0x140FC4A48</strong> that misleading name <strong>MaxDataSize</strong>:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nl">ALMOSTRO:</span><span class="err">0000000140</span><span class="nf">FC4A48</span> <span class="no">MaxDataSize</span>     <span class="no">dq</span> <span class="mi">0</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>We can see that it is used as a structure in KiSwInterruptDispatch (at 0x14050EB4D):</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nf">KiSwInterruptDispatch</span> <span class="no">proc</span>
+</span></span><span class="line"><span class="cl"><span class="na">...</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span>     <span class="no">rdi</span><span class="p">,</span> <span class="no">cs</span><span class="p">:</span><span class="no">MaxDataSize</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span>     <span class="no">r13</span><span class="p">,</span> <span class="no">rcx</span>
+</span></span><span class="line"><span class="cl"><span class="nf">test</span>    <span class="no">dword</span> <span class="no">ptr</span> <span class="p">[</span><span class="no">rdi</span><span class="err">+</span><span class="mi">9</span><span class="no">DCh</span><span class="p">],</span> <span class="mi">100000</span><span class="no">h</span>
+</span></span><span class="line"><span class="cl"><span class="nf">jz</span>      <span class="no">short</span> <span class="no">loc_14050EB6A</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<p>As we will see later, this section is callback function and this tv callback function uses global PatchGuard structure context.</p>
+<p>In KiInitPatchGuardContext (at <strong>0x140BF86A2</strong>), we can see that address of the structure is being placed:</p>
+<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nl">loc_140BF86A2:</span>
+</span></span><span class="line"><span class="cl"><span class="na">...</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span>     <span class="no">rax</span><span class="p">,</span> <span class="no">cs</span><span class="p">:</span><span class="no">MaxDataSize</span>
+</span></span><span class="line"><span class="cl"><span class="nf">lea</span>     <span class="no">r13d</span><span class="p">,</span> <span class="p">[</span><span class="no">rbx-7</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span>     <span class="no">ecx</span><span class="p">,</span> <span class="mi">0</span><span class="no">FFFFF000h</span>
+</span></span><span class="line"><span class="cl"><span class="nf">lea</span>     <span class="no">r9</span><span class="p">,</span> <span class="p">[</span><span class="no">r15</span><span class="err">+</span><span class="mi">20</span><span class="no">h</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="nf">add</span>     <span class="no">edi</span><span class="p">,</span> <span class="no">r13d</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span>     <span class="no">r8d</span><span class="p">,</span> <span class="no">edi</span>
+</span></span><span class="line"><span class="cl"><span class="nf">shl</span>     <span class="no">r8</span><span class="p">,</span> <span class="mi">6</span>
+</span></span><span class="line"><span class="cl"><span class="nf">add</span>     <span class="no">r9</span><span class="p">,</span> <span class="no">r8</span>
+</span></span><span class="line"><span class="cl"><span class="nf">mov</span>     <span class="p">[</span><span class="no">r8</span><span class="err">+</span><span class="no">r15</span><span class="err">+</span><span class="mi">8</span><span class="p">],</span> <span class="no">rax</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+  <button
+    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
+    title="Copy code"
+  >
+    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
+    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
+  </button>
+</div>
+</div>
+<br>
+<p>Let&rsquo;s take a breath here and we will continue in the next Part by taking a closer look at the parameters of KiInitPatchGuardContext.</p>
+
+        </div>
+        
+    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-08-06T00:00:00.000Z">August 6, 2025</time></div>
+        
+        <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
+        href="/blog/ssdt-hooking/"
+        title="Loading Driver from User-Mode Program via SSDT Hooking"
+        class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-pr-4 rtl:hx-pl-4"
+      ><svg class="hx-inline hx-h-5 hx-shrink-0 ltr:hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>Loading Driver from User-Mode Program via SSDT Hooking</a><a
+        href="/blog/patchguard-analysis-part-2/"
+        title="PatchGuard Analysis - Part 2"
+        class="hx-flex hx-max-w-[50%] hx-items-center hx-gap-1 hx-py-4 hx-text-base hx-font-medium hx-text-gray-600 hx-transition-colors [word-break:break-word] hover:hx-text-primary-600 dark:hx-text-gray-300 md:hx-text-lg ltr:hx-ml-auto ltr:hx-pl-4 ltr:hx-text-right rtl:hx-mr-auto rtl:hx-pr-4 rtl:hx-text-left"
+      >PatchGuard Analysis - Part 2<svg class="hx-inline hx-h-5 hx-shrink-0 rtl:-hx-rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a></div>
+        
+      </main>
+    </article>
+  </div>
+
+      <footer class="hextra-footer hx-bg-gray-100 hx-pb-[env(safe-area-inset-bottom)] dark:hx-bg-neutral-900 print:hx-bg-transparent"><div class="hx-mx-auto hx-flex hx-gap-2 hx-py-2 hx-px-4 hx-max-w-screen-xl"><div class="hx-flex hx-justify-items-start ">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>English</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/blog/patchguard-analysis-part-1/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/blog/patchguard-analysis-part-1/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish</a>
+        </li>
+      </ul>
+  </div><button
+  title="Change theme"
+  data-theme="light"
+  class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
+  type="button"
+  aria-label="Change theme"
+>
+  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span class="group-data-[theme=light]:hx-hidden">Light</span><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg><span class="group-data-[theme=dark]:hx-hidden">Dark</span></div>
+</button>
+</div><hr class="dark:hx-border-neutral-800" /><div
+      class="hextra-custom-footer hx-max-w-screen-xl hx-pl-[max(env(safe-area-inset-left),1.5rem)] hx-pr-[max(env(safe-area-inset-right),1.5rem)] hx-text-gray-600 dark:hx-text-gray-400"
+    ></div><div
+        class="hx-max-w-screen-xl hx-mx-auto hx-flex hx-justify-center hx-py-12 hx-pl-[max(env(safe-area-inset-left),1.5rem)] hx-pr-[max(env(safe-area-inset-right),1.5rem)] hx-text-gray-600 dark:hx-text-gray-400 md:hx-justify-start"
+      >
+        <div class="hx-flex hx-w-full hx-flex-col hx-items-center sm:hx-items-start"><div class="hx-font-semibold"><a class="hx-flex hx-text-sm hx-items-center hx-gap-1 hx-text-current" target="_blank" rel="noopener noreferrer" title="Hextra GitHub Homepage" href="https://github.com/imfing/hextra">
+    <span>Powered by Hextra<svg height=1em class="hx-inline-block ltr:hx-ml-1 rtl:hx-mr-1 hx-align-[-2.5px]" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="m 105.50024,22.224647 c -9.59169,-5.537563 -21.40871,-5.537563 -31.000093,0 L 39.054693,42.689119 C 29.463353,48.226675 23.55484,58.460531 23.55484,69.535642 v 40.928918 c 0,11.07542 5.908513,21.3092 15.499853,26.84652 l 35.445453,20.46446 c 9.591313,5.53732 21.408404,5.53732 31.000094,0 l 35.44507,-20.46446 c 9.59131,-5.53732 15.49985,-15.7711 15.49985,-26.84652 V 69.535642 c 0,-11.075111 -5.90854,-21.308967 -15.49985,-26.846523 z M 34.112797,85.737639 c -1.384445,2.397827 -1.384445,5.352099 0,7.749927 l 24.781554,42.922974 c 1.38437,2.39783 3.942853,3.87496 6.711592,3.87496 h 49.563107 c 2.76905,0 5.3273,-1.47713 6.71144,-3.87496 l 24.78194,-42.922974 c 1.38414,-2.397828 1.38414,-5.3521 0,-7.749927 L 121.88049,42.814746 c -1.38414,-2.397828 -3.94239,-3.874964 -6.71144,-3.874964 H 65.605944 c -2.768739,0 -5.327223,1.477059 -6.711592,3.874964 z" style="stroke-width:0.774993" /></svg></span>
+  </a></div><div class="hx-mt-6 hx-text-xs">© 2024 Hextra Project.</div></div>
+      </div></footer>
+    
+    <script defer src="/js/main.js" integrity=""></script>
+
+
+<script defer src="/lib/flexsearch/flexsearch.bundle.min.0425860527cc9968f9f049421c7a56b39327d475e2e3a8f550416be3a9134327.js" integrity="sha256-BCWGBSfMmWj58ElCHHpWs5Mn1HXi46j1UEFr46kTQyc="></script>
+    <script defer src="/en.search.js" integrity=""></script>
+
+
+  </body>
+</html>

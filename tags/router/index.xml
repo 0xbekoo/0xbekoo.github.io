@@ -1,13 +1,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>0xbekoo – Router</title>
-    <link>https://0xbekoo.github.io:1313/tags/router/</link>
+    <link>http://localhost:1313/tags/router/</link>
     <description>Recent content in Router on 0xbekoo</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Tue, 03 Dec 2024 00:00:00 +0000</lastBuildDate>
     
-	  <atom:link href="https://0xbekoo.github.io:1313/tags/router/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="http://localhost:1313/tags/router/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -17,73 +17,104 @@
     
     <item>
       <title>Router Firmware Reverse Engineering</title>
-      <link>https://0xbekoo.github.io:1313/blog/router-firmware-reversing/</link>
+      <link>http://localhost:1313/blog/router-firmware-reversing/</link>
       <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
       
-      <guid>https://0xbekoo.github.io:1313/blog/router-firmware-reversing/</guid>
+      <guid>http://localhost:1313/blog/router-firmware-reversing/</guid>
       <description>
         
         
-        &lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/headerphoto.jpg&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link&amp;rsquo;in &lt;a href=&#34;https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Archer AX 21 V4.6&lt;/a&gt; modemin firmware&amp;rsquo;i reverse edeceğiz. Firmware indirmek için &lt;a href=&#34;https://www.tp-link.com/us/support/download/archer-ax21/#Firmware&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;TP-Link&amp;rsquo;in orijinal sayfasına&lt;/a&gt; göz atabilirsiniz.&lt;/p&gt;
+        &lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/headerphoto.jpg&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&amp;rsquo;s &lt;a href=&#34;https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/&#34;&gt;Archer AX 21 V4.6&lt;/a&gt; modem. You can check TP-Link&amp;rsquo;s original page to &lt;a href=&#34;https://www.tp-link.com/us/support/download/archer-ax21/#Firmware&#34;&gt;download the firmware&lt;/a&gt;.&lt;/p&gt;
 &lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200&#34;&gt;
   &lt;p class=&#34;hx-flex hx-items-center hx-font-medium&#34;&gt;&lt;svg height=16px class=&#34;hx-inline-block hx-align-middle hx-mr-2&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z&#34;/&gt;&lt;/svg&gt;Warning&lt;/p&gt;
 
   &lt;div class=&#34;hx-w-full hx-min-w-0 hx-leading-7&#34;&gt;
-    &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.&lt;/p&gt;&lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;Öncelikle indirdiğimiz Firmware&amp;rsquo;in bilgilerine göz atalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/firmware-info.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Görüldüğü üzere 14 Kasım 2024 yılında yayınlanmış. Yani neredeyse 1 ay önce yayınlanmış bir firmware. Birkaç hatanın düzeltildiği, optimizelerin yapıldığı ve yeni şeyler eklendiğini görebiliriz.&lt;/p&gt;
-&lt;p&gt;Fiziksel olarak bu router&amp;rsquo;a sahip olmadığım için bu blogta sadece firmware analiz ederek yelteneceğim.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Linux Versiyonu Bulma&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;linux-versiyonu-bulma&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#linux-versiyonu-bulma&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Özellikle firmware reverse engineering&amp;rsquo;de sıklıkla kullanılan &lt;strong&gt;binwalk&lt;/strong&gt; denilen aracı kullanacağız. Bu araç bize firmware için çeşitli bilgiler sunabilir.&lt;/p&gt;
-&lt;p&gt;Öncelikle binwalk&amp;rsquo;a analiz edeceğimiz firmware verelim:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Evett okumaya üşendiğimiz birkaç karmaşık gibi görünen çıktılar elde ettik. Peki nedir bunlar efenimm?&lt;/p&gt;
-&lt;p&gt;Bu gördüğünüz çıktılar ilgili firmware&amp;rsquo;in offsetlerini içermektedir. Ancak sadece offset değerleri verilmiyor yanlarında bu alanlar için açıklama da veriyor bu binwalk aracı. Gözümüz hemen bu çıktıdaki Decimal ve Hexdecimal değerlerine kaysın:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;İşte offset değerleri bunlar. Hem decimal hem de hexdecimal olarak binwalk aracı bize bunları gösteriyor. Şimdi ilk odağımızı Bootloader (U-Boot)&amp;lsquo;a yönlendirelim ve mimarisine bir göz atalım.&lt;/p&gt;
-&lt;p&gt;Bu etapta &lt;strong&gt;dd&lt;/strong&gt; aracını kullanabiliriz. Bunun için aşağıdaki komutu çalıştıralım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Verdiğimiz değerlere dikkat edelim. &lt;strong&gt;if&lt;/strong&gt; ile hedef firmware&amp;rsquo;i veriyoruz. &lt;strong&gt;of&lt;/strong&gt; ile çoğaltılan veriyi nasıl kaydedeceğimizi belirtiyoruz. &lt;strong&gt;skip&lt;/strong&gt; ile ise belirli bir byte miktarını atlayarak kopyalama işlemine başlıyor. &lt;strong&gt;8212&lt;/strong&gt; değeri verdiğime dikkat edin. Bu ise, dd aracın 8212 byte kadar sonrasındaki verileri kopyalacağı anlamına gelir. Bu değer binwalk&amp;rsquo;tan bulduğumuz uImage&amp;rsquo;ın offset değeri.&lt;/p&gt;
-&lt;p&gt;Bu kopyalama sonucunda &lt;strong&gt;uImage&lt;/strong&gt; adlı bir dosya elde edeceğiz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Kopyaladığımız dosyayı incelediğimizde &lt;strong&gt;u-boot Legacy uImage&lt;/strong&gt; olduğunu doğrulayabiliriz. Ayrıca arch&amp;rsquo;ın MIPS olduğunu da görebiliriz.&lt;/p&gt;
-&lt;p&gt;Linux versiyonu aramak için ise tekrar binwalk çıktımıza bir göz atalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Tekrar offsetlere göz atarsak LZMA ile sıkıştırılmış bölüme gidebiliriz. &lt;strong&gt;.lzma&lt;/strong&gt; uzantılı olarak dosyayı alalım ve dosyayı çıkartalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img6.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Bu adımlardan sonra elimizde &lt;strong&gt;files&lt;/strong&gt; olarak bir dosya elimizde olmalı. Amacımız sadece &lt;strong&gt;strings&lt;/strong&gt; ile Linux versiyonuna göz atmak olacak:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Kullanılan Linux versiyonu &lt;strong&gt;3.10.108&lt;/strong&gt; ve GCC için ise &lt;strong&gt;4.6.3&lt;/strong&gt; kullanılmakta. Bu ikisi de eski versiyondur.&lt;/p&gt;
-&lt;p&gt;Linux&amp;rsquo;un &lt;a href=&#34;https://lwn.net/Articles/738167/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;3.10.108 versiyonu&lt;/a&gt; &lt;strong&gt;5 Kasım 2017&lt;/strong&gt; yılında çıkmış:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;GCC&amp;rsquo;nin &lt;a href=&#34;https://lwn.net/Articles/738167/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;4.6.3 versiyonu&lt;/a&gt; ise &lt;strong&gt;1 Mart 2012&lt;/strong&gt; yılında çıkmış:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img9.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Açıkçası ben &lt;strong&gt;Firmware Reverse Engineering&lt;/strong&gt; alanında yeni olsam da, 2024 yılında sunulmuş bir firmware&amp;rsquo;in eski Linux ve GCC versiyonu kullanmasını mantıklı bulmadım. Bu security açısından risk oluşturabilecek bir şey.&lt;/p&gt;
-&lt;p&gt;Bunu gördüğüm zaman kendime şunu sordum: &lt;strong&gt;&amp;ldquo;Bunu farklı firmalar da yapıyor mu ve normal mi?&amp;rdquo;&lt;/strong&gt;. Her ne kadar da bunun normal olmadığını düşünsem de farklı bir firmanın Router Firmware&amp;rsquo;ini analiz ederek Linux versiyonunu karşılaştırmak istedim. Daha sonra kısa araştırmadan sonra ASUS&amp;rsquo;un &lt;a href=&#34;https://www.asus.com/tr/networking-iot-servers/wifi-routers/asus-wifi-routers/rt-ax58u/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;RT-AX58U&lt;/a&gt; Router Firmware&amp;rsquo;i analiz etmeye karar verdim.&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.asus.com/networking-iot-servers/wifi-6/all-series/rt-ax58u/helpdesk_bios?model2Name=RT-AX58U&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Bu Firmware&lt;/a&gt; için bilgiler ise şu şekilde:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img10.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Aynı şekilde bu Firmware ise neredeyse 1 ay önce çıkmış. Odağımızın dağılmaması için hızlıca bulduğum sonucu paylaşacağım. Fakat size tavsiyem daha çok pratik yapmak isterseniz bu blogu okuduktan sonra benim gibi ASUS Router&amp;rsquo;ın bu Firmware&amp;rsquo;ini analiz edebilirsiniz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img11.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Sonuca baktığımızda bu Firmware için Linux&amp;rsquo;un &lt;strong&gt;4.19.183&lt;/strong&gt; ve GCC&amp;rsquo;nin &lt;strong&gt;9.2.0&lt;/strong&gt; versiyonu kullanılmakta.&lt;/p&gt;
-&lt;p&gt;Linux&amp;rsquo;un &lt;a href=&#34;https://lwn.net/Articles/850356/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;4.19.183 versiyonu&lt;/a&gt; &lt;strong&gt;24 Mart 2021&lt;/strong&gt;&amp;lsquo;de çıkmış:
-&lt;img src=&#34;../../../images/posts/reversing-router/img12.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;GCC&amp;rsquo;nin &lt;a href=&#34;https://gcc.gnu.org/gcc-9/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;9.2.0 versiyonu&lt;/a&gt; ise &lt;strong&gt;12 Ağustos 2019&lt;/strong&gt; yılında çıkmış&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img13.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;ASUS RT-AX58U&amp;rsquo;un bu Firmware&amp;rsquo;inde ise analiz ettiğimiz TP-LINK Firmware&amp;rsquo;ına kıyasla daha yakın bir tarihteki sürümler kullanıldığını görebiliriz ancak yine de bu sürümlerde eski.&lt;/p&gt;
-&lt;p&gt;Bunun nedenini ilerideki bloglarda tartışabiliriz. Şimdi analizimize devam edelim.&lt;/p&gt;
-&lt;p&gt;Analizimiz sonucunda bu Firmware için bulduğumuz Linux sürümü &lt;strong&gt;3.10.108&lt;/strong&gt;&amp;lsquo;dır. Şimdi ise bu Firmware&amp;rsquo;in Linux dosyalarına bir göz atalım.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Linux Dosyalarını Bulma&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;linux-dosyalarını-bulma&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#linux-dosyalar%c4%b1n%c4%b1-bulma&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;binwalk ile elde ettiğimiz offset çıktılarına bir tekrar göz atalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Burada Linux dosyalarını bulmak için &lt;strong&gt;Squashfs&lt;/strong&gt; alanına yönelebiliriz. Çoğunlukla Linux dosyaları burada bulunurlar.&lt;/p&gt;
-&lt;p&gt;Yine aynı şekilde &lt;strong&gt;.sqfs&lt;/strong&gt; uzantısı ile kopyalayalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img14.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Tekrarlamaktan zarar gelmez, &lt;strong&gt;3106242&lt;/strong&gt; offset değerini verdiğime dikkat edin. Burası &lt;strong&gt;Squashfs&lt;/strong&gt; ile sıkıştırılmış alanın offset değeri.&lt;/p&gt;
-&lt;p&gt;Dosyayı incelediğimizde zaten &lt;strong&gt;Squashfs&lt;/strong&gt; ile sıkıştırıldığını doğrulayabiliriz. Şimdi ise bunu çıkartmamız gerekecek ancak eğer kurulu değilse &lt;strong&gt;Squashfs-tools&lt;/strong&gt; paketi indirilmesi gerekiyor. Debian sistemlerde aşağıdaki komutla indirebilirsiniz:&lt;/p&gt;
+&lt;p&gt;First, let&amp;rsquo;s take a look at the information of the firmware we downloaded:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/firmware-info.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As you can see, it was released on November 14, 2024. So it&amp;rsquo;s a firmware released almost 1 month ago. We can see that a few bugs have been fixed, optimizations have been made and new things have been added.&lt;/p&gt;
+&lt;p&gt;Since I don&amp;rsquo;t physically own this router, I will only analyze the firmware in this blog.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Finding Linux Version&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;finding-linux-version&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#finding-linux-version&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;We will use a tool called binwalk, which is often used especially in firmware reverse engineering. This tool can provide us with various information about the firmware.&lt;/p&gt;
+&lt;p&gt;First, let&amp;rsquo;s give binwalk the firmware we are going to analyze:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img2.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Yeaap, we have some complicated outputs&amp;hellip;&lt;/p&gt;
+&lt;p&gt;These outputs contain the offsets of the related firmware. However, this binwalk tool does not only give offset values, it also gives explanations for these fields. Let&amp;rsquo;s take a look at the Decimal and Hexdecimal values in this output:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img3.png&#34; style=&#34;width: 35%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;These are the offset values. binwalk tool shows them to us in both decimal and hexdecimal. Now let&amp;rsquo;s first focus on the Bootloader (U-Boot) and take a look at its architecture.&lt;/p&gt;
+&lt;p&gt;At this stage we can use the dd tool. Let&amp;rsquo;s run the following command:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img4.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Let&amp;rsquo;s pay attention to the values we give. with &amp;lsquo;if&amp;rsquo;, we give the target firmware. with &amp;lsquo;of&amp;rsquo;, we specify how to save the replicated data. with &amp;lsquo;skip&amp;rsquo;, we skip a certain amount of bytes and start the copying process. Notice that we gave a value of 8212. This means that dd will copy data up to 8212 bytes after the tool. This value is the offset of the uImage we found from binwalk.&lt;/p&gt;
+&lt;p&gt;This copy will result in a file called uImage:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img5.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Analyzing the copied file we can verify that it is u-boot Legacy uImage. We can also see that arch is MIPS.&lt;/p&gt;
+&lt;p&gt;To look for the Linux version, let&amp;rsquo;s take a look at our binwalk output again:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img2.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;If we look at the offsets again, we can go to the compressed partition with LZMA. Let&amp;rsquo;s take the file with the .lzma extension and extract the file:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img6.png&#34; style=&#34;width: 80%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;After these steps we should have a file as &lt;strong&gt;files&lt;/strong&gt;. Our goal will be to browse the Linux version with strings only:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img7.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;The Linux version used is 3.10.108 and 4.6.3 for GCC. Both of these are old versions.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://lwn.net/Articles/738167/&#34;&gt;Linux version 3.10.108&lt;/a&gt; was released on November 5, 2017:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img8.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;a href=&#34;https://gcc.gnu.org/gcc-4.6/&#34;&gt;Version 4.6.3 of GCC&lt;/a&gt; was released on March 1, 2012:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img9.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;To be honest, even though I am new to Firmware Reverse Engineering, I didn&amp;rsquo;t find it logical that a firmware released in 2024 would use an old Linux and GCC version. This could be a security risk.&lt;/p&gt;
+&lt;p&gt;When I saw this, I asked myself: &amp;ldquo;Do other companies do this and is it normal?&amp;rdquo;. Although I didn&amp;rsquo;t think it was normal, I wanted to analyze a different company&amp;rsquo;s router firmware and compare it with the Linux version. After a short research, I decided to analyze ASUS&amp;rsquo;s RT-AX58U Router Firmware.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.asus.com/networking-iot-servers/wifi-6/all-series/rt-ax58u/helpdesk_bios?model2Name=RT-AX58U&#34;&gt;The information&lt;/a&gt; for this firmware is as follows:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img10.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Likewise, this Firmware was released almost 1 month ago. I will share the result I found quickly so that we don&amp;rsquo;t get distracted. But if you want to practice more, I recommend you to analyze this Firmware of ASUS Router like me after reading this blog:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img11.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As a result, Linux version 4.19.183 and GCC version 9.2.0 are used for this firmware.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://lwn.net/Articles/850356/&#34;&gt;Linux version 4.19.183&lt;/a&gt; was released on March 24, 2021:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img12.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;a href=&#34;https://gcc.gnu.org/gcc-9/&#34;&gt;Version 9.2.0 of GCC&lt;/a&gt; was released on August 12, 2019&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img13.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;In this Firmware of the ASUS RT-AX58U we can see that it uses more recent versions compared to the TP-LINK Firmware we analyzed.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Finding Linux Files&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;finding-linux-files&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#finding-linux-files&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Let&amp;rsquo;s take a look again at the offset outputs we obtained with binwalk:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img2.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Here we can navigate to Squashfs to find Linux files. This is where most Linux files are located.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s copy them in the same way with the .sqfs extension:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img14.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;Analyzing the file we can verify that it is already compressed with Squashfs. Now we will need to extract it, but the Squashfs-tools package needs to be downloaded if it is not installed. On Debian systems you can download it with the following command:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
 
 &lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo apt install squashfs-tools -y&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
@@ -96,31 +127,41 @@
   &lt;/button&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;p&gt;İndirdikten sonra &lt;strong&gt;unsquashfs&lt;/strong&gt; ile çıkartalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img15.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Çıkarma işleminden sonra &lt;strong&gt;squashfs-root&lt;/strong&gt; adlı bir dosya elde ediyoruz. İçerisine göz atalım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img16.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü üzere Linux dosyalarına eriştik. Bu kısımda yapabileceğimiz birçok şey bulunuyor. Bir bug, hashler veya şifreler gibi artık analiziniz neye dayanıyorsa ona göre araştırma yaparak ilerleyebilirsiniz. Mesela &lt;strong&gt;/etc/shadow&lt;/strong&gt; içerisindeki şifrelere göz atabiliriz:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img17.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Benim gibi yeni iseniz bu Linux dosyalarını araştırabilir ve diğer offset bölümlerini kopyalayıp göz atabilirsiniz.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Simüle Etme&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;simüle-etme&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#sim%c3%bcle-etme&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Son olarak ise Firmware&amp;rsquo;i emule (simüle) edelim. Bunun için &lt;strong&gt;chroot&lt;/strong&gt; ve &lt;strong&gt;qemu&lt;/strong&gt; kullanabiliriz. Fakat ondan önce Firmware&amp;rsquo;in mimarisini bilmemiz gerekiyor.&lt;/p&gt;
-&lt;p&gt;Linux versiyonunu ararken uImage&amp;rsquo;a göz attığımızda mimarinin &lt;strong&gt;MIPS&lt;/strong&gt; olduğunu zaten görmüştük. Ancak yine de çıktıyı bir kez daha kontrol edelim:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img5.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Göründüğü üzere MIPS olduğunu görebiliriz. Ayrıca da Little Endian.&lt;/p&gt;
-&lt;p&gt;Qemu kullanacağımız için &lt;strong&gt;/usr/bin/qemu-mipsel-static&lt;/strong&gt; programını squashfs-root dosyasına kopyalayalım ve ardından chroot çalıştıralım:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;../../../images/posts/reversing-router/img18.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Başarılı bir şekilde simüle etmiş olduk. Busybox&amp;rsquo;ın sürümüne göz attığımızda da &lt;strong&gt;1.19.4&lt;/strong&gt; kullanıldığını görmekteyiz. Bu da 2012 yılında çıkmış bir eski sürümdür.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Sonuç&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;sonuç&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#sonu%c3%a7&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Firmware Reverse Engineering için ilk blogumda basitçe bir firmware&amp;rsquo;in nasıl analiz edebileceğimizi gördük. Eğer araştırmalara devam etmek isterseniz konu içerisinde bahsettiğim ASUS&amp;rsquo;un Firmware&amp;rsquo;ini analiz edebilirsiniz. Ayrıca da referanslara da göz atabilirsiniz.&lt;/p&gt;
-&lt;p&gt;Umarım bu konu işinize yaramıştır efenimmm iyi çalışmalarr.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;References&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;ul&gt;
+&lt;p&gt;After downloading, extract it with unsquashfs: command:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img15.png&#34; style=&#34;width: 80%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;After extraction we get a file named squashfs-root. Let&amp;rsquo;s take a look inside&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img16.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;As you can see, we have accessed the Linux files. There are many things we can do in this section. You can search for a bug, hashes or passwords, whatever your analysis is based on. For example, we can take a look at the passwords in /etc/shadow:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img17.png&#34; style=&#34;width: 40%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;If you are new like me you can search for these Linux files and copy and browse other offset sections.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Simulating&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;simulating&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#simulating&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Finally, let&amp;rsquo;s emulate (simulate) the firmware. We can use chroot and qemu for this. But before that we need to know the architecture of the firmware.&lt;/p&gt;
+&lt;p&gt;When we browsed uImage looking for the Linux version, we already saw that the architecture is MIPS. But let&amp;rsquo;s check the output one more time:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img5.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;We can see that it&amp;rsquo;s MIPS. It is also Little Endian.&lt;/p&gt;
+&lt;p&gt;Since we are going to use Qemu, let&amp;rsquo;s copy /usr/bin/qemu-mipsel-static to squashfs-root and then run chroot:&lt;/p&gt;
+&lt;div style=&#34;text-align: center;&#34;&gt;
+  &lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/img18.png&#34; style=&#34;width: 100%&#34; /&gt;
+&lt;/div&gt;
+&lt;p&gt;When we take a look at the version of Busybox, we see that 1.19.4 is used. This is an old version released in 2012.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Conclusion&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;conclusion&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#conclusion&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;In this blog, we discussed the fundamental steps of analyzing a router&amp;rsquo;s firmware, using a recently released TP-Link device as our case study. We demonstrated how to use common Linux tools like binwalk, dd, strings, and unsquashfs to dissect the firmware file, extract its core components like the kernel and the filesystem, and identify the software versions within.&lt;/p&gt;
+&lt;p&gt;Our most striking discovery was that a firmware released in 2024 is built upon a Linux kernel from 2017 (3.10.108) and a GCC toolchain from 2012 (4.6.3). As our comparison with a more up-to-date ASUS firmware showed, this practice is a choice, not a necessity, and it represents a significant security liability. Such outdated components are often rife with known, unpatched vulnerabilities that could be exploited by attackers.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;References&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://embeddedbits.org/reverse-engineering-my-routers-firmware-with-binwalk-embeddedbits/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Embeddedbits - Reverse engineering my router&amp;rsquo;s firmware with binwalk&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://embeddedbits.org/reverse-engineering-my-routers-firmware-with-binwalk-embeddedbits/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Embeddedbits - Reverse engineering my router’s firmware with binwalk&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=zs86OYea8Wk&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;John Hammond -  Getting Started in Firmware Analysis &amp;amp; IoT Reverse Engineering&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=zs86OYea8Wk&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;John Hammond - Getting Started in Firmware Analysis &amp;amp; IoT Reverse Engineering&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=oqk3cU7ekag&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Engineer Man - Simple Firmware Reverse Engineering&lt;/a&gt;&lt;/p&gt;

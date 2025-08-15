@@ -11,30 +11,30 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>Virtual Memory – 0xbekoo</title>
-  <meta name="description" content="Merhabalar, bu yazıda Virtual Memory konusunu ele alacağım.
-Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir process’in, diğer bir process’in belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.&#34;" /><link rel="canonical" href="https://0xbekoo.github.io:1313/docs/winkernel-dev/wkd-virtual-memory/" itemprop="url" />
+  <meta name="description" content="In this documentation we will discuss Virtual Memory in Windows Kernel.
+What is Virtual Memory “Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.” -Windows Internals Part 1 - Chapter 1, Page 39" /><link rel="canonical" href="http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/" itemprop="url" />
 
 <meta property="og:title" content="Virtual Memory" />
-<meta property="og:description" content="Merhabalar, bu yazıda Virtual Memory konusunu ele alacağım.
-Virtual Memory Nedir?
+<meta property="og:description" content="In this documentation we will discuss Virtual Memory in Windows Kernel.
+What is Virtual Memory
     
-  &ldquo;Windows, her bir process için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir process&rsquo;in, diğer bir process&rsquo;in belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.&quot;" />
+  &ldquo;Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.&rdquo;
+-Windows Internals Part 1 - Chapter 1, Page 39" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://0xbekoo.github.io:1313/docs/winkernel-dev/wkd-virtual-memory/" /><meta property="article:section" content="docs" />
+<meta property="og:url" content="http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2024-08-30T00:00:00+00:00" />
 <meta property="article:modified_time" content="2024-08-30T00:00:00+00:00" />
 
   <meta itemprop="name" content="Virtual Memory">
-  <meta itemprop="description" content="Merhabalar, bu yazıda Virtual Memory konusunu ele alacağım.
-Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir process’in, diğer bir process’in belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.&#34;">
+  <meta itemprop="description" content="In this documentation we will discuss Virtual Memory in Windows Kernel.
+What is Virtual Memory “Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.” -Windows Internals Part 1 - Chapter 1, Page 39">
   <meta itemprop="datePublished" content="2024-08-30T00:00:00+00:00">
   <meta itemprop="dateModified" content="2024-08-30T00:00:00+00:00">
-  <meta itemprop="wordCount" content="993">
-  <meta itemprop="keywords" content="Winkernel-Dev,Driver,Virtual-Memory,Memory,Virtual">
+  <meta itemprop="wordCount" content="1191">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Virtual Memory">
-  <meta name="twitter:description" content="Merhabalar, bu yazıda Virtual Memory konusunu ele alacağım.
-Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir process’in, diğer bir process’in belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.&#34;">
+  <meta name="twitter:description" content="In this documentation we will discuss Virtual Memory in Windows Kernel.
+What is Virtual Memory “Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.” -Windows Internals Part 1 - Chapter 1, Page 39">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -151,9 +151,41 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-4/"
+    
+  >PatchGuard Analysis - Part 4
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-3/"
+    
+  >PatchGuard Analysis - Part 3
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-2/"
+    
+  >PatchGuard Analysis - Part 2
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-1/"
+    
+  >PatchGuard Analysis - Part 1
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hooking/"
     
-  >SSDT Hooking ile User-Mode Programda Sürücü Yükleme
+  >Loading Driver from User-Mode Program via SSDT Hooking
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -161,13 +193,13 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/syscalls/"
     
-  >Windows Kernel&#39;da Syscall Araştırma Yolculuğum
+  >Reversing System Call Mechanism in Windows Kernel
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bare-metal-reversing-0x0/"
+    href="/blog/bare-metal-reversing/"
     
   >ARM Firmware Reverse Engineering
     </a>
@@ -186,14 +218,6 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
     href="/blog/is-valorant-spyware/"
     
   >Is Valorant Spyware?
-    </a>
-              
-            </li><li class="hx-flex hx-flex-col "><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bypass-ptrace/"
-    
-  >Bypass Ptrace
     </a>
               
             </li></ul>
@@ -216,6 +240,14 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/uefi-keylogger/"
@@ -312,6 +344,14 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/winkernel-dev/wkd-ssdt/"
     
   >SSDT
@@ -327,33 +367,9 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
   
     <ul class='hx-flex hx-flex-col hx-gap-1 hx-relative before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] dark:before:hx-bg-neutral-800 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-pr-3 rtl:before:hx-right-0 ltr:hx-ml-3 rtl:hx-mr-3'><li>
               <a
-                href="#virtual-memory-nedir"
+                href="#"
                 class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >Virtual Memory Nedir?</a>
-            </li>
-          <li>
-              <a
-                href="#code"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >Code</a>
-            </li>
-          <li>
-              <a
-                href="#s%c3%bcr%c3%bcc%c3%bcn%c3%bcn-%c3%a7al%c4%b1%c5%9ft%c4%b1r%c4%b1lmas%c4%b1"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >Sürücünün Çalıştırılması</a>
-            </li>
-          <li>
-              <a
-                href="#sonu%c3%a7"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >Sonuç</a>
-            </li>
-          <li>
-              <a
-                href="#references"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >References</a>
+              ></a>
             </li>
           </ul>
   
@@ -411,6 +427,14 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/uefi-keylogger/"
     
   >UEFI Keylogger
@@ -503,6 +527,14 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/winkernel-dev/wkd-ssdt/"
     
   >SSDT
@@ -550,37 +582,68 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
     </div>
   
   
-    <div class="  hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-grow hx-flex-col"><button
+    <div class=" hx-justify-end hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-justify-items-start hx-grow">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>English</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/docs/winkernel-dev/wkd-virtual-memory/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/docs/winkernel-dev/wkd-virtual-memory/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish</a>
+        </li>
+      </ul>
+  </div><button
   title="Change theme"
   data-theme="light"
   class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
   type="button"
   aria-label="Change theme"
 >
-  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span class="group-data-[theme=light]:hx-hidden">Light</span><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg><span class="group-data-[theme=dark]:hx-hidden">Dark</span></div>
+  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></div>
 </button>
-</div></div></aside>
+</div></aside>
     
 <nav class="hextra-toc hx-order-last hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-px-4" aria-label="table of contents">
     <div class="hextra-scrollbar hx-sticky hx-top-16 hx-overflow-y-auto hx-pr-4 hx-pt-6 hx-text-sm [hyphens:auto] hx-max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4"><p class="hx-mb-4 hx-font-semibold hx-tracking-tight">On this page</p><ul>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#virtual-memory-nedir">Virtual Memory Nedir?
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#what-is-virtual-memory">What is Virtual Memory
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#code">Code
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#coding">Coding
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#s%c3%bcr%c3%bcc%c3%bcn%c3%bcn-%c3%a7al%c4%b1%c5%9ft%c4%b1r%c4%b1lmas%c4%b1">Sürücünün Çalıştırılması
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#running-the-driver">Running the Driver
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#sonu%c3%a7">Sonuç
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#conclusion">Conclusion
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#references">References
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#references">References
         </a>
       </li></ul>
       <div class="hx-mt-8 hx-border-t hx-bg-white hx-pt-8 hx-shadow-[0_-12px_16px_white] dark:hx-bg-dark dark:hx-shadow-[0_-12px_16px_#111] hx-sticky hx-bottom-0 hx-flex hx-flex-col hx-items-start hx-gap-2 hx-pb-8 dark:hx-border-neutral-800 contrast-more:hx-border-t contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-border-neutral-400">
@@ -609,30 +672,37 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
 
         <div class="content">
           <h1>Virtual Memory</h1>
-          <p>Merhabalar, bu yazıda Virtual Memory konusunu ele alacağım.</p>
-<h2>Virtual Memory Nedir?<span class="hx-absolute -hx-mt-20" id="virtual-memory-nedir"></span>
-    <a href="#virtual-memory-nedir" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><blockquote>
-  <p><i>&ldquo;Windows, her bir process için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir process&rsquo;in, diğer bir process&rsquo;in belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.&quot;</i></p>
-
+          <p>In this documentation we will discuss Virtual Memory in Windows Kernel.</p>
+<h3><strong>What is Virtual Memory</strong><span class="hx-absolute -hx-mt-20" id="what-is-virtual-memory"></span>
+    <a href="#what-is-virtual-memory" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><blockquote>
+  <p><em>&ldquo;Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.&rdquo;</em>
+-<strong>Windows Internals Part 1 - Chapter 1, Page 39</strong></p>
 </blockquote>
-<p>&ndash;<strong>Windows Internals Part 1 - Chapter 1, Page 39</strong></p>
-<p>Yukarıdaki kaynağa göre kısaca <strong>Virtual Memory</strong> (Sanal Bellek), fiziksel bellek adresindeki verilerin ldealleştirilmiş bir soyutlama sağlayan bir bellek yönetim tekniğidir. Bu sayede işletim sistemi her bir process&rsquo;in, diğer process belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.</p>
-<p>Bu sistem, verileri bellekte (RAM) ve sabit diskte (hard disk) saklamak için bir yöntem kullanır. Bu yöntem, verileri küçük parçalara böler. Her bir parça &lsquo;page&rsquo; (sayfa) olarak adlandırılır ve genellikle 4 KB boyutundadır.</p>
-<p>Bu sayfalar, bellekte bitişik olarak saklanmak zorunda değildir. Yani, bir uygulamanın verileri bellekte düzensiz bir şekilde yer alabilir. Örneğin, bir uygulamanın bazı verileri bellekte bulunurken, bazıları diskte saklanabilir. Bu yöntem, uygulamanın performansını etkilemeden bellek kullanımını optimize etmesini sağlar.</p>
-<p>Bu sistemin avantajı, uygulamaların sayfalamadan yararlanmak için herhangi bir özel değişiklik yapmasına gerek olmamasıdır. Bellek yönetim sistemi, bu işlemleri otomatik olarak yapar. Aşağıdaki şemada bunu daha iyi görebilirsiniz.</p>
-<p><img src="../../../images/posts/virtual-memory/img1.png" alt="" loading="lazy" /></p>
-<h5 align="center">Windows Internals - Part 1, Page 40</h5>
-<p>Sanal adres alanının boyutu her donanım platformuna göre değişiklik gösterir. Örneğin Windows&rsquo;ta 32-bit x86 sistemlerde toplam sanal adres alanı en fazla 4 GB&rsquo;dır. Yine bu platformda varsayılan olarak, Windows bu adres alanının alt yarısını (0x00000000 - 0x7FFFFF arası adresler) kendi özel depolama alanlarını ve üst yarısını (0x80000000 - 0xFFFFFF arası adresler) kendi korumalı işletim sistemi bellek kullanımı için ayırır.</p>
-<p>Windows&rsquo;ta 64-bit (x64) sistemlerde ise sanal adres alanı çok daha geniştir. 64-bit bir adresleme sistemi teorik olarak 16 exabyte (2^64 bayt) sanal adres alanı sunar. Ancak, mevcut donanım ve işletim sistemi kısıtlamaları nedeniyle bu alanın tamamı kullanılmaz. Windows x64 işletim sistemlerinde genellikle sanal adres alanı 256 terabyte (2^48 bayt) ile sınırlıdır.</p>
-<h2>Code<span class="hx-absolute -hx-mt-20" id="code"></span>
-    <a href="#code" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Bu etapta, sürücü üzerinden kernel space alanından bir bellek ayrımı yapıp ardından bu belleği sanal adres ile eşleştireceğiz.</p>
-<p>Github linki için <a href="https://github.com/0xbekoo/WinKernelDev/tree/main/Virtual_Memory/src" target="_blank" rel="noopener">buraya</a> tıklayabilirsiniz.</p>
+<p>Virtual Memory is a memory management technique that provides an idealized abstraction of the data stored in physical memory addresses. This allows the operating system to prevent one process from interfering with another process’s memory or overwriting the operating system’s critical data.</p>
+<p>This system uses a method to store data both in RAM and on the hard disk. The data is divided into small units called <em>pages</em>, each typically 4 KB in size.</p>
+<p>These pages do not need to be stored contiguously in memory. In other words, an application’s data can be scattered in memory — some parts may reside in RAM while others are stored on disk. This method optimizes memory usage without affecting application performance.</p>
+<p>An advantage of this system is that applications do not need to be specially modified to benefit from paging. The memory management system performs these operations automatically. The diagram below illustrates this more clearly.</p>
+<div style="text-align: center;">
+  <img src="/images/posts/virtual-memory/img1.png" style="width: 100%" />
+</div>
+<p>The size of the virtual address space varies depending on the hardware platform. For example, in Windows, the total virtual address space on 32-bit x86 systems is at most 4 GB. On this platform, by default, Windows allocates the lower half of this address space (addresses from 0x00000000 to 0x7FFFFFFF) for user-mode processes and the upper half (addresses from 0x80000000 to 0xFFFFFFFF) for the protected memory used by the operating system.</p>
+<p>In 64-bit (x64) Windows systems, the virtual address space is much larger. Theoretically, a 64-bit addressing system provides up to 16 exabytes (2^64 bytes) of virtual address space. However, due to current hardware and operating system limitations, not all of this space is usable. In Windows x64 operating systems, the virtual address space is typically limited to 256 terabytes (2^48 bytes).</p>
+<h3><strong>Coding</strong><span class="hx-absolute -hx-mt-20" id="coding"></span>
+    <a href="#coding" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>We will allocate a memory from the kernel space via the driver and then map it to the virtual address.</p>
+<p>You can <a href="https://github.com/0xbekoo/WinKernelDev/blob/main/Virtual_Memory/src/main.c">click here</a> for the Github link.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#pragma warning(disable: 4996)
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
 </span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;ntddk.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">NTSTATUS</span> <span class="nf">UnloadDriver</span><span class="p">(</span><span class="n">PDRIVER_OBJECT</span> <span class="n">DriverObject</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">UNREFERENCED_PARAMETER</span><span class="p">(</span><span class="n">DriverObject</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Driver Unloaded</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">NTSTATUS</span> <span class="nf">DriverEntry</span><span class="p">(</span><span class="n">PDRIVER_OBJECT</span> <span class="n">DriverObject</span><span class="p">,</span> <span class="n">PUNICODE_STRING</span> <span class="n">RegistryPath</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">	<span class="nf">UNREFERENCED_PARAMETER</span><span class="p">(</span><span class="n">RegistryPath</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="n">SIZE_T</span> <span class="n">MemorySize</span> <span class="o">=</span> <span class="mh">0x1000</span><span class="p">;</span>
@@ -642,41 +712,34 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="n">VirtualAddress</span> <span class="o">=</span> <span class="nf">ExAllocatePool</span><span class="p">(</span><span class="n">NonPagedPool</span><span class="p">,</span> <span class="n">MemorySize</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">VirtualAddress</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Bellek Ayrimi basarisiz oldu!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Failed to Allocate Memory!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="n">STATUS_INSUFFICIENT_RESOURCES</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Ayrilan Bellek Adresi: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">VirtualAddress</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Allocated Memory at 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">VirtualAddress</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="n">MDL</span> <span class="o">=</span> <span class="nf">IoAllocateMdl</span><span class="p">(</span><span class="n">VirtualAddress</span><span class="p">,</span> <span class="p">(</span><span class="n">ULONG</span><span class="p">)</span><span class="n">MemorySize</span><span class="p">,</span> <span class="n">FALSE</span><span class="p">,</span> <span class="n">FALSE</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">MDL</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;MDL Ayrimi basarisiz oldu!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Failed to MDL Creation!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">		<span class="nf">ExFreePool</span><span class="p">(</span><span class="n">VirtualAddress</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="n">STATUS_INSUFFICIENT_RESOURCES</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="nf">MmBuildMdlForNonPagedPool</span><span class="p">(</span><span class="n">MDL</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="n">MappedAddress</span> <span class="o">=</span> <span class="nf">MmMapLockedPagesSpecifyCache</span><span class="p">(</span><span class="n">MDL</span><span class="p">,</span> <span class="n">KernelMode</span><span class="p">,</span> <span class="n">MmCached</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">FALSE</span><span class="p">,</span> <span class="n">NormalPagePriority</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">MappedAddress</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Sanal Adres esleme basarisiz!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Failed to Virtual Address Mapping!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">		<span class="nf">IoFreeMdl</span><span class="p">(</span><span class="n">MDL</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">		<span class="nf">ExFreePool</span><span class="p">(</span><span class="n">VirtualAddress</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="n">STATUS_INSUFFICIENT_RESOURCES</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Sanal Adres esleme basarili! Adres: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">MappedAddress</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Virtual Address mapping is successful! Address: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">MappedAddress</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="nf">MmUnmapLockedPages</span><span class="p">(</span><span class="n">MappedAddress</span><span class="p">,</span> <span class="n">MDL</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="nf">IoFreeMdl</span><span class="p">(</span><span class="n">MDL</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="nf">ExFreePool</span><span class="p">(</span><span class="n">VirtualAddress</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">	<span class="n">DriverObject</span><span class="o">-&gt;</span><span class="n">DriverUnload</span> <span class="o">=</span> <span class="n">UnloadDriver</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">NTSTATUS</span> <span class="nf">UnloadDriver</span><span class="p">(</span><span class="n">PDRIVER_OBJECT</span> <span class="n">DriverObject</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">UNREFERENCED_PARAMETER</span><span class="p">(</span><span class="n">DriverObject</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Driver Unloaded</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">STATUS_SUCCESS</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
@@ -688,7 +751,7 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
   </button>
 </div>
 </div>
-<p>Örnek kod parçamız bu. Şimdi bu kodu inceleyelim.</p>
+<p>This is our code. Now let&rsquo;s analyze this code:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">SIZE_T</span> <span class="n">MemorySize</span> <span class="o">=</span> <span class="mh">0x1000</span><span class="p">;</span>
@@ -704,21 +767,29 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
   </button>
 </div>
 </div>
-<p>İlk olarak sürücümüzde parametreleri tanımlayarak başlıyoruz. İşte sırasıyla amaçları:</p>
+<p>First, we start by defining the parameters in our driver. Their purposes are as follows:</p>
 <ul>
-<li><strong>MemorySize</strong>: Bellek ayrımı yapılacak alanın boyutunu belirler. Bu örnekte 0x1000 (4 KB) olarak belirledim.</li>
-<li><strong>VirtualAddress</strong>: Bellek ayrımı yapıldığında dönen adresi tutar.</li>
-<li><strong>MappedAddress</strong>: Belleğin sanal adres ile eşleştirildiği adresi tutar.</li>
-<li><strong>MDL</strong>: Belleğin sanal adres ile eşleştirilmesi için kullanılan MDL yapısını tutar.</li>
+<li>
+<p><strong>MemorySize</strong>: Specifies the size of the memory block to be allocated. In this example, I set it to <code>0x1000</code> (4 KB).</p>
+</li>
+<li>
+<p><strong>VirtualAddress</strong>: Holds the address returned when the memory allocation is performed.</p>
+</li>
+<li>
+<p><strong>MappedAddress</strong>: Holds the address to which the memory is mapped with a virtual address.</p>
+</li>
+<li>
+<p><strong>MDL</strong>: Holds the MDL (Memory Descriptor List) structure used for mapping the memory to a virtual address.</p>
+</li>
 </ul>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">VirtualAddress</span> <span class="o">=</span> <span class="nf">ExAllocatePool</span><span class="p">(</span><span class="n">NonPagedPool</span><span class="p">,</span> <span class="n">MemorySize</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">VirtualAddress</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Bellek Ayrimi basarisiz oldu!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Memory allocation failed</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">STATUS_INSUFFICIENT_RESOURCES</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Ayrilan Bellek Adresi: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">VirtualAddress</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+</span></span><span class="line"><span class="cl"><span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Allocated Memory Address: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">VirtualAddress</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
     title="Copy code"
@@ -728,14 +799,15 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
   </button>
 </div>
 </div>
-<p>İlk adımımızda <strong>Nonpaged Pool</strong> alanından 4 KB&rsquo;lık bir bellek ayrımı yapıyoruz. Eğer bellek ayrımı başarısız olursa, hata mesajı yazdırıp işlemi sonlandırıyoruz. Ayrıca başarılı olursa, ayrılan belleğin adresini yazdırıyoruz.</p>
-<p>Eğer Nonpaged havuzu hakkında bilginiz yoksa burada bir kısa açıklama yapayım. <strong>Nonpaged Pool</strong>, işletim sisteminde kullanılan bellek havuzlarından biridir. Bu havuz, sistemin her zaman erişilebilir olan ve disk belleği ile değiştirilemeyen (yani &ldquo;paging&rdquo; işlemi uygulanamayan) bellek alanını ifade eder. Nonpaged pool içindeki bellek, sistemde kritik öneme sahip işler için ayrılır. Örneğin, donanım sürücüleri veya çekirdek (kernel) modundaki diğer bileşenler, bu havuzdan bellek tahsis ederler çünkü bu bileşenlerin bellek erişiminin her zaman hızlı ve kesintisiz olması gerekir.</p>
-<p>Bunun yanında <strong>Paged Pool</strong> alanı vardır. Bu da işletim sisteminde kullanılan bellek havuzlarından biridir. Bu havuz, sistemin bellek yönetimi için kullanılan ve disk belleği ile değiştirilebilen (yani &ldquo;paging&rdquo; işlemi uygulanabilen) bellek alanını ifade eder. Paged pool içindeki bellek, genellikle kullanıcı modunda çalışan uygulamalar ve hizmetler için ayrılır.</p>
+<p>In the first step, we allocate a 4 KB memory block from the <strong>Nonpaged Pool</strong>. If the allocation fails, we print an error message and exit. If it succeeds, we print the address of the allocated memory.</p>
+<p>If you are unfamiliar with the Nonpaged Pool, here’s a short explanation:<br>
+The <strong>Nonpaged Pool</strong> is one of the memory pools used by the operating system. It refers to a memory area that is always accessible and cannot be paged out to disk (i.e., cannot undergo “paging”). Memory in the nonpaged pool is reserved for tasks of critical importance to the system. For example, hardware drivers or other kernel-mode components allocate from this pool because their memory access must always be fast and uninterrupted.</p>
+<p>Alongside this, there is also the <strong>Paged Pool</strong>, another memory pool used by the operating system. This pool refers to a memory area that can be paged out to disk. Memory in the paged pool is generally allocated for user-mode applications and services.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">MDL</span> <span class="o">=</span> <span class="nf">IoAllocateMdl</span><span class="p">(</span><span class="n">VirtualAddress</span><span class="p">,</span> <span class="p">(</span><span class="n">ULONG</span><span class="p">)</span><span class="n">MemorySize</span><span class="p">,</span> <span class="n">FALSE</span><span class="p">,</span> <span class="n">FALSE</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">MDL</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;MDL Ayrimi basarisiz oldu!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;MDL allocation failed!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="nf">ExFreePool</span><span class="p">(</span><span class="n">VirtualAddress</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">STATUS_INSUFFICIENT_RESOURCES</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -748,7 +820,7 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
   </button>
 </div>
 </div>
-<p>Kodun devamında ise, bellek bloğunun fiziksel adreslerine erişmek ve bu bloğu bir sanal adres ile eşleştirmek için bir MDL (Memory Descriptor List) yapısı oluşturuyoruz. MDL yapısı, belleğin fiziksel adreslerini ve boyutunu tutar, böylece bu blokla ilişkili verilerin sanal bellekten fiziksel belleğe nasıl eşleştirileceğini tanımlar.</p>
+<p>Next, we create an <strong>MDL (Memory Descriptor List)</strong> structure to access the physical addresses of the memory block and map this block to a virtual address. The MDL stores the physical addresses and size of the memory, describing how the associated data is mapped from virtual to physical memory.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="nf">MmBuildMdlForNonPagedPool</span><span class="p">(</span><span class="n">MDL</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -761,17 +833,17 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
   </button>
 </div>
 </div>
-<p>Daha sonra bı API ile MDL yapısını oluşturuyoruz. Bu fonksiyon, MDL yapısını oluştururken, MDL yapısının fiziksel bellek adreslerini ve boyutunu doldurur.</p>
+<p>We then use this API to build the MDL structure. While building, this function fills in the physical memory addresses and size within the MDL.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">MappedAddress</span> <span class="o">=</span> <span class="nf">MmMapLockedPagesSpecifyCache</span><span class="p">(</span><span class="n">MDL</span><span class="p">,</span> <span class="n">KernelMode</span><span class="p">,</span> <span class="n">MmCached</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">FALSE</span><span class="p">,</span> <span class="n">NormalPagePriority</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">==</span> <span class="n">MappedAddress</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Sanal Adres esleme basarisiz!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Virtual address mapping failed!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="nf">IoFreeMdl</span><span class="p">(</span><span class="n">MDL</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="nf">ExFreePool</span><span class="p">(</span><span class="n">VirtualAddress</span><span class="p">);</span>
 </span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">STATUS_INSUFFICIENT_RESOURCES</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Sanal Adres esleme basarili! Adres: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">MappedAddress</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
+</span></span><span class="line"><span class="cl"><span class="nf">DbgPrintEx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;Virtual address mapping successful! Address: 0x%p</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">MappedAddress</span><span class="p">);</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
   <button
     class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
     title="Copy code"
@@ -781,7 +853,7 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
   </button>
 </div>
 </div>
-<p>Son olarak belleğimizi sanal adresle eşlemek için <strong>MmMapLockedPagesSpecifyCache</strong> API kullanıyoruz. Bu fonksiyon, MDL yapısını kullanarak belirtilen bellek bloğunu sanal belleğe eşler. Eğer işlem başarısız olursa, hata mesajı yazdırıp işlemi sonlandırıyoruz. Başarılı olursa, eşlenen belleğin adresini yazdırıyoruz.</p>
+<p>Finally, to map the memory to a virtual address, we use the <strong>MmMapLockedPagesSpecifyCache</strong> API. This function uses the MDL to map the specified memory block into virtual memory. If the operation fails, we print an error message and exit. If it succeeds, we print the mapped virtual address.</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="nf">MmUnmapLockedPages</span><span class="p">(</span><span class="n">MappedAddress</span><span class="p">,</span> <span class="n">MDL</span><span class="p">);</span>
@@ -799,16 +871,17 @@ Virtual Memory Nedir? “Windows, her bir process için, büyük ve özel bir ad
   </button>
 </div>
 </div>
-<p>Son olarak, işimiz bittiğinde belleği serbest bırakıyoruz. Bu işlemi yaparken, önce <strong>MmUnmapLockedPages</strong> fonksiyonunu kullanarak sanal belleği serbest bırakıyoruz. Daha sonra <strong>IoFreeMdl</strong> fonksiyonu ile MDL yapısını serbest bırakıyoruz.</p>
-<h2>Sürücünün Çalıştırılması<span class="hx-absolute -hx-mt-20" id="sürücünün-çalıştırılması"></span>
-    <a href="#s%c3%bcr%c3%bcc%c3%bcn%c3%bcn-%c3%a7al%c4%b1%c5%9ft%c4%b1r%c4%b1lmas%c4%b1" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p><img src="../../../images/posts/virtual-memory/video.gif" alt="" loading="lazy" /></p>
-<p>Görüldüğü gibi, sürücüyü çalıştırdığımızda başarıyla ayrılan bellek adresi ve eşlenen sanal bellek adresini windbg üzerinden görebiliyoruz:</p>
-<p><img src="../../../images/posts/virtual-memory/img2.png" alt="" loading="lazy" /></p>
-<h2>Sonuç<span class="hx-absolute -hx-mt-20" id="sonuç"></span>
-    <a href="#sonu%c3%a7" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Bu yazıda, Virtual Memory konusunu ele aldım. Umarım faydalı olmuştur.</p>
-<p>İyi çalışmalar dilerim 🚀🚀</p>
-<h2>References<span class="hx-absolute -hx-mt-20" id="references"></span>
-    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><ul>
+<p>At the end, when we are done, we free the memory. This is done by first calling <strong>MmUnmapLockedPages</strong> to unmap the virtual memory, then <strong>IoFreeMdl</strong> to free the MDL structure, and finally <strong>ExFreePool</strong> to release the allocated memory.</p>
+<h3><strong>Running the Driver</strong><span class="hx-absolute -hx-mt-20" id="running-the-driver"></span>
+    <a href="#running-the-driver" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Well, let&rsquo;s run our driver:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/virtual-memory/img3.png" style="width: 100%" />
+</div>
+<h3><strong>Conclusion</strong><span class="hx-absolute -hx-mt-20" id="conclusion"></span>
+    <a href="#conclusion" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>In this documentation, we explored how Windows implements virtual memory in the kernel and how developers can work with it programmatically. We learned that virtual memory abstracts the physical memory layout, giving each process its own protected address space while enabling efficient memory utilization through paging.</p>
+<p>Understanding how virtual memory works at the kernel level — and how to manage memory safely and efficiently — is a critical skill for Windows kernel development. The techniques covered here form the basis for more advanced topics, such as direct hardware access, DMA operations, and custom memory management strategies in drivers.</p>
+<h3><strong>References</strong><span class="hx-absolute -hx-mt-20" id="references"></span>
+    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><ul>
 <li><a href="https://empyreal96.github.io/nt-info-depot/Windows-Internals-PDFs/Windows%20System%20Internals%207e%20Part%201.pdf" target="_blank" rel="noopener"><strong>Windows Internals Part 1 - Chapter 1, Virtual Memory (PAGE 39- 41)</strong></a></li>
 <li><a href="https://en.wikipedia.org/wiki/Virtual_memory" target="_blank" rel="noopener"><strong>EN Wikipedia - Virtual Memory</strong></a></li>
 </ul>

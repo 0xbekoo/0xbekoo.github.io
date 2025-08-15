@@ -11,32 +11,32 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>Introduction to UEFI – 0xbekoo</title>
-  <meta name="description" content="Merhabalar efenimm. UEFI Development’ın ilk bu dökümanında UEFI konusuna teorik olarak giriş yapacağız.
-Dün gece boş boş duvara bakma aktivemi gerçekleştirirken “hayatımı daha da nasıl mahvedebilirim” diye düşünürken aklıma UEFI Development’a girişmek aklıma geldi. Gerçekten uzun zamandır ilgilenmek istediğim bir alandı ve hayatımı daha derine ve kötüye götürmek için efsane bir fırsat olduğunu düşünerek şuan bu blogu yazıyorum.
-UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğrenmemiz gerekecek." /><link rel="canonical" href="https://0xbekoo.github.io:1313/docs/uefi-dev/uefi-introduction/" itemprop="url" />
+  <meta name="description" content="Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.
+What is UEFI? UEFI (Unified Extensible Firmware Interface) is a specification for a computer’s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.
+We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different. UEFI uses GPT (Guid Partition Table). GPT is a modern standard that defines the layout of partitions on a computer’s storage device. It is the standard used in devices such as HDDs or SSDs that we are all familiar with. Just as UEFI replaced BIOS, GPT has replaced the previously used MBR (Master Boot Record) partitioning table. GPT works seamlessly with UEFI." /><link rel="canonical" href="http://localhost:1313/docs/uefi-dev/uefi-introduction/" itemprop="url" />
 
 <meta property="og:title" content="Introduction to UEFI" />
-<meta property="og:description" content="Merhabalar efenimm. UEFI Development&rsquo;ın ilk bu dökümanında UEFI konusuna teorik olarak giriş yapacağız.
-Dün gece boş boş duvara bakma aktivemi gerçekleştirirken &ldquo;hayatımı daha da nasıl mahvedebilirim&rdquo; diye düşünürken aklıma UEFI Development&rsquo;a girişmek aklıma geldi. Gerçekten uzun zamandır ilgilenmek istediğim bir alandı ve hayatımı daha derine ve kötüye götürmek için efsane bir fırsat olduğunu düşünerek şuan bu blogu yazıyorum.
-UEFI Nedir?
-    Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğrenmemiz gerekecek." />
+<meta property="og:description" content="Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.
+What is UEFI?
+    UEFI (Unified Extensible Firmware Interface) is a specification for a computer&rsquo;s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.
+We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different. UEFI uses GPT (Guid Partition Table). GPT is a modern standard that defines the layout of partitions on a computer&rsquo;s storage device. It is the standard used in devices such as HDDs or SSDs that we are all familiar with. Just as UEFI replaced BIOS, GPT has replaced the previously used MBR (Master Boot Record) partitioning table. GPT works seamlessly with UEFI." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://0xbekoo.github.io:1313/docs/uefi-dev/uefi-introduction/" /><meta property="article:section" content="docs" />
+<meta property="og:url" content="http://localhost:1313/docs/uefi-dev/uefi-introduction/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2025-01-19T00:00:00+00:00" />
 <meta property="article:modified_time" content="2025-01-19T00:00:00+00:00" />
 
   <meta itemprop="name" content="Introduction to UEFI">
-  <meta itemprop="description" content="Merhabalar efenimm. UEFI Development’ın ilk bu dökümanında UEFI konusuna teorik olarak giriş yapacağız.
-Dün gece boş boş duvara bakma aktivemi gerçekleştirirken “hayatımı daha da nasıl mahvedebilirim” diye düşünürken aklıma UEFI Development’a girişmek aklıma geldi. Gerçekten uzun zamandır ilgilenmek istediğim bir alandı ve hayatımı daha derine ve kötüye götürmek için efsane bir fırsat olduğunu düşünerek şuan bu blogu yazıyorum.
-UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğrenmemiz gerekecek.">
+  <meta itemprop="description" content="Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.
+What is UEFI? UEFI (Unified Extensible Firmware Interface) is a specification for a computer’s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.
+We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different. UEFI uses GPT (Guid Partition Table). GPT is a modern standard that defines the layout of partitions on a computer’s storage device. It is the standard used in devices such as HDDs or SSDs that we are all familiar with. Just as UEFI replaced BIOS, GPT has replaced the previously used MBR (Master Boot Record) partitioning table. GPT works seamlessly with UEFI.">
   <meta itemprop="datePublished" content="2025-01-19T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-01-19T00:00:00+00:00">
-  <meta itemprop="wordCount" content="1832">
+  <meta itemprop="wordCount" content="2041">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Introduction to UEFI">
-  <meta name="twitter:description" content="Merhabalar efenimm. UEFI Development’ın ilk bu dökümanında UEFI konusuna teorik olarak giriş yapacağız.
-Dün gece boş boş duvara bakma aktivemi gerçekleştirirken “hayatımı daha da nasıl mahvedebilirim” diye düşünürken aklıma UEFI Development’a girişmek aklıma geldi. Gerçekten uzun zamandır ilgilenmek istediğim bir alandı ve hayatımı daha derine ve kötüye götürmek için efsane bir fırsat olduğunu düşünerek şuan bu blogu yazıyorum.
-UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğrenmemiz gerekecek.">
+  <meta name="twitter:description" content="Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.
+What is UEFI? UEFI (Unified Extensible Firmware Interface) is a specification for a computer’s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.
+We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different. UEFI uses GPT (Guid Partition Table). GPT is a modern standard that defines the layout of partitions on a computer’s storage device. It is the standard used in devices such as HDDs or SSDs that we are all familiar with. Just as UEFI replaced BIOS, GPT has replaced the previously used MBR (Master Boot Record) partitioning table. GPT works seamlessly with UEFI.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -153,9 +153,41 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-4/"
+    
+  >PatchGuard Analysis - Part 4
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-3/"
+    
+  >PatchGuard Analysis - Part 3
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-2/"
+    
+  >PatchGuard Analysis - Part 2
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/patchguard-analysis-part-1/"
+    
+  >PatchGuard Analysis - Part 1
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hooking/"
     
-  >SSDT Hooking ile User-Mode Programda Sürücü Yükleme
+  >Loading Driver from User-Mode Program via SSDT Hooking
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -163,13 +195,13 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/syscalls/"
     
-  >Windows Kernel&#39;da Syscall Araştırma Yolculuğum
+  >Reversing System Call Mechanism in Windows Kernel
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bare-metal-reversing-0x0/"
+    href="/blog/bare-metal-reversing/"
     
   >ARM Firmware Reverse Engineering
     </a>
@@ -188,14 +220,6 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
     href="/blog/is-valorant-spyware/"
     
   >Is Valorant Spyware?
-    </a>
-              
-            </li><li class="hx-flex hx-flex-col "><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/bypass-ptrace/"
-    
-  >Bypass Ptrace
     </a>
               
             </li></ul>
@@ -220,6 +244,14 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/uefi-keylogger/"
     
   >UEFI Keylogger
@@ -235,45 +267,9 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
   
     <ul class='hx-flex hx-flex-col hx-gap-1 hx-relative before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] dark:before:hx-bg-neutral-800 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-pr-3 rtl:before:hx-right-0 ltr:hx-ml-3 rtl:hx-mr-3'><li>
               <a
-                href="#uefi-nedir"
+                href="#"
                 class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;UEFI Nedir?&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#uefi-%c3%b6ny%c3%bckleme-s%c3%bcreci"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;UEFI Önyükleme Süreci&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#uefi-developmenta-giri%c5%9f"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;UEFI Development&amp;rsquo;a Giriş&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#windowsta-edk2nin-kurulumu"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Windows&amp;rsquo;ta EDK2&amp;rsquo;nin Kurulumu&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#hello-uefi-world"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Hello UEFI World!&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#s%c3%bcr%c3%bcc%c3%bcy%c3%bc-%c3%a7al%c4%b1%c5%9ft%c4%b1rma"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Sürücüyü Çalıştırma&lt;/strong&gt;</a>
-            </li>
-          <li>
-              <a
-                href="#sonu%c3%a7"
-                class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
-              >&lt;strong&gt;Sonuç&lt;/strong&gt;</a>
+              ></a>
             </li>
           </ul>
   
@@ -359,6 +355,14 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/winkernel-dev/wkd-ssdt/"
     
   >SSDT
@@ -423,6 +427,14 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
         <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
     </a><div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/communation-between-windows-and-uefi/"
+    
+  >UEFI to Windows Communication via NVRAM Variables
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/uefi-keylogger/"
@@ -517,6 +529,14 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/winkernel-dev/wkd-dpc/"
+    
+  >DPC
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/winkernel-dev/wkd-ssdt/"
     
   >SSDT
@@ -564,45 +584,76 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
     </div>
   
   
-    <div class="  hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-grow hx-flex-col"><button
+    <div class=" hx-justify-end hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show"><div class="hx-flex hx-justify-items-start hx-grow">
+    <button
+      title="Change language"
+      data-state="closed"
+      class="language-switcher hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 hx-grow"
+      type="button"
+      aria-label="Change language"
+    >
+      <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg><span>English</span></div>
+    </button>
+    <ul
+      class="language-options hx-hidden hx-z-20 hx-max-h-64 hx-overflow-auto hx-rounded-md hx-ring-1 hx-ring-black/5 hx-bg-white hx-py-1 hx-text-sm hx-shadow-lg dark:hx-ring-white/20 dark:hx-bg-neutral-800"
+      style="position: fixed; inset: auto auto 0px 0px; margin: 0px; min-width: 100px;"
+    >
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/docs/uefi-dev/uefi-introduction/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >English<span class="hx-absolute hx-inset-y-0 hx-flex hx-items-center ltr:hx-right-3 rtl:hx-left-3"><svg height=1em width=1em xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span></a>
+        </li>
+      
+        
+        <li class="hx-flex hx-flex-col">
+          <a
+            href="/tr/docs/uefi-dev/uefi-introduction/"
+            class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
+          >Turkish</a>
+        </li>
+      </ul>
+  </div><button
   title="Change theme"
   data-theme="light"
   class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
   type="button"
   aria-label="Change theme"
 >
-  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span class="group-data-[theme=light]:hx-hidden">Light</span><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg><span class="group-data-[theme=dark]:hx-hidden">Dark</span></div>
+  <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize"><svg height=12 class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg><svg height=12 class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg></div>
 </button>
-</div></div></aside>
+</div></aside>
     
 <nav class="hextra-toc hx-order-last hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-px-4" aria-label="table of contents">
     <div class="hextra-scrollbar hx-sticky hx-top-16 hx-overflow-y-auto hx-pr-4 hx-pt-6 hx-text-sm [hyphens:auto] hx-max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4"><p class="hx-mb-4 hx-font-semibold hx-tracking-tight">On this page</p><ul>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#uefi-nedir">UEFI Nedir?
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#what-is-uefi">What is UEFI?
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#uefi-%c3%b6ny%c3%bckleme-s%c3%bcreci">UEFI Önyükleme Süreci
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#uefi-boot-process">UEFI Boot Process
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#uefi-developmenta-giri%c5%9f">UEFI Development’a Giriş
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#introduction-to-uefi-development">Introduction to UEFI Development
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#windowsta-edk2nin-kurulumu">Windows’ta EDK2’nin Kurulumu
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#setup-edk2-on-windows">Setup EDK2 on Windows
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#hello-uefi-world">Hello UEFI World!
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#hello-world-with-uefi">Hello World with UEFI
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#s%c3%bcr%c3%bcc%c3%bcy%c3%bc-%c3%a7al%c4%b1%c5%9ft%c4%b1rma">Sürücüyü Çalıştırma
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#running-the-driver">Running the Driver
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#sonu%c3%a7">Sonuç
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#conclusion">Conclusion
         </a>
       </li></ul><ul></ul>
       <div class="hx-mt-8 hx-border-t hx-bg-white hx-pt-8 hx-shadow-[0_-12px_16px_white] dark:hx-bg-dark dark:hx-shadow-[0_-12px_16px_#111] hx-sticky hx-bottom-0 hx-flex hx-flex-col hx-items-start hx-gap-2 hx-pb-8 dark:hx-border-neutral-800 contrast-more:hx-border-t contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-border-neutral-400">
@@ -631,92 +682,93 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
 
         <div class="content">
           <h1>Introduction to UEFI</h1>
-          <p>Merhabalar efenimm. UEFI Development&rsquo;ın ilk bu dökümanında UEFI konusuna teorik olarak giriş yapacağız.</p>
-<p>Dün gece boş boş duvara bakma aktivemi gerçekleştirirken &ldquo;hayatımı daha da nasıl mahvedebilirim&rdquo; diye düşünürken aklıma UEFI Development&rsquo;a girişmek aklıma geldi. Gerçekten uzun zamandır ilgilenmek istediğim bir alandı ve hayatımı daha derine ve kötüye götürmek için efsane bir fırsat olduğunu düşünerek şuan bu blogu yazıyorum.</p>
-<h2><strong>UEFI Nedir?</strong><span class="hx-absolute -hx-mt-20" id="uefi-nedir"></span>
-    <a href="#uefi-nedir" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğrenmemiz gerekecek.</p>
-<p>Kabaca bizim hayatımızı mahvedecek bu <strong>UEFI</strong> (Unified Extensible Firmware Interface), bir bilgisayarın firmware&rsquo;i için bir spesifikasyondur. UEFI bir Bilgisayarın güç tuşuna basıldığı ilk süreçlerde UEFI, işletim sistemi başlatılmadan önce çalışır.</p>
-<p>UEFI dediğimiz bu şeyi eski BIOS sistemin geliştirilmiş hali olduğunu düşünebiliriz. UEFI modelleri ayrıca donanıma etkileşim için temel I/O sistemlerine de sahiptir ancak sistem önyükleme işlemleri farklıdır. UEFI GPT (Guid Partition Table) kullanır. <strong>GPT</strong>, bir bilgisayarın depolama cihazındaki bölümlerin düzenini belirleyen ve modern yapısı olan bir standarttır. Hepimizin bildiği HDD veya SSD gibi cihazlarda kullanılan standarttır.  BIOS&rsquo;un yerini alan UEFI gibi, GPT ise de önceden kullanılan MBR (Master Boot Record) bölümleme tablosunun yerini almıştır. GPT ile UEFI uyumlu çalışır.</p>
-<p>UEFI ve GPT birleştirdiğimizde elde edilen avantajlar şu şekildedir:</p>
+          <p>Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.</p>
+<h3><strong>What is UEFI?</strong><span class="hx-absolute -hx-mt-20" id="what-is-uefi"></span>
+    <a href="#what-is-uefi" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>UEFI (Unified Extensible Firmware Interface) is a specification for a computer&rsquo;s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.</p>
+<p>We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different. UEFI uses GPT (Guid Partition Table). GPT is a modern standard that defines the layout of partitions on a computer&rsquo;s storage device. It is the standard used in devices such as HDDs or SSDs that we are all familiar with. Just as UEFI replaced BIOS, GPT has replaced the previously used MBR (Master Boot Record) partitioning table. GPT works seamlessly with UEFI.</p>
+<p>The advantages gained when combining UEFI and GPT are as follows:</p>
 <ul>
-<li>2TB veya daha büyük diskleri desteklemek</li>
-<li>Daha hızlı Booting İşlemi</li>
-<li>Eski BIOS&rsquo;a kıyasla daha da basitleştirilmiş geliştirme sunma</li>
+<li>Support for 2TB or larger disks</li>
+<li>Faster booting process</li>
+<li>Simplified development compared to the old BIOS</li>
 </ul>
-<p>Gibi şeyler vs. Yani UEFI ve GPT&rsquo;nin eski sistemlere kıyasla daha avantaj sunduğunu görebiliriz.</p>
-<p>UEFI&rsquo;in BIOS ile aynı görevleri vardır: I/O cihazlarını çalıştırmak ve kontrolü OS&rsquo;a aktarmak. Fakat görevi sadece bununla sınırlı kalmayıp ve yukarıda anlattığım gibi, aynı zamanda işletim sistemi öncesi yani pre-OS geliştirme için geniş bir yelpaze sunar.</p>
-<p>Aşağıda gösterilen Legacy BIOS ve UEFI arasındaki farkı gösteren şemaya göz atalım:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img1.png" alt="" loading="lazy" /></p>
-<p>Şemaya göz attığımızda BIOS, donanım ile doğrudan iletişim kuran bir firmware ve aynı zamanda bir donanımdır. Şemadan UEFI&rsquo;ye göz attığımızda donanım ile işletim sisteminin arasındaki arayüzü birleştirdiğini görebiliriz. UEFI&rsquo;nin bu işlevi, geliştiriciler için kolaylık sağlar.</p>
-<p>Kısacası UEFI&rsquo;ye göz attığımızda GPT ile beraber eski Legacy BIOS&rsquo;a kıyasla daha modern ve hızlı bir süreç sunduğunu görmemiz mümkün.</p>
-<h2><strong>UEFI Önyükleme Süreci</strong><span class="hx-absolute -hx-mt-20" id="uefi-önyükleme-süreci"></span>
-    <a href="#uefi-%c3%b6ny%c3%bckleme-s%c3%bcreci" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>UEFI bir bilgisayarın güç tuşuna bastıktan sonrasında logo görülmeden önce arka planda neler gerçekleştiğine bir de yakından göz atalım.</p>
-<p>UEFI, platformun başlatılması sürecinde kritik öneme sahip <strong>altı ana</strong> önyükleme aşamasına sahiptir:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img2.png" alt="" loading="lazy" /></p>
+<p>So we can see that UEFI and GPT offer more advantages than older systems.</p>
+<p>UEFI has the same tasks as BIOS: running I/O devices and transferring control to the OS. However, its task is not limited to this, and as I mentioned above, it also offers a wide range of options for pre-OS development.</p>
+<p>Let&rsquo;s take a look at the diagram below, which shows the difference between Legacy BIOS and UEFI:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img1.png" style="width: 70%" />
+</div>
+<p>When we look at the diagram, we see that BIOS is firmware that communicates directly with hardware and is also hardware itself. When we look at UEFI in the diagram, we can see that it combines the interface between the hardware and the operating system. This function of UEFI makes things easier for developers.</p>
+<p>In short, when we look at UEFI, we can see that it offers a more modern and faster process compared to the old Legacy BIOS, especially when used with GPT.</p>
+<h3><strong>UEFI Boot Process</strong><span class="hx-absolute -hx-mt-20" id="uefi-boot-process"></span>
+    <a href="#uefi-boot-process" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Let&rsquo;s take a closer look at what happens in the background after pressing the power button on a UEFI computer, before the logo appears.</p>
+<p>UEFI has six main boot stages that are critical to the platform&rsquo;s startup process:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img2.png" style="width: 100%" />
+</div>
 <ul>
-<li>
-<p><strong>Security (SEC)</strong>: Security aşaması, UEFI önyükleme sürecin ilk aşamasıdır. Genel amacı ise Geçici Bellek Deposunu başlatmak, Sistemde root of trust olarak hareket etmek ve Pre-EFI çekirdek aşamasına bilgi sağlamaktır. Bahsi geçen Root of Trust ise tam olarak şöyledir: SEC mekanizması ayrıca PI&rsquo;da çalıştırılan herhangi bir kodun dijital olarak imzalanmasını sağlayan ve &lsquo;Secure Boot&rsquo; ortamı yaratan bir mekanizma olarak da işlev görür.</p>
-</li>
-<li>
-<p><strong>Pre-EFI Initialization (PEI)</strong>: İkinci aşamada, EFI kodunun çalışması sağlanır. Ana görevi ise bir sonraki aşama olan ve DXE sürücülerini başlatacak olan DXE Foundation&rsquo;ı indirmektir. Ayrıca işlemci kaynaklarını kullanarak Pre-EFI Initialization Modules (PEIM)&rsquo;leri dispatch etmekten sorumludur. Bu PEIM&rsquo;ler, bazı kalıcı bellek tamamlayıcılarının başlatılması gibi kritik süreçlerden sorumlu olduğu gibi bir sonraki aşama olan Driver Execution Environment (DXE)&rsquo;e geçişi sağlar.</p>
-</li>
-<li>
-<p><strong>Driver Execution Environment (DXE)</strong>: Bu aşamanın gerçekten önemli olduğunu düşünüyorum çünkü sistemi başlatmak için gerekli büyük işlemler burada gerçekleşiyor. Bir önceki aşamada olan PEI&rsquo;de, DXE&rsquo;nin çalışması için gereken bellek tahsis edilir ve başlatılır. Artık kontroller DXE&rsquo;e aktarılmasıyla <strong>DXE Dispatcher</strong> çağırılır. Bu Dispatcher, donanım sürücülerini, runtime hizmetlerini ve işletim sisteminin başlaması için gereken tüm önyükleme hizmetlerini yüklemesinden ve yürütmesinden sorumludur.  Amacımızı düşünürsek, önceden dediğim gibi burası bizim için önemli bir aşamadır. Çünkü geliştireceğimiz sürücü burada çalıştırılacaktır.</p>
-</li>
-<li>
-<p><strong>Boot Device Selection (BDS)</strong>: DXE sürücüleri çalıştırılması ardından kontrol, muhtemelen hepinizin gördüğü BSD&rsquo;ye aktarılır. Bu aşamada ise işletim sistemi yükleyicisinin hangi aygıtta aranacağına dair bir seçim yapılır. Ardından işletim sistemi yüklenmeye başlanır ve Transient System Load (TSL) aşamasına geçiş için hazırlanılır.</p>
-</li>
-<li>
-<p><strong>Transient System Load (TSL)</strong>: Bu aşamada, seçilen önyükleme yükleyicisinin çalıştığı ve UEFI önyükleme hizmetlerinin sonlandırıldığı aşamadır.</p>
-</li>
-<li>
-<p><strong>Runtime (RT)</strong>: Bu aşamada ise artık UEFI&rsquo;nin akışı işletim sistemine devrediliyor. Fakat UEFI bu kısımdan itibaren tamamen ortadan kaybolduğu anlamına gelmez. UEFI&rsquo;ye ait olan Runtime Services (Runtime Hizmetleri) işletim sistemini desteklemek için kullanılabilir durumda kalmaya devam eder. Bu Runtime hizmetleri, donanımla ilgili bazı özel işler için System Management Mode (SMM) devreye girer. SMM, işlemcinin kritik donanım işlevlerini işletim sisteminden bağımsız olarak yönettiği güvenli bir moddur. Örneğin, fan hızının ayarlanması veya batarya durumunun izlenmesi gibi işlemler bu modda yapılır. Eğer İşletim sistemi, donanımla ilgili bir işi kendi başına yapamazsa, <strong>SMI</strong> (System Management Interrupt) adı verilen bir sinyal gönderir. Bu, “yardım çağrısı” gibidir. Örneğin, işletim sistemi fan hızını kontrol etmek istediğinde bir SMI gönderir, SMM devreye girer ve bu işi halleder.</p>
-</li>
+<li><strong>Security (SEC)</strong>: The Security phase is the first stage of the UEFI boot process. Its main purpose is to initialize the Temporary RAM store, act as the system’s <em>root of trust</em>, and provide information to the Pre-EFI core phase. The mentioned root of trust works as follows: the SEC mechanism also serves as a system that ensures any code executed in the PI (Platform Initialization) is digitally signed, creating a <em>Secure Boot</em> environment.
+<br></li>
+<li><strong>Pre-EFI Initialization (PEI):</strong> In the second stage, the execution of EFI code is enabled. Its primary responsibility is to load the DXE Foundation, which will initiate the DXE drivers in the next stage. It also uses processor resources to dispatch Pre-EFI Initialization Modules (PEIMs). These PEIMs handle critical processes such as initializing certain persistent memory components and ensuring the transition to the next stage — the Driver Execution Environment (DXE).
+<br></li>
+<li><strong>Driver Execution Environment (DXE):</strong> I think this stage is particularly important because major operations required to start the system occur here. In the PEI stage, the memory needed for DXE to operate is allocated and initialized. Once control is passed to DXE, the DXE Dispatcher is called. This Dispatcher is responsible for loading and executing hardware drivers, runtime services, and all boot services required for the operating system to start. In the context of our goal, as I mentioned earlier, this is a crucial stage — our driver will be executed here.
+<br></li>
+<li><strong>Boot Device Selection (BDS):</strong> After the DXE drivers have been executed, control is passed to BDS — likely the stage you’ve all seen before. Here, a selection is made as to which device the OS loader will be sought from. The operating system is then prepared for loading, and the process moves toward the Transient System Load (TSL) stage.
+<br></li>
+<li><strong>Transient System Load (TSL):</strong> At this stage, the selected boot loader runs, and UEFI boot services are terminated.
+<br></li>
+<li><strong>Runtime (RT):</strong> In this phase, the UEFI flow is handed over to the operating system. However, this does not mean UEFI disappears entirely. The Runtime Services belonging to UEFI remain available to support the OS. For hardware-specific tasks, the System Management Mode (SMM) comes into play. SMM is a secure mode in which the processor manages critical hardware functions independently of the operating system. For example, tasks such as adjusting fan speed or monitoring battery status are performed in this mode. If the OS cannot perform a certain hardware-related operation on its own, it sends a signal called <em>SMI</em> (System Management Interrupt) — essentially a “call for help.” For instance, when the OS wants to control fan speed, it sends an SMI, SMM kicks in, and the task is handled there.</li>
 </ul>
-<h2><strong>UEFI Development&rsquo;a Giriş</strong><span class="hx-absolute -hx-mt-20" id="uefi-developmenta-giriş"></span>
-    <a href="#uefi-developmenta-giri%c5%9f" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Gelelim önemli bu kısma.</p>
-<p>Söz konusu UEFI Development için kaynak olduğunda gerçekten bu süreçte kaynakların kısıtlı olduğunu göreceksiniz. Popüler olarak Development sürecinde, aşağıda sıralanan araçlar kullanılabilir:</p>
+<h3><strong>Introduction to UEFI Development</strong><span class="hx-absolute -hx-mt-20" id="introduction-to-uefi-development"></span>
+    <a href="#introduction-to-uefi-development" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>When it comes to sources for UEFI development, you’ll really see that resources are limited. Popularly, the following tools can be used during the development process.</p>
 <ul>
-<li><strong>EDK2</strong>: EDK2, UEFI ve PI spesifikasyonlar için modern, zengin ve platformlar arası kodlama gibi özelliklerine sahip bir araçtır. EDK2 projesi, UEFI spesifikasyonuna katkıda bulunan geliştiricilerin birçoğu tarafından (topluluk gönüllüleriyle birlikte) geliştirilmekte ve günümüzde sürdürülmektedir. Bu blog sürecinde ise kodlamayı bununla yapacağız.</li>
+<li><strong>EDK2:</strong> EDK2 is a toolset for UEFI and PI specifications with modern features like rich, cross‑platform coding. The EDK2 project is developed and maintained today by many of the developers who contribute to the UEFI specification (along with community volunteers).</li>
 </ul>
-<p>EDK2&rsquo;nin en son UEFI protokollerini içerdiğinden bu araç son derece yararlıdır. Buna ek olarak, öğrenme sürecinde rehber olarak kullanabileceğimiz projeler çok fazladır.</p>
+<p>In this series, we’ll use it for coding. Since EDK2 includes the latest UEFI protocols, it’s extremely useful. In addition, there are many projects we can use as guides during the learning process.-
+<br></p>
 <ul>
-<li><strong>VisualUEFI</strong> VisualUEFI aracı, Windows kullanıcıları için Visual Studio IDE ile EDK2 projeleri geliştirmesine imkan veren bir araçtır. EDK2 projesinin karmaşık düzeninden kurtulmak ve rahat bir şekilde çalışmak isterseniz bu aracı tercih edebilirsiniz.</li>
+<li><strong>VisualUEFI:</strong> The VisualUEFI tool enables Windows users to develop EDK2 projects with the Visual Studio IDE. If you want to escape EDK2’s complex layout and work more comfortably, you can opt for this tool.</li>
 </ul>
-<p>Windows kullanıcısı olsam da bu blog sürecinde VisualUEFI&rsquo;ye yer vermeyeceğim. VisualUEFI kodlama için rahat bir ortam sunsa da, benim için EDK2 gibi projelerin düzenini manuel olarak uğraşmak daha rahat oluyor. Eğer VisualUEFI&rsquo;yi kurmak isterseniz internette birçok kaynak bulunmakta.</p>
-<p>Projelerimizi geliştirdikten sonra bunları simüle etmemiz gerekecek. Bunun için aşağıdakilerden biri kullanılabilir:</p>
+<p>Although I’m a Windows user, I won’t be using VisualUEFI in the serie. While VisualUEFI provides a comfortable environment for coding, I personally find it easier to manually work with project layouts like EDK2. If you want to install VisualUEFI, there are plenty of resources online.</p>
+<p>After we develop our projects, we’ll need to simulate them. One of the following can be used:</p>
 <ul>
-<li>
-<p><strong>QEMU</strong>: QEMU&rsquo;nun zaten ne olduğunu biliyorsunuzdur. Bir sanal makineden ziyade bir emülatör olması nedeniyle iyi bir debugging olanaklarını sağlayan çok platformlu bir emülatör. Linux veya Windows ortamında bunu tercih edebilirsiniz.</p>
-</li>
-<li>
-<p><strong>VMWare / VirtualBox</strong>: Vmware, VirtualBox gibi sanal makineleri de tercih edebilirsiniz.</p>
-</li>
+<li><strong>QEMU:</strong> You probably already know what QEMU is. Being an emulator rather than just a virtual machine, it offers good debugging capabilities and is a multi‑platform emulator. You can choose it in either Linux or Windows environments.
+<br></li>
+<li><strong>VMware / VirtualBox:</strong> You can also use virtual machines such as VMware or VirtualBox.</li>
 </ul>
-<p>Bu süreçte ise simüle için VMWare&rsquo;i tercih edeceğim. Özellikle VMware&rsquo;in doğru çalışan NVRAM emülasyonu ile iyi performans sunar. Benim için en önemli sunduğu özellik ise Windows&rsquo;ta TSL ve RT aşamalarında debugging için WinDbg ile güzel çalışması.</p>
-<h2><strong>Windows&rsquo;ta EDK2&rsquo;nin Kurulumu</strong><span class="hx-absolute -hx-mt-20" id="windowsta-edk2nin-kurulumu"></span>
-    <a href="#windowsta-edk2nin-kurulumu" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>EDK2 projesini kurmadan önce aşağıdaki araçları kurmamız lazım:</p>
+<h3><strong>Setup EDK2 on Windows</strong><span class="hx-absolute -hx-mt-20" id="setup-edk2-on-windows"></span>
+    <a href="#setup-edk2-on-windows" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Before setting up the EDK2 project in Windows, we need to install the following tools:</p>
 <ul>
-<li><strong>Git</strong></li>
-<li><strong>Python</strong></li>
-<li><strong>NASM</strong></li>
-<li><strong>Visual Studio</strong></li>
+<li>Git</li>
+<li>Python</li>
+<li>NASM</li>
+<li>Visual Studio</li>
 </ul>
-<p>Öncelikle git indirelim ve ardından Python&rsquo;u indirelim. Python&rsquo;u Microsoft Store yerine direkt olarak orijinal sitesinden indirin ve kurulumda ise aşağıda gösterilene dikkat edin:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img5.png" alt="" loading="lazy" /></p>
-<p>Fotoğrafta gösterilmiş alandaki kutucukları işaretlemeyi unutmayın.</p>
-<p>Daha sonra NASM&rsquo;ı orijinal sitesinden indirelim ve indirdiğimiz .exe dosyasını yönetici ile çalıştıralım:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img8.png" alt="" loading="lazy" /></p>
-<p>Kurulum esnasında NASM projesinin lokasyonunu <strong>C:\NASM</strong> olarak ayarlayalım.</p>
-<p>NASM kurulumundan sonra ise Windows&rsquo;un <strong>Enviroment Variables</strong> ayarından User Variables için NASM_PREFIX adında bir değişken oluşturalım:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img6.png" alt="" loading="lazy" /></p>
-<p>Değeri C:\NASM\ olarak ayarlayalım.</p>
-<p>Daha sonra Visual Studio&rsquo;nın C++ araçlarını kurmamız gerekecek. Bu araçları indirmek için Downloads sayfasından Build Tools araması yapalım:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img3.png" alt="" loading="lazy" /></p>
-<p><strong>Tools for Visual Studio</strong> olanı indirelim ve ardından:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img4.png" alt="" loading="lazy" /></p>
-<p>Kurulumda <strong>Desktop Development with C++</strong> olanı seçelim ve kurulumu başlatalım.</p>
-<p>Bunları tamamladıktan sonra <strong>cmd.exe</strong> açalım ve edk2 projesini kuralım:</p>
+<p>First, let&rsquo;s download Git, and then Python. Download Python directly from the original website instead of the Microsoft Store, and pay attention to the following during installation:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img5.png" style="width: 100%" />
+</div>
+<p>Don&rsquo;t forget to check the boxes in the area shown in the photo.</p>
+<p>Next, download NASM from its original website and run the downloaded .exe file as an administrator:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img8.png" style="width: 40%" />
+</div>
+<p>During installation, set the location of the NASM project to C:\NASM.</p>
+<p>After installing NASM, create a variable named NASM_PREFIX for User Variables in Windows&rsquo; Environment Variables settings:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img6.png" style="width: 80%" />
+</div>
+<p>Let&rsquo;s set the value to C:\NASM.</p>
+<p>Next, we need to install Visual Studio&rsquo;s C++ tools. To download these tools, search for Build Tools on the Downloads page:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img3.png" style="width: 100%" />
+</div>
+<p>Let&rsquo;s download Tools for Visual Studio and then:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img4.png" style="width: 70%" />
+</div>
+<p>Select <strong>Desktop Development with C++</strong> during installation and start the installation.</p>
+<p>Once you have completed these steps, open cmd.exe and install the edk2 project:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/tianocore/edk2.git
@@ -731,7 +783,7 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
   </button>
 </div>
 </div>
-<p>edk2 projesini de indirdikten sonra <strong>Developer Command Prompt VS 2022</strong> aracını açalım ve daha sonra indirdiğimiz edk2 projesine gidelim. Config/target.txt&rsquo;i notepad ile açalım:</p>
+<p>After downloading the edk2 project, open the Developer Command Prompt VS 2022 tool and then go to the edk2 project we downloaded. Open Config/target.txt with Notepad:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">notepad Conf<span class="se">\t</span>arget.txt</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -744,7 +796,7 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
   </button>
 </div>
 </div>
-<p>Bu .txt içerisinde, aşağıda size gösterdiğim değerler ile değiştirin:</p>
+<p>In this .txt file, replace the values with the ones I show you below:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">ACTIVE_PLATFORM</span>       <span class="o">=</span> <span class="n">ShellPkg</span><span class="o">/</span><span class="n">ShellPkg</span><span class="p">.</span><span class="n">dsc</span>
@@ -763,7 +815,7 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
   </button>
 </div>
 </div>
-<p>Aynen böyle olacak şekilde değerleri değiştirin ve kaydedip kapatabilirsiniz. Daha sonra <strong>edksetup.bat</strong>&lsquo;ı çalıştıralım:</p>
+<p>Change the values accordingly and save and close. Then run edksetup.bat:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">&gt; C:<span class="se">\e</span>dk2&gt;edksetup.bat
@@ -793,7 +845,7 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
   </button>
 </div>
 </div>
-<p>Daha sonra araçları derlemek için BaseTools dizinine gidelim:</p>
+<p>Next, let&rsquo;s go to the BaseTools directory to compile the tools:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">&gt; C:<span class="se">\e</span>dk2&gt;cd BaseTools
@@ -808,7 +860,7 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
   </button>
 </div>
 </div>
-<p>Araçları derledikten sonra tekrar ana dizine dönelim ve Build komutunu çalıştıralım:</p>
+<p>After compiling the tools, let&rsquo;s return to the main directory and run the Build command:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">&gt; C:<span class="se">\e</span>dk2<span class="se">\B</span>aseTools&gt;cd ..
@@ -828,11 +880,10 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
   </button>
 </div>
 </div>
-<p>Derlemeden sonra <strong>Done</strong> çıktısını almamız gerekiyor.</p>
-<h2><strong>Hello UEFI World!</strong><span class="hx-absolute -hx-mt-20" id="hello-uefi-world"></span>
-    <a href="#hello-uefi-world" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Artık UEFI sürücüsü geliştirmek için gerekli her şeye sahibiz. Programlama geleneğine uygun davranarak &ldquo;Hello UEFI World&rdquo; çıktısı veren basit bir proje geliştirelim. Geliştireceğimiz projeleri ShellPkg/Application dizin altında oluşturabiliriz.</p>
-<p>Bir sürücü geliştirirken .c projesinin olması yanı sıra bir de .inf dosyası oluşturmamız gerekiyor. Bu INF dosyası, modülü oluşturmak ve paketlemek için gerekli bilgileri sağlar. Yani sürücümüzün paketlenmesi için gerekli bilgiler sağlayacağız.</p>
-<p>edk2/ShellPkg/Application dizini altında HelloWorld adında bir klasör oluşturalım ve ardından HelloWorld.c projemizi kodlamaya başlayalım:</p>
+<h3><strong>Hello World with UEFI</strong><span class="hx-absolute -hx-mt-20" id="hello-world-with-uefi"></span>
+    <a href="#hello-world-with-uefi" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>We now have everything we need to develop a UEFI driver. Let&rsquo;s develop a simple project that outputs “Hello UEFI World”. We can create the projects we will develop under the ShellPkg/Application directory.</p>
+<p>When developing a driver, in addition to a .c project, we also need to create an .inf file. This INF file provides the necessary information to create and package the module. In other words, we will provide the necessary information for packaging our driver.</p>
+<p>Let&rsquo;s create a folder named HelloWorld under the edk2/ShellPkg/Application directory and then start coding our HelloWorld.c project:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;Uefi.h&gt;</span><span class="cp">
@@ -859,20 +910,17 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
   </button>
 </div>
 </div>
-<p>Bazı detaylar haricinde kodlar bizlere yabancı gelmeyecektir.</p>
-<p>Main fonksiyon için kodlamalarımızı <strong>UefiMain</strong> içerisinde yapacağız. UefiMain, UEFI sürücülerin başlangıç noktasıdır. Geleneksel main fonksiyonuna benzer şekilde, bir UEFI uygulamasının giriş noktasıdır. UefiMain iki parametre alır:</p>
+<p>Aside from some details, the code will not seem foreign to us.</p>
+<p>For the <strong>main</strong> function, we will write our code inside <strong>UefiMain</strong>. <em>UefiMain</em> is the entry point of UEFI drivers. Similar to the traditional main function, it is the entry point of a UEFI application. <strong>UefiMain</strong> takes two parameters:</p>
 <ul>
-<li>
-<p><strong>ImageHandle:</strong> Uygulamanın UEFI firmware tarafından temsil edilen benzersiz bir tanımlayıcısıdır.</p>
-</li>
-<li>
-<p><strong>SystemTable:</strong> UEFI sisteminde tanımlanan çeşitli hizmetlere ve tablolara erişim sağlayan bir veri yapısıdır.</p>
-</li>
+<li><strong>ImageHandle:</strong> A unique identifier for the application, represented by the UEFI firmware.</li>
+<li><strong>SystemTable:</strong> A data structure providing access to various services and tables defined in the UEFI system.</li>
 </ul>
-<p>Kodlara biraz detaylı göz attığınızda tıpkı benim gibi syntax&rsquo;ın farklılığı yüzünden eliniz ayağınız titremiş olabilir (örneğin çağırılan Print ile parantez arasına boşluk bırakılması vs). İlk başta benim gibi hatalı bir syntax olduğunu düşünseniz de hatalı değil. Bu EDK2 topluluğuna ait <a href="https://github.com/tianocore/tianocore.github.io/wiki/Code-Style-C" target="_blank" rel="noopener">C kodu tipiyle</a> alakalıdır:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img9.png" alt="" loading="lazy" /></p>
-<p>İlgili blogta syntax kurallarına göz atabilirsiniz. Aklınızda bulunsun eğer ileride edk2 projesine katkıda bulunursanız bu syntax kuralına dikkat edin. Madem edk2&rsquo;den yararlanacağız kurallarına uyalım değil mi?</p>
-<p>Daha sonra <strong>HelloWorld.inf</strong> adında bir proje daha oluşturalım:</p>
+<p>When you look at the code more closely, you might have felt your hands shake a bit because of the syntax differences (for example, the space left between Print and the parentheses). At first, like me, you might think this is a syntax error — but it’s not. It’s related to the <a href="https://github.com/tianocore/tianocore.github.io/wiki/Code-Style-C">C coding style</a> used by the EDK2 community:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img9.png" style="width: 100%" />
+</div>
+<p>Then let&rsquo;s create another project called HelloWorld.inf:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-inf" data-lang="inf"><span class="line"><span class="cl"><span class="k">[Defines]</span>
@@ -903,7 +951,7 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
   </button>
 </div>
 </div>
-<p>.inf dosyasını da kodladıktan sonra her şey tamam ancak derlemeye geçmeden önce <strong>/edk2/ShellPkg/ShellPkg.dsc</strong> içerisine projemizi eklememiz gerekecek:</p>
+<p>After coding the .inf file, everything is complete, but before moving on to compilation, we will need to add our project to /edk2/ShellPkg/ShellPkg.dsc:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <pre><code>...
@@ -936,8 +984,8 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
   </button>
 </div>
 </div>
-<p>Yukarıda gösterildiği gibi <strong>Components</strong> altına HelloWorld projenizi ekleyin</p>
-<p>Şimdi ise projemizi derleyelim:</p>
+<p>As shown above, add your HelloWorld project under Components.</p>
+<p>Now let&rsquo;s compile our project:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
 
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">Build -m ShellPkg<span class="se">\A</span>pplication<span class="se">\H</span>elloWorld<span class="se">\H</span>elloWorld.inf</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
@@ -950,13 +998,14 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
   </button>
 </div>
 </div>
-<p>Derlemeden sonra efi dosyamız <strong>/edk2/Build/Shell/RELEASE_VS2022/X64</strong> dizini altında &lsquo;HelloWorld.efi&rsquo; olarak oluşturulacaktır.</p>
-<h2><strong>Sürücüyü Çalıştırma</strong><span class="hx-absolute -hx-mt-20" id="sürücüyü-çalıştırma"></span>
-    <a href="#s%c3%bcr%c3%bcc%c3%bcy%c3%bc-%c3%a7al%c4%b1%c5%9ft%c4%b1rma" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Önceden de bahsettiğim gibi simüle işlemleri için VMWare ortamını kullanacağım. Eğer benim gibi VMware veya VirtualBox vs. kullanacaksınız FAT32 ile biçimlendirilmiş bir USB Flash gerekecek. FAT 32 Biçimlendirmeden sonra USB Flash içerisinde <strong>efi/boot</strong> olarak bir dizin oluşturun.</p>
-<p>Yine <strong>/edk2/Build/Shell/RELEASE_VS2022/X64</strong> dizini altında iki shell dosyası olacak:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img10.png" alt="" loading="lazy" /></p>
-<p>Buradan herhangi birini efi/boot dizini altında <strong>bootx64.efi</strong> olarak kopyalayın. Daha sonra HelloWorld.efi dosyasını da kök dizine kopyalayın.</p>
-<p>Bu işlemlerden sonra USB Flash&rsquo;ın içeriği aşağıda gösterildiği gibi olmalı:</p>
+<h3><strong>Running the Driver</strong><span class="hx-absolute -hx-mt-20" id="running-the-driver"></span>
+    <a href="#running-the-driver" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>I will be using the VMWare environment for simulation operations. If you are using VMware or VirtualBox like me, you will need a USB flash drive formatted with FAT32. After formatting with FAT32, create a directory named efi/boot on the USB flash drive.</p>
+<p>There will be two shell files under the /edk2/Build/Shell/RELEASE_VS2022/X64 directory:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img10.png" style="width: 40%" />
+</div>
+<p>Copy any of these to the efi/boot directory as bootx64.efi. Then copy the HelloWorld.efi file to the root directory.</p>
+<p>After these steps, the contents of the USB flash drive should be as follows:</p>
 <div class="hextra-filetree hx-mt-6 hx-select-none hx-text-sm hx-text-gray-800 dark:hx-text-gray-300 not-prose">
   <div class="hx-inline-block hx-rounded-lg hx-border hx-px-4 hx-py-2 dark:hx-border-neutral-800">
 <li class="hx-flex hx-list-none">
@@ -996,19 +1045,22 @@ UEFI Nedir? Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğre
 </div>
 </div>
 
-<p>Sanal makineyi başlatalım ve aşağıdaki adımları gerçekleştirelim:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img11.png" alt="" loading="lazy" /></p>
-<p><strong>Removable Devices &gt; USB Flash Belleğiniz &gt; Connect</strong> seçeneğine tıklayalım.</p>
-<p>Sanal makineyi yeniden başlatalım ve açılışta DEL tuşuna basalım:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img12.png" alt="" loading="lazy" /></p>
-<p>Boot Manager ekranından USB Flashımızı seçelim. Bu kadar basit!</p>
-<p>Şimdi ise HelloWorld sürücümüzü çalıştıralım:</p>
-<p><img src="../../../images/posts/introduction-to-uefi/img13.png" alt="" loading="lazy" /></p>
-<p>Başarıyla <strong>&lsquo;Hello UEFI World&rsquo;</strong> çıktımızı alıyoruz.</p>
-<h2><strong>Sonuç</strong><span class="hx-absolute -hx-mt-20" id="sonuç"></span>
-    <a href="#sonu%c3%a7" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Evet arkadaşlar bu dökümanda temel olarak UEFI&rsquo;nin ne olduğunu, Windows&rsquo;ta EDK2 kurulumunu ve basitçe UEFI sürücüsü ile &lsquo;Hello UEFI World&rsquo; çıktısı veren bir proje geliştirdik. Umarım faydalı olmuştur.</p>
-<p>Konuları daha detaylı öğrenmek isterseniz referanslarda verdiğim kaynaklara göz atabilirsiniz.</p>
-<p>İyi çalışmalar dilerim efenimm.</p>
+<p>Let&rsquo;s start the virtual machine and perform the following steps:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img11.png" style="width: 100%" />
+</div>
+<p>Removable Devices &gt; USB Flash Drive &gt; Click on the Connect option.</p>
+<p>Restart the virtual machine and press the DEL key at startup:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img12.png" style="width: 100%" />
+</div>
+<p>Select your USB flash drive from the Boot Manager screen. It&rsquo;s that simple!</p>
+<p>Now let&rsquo;s run our HelloWorld driver:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img13.png" style="width: 80%" />
+</div>
+<h3><strong>Conclusion</strong><span class="hx-absolute -hx-mt-20" id="conclusion"></span>
+    <a href="#conclusion" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>In this first chapter of UEFI development, we explored both the theory and the practical steps needed to start building UEFI applications. We learned that UEFI is a modern replacement for the traditional BIOS, offering faster boot times, support for large drives through GPT, and a more flexible platform for pre‑OS development. The six-stage boot process—from SEC to Runtime—provides a clear roadmap for how the system initializes, loads drivers, and eventually hands control to the operating system.</p>
 <h1><strong>References</strong></h1><ul>
 <li><a href="https://en.wikipedia.org/wiki/UEFI" target="_blank" rel="noopener"><strong>Wikipedia - UEFI</strong></a></li>
 <li><a href="https://habr.com/en/companies/acronis/articles/535848/" target="_blank" rel="noopener"><strong>Dabudabot - Beginning UEFI Development</strong></a></li>
