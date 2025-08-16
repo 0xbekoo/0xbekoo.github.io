@@ -38,7 +38,7 @@ There are several checking routines involved, with the main one called FsRtlMdl
 TVCallBack Routine: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext. CcBcbProfiler We saw that this function is used to check a randomly choosen routine from ntoskrnl. In this section, we will focus mainly on FsRtlMdlReadCompleteDevEx. This function is really long and the function can be summed up into multiple parts:">
   <meta itemprop="datePublished" content="2025-08-09T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
-  <meta itemprop="wordCount" content="2897">
+  <meta itemprop="wordCount" content="2933">
   <meta itemprop="keywords" content="Reverse-Engineering,PatchGuard,Reversing-PatchGuard,Windows-Internals,Analyzing-of-Windows-Kernel">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="PatchGuard Analysis - Part 4">
@@ -202,14 +202,6 @@ TVCallBack Routine: The routine looks very much like FsRtlMdlReadCompleteDevEx. 
     href="/blog/patchguard-analysis-part-2/"
     
   >PatchGuard Analysis - Part 2
-    </a>
-              
-            </li><li class="hx-flex hx-flex-col "><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/blog/patchguard-analysis-part-1/"
-    
-  >PatchGuard Analysis - Part 1
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -1087,7 +1079,8 @@ This flag is then used in parts of the methods we saw above. If this flag is set
 <p>In this article, we aimed to provide a high-level yet holistic view of PatchGuard’s architecture, focusing on its core components, initialization routines, and operational behavior. The analysis, driven by reverse engineering techniques and tooling, allowed us to demystify how this security mechanism is structured and how it enforces protection within the Windows kernel.</p>
 <p>Ultimately, I believe this work will serve as a valuable reference for both academic researchers and hands-on security practitioners interested in low-level Windows internals and kernel protection mechanisms.</p>
 <h2>References<span class="hx-absolute -hx-mt-20" id="references"></span>
-    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><ol>
+    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Throughout this article, I used Tetrane&rsquo;s <strong>“Updated Analysis of PatchGuard on Microsoft Windows 10 RS4”</strong> as a main source. This work provided detailed insights into PatchGuard’s mechanisms, including its initialization, kernel-level integrity checks, and protection strategies.</p>
+<ol>
 <li><a href="https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf" target="_blank" rel="noopener">AMD64 Architecture Programmer’s Manual Volume 2</a>, see page 109</li>
 <li><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-keexpandkernelstackandcallout" target="_blank" rel="noopener">Microsoft Docs - KeExpandKernelStackAndCallout</a></li>
 <li><a href="https://courses.cs.washington.edu/courses/cse451/24sp/resources/x2apic.pdf" target="_blank" rel="noopener">Intel® 64 Architecture x2APIC Specification</a>, see page 2-2</li>

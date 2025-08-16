@@ -11,29 +11,29 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>PatchGuard Analysis - Part 1 – 0xbekoo</title>
-  <meta name="description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow.
-Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture." /><link rel="canonical" href="http://localhost:1313/blog/patchguard-analysis-part-1/" itemprop="url" />
+  <meta name="description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.
+Introduction Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture." /><link rel="canonical" href="http://localhost:1313/blog/patchguard-analysis-part-1/" itemprop="url" />
 
 <meta property="og:title" content="PatchGuard Analysis - Part 1" />
-<meta property="og:description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow.
+<meta property="og:description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.
 Introduction
-    Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture." />
+    Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/blog/patchguard-analysis-part-1/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2025-08-06T00:00:00+00:00" />
 <meta property="article:modified_time" content="2025-08-16T00:35:41+03:00" />
 
   <meta itemprop="name" content="PatchGuard Analysis - Part 1">
-  <meta itemprop="description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow.
-Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.">
+  <meta itemprop="description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.
+Introduction Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.">
   <meta itemprop="datePublished" content="2025-08-06T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
-  <meta itemprop="wordCount" content="3621">
+  <meta itemprop="wordCount" content="3605">
   <meta itemprop="keywords" content="Reverse-Engineering,PatchGuard,Reversing-PatchGuard,Windows-Internals,Analyzing-of-Windows-Kernel">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="PatchGuard Analysis - Part 1">
-  <meta name="twitter:description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow.
-Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.">
+  <meta name="twitter:description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.
+Introduction Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -481,7 +481,7 @@ Introduction Most of us are likely familiar with PatchGuard. Developed by Micros
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#initilization-patchguard-context">Initilization PatchGuard Context
+        <a class="ltr:hx-pl-8 rtl:hx-pr-8 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#initialization-patchguard-context">Initialization PatchGuard Context
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
@@ -501,7 +501,7 @@ Introduction Most of us are likely familiar with PatchGuard. Developed by Micros
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-12 rtl:hx-pr-12 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#initilization-of-patchguard">Initilization of PatchGuard
+        <a class="ltr:hx-pl-12 rtl:hx-pr-12 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#initialization-of-patchguard">Initialization of PatchGuard
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
@@ -558,11 +558,13 @@ Introduction Most of us are likely familiar with PatchGuard. Developed by Micros
                   <div class="group-hover:hx-underline">0xbekoo</div>
                 </a></div>
         <div class="content">
-          <p><em>This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow.</em></p>
+          <p><em>This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.</em></p>
 <h3><strong>Introduction</strong><span class="hx-absolute -hx-mt-20" id="introduction"></span>
-    <a href="#introduction" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.</p>
-<p>Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer.</p>
-<p>In this article, we present a high-level analysis of PatchGuard, covering its initialization phase and general operational behavior. The goal is to provide an architectural overview and outline the methodologies and tools used throughout the analysis. This introduction aims to define the scope of the work and lay the foundation for the in-depth technical discussion that follows.</p>
+    <a href="#introduction" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.</p>
+<p>For me, PatchGuard has been a fascinating topic ever since I first got into reverse engineering on Windows systems. Despite its complexity, diving into its inner workings has not only satisfied my personal curiosity but also provided valuable insights from both a Red Team and malware development perspective.</p>
+<p>In this article, we’ll walk through the process step by step — from PatchGuard’s initialization to the integrity checks it performs — taking a closer look behind the curtain of this critical protection mechanism.</p>
+<p>Before starting, this analysis was prepared with the aim of extending and enriching previous PatchGuard analyses conducted on earlier Windows versions to Windows 11. My goal is to illustrate how the system&rsquo;s kernel-level protection mechanism have evolved in the latest versions and how they are integrated into the modern security architecture.</p>
+<p>By the way, you can <a href="https://0xbekoo.github.io/blog/patchguard-analysis-part-4/#references">click here</a> if you want to view the references.</p>
 <h3><strong>KiFilterFiberContext Function</strong><span class="hx-absolute -hx-mt-20" id="kifilterfibercontext-function"></span>
     <a href="#kifilterfibercontext-function" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>The initialization and startup of PatchGuard are managed by KiFilterFiberContext. This function is not only responsible for these tasks but also controls certain flags related to initialization and other operations. For example, <strong>Kernel-Debugging</strong>. If someone attach the debugger in the system, KiFilterFiberContext will not start the PatchGuard. Also, the function calls some procedure which initialize arguments, as we will see later. The point is that this function really important for the PatchGuard.</p>
 <p>KiFilterFiberContext is called twice in beginning of boot before loading any user-driver. Let’s see the methods:</p>
@@ -742,8 +744,8 @@ Introduction Most of us are likely familiar with PatchGuard. Developed by Micros
   <img src="/images/PatchGuard/img48.png" style="width: 70%" />
 </div>
 <p>Don&rsquo;t worry. We will see what these arguments are used for. For now it will be enough to know them.</p>
-<h4><strong>Initilization PatchGuard Context</strong><span class="hx-absolute -hx-mt-20" id="initilization-patchguard-context"></span>
-    <a href="#initilization-patchguard-context" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>As we see in KiFilterFiberContext, it calls KiInitPatchGuardContext in three methods but we have to understand the sections of PatchGuard context before continue.</p>
+<h4><strong>Initialization PatchGuard Context</strong><span class="hx-absolute -hx-mt-20" id="initialization-patchguard-context"></span>
+    <a href="#initialization-patchguard-context" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>As we see in KiFilterFiberContext, it calls KiInitPatchGuardContext in three methods but we have to understand the sections of PatchGuard context before continue.</p>
 <h5><strong>PatchGuard Context</strong><span class="hx-absolute -hx-mt-20" id="patchguard-context"></span>
     <a href="#patchguard-context" class="subheading-anchor" aria-label="Permalink for this section"></a></h5><p>The structure of PatchGuard context is separated in three sections: <strong>The first section</strong> which size 0x928 contains core content of PatchGuard mechanisms. <strong>The second section</strong> is contains data recipient that keeps original original data for later use. <strong>The third section</strong> is contains information about data to check.</p>
 <h6><strong>First Section</strong><span class="hx-absolute -hx-mt-20" id="first-section"></span>
@@ -916,7 +918,7 @@ BIT 31 0x80000000 Result of KiSwInterruptPresent
 <p>First member KeBugCheckType is distinguish structures type. Second and third members are used for the data that checked.</p>
 <p>The important member is checksum result and the checksum is computed during initilization of PatchGuard. Like i said it is important because the cheksum will used as a reference when PatchGuard will check integrity of the corresponding structure.</p>
 <p>And the last member is related to specific to data.</p>
-<p>We can trace this structure in <strong>loc_140BD3795</strong>:</p>
+<p>We can trace this structure at <strong>loc_140BD3795</strong> function:</p>
 <div style="text-align: center;">
   <img src="/images/PatchGuard/img19.png" style="width: 80%" />
 </div>
@@ -924,51 +926,8 @@ BIT 31 0x80000000 Result of KiSwInterruptPresent
 <div style="text-align: center;">
   <img src="/images/PatchGuard/img20.png" style="width: 80%" />
 </div>
-<p>Also we can verify this structure with WinDBG. We can focus this section from <strong>loc_140BD3795</strong>:</p>
-<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
-
-<pre><code>lea     rax, [rsp&#43;2568h&#43;var_1BD0]
-mov     [rsp&#43;2568h&#43;var_1370], rsi</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
-  <button
-    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
-    title="Copy code"
-  >
-    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
-    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
-  </button>
-</div>
-</div>
-<p>In this section, rax register gets address of structure:</p>
-<div style="text-align: center;">
-  <img src="/images/PatchGuard/img21.png" style="width: 80%" />
-</div>
-<p>Well, let&rsquo;s check this address:</p>
-<div style="text-align: center;">
-  <img src="/images/PatchGuard/img22.png" style="width: 80%" />
-</div>
-<p>The <em>rsp+0x9A8</em> that correspond to pData_0x8 or szData_0x10 member of the structure is prepared in this part:</p>
-<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
-
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nf">lea</span>     <span class="no">rax</span><span class="p">,</span> <span class="p">[</span><span class="no">rsp</span><span class="err">+</span><span class="mi">2568</span><span class="no">h</span><span class="err">+</span><span class="no">BugCheckParameter2</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="nf">mov</span>     <span class="p">[</span><span class="no">rsp</span><span class="err">+</span><span class="mi">2568</span><span class="no">h</span><span class="err">+</span><span class="no">BugCheckParameter4</span><span class="p">],</span> <span class="no">rax</span>
-</span></span><span class="line"><span class="cl"><span class="nf">call</span>    <span class="no">LdrResFindResource</span>
-</span></span><span class="line"><span class="cl"><span class="na">...</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
-  <button
-    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
-    title="Copy code"
-  >
-    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
-    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
-  </button>
-</div>
-</div>
-<p>Or:</p>
-<div style="text-align: center;">
-  <img src="/images/PatchGuard/img23.png" style="width: 90%" />
-</div>
-<p>As we can see, the BugCheckParameter2 member is prepared before running LdrResFindResource.</p>
-<h5><strong>Initilization of PatchGuard</strong><span class="hx-absolute -hx-mt-20" id="initilization-of-patchguard"></span>
-    <a href="#initilization-of-patchguard" class="subheading-anchor" aria-label="Permalink for this section"></a></h5><p>Now, we will take a look at the parameters. Remember that we have examined the parameters under the heading of <strong>Decompiling KiFilterFiberContext</strong>. In this section, we will see exactly what these parameters do.</p>
+<h5><strong>Initialization of PatchGuard</strong><span class="hx-absolute -hx-mt-20" id="initialization-of-patchguard"></span>
+    <a href="#initialization-of-patchguard" class="subheading-anchor" aria-label="Permalink for this section"></a></h5><p>Now, we will take a look at the parameters. Remember that we have examined the parameters under the heading of <strong>Decompiling KiFilterFiberContext</strong>. In this section, we will see exactly what these parameters do.</p>
 <p>KiInitPatchGuardContext is responsible for initialization of most PatchGuard contexts. The choice of which method is to be used is done regarding the argument given to this function.</p>
 <ul>
 <li><strong>Argument 1: Index for DPC Method</strong></li>

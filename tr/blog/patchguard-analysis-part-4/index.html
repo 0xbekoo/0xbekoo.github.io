@@ -28,7 +28,7 @@ Esasen doğrulama rutini olarak birkaç rutin var ancak bunlardan en sıka kulla
 Esasen doğrulama rutini olarak birkaç rutin var ancak bunlardan en sıka kullanılan rutin ise daha öncede bahsedilen FsRtlMdlReadCompleteDevEx fonksiyonu olacaktır. Bu arkadaş ntoskrnl.exe’nin en uzun rutini olabilir. Diğer rutinler ise şunlar:">
   <meta itemprop="datePublished" content="2025-08-06T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
-  <meta itemprop="wordCount" content="2239">
+  <meta itemprop="wordCount" content="2276">
   <meta itemprop="keywords" content="Reverse-Engineering,PatchGuard,Reversing-PatchGuard,Windows-Internals,Analyzing-of-Windows-Kernel">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="PatchGuard Analysis - Part 4">
@@ -1068,15 +1068,14 @@ Esasen doğrulama rutini olarak birkaç rutin var ancak bunlardan en sıka kulla
 <p>Bu çalışmada, PatchGuard’ın temel yapı taşlarını, başlatılma sürecini ve genel işleyişini yüksek seviyede ele alarak sistem mimarisine dair bütünsel bir bakış sunmayı amaçladım. Tersine mühendislik araçları ve metodolojileri kullanılarak yürütülen analiz, bu karmaşık güvenlik mekanizmasının işleyiş mantığını anlaşılır kılmayı hedefledi.</p>
 <p>Tüm bu emek ve süreç sonucunda ortaya çıkan bu çalışmanın, güvenlik araştırmalarında başvuru niteliğinde bir kaynak olarak kullanılacağına inanıyorum.</p>
 <h2><strong>References</strong><span class="hx-absolute -hx-mt-20" id="references"></span>
-    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><ol>
+    <a href="#references" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Bu makale boyunca ana kaynak olarak Tetrane&rsquo;in <strong>&ldquo;Updated Analysis of PatchGuard on Microsoft Windows 10 RS4&rdquo;</strong> kaynağını kullandım. Bu çalışma, PatchGuard&rsquo;ın başlatılması, kernel düzeyinde bütünlük kontrolleri ve koruma stratejileri de dahil olmak üzere mekanizmaları hakkında ayrıntılı bilgiler sağladı.</p>
+<ol>
 <li><a href="https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf" target="_blank" rel="noopener">AMD64 Architecture Programmer’s Manual Volume 2</a>, see page 109</li>
 <li><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-keexpandkernelstackandcallout" target="_blank" rel="noopener">Microsoft Docs - KeExpandKernelStackAndCallout</a></li>
 <li><a href="https://courses.cs.washington.edu/courses/cse451/24sp/resources/x2apic.pdf" target="_blank" rel="noopener">Intel® 64 Architecture x2APIC Specification</a>, see page 2-2</li>
 <li><a href="https://www.intel.com/content/dam/develop/external/us/en/documents/335592-sdm-vol-4.pdf" target="_blank" rel="noopener">Intel 64 and IA-32 Architectures Software Developer&rsquo;s Manual Volume 4: Model-Specific Registers</a>, see Page 2-4</li>
+<li><a href="https://www.felixcloutier.com/x86/cpuid" target="_blank" rel="noopener">Felix Clouiter - CPUID</a></li>
 </ol>
-<ul>
-<li><a href="https://www.felixcloutier.com/x86/cpuid" target="_blank" rel="noopener">5- Felix Clouiter - CPUID</a></li>
-</ul>
 
         </div>
         

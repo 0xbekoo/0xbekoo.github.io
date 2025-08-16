@@ -11,33 +11,33 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>PatchGuard Analysis - Part 1 – 0xbekoo</title>
-  <meta name="description" content="Bu makale karanlık gölge B.‘ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.
-Introduction Muhtemelen çoğumuz PatchGuard’a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.
-Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering’i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer’lar için değerli olacağına inanıyorum." /><link rel="canonical" href="http://localhost:1313/tr/blog/patchguard-analysis-part-1/" itemprop="url" />
+  <meta name="description" content="Bu makale dark shadow B.‘ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.
+Introduction Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.
+Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu." /><link rel="canonical" href="http://localhost:1313/tr/blog/patchguard-analysis-part-1/" itemprop="url" />
 
 <meta property="og:title" content="PatchGuard Analysis - Part 1" />
-<meta property="og:description" content="Bu makale karanlık gölge B.&lsquo;ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.
+<meta property="og:description" content="Bu makale dark shadow B.&lsquo;ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.
 Introduction
-    Muhtemelen çoğumuz PatchGuard&rsquo;a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.
-Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering&rsquo;i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer&rsquo;lar için değerli olacağına inanıyorum." />
+    Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.
+Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/tr/blog/patchguard-analysis-part-1/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2025-08-06T00:00:00+00:00" />
 <meta property="article:modified_time" content="2025-08-16T00:35:41+03:00" />
 
   <meta itemprop="name" content="PatchGuard Analysis - Part 1">
-  <meta itemprop="description" content="Bu makale karanlık gölge B.‘ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.
-Introduction Muhtemelen çoğumuz PatchGuard’a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.
-Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering’i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer’lar için değerli olacağına inanıyorum.">
+  <meta itemprop="description" content="Bu makale dark shadow B.‘ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.
+Introduction Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.
+Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu.">
   <meta itemprop="datePublished" content="2025-08-06T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
-  <meta itemprop="wordCount" content="3167">
+  <meta itemprop="wordCount" content="3171">
   <meta itemprop="keywords" content="Reverse-Engineering,PatchGuard,Reversing-PatchGuard,Windows-Internals,Analyzing-of-Windows-Kernel">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="PatchGuard Analysis - Part 1">
-  <meta name="twitter:description" content="Bu makale karanlık gölge B.‘ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.
-Introduction Muhtemelen çoğumuz PatchGuard’a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.
-Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering’i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer’lar için değerli olacağına inanıyorum.">
+  <meta name="twitter:description" content="Bu makale dark shadow B.‘ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.
+Introduction Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.
+Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -446,7 +446,7 @@ Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering’i ilk ke
         
         <li class="hx-flex hx-flex-col">
           <a
-            href="/blog/patchguard-analysis-part-1/"
+            href="/"
             class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
           >English</a>
         </li>
@@ -513,7 +513,7 @@ Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering’i ilk ke
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="ltr:hx-pl-12 rtl:hx-pr-12 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#initilization-of-patchguard">Initilization of PatchGuard
+        <a class="ltr:hx-pl-12 rtl:hx-pr-12 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#initialization-of-patchguard">Initialization of PatchGuard
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
@@ -570,11 +570,13 @@ Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering’i ilk ke
                   <div class="group-hover:hx-underline">0xbekoo</div>
                 </a></div>
         <div class="content">
-          <p><em>Bu makale karanlık gölge B.&lsquo;ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.</em></p>
+          <p><em>Bu makale dark shadow B.&lsquo;ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.</em></p>
 <h3><strong>Introduction</strong><span class="hx-absolute -hx-mt-20" id="introduction"></span>
-    <a href="#introduction" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Muhtemelen çoğumuz PatchGuard&rsquo;a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.</p>
-<p>Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering&rsquo;i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer&rsquo;lar için değerli olacağına inanıyorum.</p>
-<p>Bu makalede, PatchGuard&rsquo;ın başlatma aşamasını ve genel davranışını kapsayan bir analizle inceleyeceğiz. Amaç, mimari bir genel bakış sağlamak ve analiz boyunca kullanılan metodolojileri ve araçları ana hatlarıyla belirtmektir.</p>
+    <a href="#introduction" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.</p>
+<p>Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu.</p>
+<p>Bu makalede, PatchGuard’ın nasıl initialize edildiğinden, yaptığı integrity checks süreçlerine kadar adım adım ilerleyecek; yani bu koruma katmanının perde arkasına kısa bir yolculuk yapacağız.</p>
+<p>Son olarak şunu da belirtmek isterim ki bu çalışma önceki Windows sürümlerinde yapılan PatchGuard analizlerini Windows 11’e genişletmek ve zenginleştirmek amacıyla hazırlanmıştır. Amacım, sistemin kernel-level koruma mekanizmalarının güncel sürümlerde nasıl evrildiğini ve modern güvenlik mimarisine nasıl entegre edildiğini göstermek.</p>
+<p>Başlamadan önce referanslara göz atmak isterseniz <a href="https://0xbekoo.github.io/tr/blog/patchguard-analysis-part-4/#references">buraya</a> tıklayabilirsiniz.</p>
 <h3><strong>KiFilterFiberContext Function</strong><span class="hx-absolute -hx-mt-20" id="kifilterfibercontext-function"></span>
     <a href="#kifilterfibercontext-function" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>PatchGuard&rsquo;ın ayarlanması ve başlatılması işlemleri KiFilterFiberContext fonksiyonu tarafından gerçekleştirilmektedir. Bu fonksiyon bu görevleriyle beraber bir takım bayrak kontrolleri de gerçekleştirmektedir. Bu bayraklar Debugging ile alakalıdır. Eğer sistemde debugging aktif ise bu fonksiyon PatchGuard&rsquo;ı başlatmayacaktır. Yani kısaca bu fonksiyon PatchGuard için gerçekten de önemli bir fonksiyon.</p>
 <p>KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılmaktadır. Sistem başlangıcında bu fonksiyonun iki defa çağırılmasının ardında, PatchGuard&rsquo;ın başlatılmasıyla alakalı iki farklı method içermekte. Bu yöntemlere göz atalım:</p>
@@ -583,7 +585,7 @@ Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering’i ilk ke
 <div style="text-align: center;">
   <img src="/images/PatchGuard/img1.png" style="width: 50%" />
 </div>
-Özellikle **InıtSafeBootMode**, **KdPitchDebugger** ve **KdDebuggerNotPresent** bayrakların kontrol edildiğine dikkat edin. Bu bayraklardan odağımız debugging ile alakalı olanlar olacaktır çünkü şimdi göreceğimiz gibi bu bayraklardan elde edilen değerler ile KiFilterFiberContext'in çağırılıp çağırılmayacağı belirlenecek. Eğer sistemde debugging aktif ise bu iki bayrak 0 değerini alacaktır ancak normal senaryolarda bu bayraklar 1 değerini alır. Bu bayrakların alınmasından sonraki işlemlerde aşağıdaki register'lar şu değeri elde edecektir:
+<p>Özellikle <strong>InitSafeBootMode</strong>, <strong>KdPitchDebugger</strong> ve <strong>KdDebuggerNotPresent</strong> bayrakların kontrol edildiğine dikkat edin. Bu bayraklardan odağımız debugging ile alakalı olanlar olacaktır çünkü şimdi göreceğimiz gibi bu bayraklardan elde edilen değerler ile KiFilterFiberContext&rsquo;in çağırılıp çağırılmayacağı belirlenecek. Eğer sistemde debugging aktif ise bu iki bayrak 0 değerini alacaktır ancak normal senaryolarda bu bayraklar 1 değerini alır. Bu bayrakların alınmasından sonraki işlemlerde aşağıdaki register&rsquo;lar şu değeri elde edecektir:</p>
 <ul>
 <li>rax =&gt; 0x80000000</li>
 <li>rdx =&gt; 0x80000000</li>
@@ -939,51 +941,8 @@ BIT 31 0x80000000 Result of KiSwInterruptPresent
 <div style="text-align: center;">
   <img src="/images/PatchGuard/img20.png" style="width: 90%" />
 </div>
-<p>Ayrıca bu yapıyı WinDBG ile de doğrulayabiliriz. <strong>loc_140BD3795</strong>&lsquo;den aşağıda belirtilen kısma  odaklanabiliriz:</p>
-<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
-
-<pre><code>lea     rax, [rsp&#43;2568h&#43;var_1BD0]
-mov     [rsp&#43;2568h&#43;var_1370], rsi</code></pre><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
-  <button
-    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
-    title="Copy code"
-  >
-    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
-    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
-  </button>
-</div>
-</div>
-<p>Kabaca burada yapının adresi alınmakta:</p>
-<div style="text-align: center;">
-  <img src="/images/PatchGuard/img21.png" style="width: 80%" />
-</div>
-<p>Şimdi ise adrese göz atalım:</p>
-<div style="text-align: center;">
-  <img src="/images/PatchGuard/img22.png" style="width: 80%" />
-</div>
-<p><em>rsp+0x9A8</em> adresi, yapının  pData_0x8 veya szData_0x10 üyesine karşılık gelir ve aşağıda gösterilen kısımda hazırlanmaktadır:</p>
-<div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
-
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="cl"><span class="nf">lea</span>     <span class="no">rax</span><span class="p">,</span> <span class="p">[</span><span class="no">rsp</span><span class="err">+</span><span class="mi">2568</span><span class="no">h</span><span class="err">+</span><span class="no">BugCheckParameter2</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="nf">mov</span>     <span class="p">[</span><span class="no">rsp</span><span class="err">+</span><span class="mi">2568</span><span class="no">h</span><span class="err">+</span><span class="no">BugCheckParameter4</span><span class="p">],</span> <span class="no">rax</span>
-</span></span><span class="line"><span class="cl"><span class="nf">call</span>    <span class="no">LdrResFindResource</span>
-</span></span><span class="line"><span class="cl"><span class="na">...</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0">
-  <button
-    class="hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50"
-    title="Copy code"
-  >
-    <div class="copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4"></div>
-    <div class="success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4"></div>
-  </button>
-</div>
-</div>
-<p>Veya:</p>
-<div style="text-align: center;">
-  <img src="/images/PatchGuard/img23.png" style="width: 90%" />
-</div>
-<p>BugCheckParameter4 değişkeni LdrResFindResource çalıştırılmadan önce hemen hazırlanmakta.</p>
-<h5><strong>Initilization of PatchGuard</strong><span class="hx-absolute -hx-mt-20" id="initilization-of-patchguard"></span>
-    <a href="#initilization-of-patchguard" class="subheading-anchor" aria-label="Permalink for this section"></a></h5><p>Artık PatchGuard&rsquo;ın nasıl initialize edildiğine göz atabiliriz. Esasen PatchGuard&rsquo;ın initialize edilmesi birkaç yöntem içeririyor ve yukarıda gördüğümüz gibi KiInitPatchGuardContext fonksiyonu kullanmak bu yöntemlerden biri.</p>
+<h5><strong>Initialization of PatchGuard</strong><span class="hx-absolute -hx-mt-20" id="initialization-of-patchguard"></span>
+    <a href="#initialization-of-patchguard" class="subheading-anchor" aria-label="Permalink for this section"></a></h5><p>Artık PatchGuard&rsquo;ın nasıl initialize edildiğine göz atabiliriz. Esasen PatchGuard&rsquo;ın initialize edilmesi birkaç yöntem içeririyor ve yukarıda gördüğümüz gibi KiInitPatchGuardContext fonksiyonu kullanmak bu yöntemlerden biri.</p>
 <p>Esasen KiInitPatchGuardContext fonksiyonu PatchGuard&rsquo;ın başlatması için kendi içinde birkaç method kullanıyor. Methodun seçilmesi ise fonksiyona verilen parametrelerle alakalıdır.</p>
 <p>KiFilterFiberContext&rsquo;i decompiler ettiğimizde, KiInitPatchGuardContext fonksiyonu için random hazırlanan parametreleri dinamik olarak görmüştük. Bu fonksiyonun argümanları esasen şu amaçlarla kullanılmaktadır:</p>
 <ul>
@@ -1347,7 +1306,7 @@ mov     [rsp&#43;2568h&#43;var_24C0], rax</code></pre><div class="hextra-code-co
         
         <li class="hx-flex hx-flex-col">
           <a
-            href="/blog/patchguard-analysis-part-1/"
+            href="/"
             class="hx-text-gray-800 dark:hx-text-gray-100 hover:hx-bg-primary-50 hover:hx-text-primary-600 hover:dark:hx-bg-primary-500/10 hover:dark:hx-text-primary-600 hx-relative hx-cursor-pointer hx-whitespace-nowrap hx-py-1.5 hx-transition-colors ltr:hx-pl-3 ltr:hx-pr-9 rtl:hx-pr-3 rtl:hx-pl-9"
           >English</a>
         </li>
