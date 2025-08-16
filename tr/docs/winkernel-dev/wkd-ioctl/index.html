@@ -23,14 +23,14 @@ Windows&rsquo;ta User-mode programları, DeviceIoControl API kullanarak sürüc�
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/tr/docs/winkernel-dev/wkd-ioctl/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2024-08-26T00:00:00+00:00" />
-<meta property="article:modified_time" content="2024-08-26T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-08-16T00:35:41+03:00" />
 
   <meta itemprop="name" content="Input/Output Control (IOCTL)">
   <meta itemprop="description" content="Merhabalar, bu yazıda Windows Kernel Development’tan IOCTL mekanizmasını inceleyeceğiz.
 IOCTL Nedir? I/O Control Codes (G/Ç Kontrol Kodları) olarak adlandırılan IOCTL, User-mode uygulamarın ve sürücülerin arasındaki iletişim için veya stack içerisindeki sürücüler arasındaki iletişim için kullanılan bir mekanizmadır. I/O Kontrol kodları, önceki konumda bahsettiğim IRP’ler aracılığıyla gönderilir. Eğer IRP’ler hakkında bir bilginiz yoksa buraya tıklayarak IRP’ler hakkında bilgi alabilirsiniz.
 Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücülere IOCTL kodlarını gönderir. Bu API, alınan IOCTL kodunu IRP_MJ_DEVICE_CONTROL aracılığıyla sürücüye gönderir. Aynı zamanda IOCTL mekanizmanın tek özelliği de bu olmadığını tekrar vurgulayalım. İleri seviye sürücülerin IRP_MJ_DEVICE_CONTROL veya IRP_MJ_INTERNAL_DEVICE_CONTROL aracılığıya istek oluşturarak, alt sürücülere IOCTL isteği gönderme imkanı sunar.">
   <meta itemprop="datePublished" content="2024-08-26T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2024-08-26T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="1553">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Input/Output Control (IOCTL)">
@@ -232,6 +232,13 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
               
             </li></ul>
       </div></li>
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/about/"
+    
+  >About
+    </a></li>
           <li class="open"><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
@@ -428,13 +435,6 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
       </div>
             </li></ul>
       </div></li>
-          <li class=""><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/tr/about/"
-    
-  >About
-    </a></li>
       <li class="[word-break:break-word] hx-mt-5 hx-mb-2 hx-px-2 hx-py-1.5 hx-text-sm hx-font-semibold hx-text-gray-900 first:hx-mt-0 dark:hx-text-gray-100">
         <span class="hx-cursor-default">More</span>
       </li>
@@ -1164,7 +1164,7 @@ Windows’ta User-mode programları, DeviceIoControl API kullanarak sürücüler
 
         </div>
         
-    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2024-08-26T00:00:00.000Z">Ağustos 26, 2024</time></div>
+    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-08-16T00:35:41.000Z">Ağustos 16, 2025</time></div>
         <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
         href="/tr/docs/winkernel-dev/wkd-virtual-memory/"
         title="Virtual Memory"

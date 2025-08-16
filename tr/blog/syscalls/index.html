@@ -23,14 +23,14 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/tr/blog/syscalls/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2024-12-31T00:00:00+00:00" />
-<meta property="article:modified_time" content="2024-12-31T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-08-16T00:35:41+03:00" />
 
   <meta itemprop="name" content="Windows Kernel&#39;da Systemm Call Mekanızmasını Reverseleme">
   <meta itemprop="description" content="Giriş Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.
 Birkaç gün önce SSDT tablosu üzerine bir döküman paylaşmıştım. Bu dökümanda temel olarak SSDT’nin ne olduğunu, adreslerin nasıl hesaplandığı vs anlatmıştım. Dökümanın son kısmında ise öğrendiğimiz şeylerin bir kernel sürücüsünü hazırlamıştık.
 Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğer benim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel’da Syscall’ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!">
   <meta itemprop="datePublished" content="2024-12-31T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2024-12-31T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="2540">
   <meta itemprop="keywords" content="Reverse-Engineering,Syscall,Windows-Kernel">
   <meta name="twitter:card" content="summary">
@@ -263,6 +263,13 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
           <li class=""><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/about/"
+    
+  >About
+    </a></li>
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/tr/docs/"
     
   >Documentation
@@ -423,13 +430,6 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
       </div>
             </li></ul>
       </div></li>
-          <li class=""><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/tr/about/"
-    
-  >About
-    </a></li>
       <li class="[word-break:break-word] hx-mt-5 hx-mb-2 hx-px-2 hx-py-1.5 hx-text-sm hx-font-semibold hx-text-gray-900 first:hx-mt-0 dark:hx-text-gray-100">
         <span class="hx-cursor-default">More</span>
       </li>
@@ -1072,7 +1072,7 @@ Offset = KiServiceTableAddress + 4 * SSN
 
         </div>
         
-    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2024-12-31T00:00:00.000Z">Aralık 31, 2024</time></div>
+    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-08-16T00:35:41.000Z">Ağustos 16, 2025</time></div>
         
         <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
         href="/tr/blog/bare-metal-reversing/"

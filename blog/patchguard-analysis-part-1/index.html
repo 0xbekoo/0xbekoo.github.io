@@ -11,29 +11,29 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>PatchGuard Analysis - Part 1 – 0xbekoo</title>
-  <meta name="description" content="Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.
-Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer." /><link rel="canonical" href="http://localhost:1313/blog/patchguard-analysis-part-1/" itemprop="url" />
+  <meta name="description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow.
+Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture." /><link rel="canonical" href="http://localhost:1313/blog/patchguard-analysis-part-1/" itemprop="url" />
 
 <meta property="og:title" content="PatchGuard Analysis - Part 1" />
-<meta property="og:description" content="Introduction
-    Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.
-Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer." />
+<meta property="og:description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow.
+Introduction
+    Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/blog/patchguard-analysis-part-1/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2025-08-06T00:00:00+00:00" />
-<meta property="article:modified_time" content="2025-08-06T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-08-16T00:35:41+03:00" />
 
   <meta itemprop="name" content="PatchGuard Analysis - Part 1">
-  <meta itemprop="description" content="Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.
-Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer.">
+  <meta itemprop="description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow.
+Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.">
   <meta itemprop="datePublished" content="2025-08-06T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2025-08-06T00:00:00+00:00">
-  <meta itemprop="wordCount" content="3603">
+  <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
+  <meta itemprop="wordCount" content="3621">
   <meta itemprop="keywords" content="Reverse-Engineering,PatchGuard,Reversing-PatchGuard,Windows-Internals,Analyzing-of-Windows-Kernel">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="PatchGuard Analysis - Part 1">
-  <meta name="twitter:description" content="Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.
-Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer.">
+  <meta name="twitter:description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow.
+Introduction Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -139,6 +139,13 @@ Personally, PatchGuard has always been a subject of interest since I first began
     <ul class="hx-flex hx-flex-col hx-gap-1 md:hx-hidden">
       
       
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/about/"
+    
+  >About
+    </a></li>
           <li class="open"><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
@@ -393,13 +400,6 @@ Personally, PatchGuard has always been a subject of interest since I first began
       </div>
             </li></ul>
       </div></li>
-          <li class=""><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/about/"
-    
-  >About
-    </a></li>
       <li class="[word-break:break-word] hx-mt-5 hx-mb-2 hx-px-2 hx-py-1.5 hx-text-sm hx-font-semibold hx-text-gray-900 first:hx-mt-0 dark:hx-text-gray-100">
         <span class="hx-cursor-default">More</span>
       </li>
@@ -558,7 +558,8 @@ Personally, PatchGuard has always been a subject of interest since I first began
                   <div class="group-hover:hx-underline">0xbekoo</div>
                 </a></div>
         <div class="content">
-          <h3><strong>Introduction</strong><span class="hx-absolute -hx-mt-20" id="introduction"></span>
+          <p><em>This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow.</em></p>
+<h3><strong>Introduction</strong><span class="hx-absolute -hx-mt-20" id="introduction"></span>
     <a href="#introduction" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.</p>
 <p>Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer.</p>
 <p>In this article, we present a high-level analysis of PatchGuard, covering its initialization phase and general operational behavior. The goal is to provide an architectural overview and outline the methodologies and tools used throughout the analysis. This introduction aims to define the scope of the work and lay the foundation for the in-depth technical discussion that follows.</p>
@@ -668,13 +669,9 @@ Personally, PatchGuard has always been a subject of interest since I first began
 <h4><strong>Decompiling KiFilterFiberContext</strong><span class="hx-absolute -hx-mt-20" id="decompiling-kifilterfibercontext"></span>
     <a href="#decompiling-kifilterfibercontext" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>This function’s mainly job is to call initialization routine which named ‘KiInitializePatchGuardContext’ in literature and then the parameters will initialize. These parameters will determine which method to use to trigger a Patchguard check.</p>
 <p>Firstly, it disables Debugger in beginning:</p>
-<div style="text-align: center;">
-  <img src="/images/PatchGuard/img9.png" style="width: 50%" />
-</div>
+<p><img src="/images/PatchGuard/img9.png" alt="" loading="lazy" /></p>
 <p>An important detail is that KiFilterFiberContext contain a small callback function, which isn’t found in ntoskrnl. The function takes a pointer which named ‘PatchGuardTVCallBack’ as a parameter:</p>
-<div style="text-align: center;">
-  <img src="/images/PatchGuard/img10.png" style="width: 60%" />
-</div>
+<p><img src="/images/PatchGuard/img10.png" alt="" loading="lazy" /></p>
 <p>This pointer which Argument1 of <strong>ExNotifyCallback</strong> is initialized in SecInitializeKernelIntegrityCheck function from mssecflt.sys.</p>
 <p>KiFilterFiberContext calls the function called <strong>KiInitPatchGuardContext</strong> with three methods to initialize the PatchGuard Context; <strong>the first time</strong> occurs no matter what, <strong>the second time</strong> with only 50% chance, and <strong>third time</strong> with a new method which we will see later. Here&rsquo;s a pseudocode for KiFilterFiberContext:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
@@ -1288,7 +1285,7 @@ KiBalanceSetManagerPeriodicDpc` — is used. This variable refers to a <strong>K
 
         </div>
         
-    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-08-06T00:00:00.000Z">August 6, 2025</time></div>
+    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-08-16T00:35:41.000Z">August 16, 2025</time></div>
         
         <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
         href="/blog/ssdt-hooking/"

@@ -37,14 +37,14 @@ SSDT maps system calls (syscalls) to kernel API addresses. When a syscall is mad
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/docs/winkernel-dev/wkd-ssdt/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2024-12-26T00:00:00+00:00" />
-<meta property="article:modified_time" content="2024-12-26T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-08-16T00:35:41+03:00" />
 
   <meta itemprop="name" content="System Service Descriptor Table">
   <meta itemprop="description" content="In this documentation we will discuss SSDT in the windows systems.
 What is SSDT? So, SSDT (System Service Descriptor Table) is a list of system calls supported by the operating system. Recall the syscalls. SSDT is the first member of the Service Descriptor Table kernel memory structure:
 typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT maps system calls (syscalls) to kernel API addresses. When a syscall is made by a user-mode program, it contains a service index. This index specifies which syscall to use. The operating system uses this index to parse the address of the corresponding function from the System Service Descriptor Table (SSDT) and redirects to the correct kernel function in ntoskrnl.exe. In case it sounds confusing, let me explain it in a diagram:">
   <meta itemprop="datePublished" content="2024-12-26T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2024-12-26T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="1931">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="System Service Descriptor Table">
@@ -156,6 +156,13 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
     <ul class="hx-flex hx-flex-col hx-gap-1 md:hx-hidden">
       
       
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/about/"
+    
+  >About
+    </a></li>
           <li class=""><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
@@ -410,13 +417,6 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
       </div>
             </li></ul>
       </div></li>
-          <li class=""><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/about/"
-    
-  >About
-    </a></li>
       <li class="[word-break:break-word] hx-mt-5 hx-mb-2 hx-px-2 hx-py-1.5 hx-text-sm hx-font-semibold hx-text-gray-900 first:hx-mt-0 dark:hx-text-gray-100">
         <span class="hx-cursor-default">More</span>
       </li>
@@ -1106,7 +1106,7 @@ fffff802`333c12f0 4889542410      mov     qword ptr [rsp&#43;10h],rdx</code></pr
 
         </div>
         
-    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2024-12-26T00:00:00.000Z">December 26, 2024</time></div>
+    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-08-16T00:35:41.000Z">August 16, 2025</time></div>
         <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
         href="/docs/winkernel-dev/wkd-dpc/"
         title="DPC"

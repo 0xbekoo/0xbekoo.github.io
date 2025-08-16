@@ -20,7 +20,7 @@
 
   <meta itemprop="name" content="Blogs">
   <meta itemprop="datePublished" content="2025-08-06T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2025-08-06T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Blogs">
 
@@ -221,6 +221,13 @@
           <li class=""><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/about/"
+    
+  >About
+    </a></li>
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/tr/docs/"
     
   >Documentation
@@ -381,13 +388,6 @@
       </div>
             </li></ul>
       </div></li>
-          <li class=""><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/tr/about/"
-    
-  >About
-    </a></li>
       <li class="[word-break:break-word] hx-mt-5 hx-mb-2 hx-px-2 hx-py-1.5 hx-text-sm hx-font-semibold hx-text-gray-900 first:hx-mt-0 dark:hx-text-gray-100">
         <span class="hx-cursor-default">More</span>
       </li>
@@ -480,8 +480,9 @@ Argument 1: DPC Routine Pointer Daha önce de gördüğümüz gibi, çeşitli me
           </div>
         
           <div class="hx-mb-10">
-            <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/tr/blog/patchguard-analysis-part-1/">PatchGuard Analysis - Part 1</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">KiFilterFiberContext Function PatchGuard’ın ayarlanması ve başlatılması işlemleri KiFilterFiberContext fonksiyonu tarafından gerçekleştirilmektedir. Bu fonksiyon bu görevleriyle beraber bir takım bayrak kontrolleri de gerçekleştirmektedir. Bu bayraklar Debugging ile alakalıdır. Eğer sistemde debugging aktif ise bu fonksiyon PatchGuard’ı başlatmayacaktır. Yani kısaca bu fonksiyon PatchGuard için gerçekten de önemli bir fonksiyon.
-KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılmaktadır. Sistem başlangıcında bu fonksiyonun iki defa çağırılmasının ardında, PatchGuard’ın başlatılmasıyla alakalı iki farklı method içermekte. Bu yöntemlere göz atalım:</p>
+            <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/tr/blog/patchguard-analysis-part-1/">PatchGuard Analysis - Part 1</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Bu makale karanlık gölge B.‘ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.
+Introduction Muhtemelen çoğumuz PatchGuard’a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.
+Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering’i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer’lar için değerli olacağına inanıyorum.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/tr/blog/patchguard-analysis-part-1/">Read more →</a>
             </p>

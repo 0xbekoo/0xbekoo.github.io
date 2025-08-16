@@ -11,29 +11,33 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>PatchGuard Analysis - Part 1 – 0xbekoo</title>
-  <meta name="description" content="KiFilterFiberContext Function PatchGuard’ın ayarlanması ve başlatılması işlemleri KiFilterFiberContext fonksiyonu tarafından gerçekleştirilmektedir. Bu fonksiyon bu görevleriyle beraber bir takım bayrak kontrolleri de gerçekleştirmektedir. Bu bayraklar Debugging ile alakalıdır. Eğer sistemde debugging aktif ise bu fonksiyon PatchGuard’ı başlatmayacaktır. Yani kısaca bu fonksiyon PatchGuard için gerçekten de önemli bir fonksiyon.
-KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılmaktadır. Sistem başlangıcında bu fonksiyonun iki defa çağırılmasının ardında, PatchGuard’ın başlatılmasıyla alakalı iki farklı method içermekte. Bu yöntemlere göz atalım:" /><link rel="canonical" href="http://localhost:1313/tr/blog/patchguard-analysis-part-1/" itemprop="url" />
+  <meta name="description" content="Bu makale karanlık gölge B.‘ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.
+Introduction Muhtemelen çoğumuz PatchGuard’a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.
+Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering’i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer’lar için değerli olacağına inanıyorum." /><link rel="canonical" href="http://localhost:1313/tr/blog/patchguard-analysis-part-1/" itemprop="url" />
 
 <meta property="og:title" content="PatchGuard Analysis - Part 1" />
-<meta property="og:description" content="KiFilterFiberContext Function
-    PatchGuard&rsquo;ın ayarlanması ve başlatılması işlemleri KiFilterFiberContext fonksiyonu tarafından gerçekleştirilmektedir. Bu fonksiyon bu görevleriyle beraber bir takım bayrak kontrolleri de gerçekleştirmektedir. Bu bayraklar Debugging ile alakalıdır. Eğer sistemde debugging aktif ise bu fonksiyon PatchGuard&rsquo;ı başlatmayacaktır. Yani kısaca bu fonksiyon PatchGuard için gerçekten de önemli bir fonksiyon.
-KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılmaktadır. Sistem başlangıcında bu fonksiyonun iki defa çağırılmasının ardında, PatchGuard&rsquo;ın başlatılmasıyla alakalı iki farklı method içermekte. Bu yöntemlere göz atalım:" />
+<meta property="og:description" content="Bu makale karanlık gölge B.&lsquo;ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.
+Introduction
+    Muhtemelen çoğumuz PatchGuard&rsquo;a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.
+Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering&rsquo;i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer&rsquo;lar için değerli olacağına inanıyorum." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/tr/blog/patchguard-analysis-part-1/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2025-08-06T00:00:00+00:00" />
-<meta property="article:modified_time" content="2025-08-06T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-08-16T00:35:41+03:00" />
 
   <meta itemprop="name" content="PatchGuard Analysis - Part 1">
-  <meta itemprop="description" content="KiFilterFiberContext Function PatchGuard’ın ayarlanması ve başlatılması işlemleri KiFilterFiberContext fonksiyonu tarafından gerçekleştirilmektedir. Bu fonksiyon bu görevleriyle beraber bir takım bayrak kontrolleri de gerçekleştirmektedir. Bu bayraklar Debugging ile alakalıdır. Eğer sistemde debugging aktif ise bu fonksiyon PatchGuard’ı başlatmayacaktır. Yani kısaca bu fonksiyon PatchGuard için gerçekten de önemli bir fonksiyon.
-KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılmaktadır. Sistem başlangıcında bu fonksiyonun iki defa çağırılmasının ardında, PatchGuard’ın başlatılmasıyla alakalı iki farklı method içermekte. Bu yöntemlere göz atalım:">
+  <meta itemprop="description" content="Bu makale karanlık gölge B.‘ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.
+Introduction Muhtemelen çoğumuz PatchGuard’a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.
+Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering’i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer’lar için değerli olacağına inanıyorum.">
   <meta itemprop="datePublished" content="2025-08-06T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2025-08-06T00:00:00+00:00">
-  <meta itemprop="wordCount" content="3046">
+  <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
+  <meta itemprop="wordCount" content="3167">
   <meta itemprop="keywords" content="Reverse-Engineering,PatchGuard,Reversing-PatchGuard,Windows-Internals,Analyzing-of-Windows-Kernel">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="PatchGuard Analysis - Part 1">
-  <meta name="twitter:description" content="KiFilterFiberContext Function PatchGuard’ın ayarlanması ve başlatılması işlemleri KiFilterFiberContext fonksiyonu tarafından gerçekleştirilmektedir. Bu fonksiyon bu görevleriyle beraber bir takım bayrak kontrolleri de gerçekleştirmektedir. Bu bayraklar Debugging ile alakalıdır. Eğer sistemde debugging aktif ise bu fonksiyon PatchGuard’ı başlatmayacaktır. Yani kısaca bu fonksiyon PatchGuard için gerçekten de önemli bir fonksiyon.
-KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılmaktadır. Sistem başlangıcında bu fonksiyonun iki defa çağırılmasının ardında, PatchGuard’ın başlatılmasıyla alakalı iki farklı method içermekte. Bu yöntemlere göz atalım:">
+  <meta name="twitter:description" content="Bu makale karanlık gölge B.‘ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.
+Introduction Muhtemelen çoğumuz PatchGuard’a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.
+Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering’i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer’lar için değerli olacağına inanıyorum.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -241,6 +245,13 @@ KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılma
           <li class=""><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/tr/about/"
+    
+  >About
+    </a></li>
+          <li class=""><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/tr/docs/"
     
   >Documentation
@@ -401,13 +412,6 @@ KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılma
       </div>
             </li></ul>
       </div></li>
-          <li class=""><a
-    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
-      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
-    href="/tr/about/"
-    
-  >About
-    </a></li>
       <li class="[word-break:break-word] hx-mt-5 hx-mb-2 hx-px-2 hx-py-1.5 hx-text-sm hx-font-semibold hx-text-gray-900 first:hx-mt-0 dark:hx-text-gray-100">
         <span class="hx-cursor-default">More</span>
       </li>
@@ -468,6 +472,10 @@ KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılma
     
 <nav class="hextra-toc hx-order-last hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-px-4" aria-label="table of contents">
     <div class="hextra-scrollbar hx-sticky hx-top-16 hx-overflow-y-auto hx-pr-4 hx-pt-6 hx-text-sm [hyphens:auto] hx-max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4"><p class="hx-mb-4 hx-font-semibold hx-tracking-tight">On this page</p><ul>
+      <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+        <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#introduction">Introduction
+        </a>
+      </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
         <a class="ltr:hx-pl-4 rtl:hx-pr-4 hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#kifilterfibercontext-function">KiFilterFiberContext Function
         </a>
@@ -562,7 +570,12 @@ KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılma
                   <div class="group-hover:hx-underline">0xbekoo</div>
                 </a></div>
         <div class="content">
-          <h3><strong>KiFilterFiberContext Function</strong><span class="hx-absolute -hx-mt-20" id="kifilterfibercontext-function"></span>
+          <p><em>Bu makale karanlık gölge B.&lsquo;ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.</em></p>
+<h3><strong>Introduction</strong><span class="hx-absolute -hx-mt-20" id="introduction"></span>
+    <a href="#introduction" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Muhtemelen çoğumuz PatchGuard&rsquo;a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.</p>
+<p>Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering&rsquo;i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer&rsquo;lar için değerli olacağına inanıyorum.</p>
+<p>Bu makalede, PatchGuard&rsquo;ın başlatma aşamasını ve genel davranışını kapsayan bir analizle inceleyeceğiz. Amaç, mimari bir genel bakış sağlamak ve analiz boyunca kullanılan metodolojileri ve araçları ana hatlarıyla belirtmektir.</p>
+<h3><strong>KiFilterFiberContext Function</strong><span class="hx-absolute -hx-mt-20" id="kifilterfibercontext-function"></span>
     <a href="#kifilterfibercontext-function" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>PatchGuard&rsquo;ın ayarlanması ve başlatılması işlemleri KiFilterFiberContext fonksiyonu tarafından gerçekleştirilmektedir. Bu fonksiyon bu görevleriyle beraber bir takım bayrak kontrolleri de gerçekleştirmektedir. Bu bayraklar Debugging ile alakalıdır. Eğer sistemde debugging aktif ise bu fonksiyon PatchGuard&rsquo;ı başlatmayacaktır. Yani kısaca bu fonksiyon PatchGuard için gerçekten de önemli bir fonksiyon.</p>
 <p>KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılmaktadır. Sistem başlangıcında bu fonksiyonun iki defa çağırılmasının ardında, PatchGuard&rsquo;ın başlatılmasıyla alakalı iki farklı method içermekte. Bu yöntemlere göz atalım:</p>
 <h4><strong>Method 1: Calling from KeInitAmd64SpecificState</strong><span class="hx-absolute -hx-mt-20" id="method-1-calling-from-keinitamd64specificstate"></span>
@@ -1304,7 +1317,7 @@ mov     [rsp&#43;2568h&#43;var_24C0], rax</code></pre><div class="hextra-code-co
 
         </div>
         
-    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-08-06T00:00:00.000Z">Ağustos 6, 2025</time></div>
+    <div class="hx-mt-12 hx-mb-8 hx-block hx-text-xs hx-text-gray-500 ltr:hx-text-right rtl:hx-text-left dark:hx-text-gray-400">Last updated on <time datetime="2025-08-16T00:35:41.000Z">Ağustos 16, 2025</time></div>
         
         <div class="hx-mb-8 hx-flex hx-items-center hx-border-t hx-pt-8 dark:hx-border-neutral-800 contrast-more:hx-border-neutral-400 dark:contrast-more:hx-border-neutral-400 print:hx-hidden"><a
         href="/tr/blog/patchguard-analysis-part-2/"
