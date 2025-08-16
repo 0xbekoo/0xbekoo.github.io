@@ -516,7 +516,8 @@ This flag is then used in parts of the methods we saw above. If this flag is set
 &lt;p&gt;In this article, we aimed to provide a high-level yet holistic view of PatchGuard’s architecture, focusing on its core components, initialization routines, and operational behavior. The analysis, driven by reverse engineering techniques and tooling, allowed us to demystify how this security mechanism is structured and how it enforces protection within the Windows kernel.&lt;/p&gt;
 &lt;p&gt;Ultimately, I believe this work will serve as a valuable reference for both academic researchers and hands-on security practitioners interested in low-level Windows internals and kernel protection mechanisms.&lt;/p&gt;
 &lt;h2&gt;References&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;ol&gt;
+    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Throughout this article, I used Tetrane&amp;rsquo;s &lt;strong&gt;“Updated Analysis of PatchGuard on Microsoft Windows 10 RS4”&lt;/strong&gt; as a main source. This work provided detailed insights into PatchGuard’s mechanisms, including its initialization, kernel-level integrity checks, and protection strategies.&lt;/p&gt;
+&lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AMD64 Architecture Programmer’s Manual Volume 2&lt;/a&gt;, see page 109&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-keexpandkernelstackandcallout&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Microsoft Docs - KeExpandKernelStackAndCallout&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://courses.cs.washington.edu/courses/cse451/24sp/resources/x2apic.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Intel® 64 Architecture x2APIC Specification&lt;/a&gt;, see page 2-2&lt;/li&gt;
@@ -2291,11 +2292,13 @@ ffffa601`99a5d380  ffffa601`00000002&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;
       <description>
         
         
-        &lt;p&gt;&lt;em&gt;This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow.&lt;/em&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;em&gt;This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.&lt;/em&gt;&lt;/p&gt;
 &lt;h3&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;introduction&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#introduction&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Most of us are likely familiar with PatchGuard. Developed by Microsoft, this mechanism—also known as Kernel Patch Protection—is designed to preserve the integrity of 64-bit Windows operating systems by preventing unauthorized modifications to kernel-level structures. It remains one of the foundational components of modern Windows security architecture.&lt;/p&gt;
-&lt;p&gt;Personally, PatchGuard has always been a subject of interest since I first began exploring reverse engineering on Windows systems. I believe this research will be particularly valuable for Red Team professionals and malware developers, as it sheds light on the inner workings of a critical protection layer.&lt;/p&gt;
-&lt;p&gt;In this article, we present a high-level analysis of PatchGuard, covering its initialization phase and general operational behavior. The goal is to provide an architectural overview and outline the methodologies and tools used throughout the analysis. This introduction aims to define the scope of the work and lay the foundation for the in-depth technical discussion that follows.&lt;/p&gt;
+    &lt;a href=&#34;#introduction&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.&lt;/p&gt;
+&lt;p&gt;For me, PatchGuard has been a fascinating topic ever since I first got into reverse engineering on Windows systems. Despite its complexity, diving into its inner workings has not only satisfied my personal curiosity but also provided valuable insights from both a Red Team and malware development perspective.&lt;/p&gt;
+&lt;p&gt;In this article, we’ll walk through the process step by step — from PatchGuard’s initialization to the integrity checks it performs — taking a closer look behind the curtain of this critical protection mechanism.&lt;/p&gt;
+&lt;p&gt;Before starting, this analysis was prepared with the aim of extending and enriching previous PatchGuard analyses conducted on earlier Windows versions to Windows 11. My goal is to illustrate how the system&amp;rsquo;s kernel-level protection mechanism have evolved in the latest versions and how they are integrated into the modern security architecture.&lt;/p&gt;
+&lt;p&gt;By the way, you can &lt;a href=&#34;https://0xbekoo.github.io/blog/patchguard-analysis-part-4/#references&#34;&gt;click here&lt;/a&gt; if you want to view the references.&lt;/p&gt;
 &lt;h3&gt;&lt;strong&gt;KiFilterFiberContext Function&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kifilterfibercontext-function&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#kifilterfibercontext-function&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The initialization and startup of PatchGuard are managed by KiFilterFiberContext. This function is not only responsible for these tasks but also controls certain flags related to initialization and other operations. For example, &lt;strong&gt;Kernel-Debugging&lt;/strong&gt;. If someone attach the debugger in the system, KiFilterFiberContext will not start the PatchGuard. Also, the function calls some procedure which initialize arguments, as we will see later. The point is that this function really important for the PatchGuard.&lt;/p&gt;
 &lt;p&gt;KiFilterFiberContext is called twice in beginning of boot before loading any user-driver. Let’s see the methods:&lt;/p&gt;
@@ -2402,13 +2405,9 @@ ffffa601`99a5d380  ffffa601`00000002&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;
 &lt;h4&gt;&lt;strong&gt;Decompiling KiFilterFiberContext&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;decompiling-kifilterfibercontext&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#decompiling-kifilterfibercontext&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h4&gt;&lt;p&gt;This function’s mainly job is to call initialization routine which named ‘KiInitializePatchGuardContext’ in literature and then the parameters will initialize. These parameters will determine which method to use to trigger a Patchguard check.&lt;/p&gt;
 &lt;p&gt;Firstly, it disables Debugger in beginning:&lt;/p&gt;
-&lt;div style=&#34;text-align: center;&#34;&gt;
-  &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img9.png&#34; style=&#34;width: 50%&#34; /&gt;
-&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/images/PatchGuard/img9.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;An important detail is that KiFilterFiberContext contain a small callback function, which isn’t found in ntoskrnl. The function takes a pointer which named ‘PatchGuardTVCallBack’ as a parameter:&lt;/p&gt;
-&lt;div style=&#34;text-align: center;&#34;&gt;
-  &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img10.png&#34; style=&#34;width: 60%&#34; /&gt;
-&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/images/PatchGuard/img10.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;This pointer which Argument1 of &lt;strong&gt;ExNotifyCallback&lt;/strong&gt; is initialized in SecInitializeKernelIntegrityCheck function from mssecflt.sys.&lt;/p&gt;
 &lt;p&gt;KiFilterFiberContext calls the function called &lt;strong&gt;KiInitPatchGuardContext&lt;/strong&gt; with three methods to initialize the PatchGuard Context; &lt;strong&gt;the first time&lt;/strong&gt; occurs no matter what, &lt;strong&gt;the second time&lt;/strong&gt; with only 50% chance, and &lt;strong&gt;third time&lt;/strong&gt; with a new method which we will see later. Here&amp;rsquo;s a pseudocode for KiFilterFiberContext:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
@@ -2479,8 +2478,8 @@ ffffa601`99a5d380  ffffa601`00000002&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;
   &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img48.png&#34; style=&#34;width: 70%&#34; /&gt;
 &lt;/div&gt;
 &lt;p&gt;Don&amp;rsquo;t worry. We will see what these arguments are used for. For now it will be enough to know them.&lt;/p&gt;
-&lt;h4&gt;&lt;strong&gt;Initilization PatchGuard Context&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;initilization-patchguard-context&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#initilization-patchguard-context&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h4&gt;&lt;p&gt;As we see in KiFilterFiberContext, it calls KiInitPatchGuardContext in three methods but we have to understand the sections of PatchGuard context before continue.&lt;/p&gt;
+&lt;h4&gt;&lt;strong&gt;Initialization PatchGuard Context&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;initialization-patchguard-context&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#initialization-patchguard-context&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h4&gt;&lt;p&gt;As we see in KiFilterFiberContext, it calls KiInitPatchGuardContext in three methods but we have to understand the sections of PatchGuard context before continue.&lt;/p&gt;
 &lt;h5&gt;&lt;strong&gt;PatchGuard Context&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;patchguard-context&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#patchguard-context&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h5&gt;&lt;p&gt;The structure of PatchGuard context is separated in three sections: &lt;strong&gt;The first section&lt;/strong&gt; which size 0x928 contains core content of PatchGuard mechanisms. &lt;strong&gt;The second section&lt;/strong&gt; is contains data recipient that keeps original original data for later use. &lt;strong&gt;The third section&lt;/strong&gt; is contains information about data to check.&lt;/p&gt;
 &lt;h6&gt;&lt;strong&gt;First Section&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;first-section&#34;&gt;&lt;/span&gt;
@@ -2653,7 +2652,7 @@ BIT 31 0x80000000 Result of KiSwInterruptPresent
 &lt;p&gt;First member KeBugCheckType is distinguish structures type. Second and third members are used for the data that checked.&lt;/p&gt;
 &lt;p&gt;The important member is checksum result and the checksum is computed during initilization of PatchGuard. Like i said it is important because the cheksum will used as a reference when PatchGuard will check integrity of the corresponding structure.&lt;/p&gt;
 &lt;p&gt;And the last member is related to specific to data.&lt;/p&gt;
-&lt;p&gt;We can trace this structure in &lt;strong&gt;loc_140BD3795&lt;/strong&gt;:&lt;/p&gt;
+&lt;p&gt;We can trace this structure at &lt;strong&gt;loc_140BD3795&lt;/strong&gt; function:&lt;/p&gt;
 &lt;div style=&#34;text-align: center;&#34;&gt;
   &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img19.png&#34; style=&#34;width: 80%&#34; /&gt;
 &lt;/div&gt;
@@ -2661,51 +2660,8 @@ BIT 31 0x80000000 Result of KiSwInterruptPresent
 &lt;div style=&#34;text-align: center;&#34;&gt;
   &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img20.png&#34; style=&#34;width: 80%&#34; /&gt;
 &lt;/div&gt;
-&lt;p&gt;Also we can verify this structure with WinDBG. We can focus this section from &lt;strong&gt;loc_140BD3795&lt;/strong&gt;:&lt;/p&gt;
-&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
-
-&lt;pre&gt;&lt;code&gt;lea     rax, [rsp&amp;#43;2568h&amp;#43;var_1BD0]
-mov     [rsp&amp;#43;2568h&amp;#43;var_1370], rsi&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
-  &lt;button
-    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
-    title=&#34;Copy code&#34;
-  &gt;
-    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-  &lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;p&gt;In this section, rax register gets address of structure:&lt;/p&gt;
-&lt;div style=&#34;text-align: center;&#34;&gt;
-  &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img21.png&#34; style=&#34;width: 80%&#34; /&gt;
-&lt;/div&gt;
-&lt;p&gt;Well, let&amp;rsquo;s check this address:&lt;/p&gt;
-&lt;div style=&#34;text-align: center;&#34;&gt;
-  &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img22.png&#34; style=&#34;width: 80%&#34; /&gt;
-&lt;/div&gt;
-&lt;p&gt;The &lt;em&gt;rsp+0x9A8&lt;/em&gt; that correspond to pData_0x8 or szData_0x10 member of the structure is prepared in this part:&lt;/p&gt;
-&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
-
-&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-asm&#34; data-lang=&#34;asm&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;lea&lt;/span&gt;     &lt;span class=&#34;no&#34;&gt;rax&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;rsp&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2568&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;h&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;BugCheckParameter2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;mov&lt;/span&gt;     &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;rsp&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2568&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;h&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;BugCheckParameter4&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;no&#34;&gt;rax&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;call&lt;/span&gt;    &lt;span class=&#34;no&#34;&gt;LdrResFindResource&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;na&#34;&gt;...&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
-  &lt;button
-    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
-    title=&#34;Copy code&#34;
-  &gt;
-    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-  &lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;p&gt;Or:&lt;/p&gt;
-&lt;div style=&#34;text-align: center;&#34;&gt;
-  &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img23.png&#34; style=&#34;width: 90%&#34; /&gt;
-&lt;/div&gt;
-&lt;p&gt;As we can see, the BugCheckParameter2 member is prepared before running LdrResFindResource.&lt;/p&gt;
-&lt;h5&gt;&lt;strong&gt;Initilization of PatchGuard&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;initilization-of-patchguard&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#initilization-of-patchguard&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h5&gt;&lt;p&gt;Now, we will take a look at the parameters. Remember that we have examined the parameters under the heading of &lt;strong&gt;Decompiling KiFilterFiberContext&lt;/strong&gt;. In this section, we will see exactly what these parameters do.&lt;/p&gt;
+&lt;h5&gt;&lt;strong&gt;Initialization of PatchGuard&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;initialization-of-patchguard&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#initialization-of-patchguard&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h5&gt;&lt;p&gt;Now, we will take a look at the parameters. Remember that we have examined the parameters under the heading of &lt;strong&gt;Decompiling KiFilterFiberContext&lt;/strong&gt;. In this section, we will see exactly what these parameters do.&lt;/p&gt;
 &lt;p&gt;KiInitPatchGuardContext is responsible for initialization of most PatchGuard contexts. The choice of which method is to be used is done regarding the argument given to this function.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;Argument 1: Index for DPC Method&lt;/strong&gt;&lt;/li&gt;

@@ -24,11 +24,13 @@
       <description>
         
         
-        &lt;p&gt;&lt;em&gt;Bu makale karanlık gölge B.&amp;lsquo;ye adanmıştır. Tüm yardımın için teşekkürler, karanlık gölge.&lt;/em&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;em&gt;Bu makale dark shadow B.&amp;lsquo;ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.&lt;/em&gt;&lt;/p&gt;
 &lt;h3&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;introduction&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#introduction&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Muhtemelen çoğumuz PatchGuard&amp;rsquo;a aşinayızdır. Microsoft tarafından geliştirilen ve Kernel koruması olarak da bilinen bu mekanizma, çekirdek düzeyindeki yapılarda yetkisiz değişiklikleri önleyerek 64 bit Windows işletim sistemlerinin bütünlüğünü korumak üzere tasarlanmıştır. Modern Windows güvenlik mimarisinin temel bileşenlerinden biri olmaya devam etmektedir.&lt;/p&gt;
-&lt;p&gt;Kişisel olarak PatchGuard, Windows sistemlerinde reverse engineering&amp;rsquo;i ilk keşfetmeye başladığımdan beri her zaman ilgi duyduğum bir konu olmuştur. Bu araştırmanın, kritik bir koruma katmanının iç işleyişine ışık tuttuğu için özellikle Red Team ve özellikle malware developer&amp;rsquo;lar için değerli olacağına inanıyorum.&lt;/p&gt;
-&lt;p&gt;Bu makalede, PatchGuard&amp;rsquo;ın başlatma aşamasını ve genel davranışını kapsayan bir analizle inceleyeceğiz. Amaç, mimari bir genel bakış sağlamak ve analiz boyunca kullanılan metodolojileri ve araçları ana hatlarıyla belirtmektir.&lt;/p&gt;
+    &lt;a href=&#34;#introduction&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.&lt;/p&gt;
+&lt;p&gt;Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu.&lt;/p&gt;
+&lt;p&gt;Bu makalede, PatchGuard’ın nasıl initialize edildiğinden, yaptığı integrity checks süreçlerine kadar adım adım ilerleyecek; yani bu koruma katmanının perde arkasına kısa bir yolculuk yapacağız.&lt;/p&gt;
+&lt;p&gt;Son olarak şunu da belirtmek isterim ki bu çalışma önceki Windows sürümlerinde yapılan PatchGuard analizlerini Windows 11’e genişletmek ve zenginleştirmek amacıyla hazırlanmıştır. Amacım, sistemin kernel-level koruma mekanizmalarının güncel sürümlerde nasıl evrildiğini ve modern güvenlik mimarisine nasıl entegre edildiğini göstermek.&lt;/p&gt;
+&lt;p&gt;Başlamadan önce referanslara göz atmak isterseniz &lt;a href=&#34;https://0xbekoo.github.io/tr/blog/patchguard-analysis-part-4/#references&#34;&gt;buraya&lt;/a&gt; tıklayabilirsiniz.&lt;/p&gt;
 &lt;h3&gt;&lt;strong&gt;KiFilterFiberContext Function&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;kifilterfibercontext-function&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#kifilterfibercontext-function&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;PatchGuard&amp;rsquo;ın ayarlanması ve başlatılması işlemleri KiFilterFiberContext fonksiyonu tarafından gerçekleştirilmektedir. Bu fonksiyon bu görevleriyle beraber bir takım bayrak kontrolleri de gerçekleştirmektedir. Bu bayraklar Debugging ile alakalıdır. Eğer sistemde debugging aktif ise bu fonksiyon PatchGuard&amp;rsquo;ı başlatmayacaktır. Yani kısaca bu fonksiyon PatchGuard için gerçekten de önemli bir fonksiyon.&lt;/p&gt;
 &lt;p&gt;KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılmaktadır. Sistem başlangıcında bu fonksiyonun iki defa çağırılmasının ardında, PatchGuard&amp;rsquo;ın başlatılmasıyla alakalı iki farklı method içermekte. Bu yöntemlere göz atalım:&lt;/p&gt;
@@ -37,7 +39,7 @@
 &lt;div style=&#34;text-align: center;&#34;&gt;
   &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img1.png&#34; style=&#34;width: 50%&#34; /&gt;
 &lt;/div&gt;
-Özellikle **InıtSafeBootMode**, **KdPitchDebugger** ve **KdDebuggerNotPresent** bayrakların kontrol edildiğine dikkat edin. Bu bayraklardan odağımız debugging ile alakalı olanlar olacaktır çünkü şimdi göreceğimiz gibi bu bayraklardan elde edilen değerler ile KiFilterFiberContext&#39;in çağırılıp çağırılmayacağı belirlenecek. Eğer sistemde debugging aktif ise bu iki bayrak 0 değerini alacaktır ancak normal senaryolarda bu bayraklar 1 değerini alır. Bu bayrakların alınmasından sonraki işlemlerde aşağıdaki register&#39;lar şu değeri elde edecektir:
+&lt;p&gt;Özellikle &lt;strong&gt;InitSafeBootMode&lt;/strong&gt;, &lt;strong&gt;KdPitchDebugger&lt;/strong&gt; ve &lt;strong&gt;KdDebuggerNotPresent&lt;/strong&gt; bayrakların kontrol edildiğine dikkat edin. Bu bayraklardan odağımız debugging ile alakalı olanlar olacaktır çünkü şimdi göreceğimiz gibi bu bayraklardan elde edilen değerler ile KiFilterFiberContext&amp;rsquo;in çağırılıp çağırılmayacağı belirlenecek. Eğer sistemde debugging aktif ise bu iki bayrak 0 değerini alacaktır ancak normal senaryolarda bu bayraklar 1 değerini alır. Bu bayrakların alınmasından sonraki işlemlerde aşağıdaki register&amp;rsquo;lar şu değeri elde edecektir:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;rax =&amp;gt; 0x80000000&lt;/li&gt;
 &lt;li&gt;rdx =&amp;gt; 0x80000000&lt;/li&gt;
@@ -393,51 +395,8 @@ BIT 31 0x80000000 Result of KiSwInterruptPresent
 &lt;div style=&#34;text-align: center;&#34;&gt;
   &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img20.png&#34; style=&#34;width: 90%&#34; /&gt;
 &lt;/div&gt;
-&lt;p&gt;Ayrıca bu yapıyı WinDBG ile de doğrulayabiliriz. &lt;strong&gt;loc_140BD3795&lt;/strong&gt;&amp;lsquo;den aşağıda belirtilen kısma  odaklanabiliriz:&lt;/p&gt;
-&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
-
-&lt;pre&gt;&lt;code&gt;lea     rax, [rsp&amp;#43;2568h&amp;#43;var_1BD0]
-mov     [rsp&amp;#43;2568h&amp;#43;var_1370], rsi&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
-  &lt;button
-    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
-    title=&#34;Copy code&#34;
-  &gt;
-    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-  &lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;p&gt;Kabaca burada yapının adresi alınmakta:&lt;/p&gt;
-&lt;div style=&#34;text-align: center;&#34;&gt;
-  &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img21.png&#34; style=&#34;width: 80%&#34; /&gt;
-&lt;/div&gt;
-&lt;p&gt;Şimdi ise adrese göz atalım:&lt;/p&gt;
-&lt;div style=&#34;text-align: center;&#34;&gt;
-  &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img22.png&#34; style=&#34;width: 80%&#34; /&gt;
-&lt;/div&gt;
-&lt;p&gt;&lt;em&gt;rsp+0x9A8&lt;/em&gt; adresi, yapının  pData_0x8 veya szData_0x10 üyesine karşılık gelir ve aşağıda gösterilen kısımda hazırlanmaktadır:&lt;/p&gt;
-&lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;
-
-&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-asm&#34; data-lang=&#34;asm&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;lea&lt;/span&gt;     &lt;span class=&#34;no&#34;&gt;rax&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;rsp&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2568&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;h&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;BugCheckParameter2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;mov&lt;/span&gt;     &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;rsp&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2568&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;h&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;no&#34;&gt;BugCheckParameter4&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;no&#34;&gt;rax&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nf&#34;&gt;call&lt;/span&gt;    &lt;span class=&#34;no&#34;&gt;LdrResFindResource&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;na&#34;&gt;...&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;hextra-code-copy-btn-container hx-opacity-0 hx-transition group-hover/code:hx-opacity-100 hx-flex hx-gap-1 hx-absolute hx-m-[11px] hx-right-0 hx-top-0&#34;&gt;
-  &lt;button
-    class=&#34;hextra-code-copy-btn hx-group/copybtn hx-transition-all active:hx-opacity-50 hx-bg-primary-700/5 hx-border hx-border-black/5 hx-text-gray-600 hover:hx-text-gray-900 hx-rounded-md hx-p-1.5 dark:hx-bg-primary-300/10 dark:hx-border-white/10 dark:hx-text-gray-400 dark:hover:hx-text-gray-50&#34;
-    title=&#34;Copy code&#34;
-  &gt;
-    &lt;div class=&#34;copy-icon group-[.copied]/copybtn:hx-hidden hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-    &lt;div class=&#34;success-icon hx-hidden group-[.copied]/copybtn:hx-block hx-pointer-events-none hx-h-4 hx-w-4&#34;&gt;&lt;/div&gt;
-  &lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;p&gt;Veya:&lt;/p&gt;
-&lt;div style=&#34;text-align: center;&#34;&gt;
-  &lt;img src=&#34;http://localhost:1313/images/PatchGuard/img23.png&#34; style=&#34;width: 90%&#34; /&gt;
-&lt;/div&gt;
-&lt;p&gt;BugCheckParameter4 değişkeni LdrResFindResource çalıştırılmadan önce hemen hazırlanmakta.&lt;/p&gt;
-&lt;h5&gt;&lt;strong&gt;Initilization of PatchGuard&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;initilization-of-patchguard&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#initilization-of-patchguard&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h5&gt;&lt;p&gt;Artık PatchGuard&amp;rsquo;ın nasıl initialize edildiğine göz atabiliriz. Esasen PatchGuard&amp;rsquo;ın initialize edilmesi birkaç yöntem içeririyor ve yukarıda gördüğümüz gibi KiInitPatchGuardContext fonksiyonu kullanmak bu yöntemlerden biri.&lt;/p&gt;
+&lt;h5&gt;&lt;strong&gt;Initialization of PatchGuard&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;initialization-of-patchguard&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#initialization-of-patchguard&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h5&gt;&lt;p&gt;Artık PatchGuard&amp;rsquo;ın nasıl initialize edildiğine göz atabiliriz. Esasen PatchGuard&amp;rsquo;ın initialize edilmesi birkaç yöntem içeririyor ve yukarıda gördüğümüz gibi KiInitPatchGuardContext fonksiyonu kullanmak bu yöntemlerden biri.&lt;/p&gt;
 &lt;p&gt;Esasen KiInitPatchGuardContext fonksiyonu PatchGuard&amp;rsquo;ın başlatması için kendi içinde birkaç method kullanıyor. Methodun seçilmesi ise fonksiyona verilen parametrelerle alakalıdır.&lt;/p&gt;
 &lt;p&gt;KiFilterFiberContext&amp;rsquo;i decompiler ettiğimizde, KiInitPatchGuardContext fonksiyonu için random hazırlanan parametreleri dinamik olarak görmüştük. Bu fonksiyonun argümanları esasen şu amaçlarla kullanılmaktadır:&lt;/p&gt;
 &lt;ul&gt;
@@ -2972,15 +2931,14 @@ KeDelayExecutionThread veya KeWaitForSingleObject aracılığıyla bekleme durum
 &lt;p&gt;Bu çalışmada, PatchGuard’ın temel yapı taşlarını, başlatılma sürecini ve genel işleyişini yüksek seviyede ele alarak sistem mimarisine dair bütünsel bir bakış sunmayı amaçladım. Tersine mühendislik araçları ve metodolojileri kullanılarak yürütülen analiz, bu karmaşık güvenlik mekanizmasının işleyiş mantığını anlaşılır kılmayı hedefledi.&lt;/p&gt;
 &lt;p&gt;Tüm bu emek ve süreç sonucunda ortaya çıkan bu çalışmanın, güvenlik araştırmalarında başvuru niteliğinde bir kaynak olarak kullanılacağına inanıyorum.&lt;/p&gt;
 &lt;h2&gt;&lt;strong&gt;References&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;ol&gt;
+    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Bu makale boyunca ana kaynak olarak Tetrane&amp;rsquo;in &lt;strong&gt;&amp;ldquo;Updated Analysis of PatchGuard on Microsoft Windows 10 RS4&amp;rdquo;&lt;/strong&gt; kaynağını kullandım. Bu çalışma, PatchGuard&amp;rsquo;ın başlatılması, kernel düzeyinde bütünlük kontrolleri ve koruma stratejileri de dahil olmak üzere mekanizmaları hakkında ayrıntılı bilgiler sağladı.&lt;/p&gt;
+&lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AMD64 Architecture Programmer’s Manual Volume 2&lt;/a&gt;, see page 109&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-keexpandkernelstackandcallout&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Microsoft Docs - KeExpandKernelStackAndCallout&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://courses.cs.washington.edu/courses/cse451/24sp/resources/x2apic.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Intel® 64 Architecture x2APIC Specification&lt;/a&gt;, see page 2-2&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.intel.com/content/dam/develop/external/us/en/documents/335592-sdm-vol-4.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Intel 64 and IA-32 Architectures Software Developer&amp;rsquo;s Manual Volume 4: Model-Specific Registers&lt;/a&gt;, see Page 2-4&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.felixcloutier.com/x86/cpuid&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Felix Clouiter - CPUID&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.felixcloutier.com/x86/cpuid&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;5- Felix Clouiter - CPUID&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
 
       </description>
     </item>
