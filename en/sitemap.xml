@@ -2,6 +2,53 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>http://localhost:1313/blog/ssdt-hook-detector-usermode/</loc>
+    <lastmod>2025-09-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/detector/</loc>
+    <lastmod>2025-09-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/malware-development/</loc>
+    <lastmod>2025-09-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/reverse-engineering/</loc>
+    <lastmod>2025-09-18T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="tr"
+                href="http://localhost:1313/tr/tags/reverse-engineering/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="http://localhost:1313/tags/reverse-engineering/"
+                />
+  </url><url>
+    <loc>http://localhost:1313/tags/ssdt/</loc>
+    <lastmod>2025-09-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/ssdt-hook/</loc>
+    <lastmod>2025-09-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/ssdt-unhooking/</loc>
+    <lastmod>2025-09-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/</loc>
+    <lastmod>2025-09-18T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="tr"
+                href="http://localhost:1313/tr/tags/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="http://localhost:1313/tags/"
+                />
+  </url><url>
+    <loc>http://localhost:1313/tags/unhooking/</loc>
+    <lastmod>2025-09-18T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/tags/analyzing-of-windows-kernel/</loc>
     <lastmod>2025-08-16T00:35:41+03:00</lastmod>
     <xhtml:link
@@ -41,19 +88,6 @@
                 href="http://localhost:1313/blog/patchguard-analysis-part-4/"
                 />
   </url><url>
-    <loc>http://localhost:1313/tags/reverse-engineering/</loc>
-    <lastmod>2025-08-16T00:35:41+03:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="tr"
-                href="http://localhost:1313/tr/tags/reverse-engineering/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="http://localhost:1313/tags/reverse-engineering/"
-                />
-  </url><url>
     <loc>http://localhost:1313/tags/reversing-patchguard/</loc>
     <lastmod>2025-08-16T00:35:41+03:00</lastmod>
     <xhtml:link
@@ -65,19 +99,6 @@
                 rel="alternate"
                 hreflang="en"
                 href="http://localhost:1313/tags/reversing-patchguard/"
-                />
-  </url><url>
-    <loc>http://localhost:1313/tags/</loc>
-    <lastmod>2025-08-16T00:35:41+03:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="tr"
-                href="http://localhost:1313/tr/tags/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="http://localhost:1313/tags/"
                 />
   </url><url>
     <loc>http://localhost:1313/tags/windows-internals/</loc>

@@ -148,6 +148,14 @@
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/blog/ssdt-hook-detector-usermode/"
+    
+  >Detecting SSDT Hook with User Mode Program via BYOVD
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/patchguard-analysis-part-4/"
     
   >PatchGuard Analysis - Part 4
@@ -455,6 +463,16 @@
 
 </div>
 </div>
+          <div class="hx-mb-10">
+            <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/blog/ssdt-hook-detector-usermode/">Detecting SSDT Hook with User Mode Program via BYOVD</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Introduction Github Link: github.com/0xbekoo/SSDT-Hook-Detector
+Welcome to my blog! Today we will dive into a little adventure…
+Recently, I developed malware related to SSDT Hooking, but it’s not the kind of software that causes damage. The main goal of the malware is detecting the Hooked routines. However, my real goal was to develop malware that performs SSDT Unhooking in the first place. But after a few problems, i developed this project.</p>
+            <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
+              <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/blog/ssdt-hook-detector-usermode/">Read more →</a>
+            </p>
+            <p class="hx-opacity-50 hx-text-sm hx-mt-4 hx-leading-7">September 18, 2025</p>
+          </div>
+        
           <div class="hx-mb-10">
             <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/blog/patchguard-analysis-part-4/">PatchGuard Analysis - Part 4</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Verification Routines This phase is the heart of PatchGuard’s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a system thread, or other dispatch mechanisms—it enters the validation routine. The validation code decrypts and inspects internal PatchGuard state and memory-resident kernel structures.
 There are several checking routines involved, with the main one called FsRtlMdlReadCompleteDevEx. Other routines include:

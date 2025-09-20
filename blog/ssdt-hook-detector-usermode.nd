@@ -1,0 +1,18 @@
+---
+title: Detecting SSDT Hooking in User Mode Program
+date: 2025-09-18
+authors:
+  - name: 0xbekoo
+    link: https://github.com/0xbekoo
+    image: https://github.com/0xbekoo.png
+tags:
+  - Reverse-Engineering7
+  - Malware-Development
+  - Windows-Internals
+  - SSDT-Unhooking
+  - SSDT
+excludeSearch: true
+---
+
+
+
