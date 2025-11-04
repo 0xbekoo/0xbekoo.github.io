@@ -12,14 +12,11 @@
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>Virtual Memory – 0xbekoo</title>
   <meta name="description" content="In this documentation we will discuss Virtual Memory in Windows Kernel.
-What is Virtual Memory “Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.” -Windows Internals Part 1 - Chapter 1, Page 39" /><link rel="canonical" href="http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/" itemprop="url" />
+What is Virtual Memory “Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored." /><link rel="canonical" href="http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/" itemprop="url" />
 
 <meta property="og:title" content="Virtual Memory" />
 <meta property="og:description" content="In this documentation we will discuss Virtual Memory in Windows Kernel.
-What is Virtual Memory
-    
-  &ldquo;Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.&rdquo;
--Windows Internals Part 1 - Chapter 1, Page 39" />
+What is Virtual Memory &ldquo;Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2024-08-30T00:00:00+00:00" />
@@ -27,14 +24,14 @@ What is Virtual Memory
 
   <meta itemprop="name" content="Virtual Memory">
   <meta itemprop="description" content="In this documentation we will discuss Virtual Memory in Windows Kernel.
-What is Virtual Memory “Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.” -Windows Internals Part 1 - Chapter 1, Page 39">
+What is Virtual Memory “Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored.">
   <meta itemprop="datePublished" content="2024-08-30T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="1191">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Virtual Memory">
   <meta name="twitter:description" content="In this documentation we will discuss Virtual Memory in Windows Kernel.
-What is Virtual Memory “Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.” -Windows Internals Part 1 - Chapter 1, Page 39">
+What is Virtual Memory “Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -160,7 +157,7 @@ What is Virtual Memory “Windows uses a virtual memory system that makes it app
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hook-detector-usermode/"
     
-  >Detecting SSDT Hook in User Mode Program via BYOVD
+  >Detecting SSDT Hook with User Mode Program via BYOVD
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -255,6 +252,14 @@ What is Virtual Memory “Windows uses a virtual memory system that makes it app
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/debugging-ovmf-with-gdb/"
+    
+  >Debugging QEMU &#43; OVMF with GDB
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/communation-between-windows-and-uefi/"
@@ -433,6 +438,14 @@ What is Virtual Memory “Windows uses a virtual memory system that makes it app
         <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
     </a><div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/debugging-ovmf-with-gdb/"
+    
+  >Debugging QEMU &#43; OVMF with GDB
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/communation-between-windows-and-uefi/"
@@ -683,7 +696,7 @@ What is Virtual Memory “Windows uses a virtual memory system that makes it app
           <p>In this documentation we will discuss Virtual Memory in Windows Kernel.</p>
 <h3><strong>What is Virtual Memory</strong><span class="hx-absolute -hx-mt-20" id="what-is-virtual-memory"></span>
     <a href="#what-is-virtual-memory" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><blockquote>
-  <p><em>&ldquo;Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.&rdquo;</em>
+<p><em>&ldquo;Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.&rdquo;</em>
 -<strong>Windows Internals Part 1 - Chapter 1, Page 39</strong></p>
 </blockquote>
 <p>Virtual Memory is a memory management technique that provides an idealized abstraction of the data stored in physical memory addresses. This allows the operating system to prevent one process from interfering with another process’s memory or overwriting the operating system’s critical data.</p>

@@ -11,27 +11,27 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>Deferred Procedure Call – 0xbekoo</title>
-  <meta name="description" content=" DPC DPC (Deferred Procedure Call) is a mechanism in windows kernel. It’s used to let the schedule a function to run later at a lower IRQL. In other words, it’s a way for Windows handle important work later. DPC is useful when an interrupt happens or system must respond very quickly. So, DPC allows to execute high-priority tasks, such as interrupt handler but lower-priority tasks for later execution." /><link rel="canonical" href="http://localhost:1313/docs/winkernel-dev/wkd-dpc/" itemprop="url" />
+  <meta name="description" content="DPC DPC (Deferred Procedure Call) is a mechanism in windows kernel. It’s used to let the schedule a function to run later at a lower IRQL. In other words, it’s a way for Windows handle important work later. DPC is useful when an interrupt happens or system must respond very quickly. So, DPC allows to execute high-priority tasks, such as interrupt handler but lower-priority tasks for later execution.
+Each DPC is associated with DPC Object which created and initialized by the kernel." /><link rel="canonical" href="http://localhost:1313/docs/winkernel-dev/wkd-dpc/" itemprop="url" />
 
 <meta property="og:title" content="Deferred Procedure Call" />
-<meta property="og:description" content="
-  
-
-DPC
-    DPC (Deferred Procedure Call) is a mechanism in windows kernel. It&rsquo;s used to let the schedule a function to run later at a lower IRQL. In other words, it&rsquo;s a way for Windows handle important work later. DPC is useful when an interrupt happens or system must respond very quickly. So, DPC allows to execute high-priority tasks, such as interrupt handler but lower-priority tasks for later execution." />
+<meta property="og:description" content="DPC DPC (Deferred Procedure Call) is a mechanism in windows kernel. It&rsquo;s used to let the schedule a function to run later at a lower IRQL. In other words, it&rsquo;s a way for Windows handle important work later. DPC is useful when an interrupt happens or system must respond very quickly. So, DPC allows to execute high-priority tasks, such as interrupt handler but lower-priority tasks for later execution.
+Each DPC is associated with DPC Object which created and initialized by the kernel." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/docs/winkernel-dev/wkd-dpc/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2025-05-15T00:00:00+00:00" />
 <meta property="article:modified_time" content="2025-08-16T00:35:41+03:00" />
 
   <meta itemprop="name" content="Deferred Procedure Call">
-  <meta itemprop="description" content="DPC DPC (Deferred Procedure Call) is a mechanism in windows kernel. It’s used to let the schedule a function to run later at a lower IRQL. In other words, it’s a way for Windows handle important work later. DPC is useful when an interrupt happens or system must respond very quickly. So, DPC allows to execute high-priority tasks, such as interrupt handler but lower-priority tasks for later execution.">
+  <meta itemprop="description" content="DPC DPC (Deferred Procedure Call) is a mechanism in windows kernel. It’s used to let the schedule a function to run later at a lower IRQL. In other words, it’s a way for Windows handle important work later. DPC is useful when an interrupt happens or system must respond very quickly. So, DPC allows to execute high-priority tasks, such as interrupt handler but lower-priority tasks for later execution.
+Each DPC is associated with DPC Object which created and initialized by the kernel.">
   <meta itemprop="datePublished" content="2025-05-15T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="1019">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Deferred Procedure Call">
-  <meta name="twitter:description" content="DPC DPC (Deferred Procedure Call) is a mechanism in windows kernel. It’s used to let the schedule a function to run later at a lower IRQL. In other words, it’s a way for Windows handle important work later. DPC is useful when an interrupt happens or system must respond very quickly. So, DPC allows to execute high-priority tasks, such as interrupt handler but lower-priority tasks for later execution.">
+  <meta name="twitter:description" content="DPC DPC (Deferred Procedure Call) is a mechanism in windows kernel. It’s used to let the schedule a function to run later at a lower IRQL. In other words, it’s a way for Windows handle important work later. DPC is useful when an interrupt happens or system must respond very quickly. So, DPC allows to execute high-priority tasks, such as interrupt handler but lower-priority tasks for later execution.
+Each DPC is associated with DPC Object which created and initialized by the kernel.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -157,7 +157,7 @@ DPC
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hook-detector-usermode/"
     
-  >Detecting SSDT Hook in User Mode Program via BYOVD
+  >Detecting SSDT Hook with User Mode Program via BYOVD
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -252,6 +252,14 @@ DPC
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/debugging-ovmf-with-gdb/"
+    
+  >Debugging QEMU &#43; OVMF with GDB
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/communation-between-windows-and-uefi/"
@@ -454,6 +462,14 @@ DPC
         <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hx-h-[18px] hx-min-w-[18px] hx-rounded-sm hx-p-0.5 hover:hx-bg-gray-800/5 dark:hover:hx-bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="hx-origin-center hx-transition-transform rtl:-hx-rotate-180"></path></svg></span>
     </a><div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/debugging-ovmf-with-gdb/"
+    
+  >Debugging QEMU &#43; OVMF with GDB
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/communation-between-windows-and-uefi/"
@@ -714,58 +730,58 @@ DPC
 <h4><strong>IRQL</strong><span class="hx-absolute -hx-mt-20" id="irql"></span>
     <a href="#irql" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p>The term of &lsquo;IRQL&rsquo; (Interrupt Request Level) is that it is simply defines the current hardware priority at which a CPU runs at any given time.  For this, there are maps that each hardware corresponds to specific request level. Here&rsquo;s a map for <strong>X64</strong>:</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: center">Number</th>
-          <th style="text-align: center">Name</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: center"><strong>15</strong></td>
-          <td style="text-align: center">High/Profile</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>14</strong></td>
-          <td style="text-align: center">Inter-Processor Interrupt</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>13</strong></td>
-          <td style="text-align: center">Clock</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>12</strong></td>
-          <td style="text-align: center">Synch</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"></td>
-          <td style="text-align: center">Device[n]</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"></td>
-          <td style="text-align: center">.</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"></td>
-          <td style="text-align: center">.</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"></td>
-          <td style="text-align: center">Device[1]</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>2</strong></td>
-          <td style="text-align: center">Dispatch/DPC</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>1</strong></td>
-          <td style="text-align: center">APC</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>0</strong></td>
-          <td style="text-align: center">Passive/Low</td>
-      </tr>
-  </tbody>
+<thead>
+<tr>
+<th style="text-align:center">Number</th>
+<th style="text-align:center">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>15</strong></td>
+<td style="text-align:center">High/Profile</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>14</strong></td>
+<td style="text-align:center">Inter-Processor Interrupt</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>13</strong></td>
+<td style="text-align:center">Clock</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>12</strong></td>
+<td style="text-align:center">Synch</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">Device[n]</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">.</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">.</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">Device[1]</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>2</strong></td>
+<td style="text-align:center">Dispatch/DPC</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>1</strong></td>
+<td style="text-align:center">APC</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>0</strong></td>
+<td style="text-align:center">Passive/Low</td>
+</tr>
+</tbody>
 </table>
 <p>The current running thread is responsible for handling these interrupts that saves CPU state and processes Interrupt Service Routine (ISR) mapped to incoming IRQL. Each interrupt routine is listed in Interrupt Description Table (IDT). We can dump this table with Windbg:</p>
 <div style="text-align: center;">

@@ -16,12 +16,8 @@ Argument 1: DPC Routine Pointer As we have seen before, the several method used 
 The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:" /><link rel="canonical" href="http://localhost:1313/blog/patchguard-analysis-part-2/" itemprop="url" />
 
 <meta property="og:title" content="PatchGuard Analysis - Part 2" />
-<meta property="og:description" content="Arguments of KiInitPatchGuardContext
-    Now, we can see another Arguments of the function.
-
-Argument 1: DPC Routine Pointer
-
-As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.
+<meta property="og:description" content="Arguments of KiInitPatchGuardContext Now, we can see another Arguments of the function.
+Argument 1: DPC Routine Pointer As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.
 The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/blog/patchguard-analysis-part-2/" /><meta property="article:section" content="blog" />
@@ -166,7 +162,7 @@ The first argument is an index to choose a routine randomly and this routine wil
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hook-detector-usermode/"
     
-  >Detecting SSDT Hook in User Mode Program via BYOVD
+  >Detecting SSDT Hook with User Mode Program via BYOVD
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -270,6 +266,14 @@ The first argument is an index to choose a routine randomly and this routine wil
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/debugging-ovmf-with-gdb/"
+    
+  >Debugging QEMU &#43; OVMF with GDB
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/communation-between-windows-and-uefi/"
@@ -545,66 +549,66 @@ The first argument is an index to choose a routine randomly and this routine wil
 <p>As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.</p>
 <p>The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: center"><strong>Index</strong></th>
-          <th style="text-align: center">Routine</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: center"><strong>0</strong></td>
-          <td style="text-align: center">CmpEnableLazyFlushDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>1</strong></td>
-          <td style="text-align: center">ExpCenturyDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>2</strong></td>
-          <td style="text-align: center">ExpTimeZoneDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>3</strong></td>
-          <td style="text-align: center">ExpTimeRefreshDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>4</strong></td>
-          <td style="text-align: center">CmpLazyFlushDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>5</strong></td>
-          <td style="text-align: center">ExpTimerDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>6</strong></td>
-          <td style="text-align: center">IopTimerDispatch</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>7</strong></td>
-          <td style="text-align: center">IopIrpStackProfilerDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>8</strong></td>
-          <td style="text-align: center">KiBalanceSetManagerDeferredRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>9</strong></td>
-          <td style="text-align: center">PopThermalZoneDpc</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>10</strong></td>
-          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>11</strong></td>
-          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>12</strong></td>
-          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
-      </tr>
-  </tbody>
+<thead>
+<tr>
+<th style="text-align:center"><strong>Index</strong></th>
+<th style="text-align:center">Routine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>0</strong></td>
+<td style="text-align:center">CmpEnableLazyFlushDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>1</strong></td>
+<td style="text-align:center">ExpCenturyDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>2</strong></td>
+<td style="text-align:center">ExpTimeZoneDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>3</strong></td>
+<td style="text-align:center">ExpTimeRefreshDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>4</strong></td>
+<td style="text-align:center">CmpLazyFlushDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>5</strong></td>
+<td style="text-align:center">ExpTimerDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>6</strong></td>
+<td style="text-align:center">IopTimerDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>7</strong></td>
+<td style="text-align:center">IopIrpStackProfilerDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>8</strong></td>
+<td style="text-align:center">KiBalanceSetManagerDeferredRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>9</strong></td>
+<td style="text-align:center">PopThermalZoneDpc</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>10</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>11</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>12</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+</tbody>
 </table>
 <p>This operation is performed at <strong>0x140BF6426</strong>:</p>
 <div style="text-align: center;">
@@ -1083,74 +1087,74 @@ Almost a lot exceptions are used in the function. If you're wondering 'what's an
 <p>KiVerifyXcpt15 is called before KeInitAmd64SpecificState and ExpLicenseWatchInitWorker, and essentially KiVerifyXcpt15 is called from <strong>KiVerifyScopesExecute</strong>.</p>
 <p>KiVerifyScopesExecute calls not only KiVerifyXcpt15 but also other functions from a structure which named <strong>KiVerifyXcptRoutines</strong>. Here are the functions in the list (0x1410060D8):</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: center"><strong>Index</strong></th>
-          <th style="text-align: center"><strong>Routine</strong></th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: center">0</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt0</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">1</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt1</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">2</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt15</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">3</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt3</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">4</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt4</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">5</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt5</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">6</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt6</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">7</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt7</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">8</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt8</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">9</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt9</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">10</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt10</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">11</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt11</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">11</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt12</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">12</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt13</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: center">13</td>
-          <td style="text-align: center"><strong>KiVerifyXcpt14</strong></td>
-      </tr>
-  </tbody>
+<thead>
+<tr>
+<th style="text-align:center"><strong>Index</strong></th>
+<th style="text-align:center"><strong>Routine</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center"><strong>KiVerifyXcpt0</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center"><strong>KiVerifyXcpt1</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:center"><strong>KiVerifyXcpt15</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:center"><strong>KiVerifyXcpt3</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:center"><strong>KiVerifyXcpt4</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:center"><strong>KiVerifyXcpt5</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">6</td>
+<td style="text-align:center"><strong>KiVerifyXcpt6</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">7</td>
+<td style="text-align:center"><strong>KiVerifyXcpt7</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">8</td>
+<td style="text-align:center"><strong>KiVerifyXcpt8</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">9</td>
+<td style="text-align:center"><strong>KiVerifyXcpt9</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:center"><strong>KiVerifyXcpt10</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">11</td>
+<td style="text-align:center"><strong>KiVerifyXcpt11</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">11</td>
+<td style="text-align:center"><strong>KiVerifyXcpt12</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">12</td>
+<td style="text-align:center"><strong>KiVerifyXcpt13</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:center"><strong>KiVerifyXcpt14</strong></td>
+</tr>
+</tbody>
 </table>
 <p>The beginning of the function it gets data from <strong>KiVerifyPass</strong> variable which holds <strong>0xA</strong> value at <strong>0x140C1C2FD</strong>:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">
@@ -1243,13 +1247,10 @@ mov     cs:KiVerifyPass, eax ; Store the result in KiVerifyPass</code></pre><div
 </div>
 <p>The IA32_APIC_BASE located at address 0x1B, is a critical control register in Intel processors that manages the configuration and operation of the local Advanced Programmable Interrupt Controller (APIC)<sup>[3][4]</sup>.</p>
 <p>Then it checks the 10th bit of the result. This 10th byte of IA32_APIC_BASE corresponds to <strong>x2APIC Mode</strong> status in Intel Processors. From <strong>Intel® 64 Architecture x2APIC Specification</strong> documentation:<sup>[3]</sup></p>
-<div class="hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-blue-200 hx-bg-blue-100 hx-text-blue-900 dark:hx-border-blue-200/30 dark:hx-bg-blue-900/30 dark:hx-text-blue-200">
-  <p class="hx-flex hx-items-center hx-font-medium"><svg height=16px class="hx-inline-block hx-align-middle hx-mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Note</p>
-
-  <div class="hx-w-full hx-min-w-0 hx-leading-7">
-    <div class="hx-mt-6 hx-leading-7 first:hx-mt-0"><p><em>&ldquo;System software can place the local APIC in the x2APIC mode by setting the x2APIC mode enable bit (bit 10) in the IA32_APIC_BASE MSR at MSR address 01BH.&rdquo;</em></p></div>
-  </div>
-</div>
+<blockquote>
+<p>[!NOTE]
+<em>&ldquo;System software can place the local APIC in the x2APIC mode by setting the x2APIC mode enable bit (bit 10) in the IA32_APIC_BASE MSR at MSR address 01BH.&rdquo;</em></p>
+</blockquote>
 <p>Also we can benefit from <strong>Intel 64 and IA-32 Architectures Software Developer&rsquo;s Manual Volume 4: Model-Specific Registers</strong><sup>[4]</sup>:</p>
 <div style="text-align: center;">
   <img src="/images/PatchGuard/intel.png" style="width: 85%" />

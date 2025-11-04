@@ -39,7 +39,7 @@
 &lt;p&gt;Burada odağımızı &lt;code&gt;mov rbx,gs:188h&lt;/code&gt; kısmına çevirmemiz gerekiyor çünkü önemli bir yapı olan _KPCR yapısı içerisinden bir KTHREAD yapısı alınmakta.&lt;/p&gt;
 &lt;p&gt;Bu yapının ne olduğunu anlamak için &lt;a href=&#34;https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/amd64_x/kpcr.htm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Geoff Chappell, Software Analyst&lt;/a&gt;&amp;lsquo;ın açıklamasından yararlanabiliriz:&lt;/p&gt;
 &lt;blockquote&gt;
-  &lt;p&gt;&amp;ldquo;KPCR yapısı, &lt;strong&gt;Kernel Processor Control Region&lt;/strong&gt; anlamına gelir. Kernel, her mantıksal işlemci için bir KPCR yapısı tutar. KPCR, işlemci mimarisine son derece özeldir.&amp;rdquo;&lt;/p&gt;
+&lt;p&gt;&amp;ldquo;KPCR yapısı, &lt;strong&gt;Kernel Processor Control Region&lt;/strong&gt; anlamına gelir. Kernel, her mantıksal işlemci için bir KPCR yapısı tutar. KPCR, işlemci mimarisine son derece özeldir.&amp;rdquo;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;Yani kısaca aklımızda şöyle kalabilir bu yapıda işlemciye özel verileri saklamak için kullanılır. Yani baya önemli bir yapı.&lt;/p&gt;
 &lt;p&gt;x64 sistemlerde KPCR yapısı, gs:0 alanına işaret eder:&lt;/p&gt;
@@ -103,7 +103,7 @@
 &lt;/div&gt;
 &lt;p&gt;&lt;code&gt;gs:188h&lt;/code&gt; olduğu için KRPCB yapısından KTHREAD yapısına işaret eden &lt;strong&gt;+0x008 CurrentThread&lt;/strong&gt; alınmakta. &lt;strong&gt;KTHREAD&lt;/strong&gt; yapısının ne olduğunu anlamak için yine &lt;a href=&#34;https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/ke/kthread/index.htm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Geoff Chappell&lt;/a&gt;&amp;lsquo;in makalesinden yararlanabiliriz:&lt;/p&gt;
 &lt;blockquote&gt;
-  &lt;p&gt;&amp;ldquo;KTHREAD yapısı, ETHREAD yapısının çekirdek kısmıdır. ETHREAD, Nesne Yöneticisi (Object Manager) aracılığıyla sunulan iş parçacığı nesnesidir. KTHREAD ise bunun temel çekirdeğini oluşturur.&amp;rdquo;&lt;/p&gt;
+&lt;p&gt;&amp;ldquo;KTHREAD yapısı, ETHREAD yapısının çekirdek kısmıdır. ETHREAD, Nesne Yöneticisi (Object Manager) aracılığıyla sunulan iş parçacığı nesnesidir. KTHREAD ise bunun temel çekirdeğini oluşturur.&amp;rdquo;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;Yani bildiğimiz ETHREAD yapısının kernel versiyonu. Thread yürütme/yönetimi için Kernel tarafından ihtiyaç duyulan birçok önemli bilgiyi içeriyor bu yapı. Bunlardan biri de bu yapıda TEB&amp;rsquo;in adresi bulunmasıdır:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;

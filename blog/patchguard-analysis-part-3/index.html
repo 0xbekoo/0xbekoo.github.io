@@ -13,72 +13,12 @@
 <title>PatchGuard Analysis - Part 3 – 0xbekoo</title>
   <meta name="description" content="Triggering a check As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.
 DPC Execution The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:
-0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself." /><link rel="canonical" href="http://localhost:1313/blog/patchguard-analysis-part-3/" itemprop="url" />
+0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch Among index 0 to 9, functions use an exception handler to fire the check." /><link rel="canonical" href="http://localhost:1313/blog/patchguard-analysis-part-3/" itemprop="url" />
 
 <meta property="og:title" content="PatchGuard Analysis - Part 3" />
-<meta property="og:description" content="Triggering a check
-    As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.
-DPC Execution
-    The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:
-
-  
-      
-          0
-          CmpEnableLazyFlushDpcRoutine
-      
-  
-  
-      
-          1
-          ExpCenturyDpcRoutine
-      
-      
-          2
-          ExpTimeZoneDpcRoutine
-      
-      
-          3
-          ExpTimeRefreshDpcRoutine
-      
-      
-          4
-          CmpLazyFlushDpcRoutine
-      
-      
-          5
-          ExpTimerDpcRoutine
-      
-      
-          6
-          IopTimerDispatch
-      
-      
-          7
-          IopIrpStackProfilerDpcRoutine
-      
-      
-          8
-          KiBalanceSetManagerDeferredRoutine
-      
-      
-          9
-          PopThermalZoneDpc
-      
-      
-          10
-          KiTimerDispatch OR KiDpcDispatch
-      
-      
-          11
-          KiTimerDispatch OR KiDpcDispatch
-      
-      
-          12
-          KiTimerDispatch OR KiDpcDispatch
-      
-  
-
-Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself." />
+<meta property="og:description" content="Triggering a check As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.
+DPC Execution The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:
+0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch Among index 0 to 9, functions use an exception handler to fire the check." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/blog/patchguard-analysis-part-3/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2025-08-08T00:00:00+00:00" />
@@ -87,7 +27,7 @@ Among index 0 to 9, functions use an exception handler to fire the check. KiTime
   <meta itemprop="name" content="PatchGuard Analysis - Part 3">
   <meta itemprop="description" content="Triggering a check As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.
 DPC Execution The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:
-0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.">
+0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch Among index 0 to 9, functions use an exception handler to fire the check.">
   <meta itemprop="datePublished" content="2025-08-08T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="2531">
@@ -96,7 +36,7 @@ DPC Execution The frequently way to trigger a check is to use a DPC. The routine
   <meta name="twitter:title" content="PatchGuard Analysis - Part 3">
   <meta name="twitter:description" content="Triggering a check As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.
 DPC Execution The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:
-0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.">
+0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch Among index 0 to 9, functions use an exception handler to fire the check.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -222,7 +162,7 @@ DPC Execution The frequently way to trigger a check is to use a DPC. The routine
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hook-detector-usermode/"
     
-  >Detecting SSDT Hook in User Mode Program via BYOVD
+  >Detecting SSDT Hook with User Mode Program via BYOVD
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -326,6 +266,14 @@ DPC Execution The frequently way to trigger a check is to use a DPC. The routine
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/debugging-ovmf-with-gdb/"
+    
+  >Debugging QEMU &#43; OVMF with GDB
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/communation-between-windows-and-uefi/"
@@ -622,62 +570,62 @@ DPC Execution The frequently way to trigger a check is to use a DPC. The routine
 <h5><strong>DPC Execution</strong><span class="hx-absolute -hx-mt-20" id="dpc-execution"></span>
     <a href="#dpc-execution" class="subheading-anchor" aria-label="Permalink for this section"></a></h5><p>The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: center"><strong>0</strong></th>
-          <th style="text-align: center">CmpEnableLazyFlushDpcRoutine</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: center"><strong>1</strong></td>
-          <td style="text-align: center">ExpCenturyDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>2</strong></td>
-          <td style="text-align: center">ExpTimeZoneDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>3</strong></td>
-          <td style="text-align: center">ExpTimeRefreshDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>4</strong></td>
-          <td style="text-align: center">CmpLazyFlushDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>5</strong></td>
-          <td style="text-align: center">ExpTimerDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>6</strong></td>
-          <td style="text-align: center">IopTimerDispatch</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>7</strong></td>
-          <td style="text-align: center">IopIrpStackProfilerDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>8</strong></td>
-          <td style="text-align: center">KiBalanceSetManagerDeferredRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>9</strong></td>
-          <td style="text-align: center">PopThermalZoneDpc</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>10</strong></td>
-          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>11</strong></td>
-          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>12</strong></td>
-          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
-      </tr>
-  </tbody>
+<thead>
+<tr>
+<th style="text-align:center"><strong>0</strong></th>
+<th style="text-align:center">CmpEnableLazyFlushDpcRoutine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>1</strong></td>
+<td style="text-align:center">ExpCenturyDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>2</strong></td>
+<td style="text-align:center">ExpTimeZoneDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>3</strong></td>
+<td style="text-align:center">ExpTimeRefreshDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>4</strong></td>
+<td style="text-align:center">CmpLazyFlushDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>5</strong></td>
+<td style="text-align:center">ExpTimerDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>6</strong></td>
+<td style="text-align:center">IopTimerDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>7</strong></td>
+<td style="text-align:center">IopIrpStackProfilerDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>8</strong></td>
+<td style="text-align:center">KiBalanceSetManagerDeferredRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>9</strong></td>
+<td style="text-align:center">PopThermalZoneDpc</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>10</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>11</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>12</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+</tbody>
 </table>
 <p>Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.</p>
 <h6><strong>Non-Canonical DeferredContext Pointer</strong><span class="hx-absolute -hx-mt-20" id="non-canonical-deferredcontext-pointer"></span>
@@ -769,75 +717,75 @@ DPC Execution The frequently way to trigger a check is to use a DPC. The routine
 </ul>
 <p>The first layer of decryption focuses on the whole context structure. There are multiple different code to do so which is summarized in the following list:</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: left"><strong>Index</strong></th>
-          <th style="text-align: left"><strong>Routine</strong></th>
-          <th style="text-align: left"><strong>Layer Encryption</strong></th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: left"><strong>0</strong></td>
-          <td style="text-align: left">CmpEnableLazyFlushDpcRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>1</strong></td>
-          <td style="text-align: left">ExpCenturyDpcRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>2</strong></td>
-          <td style="text-align: left">ExpTimeZoneDpcRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>3</strong></td>
-          <td style="text-align: left">ExpTimeRefreshDpcRoutine</td>
-          <td style="text-align: left">Method 2</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>4</strong></td>
-          <td style="text-align: left">CmpEnableLazyFlushDpcRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>5</strong></td>
-          <td style="text-align: left">ExpTimerDpcRoutine</td>
-          <td style="text-align: left">Method 2</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>6</strong></td>
-          <td style="text-align: left">IopTimerDispatch</td>
-          <td style="text-align: left">Method 2</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>7</strong></td>
-          <td style="text-align: left">IopIrpStackProfilerDpcRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>8</strong></td>
-          <td style="text-align: left">KiBalanceSetManagerDeferredRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>9</strong></td>
-          <td style="text-align: left">PopThermalZoneDpc</td>
-          <td style="text-align: left">Method 2</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>10-12</strong></td>
-          <td style="text-align: left">KiTimerDispatch</td>
-          <td style="text-align: left">Method 1 + hardcoded key</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>10-12</strong></td>
-          <td style="text-align: left">KiDpcDispatch</td>
-          <td style="text-align: left">No 1st layer encryption</td>
-      </tr>
-  </tbody>
+<thead>
+<tr>
+<th style="text-align:left"><strong>Index</strong></th>
+<th style="text-align:left"><strong>Routine</strong></th>
+<th style="text-align:left"><strong>Layer Encryption</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>0</strong></td>
+<td style="text-align:left">CmpEnableLazyFlushDpcRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>1</strong></td>
+<td style="text-align:left">ExpCenturyDpcRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>2</strong></td>
+<td style="text-align:left">ExpTimeZoneDpcRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>3</strong></td>
+<td style="text-align:left">ExpTimeRefreshDpcRoutine</td>
+<td style="text-align:left">Method 2</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>4</strong></td>
+<td style="text-align:left">CmpEnableLazyFlushDpcRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>5</strong></td>
+<td style="text-align:left">ExpTimerDpcRoutine</td>
+<td style="text-align:left">Method 2</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>6</strong></td>
+<td style="text-align:left">IopTimerDispatch</td>
+<td style="text-align:left">Method 2</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>7</strong></td>
+<td style="text-align:left">IopIrpStackProfilerDpcRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>8</strong></td>
+<td style="text-align:left">KiBalanceSetManagerDeferredRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>9</strong></td>
+<td style="text-align:left">PopThermalZoneDpc</td>
+<td style="text-align:left">Method 2</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>10-12</strong></td>
+<td style="text-align:left">KiTimerDispatch</td>
+<td style="text-align:left">Method 1 + hardcoded key</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>10-12</strong></td>
+<td style="text-align:left">KiDpcDispatch</td>
+<td style="text-align:left">No 1st layer encryption</td>
+</tr>
+</tbody>
 </table>
 <p>These encryption/decryption routines use random values from KiWaitNever and KiWaitAlways. These global variables holding random values, generated at boot time and used by KiInitPatchGuardContext to encrypt the PatchGuard Context Structure. You can check an example at <strong>0x1406C8E10</strong> address of PopThermalZoneDpc function. Also, don&rsquo;t remember that an attacker which want to interact with the structure can also use these global variables.</p>
 <br>
@@ -1047,7 +995,7 @@ DPC Execution The frequently way to trigger a check is to use a DPC. The routine
 <p>Firstly, the eax gets <strong>0x80000008</strong> value, then cpuid is executed. After the execution, the result is shifted 8 bytes to the right and the result is passed to 0x940 offset of the structure.</p>
 <p>This value 0x80000008 corresponds to <strong>linear/physical address size data</strong>. From Felix Clouiter<sup>[5]</sup>:</p>
 <blockquote>
-  <p><em>&ldquo;Two types of information are returned: basic and extended function information. If a value entered for CPUID.EAX is higher than the maximum input value for basic or extended function for that processor then the data for the highest basic information leaf is returned. For example, using some Intel processors, the following is true:
+<p><em>&ldquo;Two types of information are returned: basic and extended function information. If a value entered for CPUID.EAX is higher than the maximum input value for basic or extended function for that processor then the data for the highest basic information leaf is returned. For example, using some Intel processors, the following is true:
 &hellip;
 CPUID.EAX = 80000008H (</em> Returns linear/physical address size data. <em>)&rdquo;</em></p>
 </blockquote>

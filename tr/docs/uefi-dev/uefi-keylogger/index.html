@@ -14,57 +14,13 @@
   <meta name="description" content="Merhabalar. Bu blogta UEFI’de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI’yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği “Hello World” çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.
 Kabaca yapacağımız şey UEFI’de klavyeden basılan tuşları ekrana bastıran bir sürücü yazacağız.
 Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:
-#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Kodumuz oldukça basit. Detaylıca göz atalım:" /><link rel="canonical" href="http://localhost:1313/tr/docs/uefi-dev/uefi-keylogger/" itemprop="url" />
+#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!" /><link rel="canonical" href="http://localhost:1313/tr/docs/uefi-dev/uefi-keylogger/" itemprop="url" />
 
 <meta property="og:title" content="UEFI Keylogger" />
 <meta property="og:description" content="Merhabalar. Bu blogta UEFI&rsquo;de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI&rsquo;yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği &ldquo;Hello World&rdquo; çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.
 Kabaca yapacağımız şey UEFI&rsquo;de klavyeden basılan tuşları ekrana bastıran bir sürücü yazacağız.
-Kodlama
-    KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:
-
-
-#include &lt;Uefi.h&gt;
-#include &lt;Library/UefiApplicationEntryPoint.h&gt;
-#include &lt;Library/UefiLib.h&gt;
-
-EFI_STATUS
-EFIAPI
-UefiMain(
-    EFI_HANDLE        ImageHandle,
-    EFI_SYSTEM_TABLE  *SystemTable
-) {
-  EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput;
-  EFI_INPUT_KEY Key;
-
-  /* Protokole erişim sağla */
-  TextInput = SystemTable-&gt;ConIn;
-
-  Print (L&#34;UEFI Keylogger!\n&#34;);
-
-  while(1) {
-    TextInput-&gt;ReadKeyStroke (
-        TextInput, 
-        &amp;Key
-    );
-    if (Key.ScanCode == SCAN_ESC) {
-      Print (L&#34;ESC Button Detected\n&#34;);
-      break;
-    }
-
-    if (Key.UnicodeChar != 0) {
-      Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar);
-    }
-  }
-
-  return EFI_SUCCESS;
-}
-  
-    
-    
-  
-
-
-Kodumuz oldukça basit. Detaylıca göz atalım:" />
+Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:
+#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/tr/docs/uefi-dev/uefi-keylogger/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2025-01-28T00:00:00+00:00" />
@@ -74,7 +30,7 @@ Kodumuz oldukça basit. Detaylıca göz atalım:" />
   <meta itemprop="description" content="Merhabalar. Bu blogta UEFI’de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI’yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği “Hello World” çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.
 Kabaca yapacağımız şey UEFI’de klavyeden basılan tuşları ekrana bastıran bir sürücü yazacağız.
 Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:
-#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Kodumuz oldukça basit. Detaylıca göz atalım:">
+#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!">
   <meta itemprop="datePublished" content="2025-01-28T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="351">
@@ -83,7 +39,7 @@ Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıral
   <meta name="twitter:description" content="Merhabalar. Bu blogta UEFI’de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI’yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği “Hello World” çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.
 Kabaca yapacağımız şey UEFI’de klavyeden basılan tuşları ekrana bastıran bir sürücü yazacağız.
 Kodlama KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:
-#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!\n&#34;); while(1) { TextInput-&gt;ReadKeyStroke ( TextInput, &amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&#34;ESC Button Detected\n&#34;); break; } if (Key.UnicodeChar != 0) { Print (L&#34;Pressed: %c\n&#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Kodumuz oldukça basit. Detaylıca göz atalım:">
+#include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; #include &lt;Library/UefiLib.h&gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&gt;ConIn; Print (L&#34;UEFI Keylogger!">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 

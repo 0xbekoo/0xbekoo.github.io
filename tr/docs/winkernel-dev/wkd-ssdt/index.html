@@ -14,28 +14,13 @@
   <meta name="description" content="Merhabalar bu yazıda System Service Descriptor Table inceleyeceğiz.
 SSDT Nedir? Basitçe SSDT (System Service Descriptor Table), işletim sistemi tarafından desteklenen sistem çağrılarının bir listesidir. Sistem çağrıları, bir uygulamanın çekirdek seviyesindeki işlevleri kullanması için yapılan çağrılardır.
 SSDT, Service Descriptor Table kernel bellek yapısının ilk üyesidir:
-typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:" /><link rel="canonical" href="http://localhost:1313/tr/docs/winkernel-dev/wkd-ssdt/" itemprop="url" />
+typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir." /><link rel="canonical" href="http://localhost:1313/tr/docs/winkernel-dev/wkd-ssdt/" itemprop="url" />
 
 <meta property="og:title" content="System Service Descriptor Table" />
 <meta property="og:description" content="Merhabalar bu yazıda System Service Descriptor Table inceleyeceğiz.
-SSDT Nedir?
-    Basitçe SSDT (System Service Descriptor Table), işletim sistemi tarafından desteklenen sistem çağrılarının bir listesidir. Sistem çağrıları, bir uygulamanın çekirdek seviyesindeki işlevleri kullanması için yapılan çağrılardır.
+SSDT Nedir? Basitçe SSDT (System Service Descriptor Table), işletim sistemi tarafından desteklenen sistem çağrılarının bir listesidir. Sistem çağrıları, bir uygulamanın çekirdek seviyesindeki işlevleri kullanması için yapılan çağrılardır.
 SSDT, Service Descriptor Table kernel bellek yapısının ilk üyesidir:
-
-
-typedef struct tagSERVICE_DESCRIPTOR_TABLE {
-    SYSTEM_SERVICE_TABLE nt;    // SSDT Tablosu kendisine etkili bir pointer
-    SYSTEM_SERVICE_TABLE win32k;
-    SYSTEM_SERVICE_TABLE sst3; 
-    SYSTEM_SERVICE_TABLE sst4;
-} SERVICE_DESCRIPTOR_TABLE;
-  
-    
-    
-  
-
-
-SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:" />
+typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/tr/docs/winkernel-dev/wkd-ssdt/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2024-12-26T00:00:00+00:00" />
@@ -45,7 +30,7 @@ SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir.
   <meta itemprop="description" content="Merhabalar bu yazıda System Service Descriptor Table inceleyeceğiz.
 SSDT Nedir? Basitçe SSDT (System Service Descriptor Table), işletim sistemi tarafından desteklenen sistem çağrılarının bir listesidir. Sistem çağrıları, bir uygulamanın çekirdek seviyesindeki işlevleri kullanması için yapılan çağrılardır.
 SSDT, Service Descriptor Table kernel bellek yapısının ilk üyesidir:
-typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:">
+typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir.">
   <meta itemprop="datePublished" content="2024-12-26T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="1876">
@@ -54,7 +39,7 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
   <meta name="twitter:description" content="Merhabalar bu yazıda System Service Descriptor Table inceleyeceğiz.
 SSDT Nedir? Basitçe SSDT (System Service Descriptor Table), işletim sistemi tarafından desteklenen sistem çağrılarının bir listesidir. Sistem çağrıları, bir uygulamanın çekirdek seviyesindeki işlevleri kullanması için yapılan çağrılardır.
 SSDT, Service Descriptor Table kernel bellek yapısının ilk üyesidir:
-typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir. Bir user-mode program tarafından bir sistem çağrısı yapıldığında, bu çağrı bir hizmet indeksi (service index) içerir. Bu indeks, hangi sistem çağrısının kullanılacağını belirtir. İşletim sistemi, bu indeksi kullanarak System Service Descriptor Table (SSDT) üzerinden ilgili işlevin adresini çözümleyip ntoskrnl.exe içerisindeki doğru çekirdek işlevine yönlendirme yapar. Kulağa kafa karıştıcı geliyor olabilir bir de diagram üzerinden anlatayım:">
+typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT, sistem çağrılarını (syscall) çekirdek API adresleriyle eşleştirir.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -418,7 +403,7 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
             </li>
           <li>
               <a
-                href="#driver"
+                href="#driverin-analiz-edilmesi"
                 class="hx-flex hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [word-break:break-word] hx-cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] contrast-more:hx-border hx-gap-2 before:hx-opacity-25 before:hx-content-['#'] hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:hx-text-gray-900 contrast-more:dark:hx-text-gray-50 contrast-more:hx-border-transparent contrast-more:hover:hx-border-gray-900 contrast-more:dark:hover:hx-border-gray-50"
               >&lt;strong&gt;Driver&amp;rsquo;in Analiz edilmesi&lt;/strong&gt;</a>
             </li>
@@ -707,7 +692,7 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
-        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#driver">Driver’in Analiz edilmesi
+        <a class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words" href="#driverin-analiz-edilmesi">Driver’in Analiz edilmesi
         </a>
       </li>
       <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
@@ -1074,8 +1059,8 @@ typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Ta
 </div>
 </div>
 <p>NtCreateFile&rsquo;i çalıştırdıktan sonra yine aynı işlemler ile NtWriteFile&rsquo;in routine adresini alıyor ve oluşturduğumuz yapıya adresi veriyoruz ve ardından NtWriteFile API&rsquo;i çalıştırıyoruz.</p>
-<h2><strong>Driver&rsquo;in Analiz edilmesi</strong><span class="hx-absolute -hx-mt-20" id="driver"></span>
-    <a href="#driver" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Tabi ki direkt olarak Driver&rsquo;i kodladıktan sonra direkt olarak sonucu göstermek yerine sisteme yükleyeceğimiz Driver&rsquo;i adım adım takip edip neler yaptığına beraber bir göz atalım. Böylece kafamızda daha iyi yer edineceğini düşünüyorum.</p>
+<h2><strong>Driver&rsquo;in Analiz edilmesi</strong><span class="hx-absolute -hx-mt-20" id="driverin-analiz-edilmesi"></span>
+    <a href="#driverin-analiz-edilmesi" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Tabi ki direkt olarak Driver&rsquo;i kodladıktan sonra direkt olarak sonucu göstermek yerine sisteme yükleyeceğimiz Driver&rsquo;i adım adım takip edip neler yaptığına beraber bir göz atalım. Böylece kafamızda daha iyi yer edineceğini düşünüyorum.</p>
 <p>Öncelikle sanal makinemize bağlı Windbg&rsquo;a Driver&rsquo;ımız için bir breakpoint ekleyeceğiz. Böylece kodladığımız Driver sisteme yüklendiğinde duracak.</p>
 <p>İlk olarak sanal makineye hazırladığımız .sys dosyasını yükleyelim:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">

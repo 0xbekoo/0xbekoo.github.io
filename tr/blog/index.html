@@ -452,7 +452,8 @@
         <div class="content"></div>
           <div class="hx-mb-10">
             <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/tr/blog/patchguard-analysis-part-4/">PatchGuard Analysis - Part 4</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Verification Routines Artık PatchGuard’ın kalbine geldik. PatchGuard artık bir timer, bir DPC, system thread ya da diğer mekanizmalar aracılığıyla tetiklendikten sonra kendisi bir takım doğrulama işlemlerine başlıyor. Doğrulama kodları PatchGuard durumunu ve kernel yapılarını decryptleyip ardından incelemeye başlar.
-Esasen doğrulama rutini olarak birkaç rutin var ancak bunlardan en sıka kullanılan rutin ise daha öncede bahsedilen FsRtlMdlReadCompleteDevEx fonksiyonu olacaktır. Bu arkadaş ntoskrnl.exe’nin en uzun rutini olabilir. Diğer rutinler ise şunlar:</p>
+Esasen doğrulama rutini olarak birkaç rutin var ancak bunlardan en sıka kullanılan rutin ise daha öncede bahsedilen FsRtlMdlReadCompleteDevEx fonksiyonu olacaktır. Bu arkadaş ntoskrnl.exe’nin en uzun rutini olabilir. Diğer rutinler ise şunlar:
+TVCallBack Routine: Bu rutin FsRtlMdlReadCompleteDevEx’e baya benzemekte.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/tr/blog/patchguard-analysis-part-4/">Read more →</a>
             </p>
@@ -462,7 +463,7 @@ Esasen doğrulama rutini olarak birkaç rutin var ancak bunlardan en sıka kulla
           <div class="hx-mb-10">
             <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/tr/blog/patchguard-analysis-part-3/">PatchGuard Analysis - Part 3</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Triggering Checks Daha önce de gördüğümüz gibi, bazı çeşitli yöntemler context’leri ayarlamak için kullanılıyor. Bu bölümde, bu context’lerin nasıl tetiklendiğine göz atacağız.
 DPC Execution Bir kontrolün tetiklenmede kullanılan en çok yöntemlerden biri ise DPC kullanmaktır. Aşağıdaki listeden seçilen bir rutin aracılığıyla bu işlem gerçekleştirilir:
-0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch 0 ila 9 index arasındaki fonksiyonlarda kontrollerin başlatılması için bir exception handler kullanılıyor. KiTimerDispatch ve KiDpcDispatch fonksiyonlarında herhangi bir exception olmadan direkt olarak DPC çağırılıyor. Bir başka deyişle anlatmak gerekirse bu fonksiyonlar kendi işlerini yaparken aynı zamanda PatchGuard bunları hijack ederek kendini saklıyor.</p>
+0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch 0 ila 9 index arasındaki fonksiyonlarda kontrollerin başlatılması için bir exception handler kullanılıyor.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/tr/blog/patchguard-analysis-part-3/">Read more →</a>
             </p>
@@ -482,7 +483,7 @@ Argument 1: DPC Routine Pointer Daha önce de gördüğümüz gibi, çeşitli me
           <div class="hx-mb-10">
             <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/tr/blog/patchguard-analysis-part-1/">PatchGuard Analysis - Part 1</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Bu makale dark shadow B.‘ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.
 Introduction Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.
-Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu.</p>
+Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/tr/blog/patchguard-analysis-part-1/">Read more →</a>
             </p>
@@ -490,10 +491,9 @@ Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığı
           </div>
         
           <div class="hx-mb-10">
-            <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/tr/blog/ssdt-hooking/">SSDT Hooking ile User-Mode Programda Sürücü Yükleme</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">
-Important
-I also wrote an article about this work in English on Medium, you can click here if you want to take a look.
-Merhabalar efenimm bloguma hoşgeldiniz. Bu blogta SSDT Hooking tekniğine bir yakından bakacağız. Bu teknik için hazırladığım proje üzerinden ilerleyeceğiz. Başlıktan gördüğünüz üzere User-Mode programı kullanarak NtLoadDriver ile sürücü yüklemesini sağlayacağız.</p>
+            <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/tr/blog/ssdt-hooking/">SSDT Hooking ile User-Mode Programda Sürücü Yükleme</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">[!IMPORTANT] I also wrote an article about this work in English on Medium, you can click here if you want to take a look.
+Merhabalar efenimm bloguma hoşgeldiniz. Bu blogta SSDT Hooking tekniğine bir yakından bakacağız. Bu teknik için hazırladığım proje üzerinden ilerleyeceğiz. Başlıktan gördüğünüz üzere User-Mode programı kullanarak NtLoadDriver ile sürücü yüklemesini sağlayacağız.
+Yine aynı şekilde proje, User-Mode ve Kernel-Mode olmak üzere iki kısma ayrılıyor. User-Mode programda sadece NtLoadDriver çağırarak sürücüyü yüklemeyi sağlayacağız ardından Rootkit ile User-Mode programın sürücü yüklemeden önce geçmesi gereken güvenlik önlemlerini atlatmasını sağlayacağız; bunun için ise SSDT Hooking’den yararlanacağız.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/tr/blog/ssdt-hooking/">Read more →</a>
             </p>
@@ -513,7 +513,7 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
           <div class="hx-mb-10">
             <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/tr/blog/bare-metal-reversing/">ARM Firmware Reverse Engineering</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Merhabalar. Bu yazıda Firmware Reverse Engineering’e devam ediyoruz. Bu blogta ise Bare Metal Reversing’e girişeceğiz.
 Hatırlarsanız önceki konumuzda TP-LINK Archer AX 21 V4.6’ın 2024 yılında çıkmış Firmware’ini analiz etmiştik. Bu konuda ise işleri birazcık ileriye götüreceğiz.
-Elimde bir Nucleo F030R8 kart (ARM Cortex M0 işlemcili) var ve bunu Firmware Reverse Engineering için değerlendirmek istedim. Bu blogta yapacağımız şey de bu kart’ı basitçe programlayacağız ve ardından firmware’ini reverse edip karta tekrar yükleyeceğiz. Tipik olarak bir Iot kartını hackliyor gibi düşünelim ancak daha basit bir senaryo ile.</p>
+Elimde bir Nucleo F030R8 kart (ARM Cortex M0 işlemcili) var ve bunu Firmware Reverse Engineering için değerlendirmek istedim. Bu blogta yapacağımız şey de bu kart’ı basitçe programlayacağız ve ardından firmware’ini reverse edip karta tekrar yükleyeceğiz.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/tr/blog/bare-metal-reversing/">Read more →</a>
             </p>
@@ -521,10 +521,10 @@ Elimde bir Nucleo F030R8 kart (ARM Cortex M0 işlemcili) var ve bunu Firmware Re
           </div>
         
           <div class="hx-mb-10">
-            <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/tr/blog/router-firmware-reversing/">Router Firmware Reverse Engineering</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">
-Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link’in Archer AX 21 V4.6 modemin firmware’i reverse edeceğiz. Firmware indirmek için TP-Link’in orijinal sayfasına göz atabilirsiniz.
-Warning
-Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.</p>
+            <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/tr/blog/router-firmware-reversing/">Router Firmware Reverse Engineering</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link’in Archer AX 21 V4.6 modemin firmware’i reverse edeceğiz. Firmware indirmek için TP-Link’in orijinal sayfasına göz atabilirsiniz.
+[!WARNING] Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.
+Öncelikle indirdiğimiz Firmware’in bilgilerine göz atalım:
+Görüldüğü üzere 14 Kasım 2024 yılında yayınlanmış.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/tr/blog/router-firmware-reversing/">Read more →</a>
             </p>
@@ -533,7 +533,7 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
         
           <div class="hx-mb-10">
             <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/tr/blog/is-valorant-spyware/">Is Valorant Spyware?</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Giriş Valorant oyunu, çıkışından beri hem oyuncuların ilgisini çeken hem de tartışmalara neden olan bir yapım olmuştur. Özellikle oyunun anti-cheat sistemi olan Vanguard’ın, oyuncuların gizlilik haklarını ihlal ettiği ve spyware olarak adlandırılabilecek bir yazılım olduğu iddialarıyla sıkça gündeme gelmiştir. Bu iddialar, oyuncuların güvenlik endişelerini artırmış ve Valorant’ın popülaritesiyle birlikte bu konuda birçok tartışma başlatılmıştır.
-Reddit ve diğer sosyal medya platformlarında yayılan bu iddialar, Valorant’ın geliştiricisi olan Riot Games’in, oyuncuların bilgisayarlarında istenmeyen izleme ve kontrol yeteneklerine sahip olduğu yönünde eleştirilmesine neden olmuştur. Ancak, bu iddiaların gerçekliği ve Vanguard’ın gerçekten bir spyware olup olmadığı konusu hala netlik kazanmamıştır. Bu yazıda, Valorant’ın spyware olduğu iddialarını ele alacak ve bu iddiala bir göz atacağız.</p>
+Reddit ve diğer sosyal medya platformlarında yayılan bu iddialar, Valorant’ın geliştiricisi olan Riot Games’in, oyuncuların bilgisayarlarında istenmeyen izleme ve kontrol yeteneklerine sahip olduğu yönünde eleştirilmesine neden olmuştur.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/tr/blog/is-valorant-spyware/">Read more →</a>
             </p>

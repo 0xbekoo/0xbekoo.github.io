@@ -16,8 +16,7 @@ Welcome to my blog! Today we will dive into a little adventure…
 Recently, I developed malware related to SSDT Hooking, but it’s not the kind of software that causes damage. The main goal of the malware is detecting the Hooked routines. However, my real goal was to develop malware that performs SSDT Unhooking in the first place. But after a few problems, i developed this project." /><link rel="canonical" href="http://localhost:1313/blog/ssdt-hook-detector-usermode/" itemprop="url" />
 
 <meta property="og:title" content="Detecting SSDT Hook with User Mode Program via BYOVD" />
-<meta property="og:description" content="Introduction
-    Github Link: github.com/0xbekoo/SSDT-Hook-Detector
+<meta property="og:description" content="Introduction Github Link: github.com/0xbekoo/SSDT-Hook-Detector
 Welcome to my blog! Today we will dive into a little adventure&hellip;
 Recently, I developed malware related to SSDT Hooking, but it&rsquo;s not the kind of software that causes damage. The main goal of the malware is detecting the Hooked routines. However, my real goal was to develop malware that performs SSDT Unhooking in the first place. But after a few problems, i developed this project." />
 <meta property="og:type" content="article" />
@@ -267,6 +266,14 @@ Recently, I developed malware related to SSDT Hooking, but it’s not the kind o
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/debugging-ovmf-with-gdb/"
+    
+  >Debugging QEMU &#43; OVMF with GDB
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/communation-between-windows-and-uefi/"
@@ -543,13 +550,10 @@ Recently, I developed malware related to SSDT Hooking, but it’s not the kind o
 <p>Welcome to my blog! Today we will dive into a little adventure&hellip;</p>
 <p>Recently, I developed malware related to SSDT Hooking, but it&rsquo;s not the kind of software that causes damage. The main goal of the malware is detecting the Hooked routines. However, my real goal was to develop malware that performs SSDT Unhooking in the first place. But after a few problems, i developed this project.</p>
 <p>In this project i used a vulnerable driver to perform detection, which means that this malware can be used in the real scenarios. I am not encouraging illegal activity in any way.</p>
-<div class="hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200">
-  <p class="hx-flex hx-items-center hx-font-medium"><svg height=16px class="hx-inline-block hx-align-middle hx-mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Warning</p>
-
-  <div class="hx-w-full hx-min-w-0 hx-leading-7">
-    <div class="hx-mt-6 hx-leading-7 first:hx-mt-0"><p>This project has been developed solely for educational purposes. Its use in real-world scenarios is entirely at the user&rsquo;s own risk. I am sharing this here solely for educational purposes. <strong>Don&rsquo;t use this project in the real scenarios.</strong></p></div>
-  </div>
-</div>
+<blockquote>
+<p>[!WARNING]
+This project has been developed solely for educational purposes. Its use in real-world scenarios is entirely at the user&rsquo;s own risk. I am sharing this here solely for educational purposes. <strong>Don&rsquo;t use this project in the real scenarios.</strong></p>
+</blockquote>
 <h3><strong>The Goal</strong><span class="hx-absolute -hx-mt-20" id="the-goal"></span>
     <a href="#the-goal" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>My initial goal was to perform SSDT unhooking from user mode using a BYOVD approach. The idea was to take advantage of a vulnerable driver to gain the ability to write directly to kernel memory and restore the SSDT entries to their original state. In the driver, there was an IOCTL code specifically designed to write data to a given kernel address, so in theory, the process seemed straightforward:</p>
 <div text-align="center">

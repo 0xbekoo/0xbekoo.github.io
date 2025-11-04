@@ -16,8 +16,7 @@ Birkaç gün önce SSDT tablosu üzerine bir döküman paylaşmıştım. Bu dök
 Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğer benim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel’da Syscall’ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!" /><link rel="canonical" href="http://localhost:1313/tr/blog/syscalls/" itemprop="url" />
 
 <meta property="og:title" content="Windows Kernel&#39;da Systemm Call Mekanızmasını Reverseleme" />
-<meta property="og:description" content="Giriş
-    Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.
+<meta property="og:description" content="Giriş Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.
 Birkaç gün önce SSDT tablosu üzerine bir döküman paylaşmıştım. Bu dökümanda temel olarak SSDT&rsquo;nin ne olduğunu, adreslerin nasıl hesaplandığı vs anlatmıştım. Dökümanın son kısmında ise öğrendiğimiz şeylerin bir kernel sürücüsünü hazırlamıştık.
 Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğer benim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel&rsquo;da Syscall&rsquo;ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!" />
 <meta property="og:type" content="article" />
@@ -591,7 +590,7 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
 <p>Burada odağımızı <code>mov rbx,gs:188h</code> kısmına çevirmemiz gerekiyor çünkü önemli bir yapı olan _KPCR yapısı içerisinden bir KTHREAD yapısı alınmakta.</p>
 <p>Bu yapının ne olduğunu anlamak için <a href="https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/amd64_x/kpcr.htm" target="_blank" rel="noopener">Geoff Chappell, Software Analyst</a>&lsquo;ın açıklamasından yararlanabiliriz:</p>
 <blockquote>
-  <p>&ldquo;KPCR yapısı, <strong>Kernel Processor Control Region</strong> anlamına gelir. Kernel, her mantıksal işlemci için bir KPCR yapısı tutar. KPCR, işlemci mimarisine son derece özeldir.&rdquo;</p>
+<p>&ldquo;KPCR yapısı, <strong>Kernel Processor Control Region</strong> anlamına gelir. Kernel, her mantıksal işlemci için bir KPCR yapısı tutar. KPCR, işlemci mimarisine son derece özeldir.&rdquo;</p>
 </blockquote>
 <p>Yani kısaca aklımızda şöyle kalabilir bu yapıda işlemciye özel verileri saklamak için kullanılır. Yani baya önemli bir yapı.</p>
 <p>x64 sistemlerde KPCR yapısı, gs:0 alanına işaret eder:</p>
@@ -655,7 +654,7 @@ Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler ben
 </div>
 <p><code>gs:188h</code> olduğu için KRPCB yapısından KTHREAD yapısına işaret eden <strong>+0x008 CurrentThread</strong> alınmakta. <strong>KTHREAD</strong> yapısının ne olduğunu anlamak için yine <a href="https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/ke/kthread/index.htm" target="_blank" rel="noopener">Geoff Chappell</a>&lsquo;in makalesinden yararlanabiliriz:</p>
 <blockquote>
-  <p>&ldquo;KTHREAD yapısı, ETHREAD yapısının çekirdek kısmıdır. ETHREAD, Nesne Yöneticisi (Object Manager) aracılığıyla sunulan iş parçacığı nesnesidir. KTHREAD ise bunun temel çekirdeğini oluşturur.&rdquo;</p>
+<p>&ldquo;KTHREAD yapısı, ETHREAD yapısının çekirdek kısmıdır. ETHREAD, Nesne Yöneticisi (Object Manager) aracılığıyla sunulan iş parçacığı nesnesidir. KTHREAD ise bunun temel çekirdeğini oluşturur.&rdquo;</p>
 </blockquote>
 <p>Yani bildiğimiz ETHREAD yapısının kernel versiyonu. Thread yürütme/yönetimi için Kernel tarafından ihtiyaç duyulan birçok önemli bilgiyi içeriyor bu yapı. Bunlardan biri de bu yapıda TEB&rsquo;in adresi bulunmasıdır:</p>
 <div class="hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code">

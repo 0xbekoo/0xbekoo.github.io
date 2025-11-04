@@ -19,12 +19,12 @@
 <meta property="og:url" content="http://localhost:1313/blog/" />
 
   <meta itemprop="name" content="Blogs">
-  <meta itemprop="description" content="RSS Feed">
+  <meta itemprop="description" content="RSS Feed ">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="2">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Blogs">
-  <meta name="twitter:description" content="RSS Feed">
+  <meta name="twitter:description" content="RSS Feed ">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -245,6 +245,14 @@
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/debugging-ovmf-with-gdb/"
+    
+  >Debugging QEMU &#43; OVMF with GDB
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/communation-between-windows-and-uefi/"
@@ -476,7 +484,7 @@ Recently, I developed malware related to SSDT Hooking, but it’s not the kind o
           <div class="hx-mb-10">
             <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/blog/patchguard-analysis-part-4/">PatchGuard Analysis - Part 4</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Verification Routines This phase is the heart of PatchGuard’s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a system thread, or other dispatch mechanisms—it enters the validation routine. The validation code decrypts and inspects internal PatchGuard state and memory-resident kernel structures.
 There are several checking routines involved, with the main one called FsRtlMdlReadCompleteDevEx. Other routines include:
-TVCallBack Routine: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext. CcBcbProfiler We saw that this function is used to check a randomly choosen routine from ntoskrnl. In this section, we will focus mainly on FsRtlMdlReadCompleteDevEx. This function is really long and the function can be summed up into multiple parts:</p>
+TVCallBack Routine: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/blog/patchguard-analysis-part-4/">Read more →</a>
             </p>
@@ -486,7 +494,7 @@ TVCallBack Routine: The routine looks very much like FsRtlMdlReadCompleteDevEx. 
           <div class="hx-mb-10">
             <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/blog/patchguard-analysis-part-3/">PatchGuard Analysis - Part 3</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Triggering a check As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.
 DPC Execution The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:
-0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.</p>
+0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch Among index 0 to 9, functions use an exception handler to fire the check.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/blog/patchguard-analysis-part-3/">Read more →</a>
             </p>
@@ -515,7 +523,7 @@ Introduction Most of us have probably come across PatchGuard (Kernel Patch Prote
           <div class="hx-mb-10">
             <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/blog/ssdt-hooking/">Loading Driver from User-Mode Program via SSDT Hooking</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.
 In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the System Service Descriptor Table (SSDT) and its role in managing system calls within the Windows kernel.
-Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking. We will walk through the process of dynamically locating the SSDT, identifying a target system call (such as NtLoadDriver), and modifying its entry to redirect execution flow to a custom function.</p>
+Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/blog/ssdt-hooking/">Read more →</a>
             </p>
@@ -533,7 +541,7 @@ In this blog, we will examine that how windows kernel it works a syscall. So, i 
         
           <div class="hx-mb-10">
             <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/blog/bare-metal-reversing/">ARM Firmware Reverse Engineering</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Hello everyone. In this blog we continue with Firmware Reverse Engineering. We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.
-I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let’s think typically like hacking an IoT board but with a simpler scenario:</p>
+I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/blog/bare-metal-reversing/">Read more →</a>
             </p>
@@ -541,8 +549,8 @@ I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use 
           </div>
         
           <div class="hx-mb-10">
-            <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/blog/router-firmware-reversing/">Router Firmware Reverse Engineering</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7"> Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link’s Archer AX 21 V4.6 modem. You can check TP-Link’s original page to download the firmware.
-Warning</p>
+            <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/blog/router-firmware-reversing/">Router Firmware Reverse Engineering</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link’s Archer AX 21 V4.6 modem. You can check TP-Link’s original page to download the firmware.
+[!WARNING] The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/blog/router-firmware-reversing/">Read more →</a>
             </p>
@@ -552,7 +560,7 @@ Warning</p>
           <div class="hx-mb-10">
             <h3><a style="color: inherit; text-decoration: none;" class="hx-block hx-font-semibold hx-mt-8 hx-text-2xl " href="/blog/is-valorant-spyware/">Is Valorant Spyware?</a></h3><p class="hx-opacity-80 hx-mt-4 hx-leading-7">Understanding How Anti-Cheat Software Works To begin our exploration, we first need to understand how anti-cheat software works. In general, anti-cheat software is developed for two main purposes: to prevent cheating within a game and to detect those who do.
 We can categorize how this software operates into two main methods: server-side and client-side[1].
-Server-side anti-cheat software typically monitors and analyzes the data a player sends to the game server. This data can include how the player is playing, what commands they are sending, and how quickly they react. Its goal is to detect discrepancies between normal gameplay behavior and potential cheat usage.</p>
+Server-side anti-cheat software typically monitors and analyzes the data a player sends to the game server. This data can include how the player is playing, what commands they are sending, and how quickly they react.</p>
             <p class="hx-opacity-80 hx-mt-1 hx-leading-7">
               <a class="hx-text-[color:hsl(var(--primary-hue),100%,50%)] hx-underline hx-underline-offset-2 hx-decoration-from-font" href="/blog/is-valorant-spyware/">Read more →</a>
             </p>

@@ -12,12 +12,11 @@
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>ARM Firmware Reverse Engineering – 0xbekoo</title>
   <meta name="description" content="Hello everyone. In this blog we continue with Firmware Reverse Engineering. We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.
-I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let’s think typically like hacking an IoT board but with a simpler scenario:" /><link rel="canonical" href="http://localhost:1313/blog/bare-metal-reversing/" itemprop="url" />
+I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board." /><link rel="canonical" href="http://localhost:1313/blog/bare-metal-reversing/" itemprop="url" />
 
 <meta property="og:title" content="ARM Firmware Reverse Engineering" />
-<meta property="og:description" content="Hello everyone. In this blog we continue with Firmware Reverse Engineering.
-We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.
-I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let&rsquo;s think typically like hacking an IoT board but with a simpler scenario:" />
+<meta property="og:description" content="Hello everyone. In this blog we continue with Firmware Reverse Engineering. We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.
+I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/blog/bare-metal-reversing/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2024-12-04T00:00:00+00:00" />
@@ -25,7 +24,7 @@ I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use 
 
   <meta itemprop="name" content="ARM Firmware Reverse Engineering">
   <meta itemprop="description" content="Hello everyone. In this blog we continue with Firmware Reverse Engineering. We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.
-I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let’s think typically like hacking an IoT board but with a simpler scenario:">
+I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board.">
   <meta itemprop="datePublished" content="2024-12-04T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="2294">
@@ -33,7 +32,7 @@ I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use 
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="ARM Firmware Reverse Engineering">
   <meta name="twitter:description" content="Hello everyone. In this blog we continue with Firmware Reverse Engineering. We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.
-I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let’s think typically like hacking an IoT board but with a simpler scenario:">
+I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -159,7 +158,7 @@ I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use 
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hook-detector-usermode/"
     
-  >Detecting SSDT Hook in User Mode Program via BYOVD
+  >Detecting SSDT Hook with User Mode Program via BYOVD
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -263,6 +262,14 @@ I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use 
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/debugging-ovmf-with-gdb/"
+    
+  >Debugging QEMU &#43; OVMF with GDB
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/communation-between-windows-and-uefi/"

@@ -619,8 +619,8 @@
 &lt;p&gt;&lt;strong&gt;Runtime (RT)&lt;/strong&gt;: Bu aşamada ise artık UEFI&amp;rsquo;nin akışı işletim sistemine devrediliyor. Fakat UEFI bu kısımdan itibaren tamamen ortadan kaybolduğu anlamına gelmez. UEFI&amp;rsquo;ye ait olan Runtime Services (Runtime Hizmetleri) işletim sistemini desteklemek için kullanılabilir durumda kalmaya devam eder. Bu Runtime hizmetleri, donanımla ilgili bazı özel işler için System Management Mode (SMM) devreye girer. SMM, işlemcinin kritik donanım işlevlerini işletim sisteminden bağımsız olarak yönettiği güvenli bir moddur. Örneğin, fan hızının ayarlanması veya batarya durumunun izlenmesi gibi işlemler bu modda yapılır. Eğer İşletim sistemi, donanımla ilgili bir işi kendi başına yapamazsa, &lt;strong&gt;SMI&lt;/strong&gt; (System Management Interrupt) adı verilen bir sinyal gönderir. Bu, “yardım çağrısı” gibidir. Örneğin, işletim sistemi fan hızını kontrol etmek istediğinde bir SMI gönderir, SMM devreye girer ve bu işi halleder.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2&gt;&lt;strong&gt;UEFI Development&amp;rsquo;a Giriş&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;uefi-development&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#uefi-development&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Gelelim önemli bu kısma.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;UEFI Development&amp;rsquo;a Giriş&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;uefi-developmenta-giriş&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#uefi-developmenta-giri%c5%9f&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Gelelim önemli bu kısma.&lt;/p&gt;
 &lt;p&gt;Söz konusu UEFI Development için kaynak olduğunda gerçekten bu süreçte kaynakların kısıtlı olduğunu göreceksiniz. Popüler olarak Development sürecinde, aşağıda sıralanan araçlar kullanılabilir:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;EDK2&lt;/strong&gt;: EDK2, UEFI ve PI spesifikasyonlar için modern, zengin ve platformlar arası kodlama gibi özelliklerine sahip bir araçtır. EDK2 projesi, UEFI spesifikasyonuna katkıda bulunan geliştiricilerin birçoğu tarafından (topluluk gönüllüleriyle birlikte) geliştirilmekte ve günümüzde sürdürülmektedir. Bu blog sürecinde ise kodlamayı bununla yapacağız.&lt;/li&gt;
@@ -640,8 +640,8 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Bu süreçte ise simüle için VMWare&amp;rsquo;i tercih edeceğim. Özellikle VMware&amp;rsquo;in doğru çalışan NVRAM emülasyonu ile iyi performans sunar. Benim için en önemli sunduğu özellik ise Windows&amp;rsquo;ta TSL ve RT aşamalarında debugging için WinDbg ile güzel çalışması.&lt;/p&gt;
-&lt;h2&gt;&lt;strong&gt;Windows&amp;rsquo;ta EDK2&amp;rsquo;nin Kurulumu&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;windows&#34;&gt;&lt;/span&gt;
-    &lt;a href=&#34;#windows&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;EDK2 projesini kurmadan önce aşağıdaki araçları kurmamız lazım:&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Windows&amp;rsquo;ta EDK2&amp;rsquo;nin Kurulumu&lt;/strong&gt;&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;windowsta-edk2nin-kurulumu&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#windowsta-edk2nin-kurulumu&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;EDK2 projesini kurmadan önce aşağıdaki araçları kurmamız lazım:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;Git&lt;/strong&gt;&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Python&lt;/strong&gt;&lt;/li&gt;

@@ -13,13 +13,12 @@
 <title>PatchGuard Analysis - Part 1 – 0xbekoo</title>
   <meta name="description" content="Bu makale dark shadow B.‘ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.
 Introduction Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.
-Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu." /><link rel="canonical" href="http://localhost:1313/tr/blog/patchguard-analysis-part-1/" itemprop="url" />
+Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi." /><link rel="canonical" href="http://localhost:1313/tr/blog/patchguard-analysis-part-1/" itemprop="url" />
 
 <meta property="og:title" content="PatchGuard Analysis - Part 1" />
 <meta property="og:description" content="Bu makale dark shadow B.&lsquo;ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.
-Introduction
-    Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.
-Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu." />
+Introduction Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.
+Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/tr/blog/patchguard-analysis-part-1/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2025-08-06T00:00:00+00:00" />
@@ -28,7 +27,7 @@ Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığı
   <meta itemprop="name" content="PatchGuard Analysis - Part 1">
   <meta itemprop="description" content="Bu makale dark shadow B.‘ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.
 Introduction Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.
-Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu.">
+Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi.">
   <meta itemprop="datePublished" content="2025-08-06T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="3171">
@@ -37,7 +36,7 @@ Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığı
   <meta name="twitter:title" content="PatchGuard Analysis - Part 1">
   <meta name="twitter:description" content="Bu makale dark shadow B.‘ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.
 Introduction Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.
-Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu.">
+Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -611,7 +610,7 @@ Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığı
 <p>Bahsedilen HalReserved alanından <strong>0x70</strong> ve <strong>0x78</strong> offset&rsquo;lerden değer aldığını ve ardından hızlı bir şekilde bu alanları temizlediğini görebiliriz. Buradan alınan adreslere ileride değineceğim.</p>
 <p>Ardından rdtsc instruction kullanarak random bir değer oluşturuluyor. Devam etmeden önce bu instruction&rsquo;u AMD64 dökümanı ile tanıyalım:</p>
 <blockquote>
-  <p><em>&ldquo;TSD biti, zaman damgası sayacının hangi ayrıcalık seviyesinde okunabileceğini yazılımın kontrol etmesini sağlar. TSD biti 0 olarak ayarlandığında, herhangi bir ayrıcalık seviyesinde çalışan yazılımlar RDTSC veya RDTSCP komutlarını kullanarak zaman damgası sayacını okuyabilir.&rdquo;</em><sup>[1]</sup></p>
+<p><em>&ldquo;TSD biti, zaman damgası sayacının hangi ayrıcalık seviyesinde okunabileceğini yazılımın kontrol etmesini sağlar. TSD biti 0 olarak ayarlandığında, herhangi bir ayrıcalık seviyesinde çalışan yazılımlar RDTSC veya RDTSCP komutlarını kullanarak zaman damgası sayacını okuyabilir.&rdquo;</em><sup>[1]</sup></p>
 </blockquote>
 <p>Analizimizin ilerisinde sık sık göreceğiz ki bu instruction ile random değer oluşturma işlemi gerçekten PatchGuard mekanizmaları tarafından sıklıkla kullanılıyor. Dolayasıyla şimdiden bunu kafamıza oturtmak iyi olacaktır.</p>
 <p>Random değerin oluşturulması ardından bu değer <strong>0x51eb851f</strong> sabit değeriyle çarpılmakta:</p>
@@ -839,74 +838,74 @@ BIT 31 0x80000000 Result of KiSwInterruptPresent
 </div>
 <p>Bu bağlamda, yapının tüm üyeleri aşağıdaki gibidir:</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: left"><strong>Field</strong></th>
-          <th style="text-align: left">Routine</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: left"><strong>Hal</strong></td>
-          <td style="text-align: left"><strong>xHalHaltSystem</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KeBugCheckEx</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KeBugCheck2</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KiBugCheckDebugBreak</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KiDebugTrapOrFault</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>DbgBreakPointWithStatus</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>RtlCaptureContext</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KeQueryCurrentStackInformation</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KiSaveProcessorControlState</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>memmove</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>IoSaveBugCheckProgress</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KeIsEmptyAffinityEx</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>VfNotifyVerifierOfEvent</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>_guard_check_icall_no_overrides</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KeGuardDispatchICall</strong></td>
-      </tr>
-  </tbody>
+<thead>
+<tr>
+<th style="text-align:left"><strong>Field</strong></th>
+<th style="text-align:left">Routine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Hal</strong></td>
+<td style="text-align:left"><strong>xHalHaltSystem</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KeBugCheckEx</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KeBugCheck2</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KiBugCheckDebugBreak</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KiDebugTrapOrFault</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>DbgBreakPointWithStatus</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>RtlCaptureContext</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KeQueryCurrentStackInformation</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KiSaveProcessorControlState</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>memmove</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>IoSaveBugCheckProgress</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KeIsEmptyAffinityEx</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>VfNotifyVerifierOfEvent</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>_guard_check_icall_no_overrides</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KeGuardDispatchICall</strong></td>
+</tr>
+</tbody>
 </table>
 <h6><strong>Third Section</strong><span class="hx-absolute -hx-mt-20" id="third-section"></span>
     <a href="#third-section" class="subheading-anchor" aria-label="Permalink for this section"></a></h6><ul>

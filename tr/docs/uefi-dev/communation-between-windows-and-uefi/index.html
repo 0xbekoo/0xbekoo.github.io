@@ -13,13 +13,12 @@
 <title>UEFI to Windows Communication via NVRAM Variables – 0xbekoo</title>
   <meta name="description" content="Bu dökümanda, bir UEFI sürücüsü ile bir Windows sürücüsü arasında nasıl iletişim kurulacağını tartışacağız. Özellikle, iki ortam arasında veri alışverişi yapmak için NVRAM tabanlı UEFI değişkenlerinin nasıl kullanılacağını inceleyeceğiz.
 What is NVRAM? NVRAM (Non-Volatile RAM), UEFI tabanlı sistemlerde kalıcı yapılandırma ve sistem durumu verilerini depolamak için kullanılan önemli bir bileşendir. Normal RAM’den farklı olarak NVRAM, içeriğini yeniden başlatmalarda ve kapatmalarda korur.
-UEFI’de NVRAM, nasıl ve ne zaman erişilebileceklerini tanımlayan meta verileri (öznitelikler) içeren değişkenler-yapılandırılmış anahtar-değer çiftleri halinde düzenlenir. Bu değişkenler önyükleme yönetimi, güvenli önyükleme anahtarı depolama, donanım yapılandırması ve OEM’e özgü ayarlar gibi kritik sistem işlevleri için kullanılır." /><link rel="canonical" href="http://localhost:1313/tr/docs/uefi-dev/communation-between-windows-and-uefi/" itemprop="url" />
+UEFI’de NVRAM, nasıl ve ne zaman erişilebileceklerini tanımlayan meta verileri (öznitelikler) içeren değişkenler-yapılandırılmış anahtar-değer çiftleri halinde düzenlenir." /><link rel="canonical" href="http://localhost:1313/tr/docs/uefi-dev/communation-between-windows-and-uefi/" itemprop="url" />
 
 <meta property="og:title" content="UEFI to Windows Communication via NVRAM Variables" />
 <meta property="og:description" content="Bu dökümanda, bir UEFI sürücüsü ile bir Windows sürücüsü arasında nasıl iletişim kurulacağını tartışacağız. Özellikle, iki ortam arasında veri alışverişi yapmak için NVRAM tabanlı UEFI değişkenlerinin nasıl kullanılacağını inceleyeceğiz.
-What is NVRAM?
-    NVRAM (Non-Volatile RAM), UEFI tabanlı sistemlerde kalıcı yapılandırma ve sistem durumu verilerini depolamak için kullanılan önemli bir bileşendir. Normal RAM&rsquo;den farklı olarak NVRAM, içeriğini yeniden başlatmalarda ve kapatmalarda korur.
-UEFI&rsquo;de NVRAM, nasıl ve ne zaman erişilebileceklerini tanımlayan meta verileri (öznitelikler) içeren değişkenler-yapılandırılmış anahtar-değer çiftleri halinde düzenlenir. Bu değişkenler önyükleme yönetimi, güvenli önyükleme anahtarı depolama, donanım yapılandırması ve OEM&rsquo;e özgü ayarlar gibi kritik sistem işlevleri için kullanılır." />
+What is NVRAM? NVRAM (Non-Volatile RAM), UEFI tabanlı sistemlerde kalıcı yapılandırma ve sistem durumu verilerini depolamak için kullanılan önemli bir bileşendir. Normal RAM&rsquo;den farklı olarak NVRAM, içeriğini yeniden başlatmalarda ve kapatmalarda korur.
+UEFI&rsquo;de NVRAM, nasıl ve ne zaman erişilebileceklerini tanımlayan meta verileri (öznitelikler) içeren değişkenler-yapılandırılmış anahtar-değer çiftleri halinde düzenlenir." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/tr/docs/uefi-dev/communation-between-windows-and-uefi/" /><meta property="article:section" content="docs" />
 <meta property="article:published_time" content="2025-07-18T00:00:00+00:00" />
@@ -28,7 +27,7 @@ UEFI&rsquo;de NVRAM, nasıl ve ne zaman erişilebileceklerini tanımlayan meta v
   <meta itemprop="name" content="UEFI to Windows Communication via NVRAM Variables">
   <meta itemprop="description" content="Bu dökümanda, bir UEFI sürücüsü ile bir Windows sürücüsü arasında nasıl iletişim kurulacağını tartışacağız. Özellikle, iki ortam arasında veri alışverişi yapmak için NVRAM tabanlı UEFI değişkenlerinin nasıl kullanılacağını inceleyeceğiz.
 What is NVRAM? NVRAM (Non-Volatile RAM), UEFI tabanlı sistemlerde kalıcı yapılandırma ve sistem durumu verilerini depolamak için kullanılan önemli bir bileşendir. Normal RAM’den farklı olarak NVRAM, içeriğini yeniden başlatmalarda ve kapatmalarda korur.
-UEFI’de NVRAM, nasıl ve ne zaman erişilebileceklerini tanımlayan meta verileri (öznitelikler) içeren değişkenler-yapılandırılmış anahtar-değer çiftleri halinde düzenlenir. Bu değişkenler önyükleme yönetimi, güvenli önyükleme anahtarı depolama, donanım yapılandırması ve OEM’e özgü ayarlar gibi kritik sistem işlevleri için kullanılır.">
+UEFI’de NVRAM, nasıl ve ne zaman erişilebileceklerini tanımlayan meta verileri (öznitelikler) içeren değişkenler-yapılandırılmış anahtar-değer çiftleri halinde düzenlenir.">
   <meta itemprop="datePublished" content="2025-07-18T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="1087">
@@ -36,7 +35,7 @@ UEFI’de NVRAM, nasıl ve ne zaman erişilebileceklerini tanımlayan meta veril
   <meta name="twitter:title" content="UEFI to Windows Communication via NVRAM Variables">
   <meta name="twitter:description" content="Bu dökümanda, bir UEFI sürücüsü ile bir Windows sürücüsü arasında nasıl iletişim kurulacağını tartışacağız. Özellikle, iki ortam arasında veri alışverişi yapmak için NVRAM tabanlı UEFI değişkenlerinin nasıl kullanılacağını inceleyeceğiz.
 What is NVRAM? NVRAM (Non-Volatile RAM), UEFI tabanlı sistemlerde kalıcı yapılandırma ve sistem durumu verilerini depolamak için kullanılan önemli bir bileşendir. Normal RAM’den farklı olarak NVRAM, içeriğini yeniden başlatmalarda ve kapatmalarda korur.
-UEFI’de NVRAM, nasıl ve ne zaman erişilebileceklerini tanımlayan meta verileri (öznitelikler) içeren değişkenler-yapılandırılmış anahtar-değer çiftleri halinde düzenlenir. Bu değişkenler önyükleme yönetimi, güvenli önyükleme anahtarı depolama, donanım yapılandırması ve OEM’e özgü ayarlar gibi kritik sistem işlevleri için kullanılır.">
+UEFI’de NVRAM, nasıl ve ne zaman erişilebileceklerini tanımlayan meta verileri (öznitelikler) içeren değişkenler-yapılandırılmış anahtar-değer çiftleri halinde düzenlenir.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 

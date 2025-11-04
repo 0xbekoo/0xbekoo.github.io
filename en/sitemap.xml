@@ -2,6 +2,9 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>http://localhost:1313/docs/uefi-dev/debugging-ovmf-with-gdb/</loc>
+    <lastmod>2025-10-27T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/blog/ssdt-hook-detector-usermode/</loc>
     <lastmod>2025-09-18T00:00:00+00:00</lastmod>
   </url><url>

@@ -103,7 +103,7 @@
 &lt;p&gt;Although RIOT&amp;rsquo;s article states that it already runs in the background, it is highly unlikely that this kernel driver will still run in the background even if all RIOT-related applications are closed. If the game is completely closed, what can software that protects me from cheating in games protect me from?&lt;/p&gt;
 &lt;p&gt;I&amp;rsquo;d like to continue my research by addressing the part mentioned above by Arkhem, the former leader of Vanguard:&lt;/p&gt;
 &lt;blockquote&gt;
-  &lt;p&gt;&lt;em&gt;“Yes we run a driver at system startup, it doesn’t scan anything (unless the game is running), it’s designed to take up as few system resources as possible and it doesn’t communicate to our servers. You can remove it at anytime.&amp;quot;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;“Yes we run a driver at system startup, it doesn’t scan anything (unless the game is running), it’s designed to take up as few system resources as possible and it doesn’t communicate to our servers. You can remove it at anytime.&amp;quot;&lt;/em&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;He says that the software can be uninstalled at any time. After reading this again, I uninstalled Vanguard, then rebooted the OS and checked that vgk.sys was still on the system and the result:&lt;/p&gt;
 &lt;div style=&#34;text-align: center;&#34;&gt;

@@ -25,13 +25,10 @@
         
         
         &lt;p&gt;&lt;img src=&#34;../../../images/posts/ssdt-hooking/banner.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
-&lt;div class=&#34;hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-indigo-200 hx-bg-indigo-100 hx-text-indigo-900 dark:hx-border-indigo-200/30 dark:hx-bg-indigo-900/30 dark:hx-text-indigo-200&#34;&gt;
-  &lt;p class=&#34;hx-flex hx-items-center hx-font-medium&#34;&gt;&lt;svg height=16px class=&#34;hx-inline-block hx-align-middle hx-mr-2&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34; fill=&#34;none&#34; viewBox=&#34;0 0 24 24&#34; stroke-width=&#34;2&#34; stroke=&#34;currentColor&#34; aria-hidden=&#34;true&#34;&gt;&lt;path stroke-linecap=&#34;round&#34; stroke-linejoin=&#34;round&#34; d=&#34;M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z&#34;/&gt;&lt;/svg&gt;Important&lt;/p&gt;
-
-  &lt;div class=&#34;hx-w-full hx-min-w-0 hx-leading-7&#34;&gt;
-    &lt;div class=&#34;hx-mt-6 hx-leading-7 first:hx-mt-0&#34;&gt;&lt;p&gt;I also wrote an article about this work in English on Medium, you can click &lt;a href=&#34;https://medium.com/@0xbekoo/loading-driver-from-user-mode-program-via-ssdt-hooking-720eeb08abb9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt; if you want to take a look.&lt;/p&gt;&lt;/div&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[!IMPORTANT]
+I also wrote an article about this work in English on Medium, you can click &lt;a href=&#34;https://medium.com/@0xbekoo/loading-driver-from-user-mode-program-via-ssdt-hooking-720eeb08abb9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt; if you want to take a look.&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;Merhabalar efenimm bloguma hoşgeldiniz. Bu blogta SSDT Hooking tekniğine bir yakından bakacağız. Bu teknik için hazırladığım proje üzerinden ilerleyeceğiz. Başlıktan gördüğünüz üzere User-Mode programı kullanarak NtLoadDriver ile sürücü yüklemesini sağlayacağız.&lt;/p&gt;
 &lt;p&gt;Yine aynı şekilde proje, &lt;strong&gt;User-Mode&lt;/strong&gt; ve &lt;strong&gt;Kernel-Mode&lt;/strong&gt; olmak üzere iki kısma ayrılıyor. User-Mode programda sadece NtLoadDriver çağırarak sürücüyü yüklemeyi sağlayacağız ardından Rootkit ile User-Mode programın sürücü yüklemeden önce geçmesi gereken güvenlik önlemlerini atlatmasını sağlayacağız; bunun için ise SSDT Hooking&amp;rsquo;den yararlanacağız.&lt;/p&gt;
 &lt;p&gt;Bu konuyu anlatırken SSDT nedir gibi vs. konulara yer vermeyeceğimi burada vurgulamak isterim. Zaten blog sayfamda &lt;a href=&#34;https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;SSDT&lt;/strong&gt;&lt;/a&gt; ve &lt;a href=&#34;https://0xbekoo.github.io/blog/syscalls/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Windows Kernel&amp;rsquo;da Syscall Araştırma Yolculuğum&lt;/strong&gt;&lt;/a&gt; adlı iki çalışmam bulunmakta. Dolayasıyla okuyucunun SSDT konusu üzerine temel bilgileri olduğunu varsayıyorum.&lt;/p&gt;
@@ -52,7 +49,7 @@
 &lt;p&gt;Açıkçası NtLoadDriver&amp;rsquo;ı birkaç gündür araştırıyordum ve NtLoadDriver&amp;rsquo;ı araştırırken SSDT Hooking tekniği ile tanıştım. Sonra bu iki çalışmayı birleştirmeye karar verdim. Bu hem NtLoadDriver&amp;rsquo;in çalışma prensibini hem de SSDT Hooking tekniğini anlamamda yardımcı oldu. Farklı bir deyişle bir taşla iki kuş hesabı :D&lt;/p&gt;
 &lt;h3&gt;PreviousMode Bayrağı&lt;span class=&#34;hx-absolute -hx-mt-20&#34; id=&#34;previousmode-bayrağı&#34;&gt;&lt;/span&gt;
     &lt;a href=&#34;#previousmode-bayra%c4%9f%c4%b1&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;blockquote&gt;
-  &lt;p&gt;&amp;ldquo;Bir kullanıcı modu uygulaması, yerel sistem hizmeti rutinlerinin Nt veya Zw sürümlerinden birini çağırdığında, sistem çağrı mekanizması bu iş parçacığını (thread) çekirdek moduna geçirir. Sistemin, parametrelerin kullanıcı modundan geldiğini anlaması için, sistem çağrısını yöneten trap handler, çağrıyı yapan iş parçacığının nesnesindeki PreviousMode alanını UserMode olarak ayarlar.&amp;rdquo; ~ &lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/previousmode&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Microsoft Learn - PreviousMode&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&amp;ldquo;Bir kullanıcı modu uygulaması, yerel sistem hizmeti rutinlerinin Nt veya Zw sürümlerinden birini çağırdığında, sistem çağrı mekanizması bu iş parçacığını (thread) çekirdek moduna geçirir. Sistemin, parametrelerin kullanıcı modundan geldiğini anlaması için, sistem çağrısını yöneten trap handler, çağrıyı yapan iş parçacığının nesnesindeki PreviousMode alanını UserMode olarak ayarlar.&amp;rdquo; ~ &lt;a href=&#34;https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/previousmode&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Microsoft Learn - PreviousMode&lt;/a&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;Eğer &lt;strong&gt;Windows Kernel&amp;rsquo;da Syscall Araştırma Yolculuğum&lt;/strong&gt; blogunu okumuşsanız KPCR yapısı hakkında bilgi vermiştim. PreviousMode bayrağı bu yapı içerisindedir. Peki ama nedir bu?&lt;/p&gt;
 &lt;p&gt;Açıklamadan görebileceğiniz üzere yapılan işlemin User-Mode tarafından mı yoksa Kernel-Mode tarafından mı yapıldığını gösteren bir bayraktır ve bu PreviousMode bayrağı sadece 1 veya 0 değerleri alır:&lt;/p&gt;
@@ -851,7 +848,7 @@ nt!_KPCR
 &lt;p&gt;Burada odağımızı &lt;code&gt;mov rbx,gs:188h&lt;/code&gt; kısmına çevirmemiz gerekiyor çünkü önemli bir yapı olan _KPCR yapısı içerisinden bir KTHREAD yapısı alınmakta.&lt;/p&gt;
 &lt;p&gt;Bu yapının ne olduğunu anlamak için &lt;a href=&#34;https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/amd64_x/kpcr.htm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Geoff Chappell, Software Analyst&lt;/a&gt;&amp;lsquo;ın açıklamasından yararlanabiliriz:&lt;/p&gt;
 &lt;blockquote&gt;
-  &lt;p&gt;&amp;ldquo;KPCR yapısı, &lt;strong&gt;Kernel Processor Control Region&lt;/strong&gt; anlamına gelir. Kernel, her mantıksal işlemci için bir KPCR yapısı tutar. KPCR, işlemci mimarisine son derece özeldir.&amp;rdquo;&lt;/p&gt;
+&lt;p&gt;&amp;ldquo;KPCR yapısı, &lt;strong&gt;Kernel Processor Control Region&lt;/strong&gt; anlamına gelir. Kernel, her mantıksal işlemci için bir KPCR yapısı tutar. KPCR, işlemci mimarisine son derece özeldir.&amp;rdquo;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;Yani kısaca aklımızda şöyle kalabilir bu yapıda işlemciye özel verileri saklamak için kullanılır. Yani baya önemli bir yapı.&lt;/p&gt;
 &lt;p&gt;x64 sistemlerde KPCR yapısı, gs:0 alanına işaret eder:&lt;/p&gt;
@@ -915,7 +912,7 @@ nt!_KPCR
 &lt;/div&gt;
 &lt;p&gt;&lt;code&gt;gs:188h&lt;/code&gt; olduğu için KRPCB yapısından KTHREAD yapısına işaret eden &lt;strong&gt;+0x008 CurrentThread&lt;/strong&gt; alınmakta. &lt;strong&gt;KTHREAD&lt;/strong&gt; yapısının ne olduğunu anlamak için yine &lt;a href=&#34;https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/ke/kthread/index.htm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Geoff Chappell&lt;/a&gt;&amp;lsquo;in makalesinden yararlanabiliriz:&lt;/p&gt;
 &lt;blockquote&gt;
-  &lt;p&gt;&amp;ldquo;KTHREAD yapısı, ETHREAD yapısının çekirdek kısmıdır. ETHREAD, Nesne Yöneticisi (Object Manager) aracılığıyla sunulan iş parçacığı nesnesidir. KTHREAD ise bunun temel çekirdeğini oluşturur.&amp;rdquo;&lt;/p&gt;
+&lt;p&gt;&amp;ldquo;KTHREAD yapısı, ETHREAD yapısının çekirdek kısmıdır. ETHREAD, Nesne Yöneticisi (Object Manager) aracılığıyla sunulan iş parçacığı nesnesidir. KTHREAD ise bunun temel çekirdeğini oluşturur.&amp;rdquo;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;Yani bildiğimiz ETHREAD yapısının kernel versiyonu. Thread yürütme/yönetimi için Kernel tarafından ihtiyaç duyulan birçok önemli bilgiyi içeriyor bu yapı. Bunlardan biri de bu yapıda TEB&amp;rsquo;in adresi bulunmasıdır:&lt;/p&gt;
 &lt;div class=&#34;hextra-code-block hx-relative hx-mt-6 first:hx-mt-0 hx-group/code&#34;&gt;

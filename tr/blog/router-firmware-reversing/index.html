@@ -11,19 +11,16 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>Router Firmware Reverse Engineering – 0xbekoo</title>
-  <meta name="description" content="
-Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link’in Archer AX 21 V4.6 modemin firmware’i reverse edeceğiz. Firmware indirmek için TP-Link’in orijinal sayfasına göz atabilirsiniz.
-Warning
-Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır." /><link rel="canonical" href="http://localhost:1313/tr/blog/router-firmware-reversing/" itemprop="url" />
+  <meta name="description" content="Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link’in Archer AX 21 V4.6 modemin firmware’i reverse edeceğiz. Firmware indirmek için TP-Link’in orijinal sayfasına göz atabilirsiniz.
+[!WARNING] Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.
+Öncelikle indirdiğimiz Firmware’in bilgilerine göz atalım:
+Görüldüğü üzere 14 Kasım 2024 yılında yayınlanmış." /><link rel="canonical" href="http://localhost:1313/tr/blog/router-firmware-reversing/" itemprop="url" />
 
 <meta property="og:title" content="Router Firmware Reverse Engineering" />
-<meta property="og:description" content="
-Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link&rsquo;in Archer AX 21 V4.6 modemin firmware&rsquo;i reverse edeceğiz. Firmware indirmek için TP-Link&rsquo;in orijinal sayfasına göz atabilirsiniz.
-
-  Warning
-
-  
-    Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır." />
+<meta property="og:description" content="Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link&rsquo;in Archer AX 21 V4.6 modemin firmware&rsquo;i reverse edeceğiz. Firmware indirmek için TP-Link&rsquo;in orijinal sayfasına göz atabilirsiniz.
+[!WARNING] Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.
+Öncelikle indirdiğimiz Firmware&rsquo;in bilgilerine göz atalım:
+Görüldüğü üzere 14 Kasım 2024 yılında yayınlanmış." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/tr/blog/router-firmware-reversing/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2024-12-03T00:00:00+00:00" />
@@ -31,8 +28,9 @@ Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yaz�
 
   <meta itemprop="name" content="Router Firmware Reverse Engineering">
   <meta itemprop="description" content="Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link’in Archer AX 21 V4.6 modemin firmware’i reverse edeceğiz. Firmware indirmek için TP-Link’in orijinal sayfasına göz atabilirsiniz.
-Warning
-Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.">
+[!WARNING] Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.
+Öncelikle indirdiğimiz Firmware’in bilgilerine göz atalım:
+Görüldüğü üzere 14 Kasım 2024 yılında yayınlanmış.">
   <meta itemprop="datePublished" content="2024-12-03T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="861">
@@ -40,8 +38,9 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Router Firmware Reverse Engineering">
   <meta name="twitter:description" content="Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link’in Archer AX 21 V4.6 modemin firmware’i reverse edeceğiz. Firmware indirmek için TP-Link’in orijinal sayfasına göz atabilirsiniz.
-Warning
-Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.">
+[!WARNING] Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.
+Öncelikle indirdiğimiz Firmware’in bilgilerine göz atalım:
+Görüldüğü üzere 14 Kasım 2024 yılında yayınlanmış.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -552,13 +551,10 @@ Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim a
         <div class="content">
           <p><img src="../../../images/posts/reversing-router/headerphoto.jpg" alt="" loading="lazy" /></p>
 <p>Merhabalar. Firmware Reverse Engineering için ilk bloguma hoşgeldiniz. Bu yazıda TP-Link&rsquo;in <a href="https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/" target="_blank" rel="noopener">Archer AX 21 V4.6</a> modemin firmware&rsquo;i reverse edeceğiz. Firmware indirmek için <a href="https://www.tp-link.com/us/support/download/archer-ax21/#Firmware" target="_blank" rel="noopener">TP-Link&rsquo;in orijinal sayfasına</a> göz atabilirsiniz.</p>
-<div class="hx-overflow-x-auto hx-mt-6 hx-flex hx-flex-col hx-rounded-lg hx-border hx-py-4 hx-px-4 contrast-more:hx-border-current contrast-more:dark:hx-border-current hx-border-amber-200 hx-bg-amber-100 hx-text-amber-900 dark:hx-border-amber-200/30 dark:hx-bg-amber-900/30 dark:hx-text-amber-200">
-  <p class="hx-flex hx-items-center hx-font-medium"><svg height=16px class="hx-inline-block hx-align-middle hx-mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Warning</p>
-
-  <div class="hx-w-full hx-min-w-0 hx-leading-7">
-    <div class="hx-mt-6 hx-leading-7 first:hx-mt-0"><p>Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.</p></div>
-  </div>
-</div>
+<blockquote>
+<p>[!WARNING]
+Bu blogta, paylaşılan bilgiler, güvenlik araştırmaları ve teknik eğitim amacıyla sunulmaktadır. İlgili firmaya veya ürününe yönelik herhangi bir zarar verme ya da kötü niyetli bir davranışta bulunma gibi bir amaç barındırılmamaktadır.</p>
+</blockquote>
 <p>Öncelikle indirdiğimiz Firmware&rsquo;in bilgilerine göz atalım:</p>
 <p><img src="../../../images/posts/reversing-router/firmware-info.png" alt="" loading="lazy" /></p>
 <p>Görüldüğü üzere 14 Kasım 2024 yılında yayınlanmış. Yani neredeyse 1 ay önce yayınlanmış bir firmware. Birkaç hatanın düzeltildiği, optimizelerin yapıldığı ve yeni şeyler eklendiğini görebiliriz.</p>

@@ -13,72 +13,12 @@
 <title>PatchGuard Analysis - Part 3 – 0xbekoo</title>
   <meta name="description" content="Triggering Checks Daha önce de gördüğümüz gibi, bazı çeşitli yöntemler context’leri ayarlamak için kullanılıyor. Bu bölümde, bu context’lerin nasıl tetiklendiğine göz atacağız.
 DPC Execution Bir kontrolün tetiklenmede kullanılan en çok yöntemlerden biri ise DPC kullanmaktır. Aşağıdaki listeden seçilen bir rutin aracılığıyla bu işlem gerçekleştirilir:
-0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch 0 ila 9 index arasındaki fonksiyonlarda kontrollerin başlatılması için bir exception handler kullanılıyor. KiTimerDispatch ve KiDpcDispatch fonksiyonlarında herhangi bir exception olmadan direkt olarak DPC çağırılıyor. Bir başka deyişle anlatmak gerekirse bu fonksiyonlar kendi işlerini yaparken aynı zamanda PatchGuard bunları hijack ederek kendini saklıyor." /><link rel="canonical" href="http://localhost:1313/tr/blog/patchguard-analysis-part-3/" itemprop="url" />
+0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch 0 ila 9 index arasındaki fonksiyonlarda kontrollerin başlatılması için bir exception handler kullanılıyor." /><link rel="canonical" href="http://localhost:1313/tr/blog/patchguard-analysis-part-3/" itemprop="url" />
 
 <meta property="og:title" content="PatchGuard Analysis - Part 3" />
-<meta property="og:description" content="Triggering Checks
-    Daha önce de gördüğümüz gibi, bazı çeşitli yöntemler context&rsquo;leri ayarlamak için kullanılıyor. Bu bölümde, bu context&rsquo;lerin nasıl tetiklendiğine göz atacağız.
-DPC Execution
-    Bir kontrolün tetiklenmede kullanılan en çok yöntemlerden biri ise DPC kullanmaktır. Aşağıdaki listeden seçilen bir rutin aracılığıyla bu işlem gerçekleştirilir:
-
-  
-      
-          0
-          CmpEnableLazyFlushDpcRoutine
-      
-  
-  
-      
-          1
-          ExpCenturyDpcRoutine
-      
-      
-          2
-          ExpTimeZoneDpcRoutine
-      
-      
-          3
-          ExpTimeRefreshDpcRoutine
-      
-      
-          4
-          CmpLazyFlushDpcRoutine
-      
-      
-          5
-          ExpTimerDpcRoutine
-      
-      
-          6
-          IopTimerDispatch
-      
-      
-          7
-          IopIrpStackProfilerDpcRoutine
-      
-      
-          8
-          KiBalanceSetManagerDeferredRoutine
-      
-      
-          9
-          PopThermalZoneDpc
-      
-      
-          10
-          KiTimerDispatch OR KiDpcDispatch
-      
-      
-          11
-          KiTimerDispatch OR KiDpcDispatch
-      
-      
-          12
-          KiTimerDispatch OR KiDpcDispatch
-      
-  
-
-0 ila 9 index arasındaki fonksiyonlarda kontrollerin başlatılması için bir exception handler kullanılıyor. KiTimerDispatch ve KiDpcDispatch fonksiyonlarında herhangi bir exception olmadan direkt olarak DPC çağırılıyor. Bir başka deyişle anlatmak gerekirse bu fonksiyonlar kendi işlerini yaparken aynı zamanda PatchGuard bunları hijack ederek kendini saklıyor." />
+<meta property="og:description" content="Triggering Checks Daha önce de gördüğümüz gibi, bazı çeşitli yöntemler context&rsquo;leri ayarlamak için kullanılıyor. Bu bölümde, bu context&rsquo;lerin nasıl tetiklendiğine göz atacağız.
+DPC Execution Bir kontrolün tetiklenmede kullanılan en çok yöntemlerden biri ise DPC kullanmaktır. Aşağıdaki listeden seçilen bir rutin aracılığıyla bu işlem gerçekleştirilir:
+0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch 0 ila 9 index arasındaki fonksiyonlarda kontrollerin başlatılması için bir exception handler kullanılıyor." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/tr/blog/patchguard-analysis-part-3/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2025-08-06T00:00:00+00:00" />
@@ -87,7 +27,7 @@ DPC Execution
   <meta itemprop="name" content="PatchGuard Analysis - Part 3">
   <meta itemprop="description" content="Triggering Checks Daha önce de gördüğümüz gibi, bazı çeşitli yöntemler context’leri ayarlamak için kullanılıyor. Bu bölümde, bu context’lerin nasıl tetiklendiğine göz atacağız.
 DPC Execution Bir kontrolün tetiklenmede kullanılan en çok yöntemlerden biri ise DPC kullanmaktır. Aşağıdaki listeden seçilen bir rutin aracılığıyla bu işlem gerçekleştirilir:
-0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch 0 ila 9 index arasındaki fonksiyonlarda kontrollerin başlatılması için bir exception handler kullanılıyor. KiTimerDispatch ve KiDpcDispatch fonksiyonlarında herhangi bir exception olmadan direkt olarak DPC çağırılıyor. Bir başka deyişle anlatmak gerekirse bu fonksiyonlar kendi işlerini yaparken aynı zamanda PatchGuard bunları hijack ederek kendini saklıyor.">
+0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch 0 ila 9 index arasındaki fonksiyonlarda kontrollerin başlatılması için bir exception handler kullanılıyor.">
   <meta itemprop="datePublished" content="2025-08-06T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-08-16T00:35:41+03:00">
   <meta itemprop="wordCount" content="2161">
@@ -96,7 +36,7 @@ DPC Execution Bir kontrolün tetiklenmede kullanılan en çok yöntemlerden biri
   <meta name="twitter:title" content="PatchGuard Analysis - Part 3">
   <meta name="twitter:description" content="Triggering Checks Daha önce de gördüğümüz gibi, bazı çeşitli yöntemler context’leri ayarlamak için kullanılıyor. Bu bölümde, bu context’lerin nasıl tetiklendiğine göz atacağız.
 DPC Execution Bir kontrolün tetiklenmede kullanılan en çok yöntemlerden biri ise DPC kullanmaktır. Aşağıdaki listeden seçilen bir rutin aracılığıyla bu işlem gerçekleştirilir:
-0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch 0 ila 9 index arasındaki fonksiyonlarda kontrollerin başlatılması için bir exception handler kullanılıyor. KiTimerDispatch ve KiDpcDispatch fonksiyonlarında herhangi bir exception olmadan direkt olarak DPC çağırılıyor. Bir başka deyişle anlatmak gerekirse bu fonksiyonlar kendi işlerini yaparken aynı zamanda PatchGuard bunları hijack ederek kendini saklıyor.">
+0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch 0 ila 9 index arasındaki fonksiyonlarda kontrollerin başlatılması için bir exception handler kullanılıyor.">
 
     <link href="/css/compiled/main.css" rel="stylesheet" />
 
@@ -622,62 +562,62 @@ DPC Execution Bir kontrolün tetiklenmede kullanılan en çok yöntemlerden biri
 <h5><strong>DPC Execution</strong><span class="hx-absolute -hx-mt-20" id="dpc-execution"></span>
     <a href="#dpc-execution" class="subheading-anchor" aria-label="Permalink for this section"></a></h5><p>Bir kontrolün tetiklenmede kullanılan en çok yöntemlerden biri ise DPC kullanmaktır. Aşağıdaki listeden seçilen bir rutin aracılığıyla bu işlem gerçekleştirilir:</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: center"><strong>0</strong></th>
-          <th style="text-align: center">CmpEnableLazyFlushDpcRoutine</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: center"><strong>1</strong></td>
-          <td style="text-align: center">ExpCenturyDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>2</strong></td>
-          <td style="text-align: center">ExpTimeZoneDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>3</strong></td>
-          <td style="text-align: center">ExpTimeRefreshDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>4</strong></td>
-          <td style="text-align: center">CmpLazyFlushDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>5</strong></td>
-          <td style="text-align: center">ExpTimerDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>6</strong></td>
-          <td style="text-align: center">IopTimerDispatch</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>7</strong></td>
-          <td style="text-align: center">IopIrpStackProfilerDpcRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>8</strong></td>
-          <td style="text-align: center">KiBalanceSetManagerDeferredRoutine</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>9</strong></td>
-          <td style="text-align: center">PopThermalZoneDpc</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>10</strong></td>
-          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>11</strong></td>
-          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
-      </tr>
-      <tr>
-          <td style="text-align: center"><strong>12</strong></td>
-          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
-      </tr>
-  </tbody>
+<thead>
+<tr>
+<th style="text-align:center"><strong>0</strong></th>
+<th style="text-align:center">CmpEnableLazyFlushDpcRoutine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>1</strong></td>
+<td style="text-align:center">ExpCenturyDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>2</strong></td>
+<td style="text-align:center">ExpTimeZoneDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>3</strong></td>
+<td style="text-align:center">ExpTimeRefreshDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>4</strong></td>
+<td style="text-align:center">CmpLazyFlushDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>5</strong></td>
+<td style="text-align:center">ExpTimerDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>6</strong></td>
+<td style="text-align:center">IopTimerDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>7</strong></td>
+<td style="text-align:center">IopIrpStackProfilerDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>8</strong></td>
+<td style="text-align:center">KiBalanceSetManagerDeferredRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>9</strong></td>
+<td style="text-align:center">PopThermalZoneDpc</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>10</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>11</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>12</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+</tbody>
 </table>
 <p>0 ila 9 index arasındaki fonksiyonlarda kontrollerin başlatılması için bir exception handler kullanılıyor. KiTimerDispatch ve KiDpcDispatch fonksiyonlarında herhangi bir exception olmadan direkt olarak DPC çağırılıyor. Bir başka deyişle anlatmak gerekirse bu fonksiyonlar kendi işlerini yaparken aynı zamanda PatchGuard bunları hijack ederek kendini saklıyor.</p>
 <h6><strong>Non-Canonical DeferredContext Pointer</strong><span class="hx-absolute -hx-mt-20" id="non-canonical-deferredcontext-pointer"></span>
@@ -769,75 +709,75 @@ DPC Execution Bir kontrolün tetiklenmede kullanılan en çok yöntemlerden biri
 </ul>
 <p>Decrypt işleminin ilk katmanı tüm context structure&rsquo;a odaklanır. Bunu yapmak için aşağıdaki listede özetlenen birden fazla farklı kod vardır:</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: left"><strong>Index</strong></th>
-          <th style="text-align: left"><strong>Routine</strong></th>
-          <th style="text-align: left"><strong>Layer Encryption</strong></th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: left"><strong>0</strong></td>
-          <td style="text-align: left">CmpEnableLazyFlushDpcRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>1</strong></td>
-          <td style="text-align: left">ExpCenturyDpcRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>2</strong></td>
-          <td style="text-align: left">ExpTimeZoneDpcRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>3</strong></td>
-          <td style="text-align: left">ExpTimeRefreshDpcRoutine</td>
-          <td style="text-align: left">Method 2</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>4</strong></td>
-          <td style="text-align: left">CmpEnableLazyFlushDpcRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>5</strong></td>
-          <td style="text-align: left">ExpTimerDpcRoutine</td>
-          <td style="text-align: left">Method 2</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>6</strong></td>
-          <td style="text-align: left">IopTimerDispatch</td>
-          <td style="text-align: left">Method 2</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>7</strong></td>
-          <td style="text-align: left">IopIrpStackProfilerDpcRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>8</strong></td>
-          <td style="text-align: left">KiBalanceSetManagerDeferredRoutine</td>
-          <td style="text-align: left">Method 1</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>9</strong></td>
-          <td style="text-align: left">PopThermalZoneDpc</td>
-          <td style="text-align: left">Method 2</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>10-12</strong></td>
-          <td style="text-align: left">KiTimerDispatch</td>
-          <td style="text-align: left">Method 1 + hardcoded key</td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>10-12</strong></td>
-          <td style="text-align: left">KiDpcDispatch</td>
-          <td style="text-align: left">No 1st layer encryption</td>
-      </tr>
-  </tbody>
+<thead>
+<tr>
+<th style="text-align:left"><strong>Index</strong></th>
+<th style="text-align:left"><strong>Routine</strong></th>
+<th style="text-align:left"><strong>Layer Encryption</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>0</strong></td>
+<td style="text-align:left">CmpEnableLazyFlushDpcRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>1</strong></td>
+<td style="text-align:left">ExpCenturyDpcRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>2</strong></td>
+<td style="text-align:left">ExpTimeZoneDpcRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>3</strong></td>
+<td style="text-align:left">ExpTimeRefreshDpcRoutine</td>
+<td style="text-align:left">Method 2</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>4</strong></td>
+<td style="text-align:left">CmpEnableLazyFlushDpcRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>5</strong></td>
+<td style="text-align:left">ExpTimerDpcRoutine</td>
+<td style="text-align:left">Method 2</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>6</strong></td>
+<td style="text-align:left">IopTimerDispatch</td>
+<td style="text-align:left">Method 2</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>7</strong></td>
+<td style="text-align:left">IopIrpStackProfilerDpcRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>8</strong></td>
+<td style="text-align:left">KiBalanceSetManagerDeferredRoutine</td>
+<td style="text-align:left">Method 1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>9</strong></td>
+<td style="text-align:left">PopThermalZoneDpc</td>
+<td style="text-align:left">Method 2</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>10-12</strong></td>
+<td style="text-align:left">KiTimerDispatch</td>
+<td style="text-align:left">Method 1 + hardcoded key</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>10-12</strong></td>
+<td style="text-align:left">KiDpcDispatch</td>
+<td style="text-align:left">No 1st layer encryption</td>
+</tr>
+</tbody>
 </table>
 <p>Bu encryption/decryption rutinleri KiWaitNever and KiWaitAlways değişkenlerinden random değerler kullanır. Bu global değişkenler random değerler tutar ve bu değerler boot esnasında üretiliyor. KiInitPatchGuardContext ise bu değerleri PatchGuard Context Structure encrypt etmek için kullanıyor. PopThermalZoneDpc fonksiyonun <strong>0x1406C8E10</strong> adresinden bir örneğine göz atabilirsiniz.  Ayrıca, structure ile etkileşime geçmek isteyen bir saldırganın da bu global değişkenleri kullanabileceğini unutmayın.</p>
 <br>
@@ -1049,7 +989,7 @@ DPC Execution Bir kontrolün tetiklenmede kullanılan en çok yöntemlerden biri
 <p>İlk olarak, eax <strong>0x80000008</strong> değerini alır, ardından cpuid çalıştırılır. Yürütmeden sonra, sonuç 8 bayt sağa kaydırılır ve elde edilen sonuç yapının 0x940 ofsetine geçirilir.</p>
 <p><strong>0x80000008</strong> değeri <strong>linear/physical address size data</strong>&lsquo;a karşılık gelir. Felix Clouiter&rsquo;dan alıntı:<sup>[5]</sup></p>
 <blockquote>
-  <p><em>&ldquo;İki tür bilgi döndürülür: temel ve genişletilmiş fonksiyon bilgileri. CPUID.EAX için girilen bir değer, o işlemci için temel veya genişletilmiş fonksiyon için maksimum giriş değerinden yüksekse, en yüksek temel bilgi yaprağına ait veriler döndürülür. Örneğin, bazı Intel işlemcileri kullanıldığında, aşağıdakiler doğrudur:
+<p><em>&ldquo;İki tür bilgi döndürülür: temel ve genişletilmiş fonksiyon bilgileri. CPUID.EAX için girilen bir değer, o işlemci için temel veya genişletilmiş fonksiyon için maksimum giriş değerinden yüksekse, en yüksek temel bilgi yaprağına ait veriler döndürülür. Örneğin, bazı Intel işlemcileri kullanıldığında, aşağıdakiler doğrudur:
 &hellip;
 CPUID.EAX = 80000008H (</em> linear/physical address boyutu verilerini döndürür. <em>) &ldquo;</em></p>
 </blockquote>

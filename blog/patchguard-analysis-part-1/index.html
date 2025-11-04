@@ -16,8 +16,7 @@ Introduction Most of us have probably come across PatchGuard (Kernel Patch Prote
 
 <meta property="og:title" content="PatchGuard Analysis - Part 1" />
 <meta property="og:description" content="This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.
-Introduction
-    Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture." />
+Introduction Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://localhost:1313/blog/patchguard-analysis-part-1/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2025-08-06T00:00:00+00:00" />
@@ -159,7 +158,7 @@ Introduction Most of us have probably come across PatchGuard (Kernel Patch Prote
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/blog/ssdt-hook-detector-usermode/"
     
-  >Detecting SSDT Hook in User Mode Program via BYOVD
+  >Detecting SSDT Hook with User Mode Program via BYOVD
     </a>
               
             </li><li class="hx-flex hx-flex-col "><a
@@ -263,6 +262,14 @@ Introduction Most of us have probably come across PatchGuard (Kernel Patch Prote
     </a>
               <div class="ltr:hx-pr-0 hx-overflow-hidden">
         <ul class='hx-relative hx-flex hx-flex-col hx-gap-1 before:hx-absolute before:hx-inset-y-1 before:hx-w-px before:hx-bg-gray-200 before:hx-content-[""] ltr:hx-ml-3 ltr:hx-pl-3 ltr:before:hx-left-0 rtl:hx-mr-3 rtl:hx-pr-3 rtl:before:hx-right-0 dark:before:hx-bg-neutral-800'><li class="hx-flex hx-flex-col "><a
+    class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
+    href="/docs/uefi-dev/debugging-ovmf-with-gdb/"
+    
+  >Debugging QEMU &#43; OVMF with GDB
+    </a>
+              
+            </li><li class="hx-flex hx-flex-col "><a
     class="hx-flex hx-items-center hx-justify-between hx-gap-2 hx-cursor-pointer hx-rounded hx-px-2 hx-py-1.5 hx-text-sm hx-transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
       hx-text-gray-500 hover:hx-bg-gray-100 hover:hx-text-gray-900 contrast-more:hx-border contrast-more:hx-border-transparent contrast-more:hx-text-gray-900 contrast-more:hover:hx-border-gray-900 dark:hx-text-neutral-400 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50 contrast-more:dark:hx-text-gray-50 contrast-more:dark:hover:hx-border-gray-50"
     href="/docs/uefi-dev/communation-between-windows-and-uefi/"
@@ -831,74 +838,74 @@ BIT 31 0x80000000 Result of KiSwInterruptPresent
 </div>
 <p>So all the members of this structure are as follows:</p>
 <table>
-  <thead>
-      <tr>
-          <th style="text-align: left"><strong>Field</strong></th>
-          <th style="text-align: left">Routine</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td style="text-align: left"><strong>Hal</strong></td>
-          <td style="text-align: left"><strong>xHalHaltSystem</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KeBugCheckEx</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KeBugCheck2</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KiBugCheckDebugBreak</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KiDebugTrapOrFault</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>DbgBreakPointWithStatus</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>RtlCaptureContext</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KeQueryCurrentStackInformation</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KiSaveProcessorControlState</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>memmove</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>IoSaveBugCheckProgress</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KeIsEmptyAffinityEx</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>VfNotifyVerifierOfEvent</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>_guard_check_icall_no_overrides</strong></td>
-      </tr>
-      <tr>
-          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
-          <td style="text-align: left"><strong>KeGuardDispatchICall</strong></td>
-      </tr>
-  </tbody>
+<thead>
+<tr>
+<th style="text-align:left"><strong>Field</strong></th>
+<th style="text-align:left">Routine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Hal</strong></td>
+<td style="text-align:left"><strong>xHalHaltSystem</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KeBugCheckEx</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KeBugCheck2</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KiBugCheckDebugBreak</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KiDebugTrapOrFault</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>DbgBreakPointWithStatus</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>RtlCaptureContext</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KeQueryCurrentStackInformation</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KiSaveProcessorControlState</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>memmove</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>IoSaveBugCheckProgress</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KeIsEmptyAffinityEx</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>VfNotifyVerifierOfEvent</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>_guard_check_icall_no_overrides</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Ntoskrnl</strong></td>
+<td style="text-align:left"><strong>KeGuardDispatchICall</strong></td>
+</tr>
+</tbody>
 </table>
 <h6><strong>Third Section</strong><span class="hx-absolute -hx-mt-20" id="third-section"></span>
     <a href="#third-section" class="subheading-anchor" aria-label="Permalink for this section"></a></h6><ul>
