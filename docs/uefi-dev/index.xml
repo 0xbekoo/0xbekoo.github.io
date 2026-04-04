@@ -2,38 +2,38 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>UEFI Development on 0xbekoo</title>
-    <link>http://localhost:38385/docs/uefi-dev/</link>
+    <link>http://localhost:42551/docs/uefi-dev/</link>
     <description>Recent content in UEFI Development on 0xbekoo</description>
     <generator>Hugo</generator>
     <language>en</language>
     <lastBuildDate>Mon, 27 Oct 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:38385/docs/uefi-dev/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:42551/docs/uefi-dev/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Debugging QEMU &#43; OVMF with GDB</title>
-      <link>http://localhost:38385/docs/uefi-dev/debugging-ovmf-with-gdb/</link>
+      <link>http://localhost:42551/docs/uefi-dev/debugging-ovmf-with-gdb/</link>
       <pubDate>Mon, 27 Oct 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/docs/uefi-dev/debugging-ovmf-with-gdb/</guid>
+      <guid>http://localhost:42551/docs/uefi-dev/debugging-ovmf-with-gdb/</guid>
       <description>Introduction Probably you know the signifince of debugging in any low-level programming projects. In the same way, we need to debug our UEFI Driver in some cases.&#xA;For me, debugging is essential — I can’t do my work properly without it. Even though I’m still new to UEFI development, I wanted to start debugging my own UEFI drivers as early as possible. Because many existing resources are outdated, I decided to share my debugging journey and update the information for 2025.</description>
     </item>
     <item>
       <title>UEFI to Windows Communication via NVRAM Variables</title>
-      <link>http://localhost:38385/docs/uefi-dev/communation-between-windows-and-uefi/</link>
+      <link>http://localhost:42551/docs/uefi-dev/communation-between-windows-and-uefi/</link>
       <pubDate>Fri, 18 Jul 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/docs/uefi-dev/communation-between-windows-and-uefi/</guid>
+      <guid>http://localhost:42551/docs/uefi-dev/communation-between-windows-and-uefi/</guid>
       <description>In this documentation, we will discuss how to establish communication between a UEFI driver and a Windows driver. Specifically, we’ll explore how to use NVRAM-based UEFI variables to exchange data between the two environments.&#xA;What is NVRAM? NVRAM (Non-Volatile RAM) is a key component in UEFI-based systems, used to store persistent configuration and system state data. Unlike regular RAM, NVRAM retains its contents across reboots and power-offs, making it essential for managing firmware-level settings.</description>
     </item>
     <item>
       <title>UEFI Keylogger</title>
-      <link>http://localhost:38385/docs/uefi-dev/uefi-keylogger/</link>
+      <link>http://localhost:42551/docs/uefi-dev/uefi-keylogger/</link>
       <pubDate>Tue, 28 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/docs/uefi-dev/uefi-keylogger/</guid>
+      <guid>http://localhost:42551/docs/uefi-dev/uefi-keylogger/</guid>
       <description>In this documentation we will develop simple uefi keylogger.&#xA;Coding #include &amp;lt;Uefi.h&amp;gt; #include &amp;lt;Library/UefiApplicationEntryPoint.h&amp;gt; #include &amp;lt;Library/UefiLib.h&amp;gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&amp;gt;ConIn; Print (L&amp;#34;UEFI Keylogger!\n&amp;#34;); while(1) { TextInput-&amp;gt;ReadKeyStroke ( TextInput, &amp;amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&amp;#34;ESC Button Detected\n&amp;#34;); break; } if (Key.UnicodeChar != 0) { Print (L&amp;#34;Pressed: %c\n&amp;#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Now let&amp;rsquo;s take a look at the codes</description>
     </item>
     <item>
       <title>Introduction to UEFI</title>
-      <link>http://localhost:38385/docs/uefi-dev/uefi-introduction/</link>
+      <link>http://localhost:42551/docs/uefi-dev/uefi-introduction/</link>
       <pubDate>Sun, 19 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/docs/uefi-dev/uefi-introduction/</guid>
+      <guid>http://localhost:42551/docs/uefi-dev/uefi-introduction/</guid>
       <description>Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.&#xA;What is UEFI? UEFI (Unified Extensible Firmware Interface) is a specification for a computer&amp;rsquo;s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.&#xA;We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different.</description>
     </item>
   </channel>

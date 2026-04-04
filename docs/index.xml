@@ -2,11 +2,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Documentation on 0xbekoo</title>
-    <link>http://localhost:38385/docs/</link>
+    <link>http://localhost:42551/docs/</link>
     <description>Recent content in Documentation on 0xbekoo</description>
     <generator>Hugo</generator>
     <language>en</language>
     <lastBuildDate></lastBuildDate>
-    <atom:link href="http://localhost:38385/docs/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:42551/docs/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>

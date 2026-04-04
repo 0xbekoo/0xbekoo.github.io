@@ -2,178 +2,178 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on 0xbekoo</title>
-    <link>http://localhost:38385/tags/</link>
+    <link>http://localhost:42551/tags/</link>
     <description>Recent content in Tags on 0xbekoo</description>
     <generator>Hugo</generator>
     <language>en</language>
     <lastBuildDate>Thu, 26 Mar 2026 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:38385/tags/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:42551/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>System-Management-Mode</title>
-      <link>http://localhost:38385/tags/system-management-mode/</link>
+      <link>http://localhost:42551/tags/system-management-mode/</link>
       <pubDate>Thu, 26 Mar 2026 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/system-management-mode/</guid>
+      <guid>http://localhost:42551/tags/system-management-mode/</guid>
       <description></description>
     </item>
     <item>
       <title>Firmware-Reversing</title>
-      <link>http://localhost:38385/tags/firmware-reversing/</link>
+      <link>http://localhost:42551/tags/firmware-reversing/</link>
       <pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/firmware-reversing/</guid>
+      <guid>http://localhost:42551/tags/firmware-reversing/</guid>
       <description></description>
     </item>
     <item>
       <title>Reser-Vector</title>
-      <link>http://localhost:38385/tags/reser-vector/</link>
+      <link>http://localhost:42551/tags/reser-vector/</link>
       <pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/reser-vector/</guid>
+      <guid>http://localhost:42551/tags/reser-vector/</guid>
       <description></description>
     </item>
     <item>
       <title>Reverse-Engineering</title>
-      <link>http://localhost:38385/tags/reverse-engineering/</link>
+      <link>http://localhost:42551/tags/reverse-engineering/</link>
       <pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/reverse-engineering/</guid>
+      <guid>http://localhost:42551/tags/reverse-engineering/</guid>
       <description></description>
     </item>
     <item>
       <title>X86-Reverse-Engineering</title>
-      <link>http://localhost:38385/tags/x86-reverse-engineering/</link>
+      <link>http://localhost:42551/tags/x86-reverse-engineering/</link>
       <pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/x86-reverse-engineering/</guid>
+      <guid>http://localhost:42551/tags/x86-reverse-engineering/</guid>
       <description></description>
     </item>
     <item>
       <title>Malware-Development</title>
-      <link>http://localhost:38385/tags/malware-development/</link>
+      <link>http://localhost:42551/tags/malware-development/</link>
       <pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/malware-development/</guid>
+      <guid>http://localhost:42551/tags/malware-development/</guid>
       <description></description>
     </item>
     <item>
       <title>SSDT-Unhooking</title>
-      <link>http://localhost:38385/tags/ssdt-unhooking/</link>
+      <link>http://localhost:42551/tags/ssdt-unhooking/</link>
       <pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/ssdt-unhooking/</guid>
+      <guid>http://localhost:42551/tags/ssdt-unhooking/</guid>
       <description></description>
     </item>
     <item>
       <title>Unhooking</title>
-      <link>http://localhost:38385/tags/unhooking/</link>
+      <link>http://localhost:42551/tags/unhooking/</link>
       <pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/unhooking/</guid>
+      <guid>http://localhost:42551/tags/unhooking/</guid>
       <description></description>
     </item>
     <item>
       <title>Analyzing-of-Windows-Kernel</title>
-      <link>http://localhost:38385/tags/analyzing-of-windows-kernel/</link>
+      <link>http://localhost:42551/tags/analyzing-of-windows-kernel/</link>
       <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/analyzing-of-windows-kernel/</guid>
+      <guid>http://localhost:42551/tags/analyzing-of-windows-kernel/</guid>
       <description></description>
     </item>
     <item>
       <title>PatchGuard</title>
-      <link>http://localhost:38385/tags/patchguard/</link>
+      <link>http://localhost:42551/tags/patchguard/</link>
       <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/patchguard/</guid>
+      <guid>http://localhost:42551/tags/patchguard/</guid>
       <description></description>
     </item>
     <item>
       <title>Reversing-PatchGuard</title>
-      <link>http://localhost:38385/tags/reversing-patchguard/</link>
+      <link>http://localhost:42551/tags/reversing-patchguard/</link>
       <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/reversing-patchguard/</guid>
+      <guid>http://localhost:42551/tags/reversing-patchguard/</guid>
       <description></description>
     </item>
     <item>
       <title>Windows-Internals</title>
-      <link>http://localhost:38385/tags/windows-internals/</link>
+      <link>http://localhost:42551/tags/windows-internals/</link>
       <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/windows-internals/</guid>
+      <guid>http://localhost:42551/tags/windows-internals/</guid>
       <description></description>
     </item>
     <item>
       <title>Rootkit</title>
-      <link>http://localhost:38385/tags/rootkit/</link>
+      <link>http://localhost:42551/tags/rootkit/</link>
       <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/rootkit/</guid>
+      <guid>http://localhost:42551/tags/rootkit/</guid>
       <description></description>
     </item>
     <item>
       <title>SSDT</title>
-      <link>http://localhost:38385/tags/ssdt/</link>
+      <link>http://localhost:42551/tags/ssdt/</link>
       <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/ssdt/</guid>
+      <guid>http://localhost:42551/tags/ssdt/</guid>
       <description></description>
     </item>
     <item>
       <title>SSDT-Hooking</title>
-      <link>http://localhost:38385/tags/ssdt-hooking/</link>
+      <link>http://localhost:42551/tags/ssdt-hooking/</link>
       <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/ssdt-hooking/</guid>
+      <guid>http://localhost:42551/tags/ssdt-hooking/</guid>
       <description></description>
     </item>
     <item>
       <title>Windows-Kernel</title>
-      <link>http://localhost:38385/tags/windows-kernel/</link>
+      <link>http://localhost:42551/tags/windows-kernel/</link>
       <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/windows-kernel/</guid>
+      <guid>http://localhost:42551/tags/windows-kernel/</guid>
       <description></description>
     </item>
     <item>
       <title>Syscall</title>
-      <link>http://localhost:38385/tags/syscall/</link>
+      <link>http://localhost:42551/tags/syscall/</link>
       <pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/syscall/</guid>
+      <guid>http://localhost:42551/tags/syscall/</guid>
       <description></description>
     </item>
     <item>
       <title>ARM-Firmware</title>
-      <link>http://localhost:38385/tags/arm-firmware/</link>
+      <link>http://localhost:42551/tags/arm-firmware/</link>
       <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/arm-firmware/</guid>
+      <guid>http://localhost:42551/tags/arm-firmware/</guid>
       <description></description>
     </item>
     <item>
       <title>IOT-Hacking</title>
-      <link>http://localhost:38385/tags/iot-hacking/</link>
+      <link>http://localhost:42551/tags/iot-hacking/</link>
       <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/iot-hacking/</guid>
+      <guid>http://localhost:42551/tags/iot-hacking/</guid>
       <description></description>
     </item>
     <item>
       <title>Nucleo</title>
-      <link>http://localhost:38385/tags/nucleo/</link>
+      <link>http://localhost:42551/tags/nucleo/</link>
       <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/nucleo/</guid>
+      <guid>http://localhost:42551/tags/nucleo/</guid>
       <description></description>
     </item>
     <item>
       <title>Firmware</title>
-      <link>http://localhost:38385/tags/firmware/</link>
+      <link>http://localhost:42551/tags/firmware/</link>
       <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/firmware/</guid>
+      <guid>http://localhost:42551/tags/firmware/</guid>
       <description></description>
     </item>
     <item>
       <title>Router</title>
-      <link>http://localhost:38385/tags/router/</link>
+      <link>http://localhost:42551/tags/router/</link>
       <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/router/</guid>
+      <guid>http://localhost:42551/tags/router/</guid>
       <description></description>
     </item>
     <item>
       <title>Ptrace</title>
-      <link>http://localhost:38385/tags/ptrace/</link>
+      <link>http://localhost:42551/tags/ptrace/</link>
       <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/ptrace/</guid>
+      <guid>http://localhost:42551/tags/ptrace/</guid>
       <description></description>
     </item>
     <item>
       <title>Radare2</title>
-      <link>http://localhost:38385/tags/radare2/</link>
+      <link>http://localhost:42551/tags/radare2/</link>
       <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:38385/tags/radare2/</guid>
+      <guid>http://localhost:42551/tags/radare2/</guid>
       <description></description>
     </item>
   </channel>
