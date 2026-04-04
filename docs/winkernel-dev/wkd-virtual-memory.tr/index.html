@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:1313//favicon.ico">
+    <link rel="canonical" href="http://localhost:1313/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:1313/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>Virtual Memory - Fri, Aug 30, 2024</h1>
+    </div>
+    <p class="lead"></p>
+    <p>Merhabalar, bu yazıda Virtual Memory konusunu ele alacağım.</p>
+<h2 id="virtual-memory-nedir">Virtual Memory Nedir?</h2>
+<blockquote>
+<p><i>&ldquo;Windows, her bir process için, büyük ve özel bir adres alanına sahipmiş gibi görünen bir sanal bellek sistemi kullanır. Sanal bellek, gerçek fiziksel belleğin düzenine bağlı kalmaksızın, belleğin daha soyut bir görünümünü sunar. Çalışma sırasında, bellek yöneticisi -donanım desteği ile- sanal adresleri verilerin gerçekten saklandığı fiziksel adreslere çevirir. Bu sayede, işletim sistemi her bir process&rsquo;in, diğer bir process&rsquo;in belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.&quot;</i></p>
+</blockquote>
+<p>&ndash;<strong>Windows Internals Part 1 - Chapter 1, Page 39</strong></p>
+<p>Yukarıdaki kaynağa göre kısaca <strong>Virtual Memory</strong> (Sanal Bellek), fiziksel bellek adresindeki verilerin ldealleştirilmiş bir soyutlama sağlayan bir bellek yönetim tekniğidir. Bu sayede işletim sistemi her bir process&rsquo;in, diğer process belleğine müdahale etmesini veya işletim sisteminin kritik verilerinin üzerine yazılmasını engelleyebilir.</p>
+<p>Bu sistem, verileri bellekte (RAM) ve sabit diskte (hard disk) saklamak için bir yöntem kullanır. Bu yöntem, verileri küçük parçalara böler. Her bir parça &lsquo;page&rsquo; (sayfa) olarak adlandırılır ve genellikle 4 KB boyutundadır.</p>
+<p>Bu sayfalar, bellekte bitişik olarak saklanmak zorunda değildir. Yani, bir uygulamanın verileri bellekte düzensiz bir şekilde yer alabilir. Örneğin, bir uygulamanın bazı verileri bellekte bulunurken, bazıları diskte saklanabilir. Bu yöntem, uygulamanın performansını etkilemeden bellek kullanımını optimize etmesini sağlar.</p>
+<p>Bu sistemin avantajı, uygulamaların sayfalamadan yararlanmak için herhangi bir özel değişiklik yapmasına gerek olmamasıdır. Bellek yönetim sistemi, bu işlemleri otomatik olarak yapar. Aşağıdaki şemada bunu daha iyi görebilirsiniz.</p>
+<p><img src="/images/posts/virtual-memory/img1.png" alt=""></p>
+<h5 align="center">Windows Internals - Part 1, Page 40</h5>
+<p>Sanal adres alanının boyutu her donanım platformuna göre değişiklik gösterir. Örneğin Windows&rsquo;ta 32-bit x86 sistemlerde toplam sanal adres alanı en fazla 4 GB&rsquo;dır. Yine bu platformda varsayılan olarak, Windows bu adres alanının alt yarısını (0x00000000 - 0x7FFFFF arası adresler) kendi özel depolama alanlarını ve üst yarısını (0x80000000 - 0xFFFFFF arası adresler) kendi korumalı işletim sistemi bellek kullanımı için ayırır.</p>
+<p>Windows&rsquo;ta 64-bit (x64) sistemlerde ise sanal adres alanı çok daha geniştir. 64-bit bir adresleme sistemi teorik olarak 16 exabyte (2^64 bayt) sanal adres alanı sunar. Ancak, mevcut donanım ve işletim sistemi kısıtlamaları nedeniyle bu alanın tamamı kullanılmaz. Windows x64 işletim sistemlerinde genellikle sanal adres alanı 256 terabyte (2^48 bayt) ile sınırlıdır.</p>
+<h2 id="code">Code</h2>
+<p>Bu etapta, sürücü üzerinden kernel space alanından bir bellek ayrımı yapıp ardından bu belleği sanal adres ile eşleştireceğiz.</p>
+<p>Github linki için <a href="https://github.com/0xbekoo/WinKernelDev/tree/main/Virtual_Memory/src">buraya</a> tıklayabilirsiniz.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#pragma warning(disable: 4996)
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;ntddk.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">DriverEntry</span>(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(RegistryPath);
+</span></span><span style="display:flex;"><span>	SIZE_T MemorySize <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x1000</span>;
+</span></span><span style="display:flex;"><span>	PVOID VirtualAddress <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>	PVOID MappedAddress <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>	PMDL MDL <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	VirtualAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExAllocatePool</span>(NonPagedPool, MemorySize);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> VirtualAddress) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Bellek Ayrimi basarisiz oldu!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Ayrilan Bellek Adresi: 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, VirtualAddress);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	MDL <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoAllocateMdl</span>(VirtualAddress, (ULONG)MemorySize, FALSE, FALSE, NULL);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> MDL) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;MDL Ayrimi basarisiz oldu!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">MmBuildMdlForNonPagedPool</span>(MDL);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	MappedAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">MmMapLockedPagesSpecifyCache</span>(MDL, KernelMode, MmCached, NULL, FALSE, NormalPagePriority);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> MappedAddress) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Sanal Adres esleme basarisiz!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">IoFreeMdl</span>(MDL);
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Sanal Adres esleme basarili! Adres: 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, MappedAddress);
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">MmUnmapLockedPages</span>(MappedAddress, MDL);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoFreeMdl</span>(MDL);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	DriverObject<span style="color:#f92672">-&gt;</span>DriverUnload <span style="color:#f92672">=</span> UnloadDriver;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">UnloadDriver</span>(PDRIVER_OBJECT DriverObject) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DriverObject);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Driver Unloaded</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Örnek kod parçamız bu. Şimdi bu kodu inceleyelim.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>SIZE_T MemorySize <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x1000</span>;
+</span></span><span style="display:flex;"><span>PVOID VirtualAddress <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>PVOID MappedAddress <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>PMDL MDL <span style="color:#f92672">=</span> NULL;
+</span></span></code></pre></div><p>İlk olarak sürücümüzde parametreleri tanımlayarak başlıyoruz. İşte sırasıyla amaçları:</p>
+<ul>
+<li><strong>MemorySize</strong>: Bellek ayrımı yapılacak alanın boyutunu belirler. Bu örnekte 0x1000 (4 KB) olarak belirledim.</li>
+<li><strong>VirtualAddress</strong>: Bellek ayrımı yapıldığında dönen adresi tutar.</li>
+<li><strong>MappedAddress</strong>: Belleğin sanal adres ile eşleştirildiği adresi tutar.</li>
+<li><strong>MDL</strong>: Belleğin sanal adres ile eşleştirilmesi için kullanılan MDL yapısını tutar.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>VirtualAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExAllocatePool</span>(NonPagedPool, MemorySize);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> VirtualAddress) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Bellek Ayrimi basarisiz oldu!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Ayrilan Bellek Adresi: 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, VirtualAddress);
+</span></span></code></pre></div><p>İlk adımımızda <strong>Nonpaged Pool</strong> alanından 4 KB&rsquo;lık bir bellek ayrımı yapıyoruz. Eğer bellek ayrımı başarısız olursa, hata mesajı yazdırıp işlemi sonlandırıyoruz. Ayrıca başarılı olursa, ayrılan belleğin adresini yazdırıyoruz.</p>
+<p>Eğer Nonpaged havuzu hakkında bilginiz yoksa burada bir kısa açıklama yapayım. <strong>Nonpaged Pool</strong>, işletim sisteminde kullanılan bellek havuzlarından biridir. Bu havuz, sistemin her zaman erişilebilir olan ve disk belleği ile değiştirilemeyen (yani &ldquo;paging&rdquo; işlemi uygulanamayan) bellek alanını ifade eder. Nonpaged pool içindeki bellek, sistemde kritik öneme sahip işler için ayrılır. Örneğin, donanım sürücüleri veya çekirdek (kernel) modundaki diğer bileşenler, bu havuzdan bellek tahsis ederler çünkü bu bileşenlerin bellek erişiminin her zaman hızlı ve kesintisiz olması gerekir.</p>
+<p>Bunun yanında <strong>Paged Pool</strong> alanı vardır. Bu da işletim sisteminde kullanılan bellek havuzlarından biridir. Bu havuz, sistemin bellek yönetimi için kullanılan ve disk belleği ile değiştirilebilen (yani &ldquo;paging&rdquo; işlemi uygulanabilen) bellek alanını ifade eder. Paged pool içindeki bellek, genellikle kullanıcı modunda çalışan uygulamalar ve hizmetler için ayrılır.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>MDL <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoAllocateMdl</span>(VirtualAddress, (ULONG)MemorySize, FALSE, FALSE, NULL);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> MDL) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;MDL Ayrimi basarisiz oldu!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Kodun devamında ise, bellek bloğunun fiziksel adreslerine erişmek ve bu bloğu bir sanal adres ile eşleştirmek için bir MDL (Memory Descriptor List) yapısı oluşturuyoruz. MDL yapısı, belleğin fiziksel adreslerini ve boyutunu tutar, böylece bu blokla ilişkili verilerin sanal bellekten fiziksel belleğe nasıl eşleştirileceğini tanımlar.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">MmBuildMdlForNonPagedPool</span>(MDL);
+</span></span></code></pre></div><p>Daha sonra bı API ile MDL yapısını oluşturuyoruz. Bu fonksiyon, MDL yapısını oluştururken, MDL yapısının fiziksel bellek adreslerini ve boyutunu doldurur.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>MappedAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">MmMapLockedPagesSpecifyCache</span>(MDL, KernelMode, MmCached, NULL, FALSE, NormalPagePriority);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> MappedAddress) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Sanal Adres esleme basarisiz!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoFreeMdl</span>(MDL);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Sanal Adres esleme basarili! Adres: 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, MappedAddress);
+</span></span></code></pre></div><p>Son olarak belleğimizi sanal adresle eşlemek için <strong>MmMapLockedPagesSpecifyCache</strong> API kullanıyoruz. Bu fonksiyon, MDL yapısını kullanarak belirtilen bellek bloğunu sanal belleğe eşler. Eğer işlem başarısız olursa, hata mesajı yazdırıp işlemi sonlandırıyoruz. Başarılı olursa, eşlenen belleğin adresini yazdırıyoruz.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">MmUnmapLockedPages</span>(MappedAddress, MDL);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">IoFreeMdl</span>(MDL);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>DriverObject<span style="color:#f92672">-&gt;</span>DriverUnload <span style="color:#f92672">=</span> UnloadDriver;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span></code></pre></div><p>Son olarak, işimiz bittiğinde belleği serbest bırakıyoruz. Bu işlemi yaparken, önce <strong>MmUnmapLockedPages</strong> fonksiyonunu kullanarak sanal belleği serbest bırakıyoruz. Daha sonra <strong>IoFreeMdl</strong> fonksiyonu ile MDL yapısını serbest bırakıyoruz.</p>
+<h2 id="sürücünün-çalıştırılması">Sürücünün Çalıştırılması</h2>
+<p><img src="/images/posts/virtual-memory/video.gif" alt=""></p>
+<p>Görüldüğü gibi, sürücüyü çalıştırdığımızda başarıyla ayrılan bellek adresi ve eşlenen sanal bellek adresini windbg üzerinden görebiliyoruz:</p>
+<p><img src="/images/posts/virtual-memory/img2.png" alt=""></p>
+<h2 id="sonuç">Sonuç</h2>
+<p>Bu yazıda, Virtual Memory konusunu ele aldım. Umarım faydalı olmuştur.</p>
+<p>İyi çalışmalar dilerim 🚀🚀</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://empyreal96.github.io/nt-info-depot/Windows-Internals-PDFs/Windows%20System%20Internals%207e%20Part%201.pdf"><strong>Windows Internals Part 1 - Chapter 1, Virtual Memory (PAGE 39- 41)</strong></a></li>
+<li><a href="https://en.wikipedia.org/wiki/Virtual_memory"><strong>EN Wikipedia - Virtual Memory</strong></a></li>
+</ul>
+
+    <h4><a href="http://localhost:1313/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://twitter.com">Twitter</a> 
+        
+        <a href="https://github.com">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

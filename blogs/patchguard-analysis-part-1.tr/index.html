@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:1313//favicon.ico">
+    <link rel="canonical" href="http://localhost:1313/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:1313/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/about/">
+                                    
+                                    <span>About</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>PatchGuard Analysis - Part 1 - Wed, Aug 6, 2025</h1>
+    </div>
+    <p class="lead"></p>
+    <p><em>Bu makale dark shadow B.&lsquo;ye adanmıştır. Tüm yardımın için teşekkürler, dark shadow B.</em></p>
+<h3 id="introduction"><strong>Introduction</strong></h3>
+<p>Hepimizin adını en az bir kez duymuş olabileceği PatchGuard (Kernel Patch Protection), Microsoft tarafından geliştirilen ve 64-bit Windows işletim sistemlerinde kritik bir rol üstlenen güvenlik mekanizmasıdır. Görevi oldukça net: kernel-level yapılara yapılan yetkisiz müdahaleleri engelleyerek sistemin bütünlüğünü korumak. Bugün modern Windows security mimarisinin en temel bileşenlerinden biri olarak varlığını sürdürmektedir.</p>
+<p>Benim için PatchGuard, Windows üzerinde reverse engineering ile tanıştığım ilk zamanlardan beri dikkatimi çeken konulardan biriydi. Ne kadar karmaşık görünse de bu yapının iç işleyişini anlamak, hem kişisel merakımı gidermek hem de Red Team çalışmalarında ve malware development perspektifinde kritik bir bakış açısı kazanmak adına değerli bir deneyim oldu.</p>
+<p>Bu makalede, PatchGuard’ın nasıl initialize edildiğinden, yaptığı integrity checks süreçlerine kadar adım adım ilerleyecek; yani bu koruma katmanının perde arkasına kısa bir yolculuk yapacağız.</p>
+<p>Son olarak şunu da belirtmek isterim ki bu çalışma önceki Windows sürümlerinde yapılan PatchGuard analizlerini Windows 11’e genişletmek ve zenginleştirmek amacıyla hazırlanmıştır. Amacım, sistemin kernel-level koruma mekanizmalarının güncel sürümlerde nasıl evrildiğini ve modern güvenlik mimarisine nasıl entegre edildiğini göstermek.</p>
+<p>Başlamadan önce referanslara göz atmak isterseniz <!-- raw HTML omitted -->buraya<!-- raw HTML omitted --> tıklayabilirsiniz.</p>
+<h3 id="kifilterfibercontext-function"><strong>KiFilterFiberContext Function</strong></h3>
+<p>PatchGuard&rsquo;ın ayarlanması ve başlatılması işlemleri KiFilterFiberContext fonksiyonu tarafından gerçekleştirilmektedir. Bu fonksiyon bu görevleriyle beraber bir takım bayrak kontrolleri de gerçekleştirmektedir. Bu bayraklar Debugging ile alakalıdır. Eğer sistemde debugging aktif ise bu fonksiyon PatchGuard&rsquo;ı başlatmayacaktır. Yani kısaca bu fonksiyon PatchGuard için gerçekten de önemli bir fonksiyon.</p>
+<p>KiFilterFiberContext sistemin başlangıcında tam olarak iki defa çağırılmaktadır. Sistem başlangıcında bu fonksiyonun iki defa çağırılmasının ardında, PatchGuard&rsquo;ın başlatılmasıyla alakalı iki farklı method içermekte. Bu yöntemlere göz atalım:</p>
+<h4 id="method-1-calling-from-keinitamd64specificstate"><strong>Method 1: Calling from KeInitAmd64SpecificState</strong></h4>
+<p>Bu fonksiyon bazı kontroller sonrasında KiFilterFiberContext&rsquo;i çağırmaktan sorumludur. Bu fonksiyonun başına göz atarsak bazı bayrakların kontrol edildiğini görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Özellikle <strong>InitSafeBootMode</strong>, <strong>KdPitchDebugger</strong> ve <strong>KdDebuggerNotPresent</strong> bayrakların kontrol edildiğine dikkat edin. Bu bayraklardan odağımız debugging ile alakalı olanlar olacaktır çünkü şimdi göreceğimiz gibi bu bayraklardan elde edilen değerler ile KiFilterFiberContext&rsquo;in çağırılıp çağırılmayacağı belirlenecek. Eğer sistemde debugging aktif ise bu iki bayrak 0 değerini alacaktır ancak normal senaryolarda bu bayraklar 1 değerini alır. Bu bayrakların alınmasından sonraki işlemlerde aşağıdaki register&rsquo;lar şu değeri elde edecektir:</p>
+<ul>
+<li>rax =&gt; 0x80000000</li>
+<li>rdx =&gt; 0x80000000</li>
+<li>r8 =&gt; 0xfffffff</li>
+</ul>
+<p>Tipik olarak hepimizin bildiği gibi debugging bayrakların kontrolü esasen bir koşul ile gerçekleştirilmiyor. Gerçekten garip ve güçlü bir yöntem kullanılmakta. Bayraklardan alınan değerler esasen bir bölme işleminde kullanılacaktır.</p>
+<p>Bu bölme sonucunda ise kasıtlı olarak bir bölme hatası tetiklenir. Bu kasıtlı olarak bölme hatasının tetiklenmesi ise bayraklardan alınan değere göre belirlenir. Eğer bayraklardan elde edilen sonuç 1 ise - yani debugging olmadığını gösterir - kasıtlı olarak bir bölme hatası tetiklenecek ve KiFilterFiberContext çağırılacaktır. Ancak bayraklardan elde edilen sonuç 0 ise bu fonksiyon çağırılmayacaktır.</p>
+<p>AMD64 dökümanına göre, <strong>eğer pozitif sonuç 0x7FFFFFFF&rsquo;den büyük veya negatif sonuç 0x80000000&rsquo;den küçük ise</strong> bölme hatası tetiklenecektir. Register&rsquo;ların tuttuğu değeri tekrar kontrol edin. Yani bayraktan alınan değerlerin sonucu 1 ise bu bölme sonucunda kasıtlı olarak hata tetiklenmiş olacak. Bölme işlemi şu kısımda gerçekleşiyor:</p>
+<!-- raw HTML omitted -->
+<p>Eğer KeInitAmd64SpecificState içerisine göz atarsanız bir exception handler olduğunu göreceksiniz:</p>
+<!-- raw HTML omitted -->
+<p>Böylece KiFilterFiberContext çağırılmış olacak.</p>
+<h4 id="method-2-calling-from-explicensewatchinitworker"><strong>Method 2: Calling from ExpLicenseWatchInitWorker</strong></h4>
+<p>Sistemin başlangıcında KiFilterFiberContext&rsquo;i çağırmak için kullanılan bir başka yöntem ise ExpLicenseWatchInitWorker&rsquo;dan çağırılmasıdır ancak burada işler biraz karmaşık hale geliyor. Bu fonksiyon <strong>KeInitAmd64SpecificState</strong>&lsquo;den önce çağırılmaktadır ve KiFilterFiberContext fonksiyonunu direkt olarak çağırmıyor; bunun yerine %4 oranla çağırılıp çağırılmayacağını belirliyor. Bu yöntem aslında birçok PatchGuard mekanizması tarafından kullanılan bir tekniktir.</p>
+<p>Fonksiyonun başlangıcında PRCB (Process Register Control Block) yapısının adresini aldığını ve bu yapının HalReserved alanları üzerinden işlemler yaptığını görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Bahsedilen HalReserved alanından <strong>0x70</strong> ve <strong>0x78</strong> offset&rsquo;lerden değer aldığını ve ardından hızlı bir şekilde bu alanları temizlediğini görebiliriz. Buradan alınan adreslere ileride değineceğim.</p>
+<p>Ardından rdtsc instruction kullanarak random bir değer oluşturuluyor. Devam etmeden önce bu instruction&rsquo;u AMD64 dökümanı ile tanıyalım:</p>
+<blockquote>
+<p><em>&ldquo;TSD biti, zaman damgası sayacının hangi ayrıcalık seviyesinde okunabileceğini yazılımın kontrol etmesini sağlar. TSD biti 0 olarak ayarlandığında, herhangi bir ayrıcalık seviyesinde çalışan yazılımlar RDTSC veya RDTSCP komutlarını kullanarak zaman damgası sayacını okuyabilir.&rdquo;</em><!-- raw HTML omitted -->[1]<!-- raw HTML omitted --></p>
+</blockquote>
+<p>Analizimizin ilerisinde sık sık göreceğiz ki bu instruction ile random değer oluşturma işlemi gerçekten PatchGuard mekanizmaları tarafından sıklıkla kullanılıyor. Dolayasıyla şimdiden bunu kafamıza oturtmak iyi olacaktır.</p>
+<p>Random değerin oluşturulması ardından bu değer <strong>0x51eb851f</strong> sabit değeriyle çarpılmakta:</p>
+<!-- raw HTML omitted -->
+<p>Değerin çarpılması ardından KiFilterFiberContext&rsquo;i çağırıp çağırmayacağını %4 oranla karar veriyor:</p>
+<!-- raw HTML omitted -->
+<p>HalReserved alanlarından alınan değerler burada kullanılıyor. Eğer bu fonksiyon %4 oranla çağırılırsa, rax register&rsquo;ı KiFilterFiberContext&rsquo;in adresini aktarırken rcx&rsquo;e KiFilterFiberContext fonksiyonu için parametre olarak bir yapının adresi atanmakta.</p>
+<p>KiFilterFiberContext&rsquo;in aldığı bu yapıya literatürde KI FILTER FIBER PARAM adını veriyoruz. Bu yapının içeriği şu şekilde:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> _KI_FILTER_FIBER_PARAM
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>CHAR code_prefetch_rcx_retn[<span style="color:#ae81ff">4</span>]; <span style="color:#75715e">// prefetchw byte ptr [rcx]; retn;
+</span></span></span><span style="display:flex;"><span>CHAR padding[<span style="color:#ae81ff">4</span>]; <span style="color:#75715e">// Align
+</span></span></span><span style="display:flex;"><span>PVOID pPsCreateSystemThread;
+</span></span><span style="display:flex;"><span>PVOID UcpRetrieveCurrentConfigSettings<span style="color:#f92672">+</span><span style="color:#ae81ff">0x174</span>;
+</span></span><span style="display:flex;"><span>PVOID pKiBalanceSetManagerPeriodicDpc;
+</span></span><span style="display:flex;"><span>}KI_FILTER_FIBER_PARAM, <span style="color:#f92672">*</span>PKI_FILTER_FIBER_PARAM;
+</span></span></code></pre></div><p>İleride göreceğimiz gibi, yapıda bulunan pointer&rsquo;lar PatchGuard&rsquo;ın initialize edilmesi için farklı yöntemlerde kullanılacaktır.</p>
+<p>HalReserved alanların ayarlanması KiLockServiceTable fonksiyonu tarafından gerçekleştirilmektedir. Ancak bu fonksiyona direkt olarak göz atarsanız içerisinde direkt olarak bu alanları ayarlayan bir koda denk gelemezsiniz. KeInitAmd64SpecificState&rsquo;de gördüğümüz gibi burada da exception handler kullanılmakta ancak bir hata tetiklemek yerine direkt olarak fonksiyon çağırılmakta:</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>Yapının adresini alındıktan sonra 0x78 offset&rsquo;e KiServiceTablesLocked isimli bir yapının adresini aktardığını görebiliriz ancak bu yanıltıcı bir isimdir. Bu adres aslında yukarıda bahsedildiği gibi KI_FILTER_FIBER_PARAM yapısının tam da kendisidir. Bunu dinamik analizimizde doğrulayabiliriz:</p>
+<!-- raw HTML omitted -->
+<p>ExpLicenseWatchInitWorker&rsquo;in ilk kısmına bir bp yerleştirdim ve yapının 0x78 offset&rsquo;ine denk gelen adresi aldım. Şimdi bu adresi kontrol edelim:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">kd</span><span style="color:#960050;background-color:#1e0010">&gt;</span> <span style="color:#66d9ef">dps</span> <span style="color:#66d9ef">fffff803</span><span style="color:#960050;background-color:#1e0010">`</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">c3e71f8</span> <span style="color:#66d9ef">L1</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">fffff803</span><span style="color:#960050;background-color:#1e0010">`</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">c3e71f8</span>  <span style="color:#66d9ef">fffff803</span><span style="color:#960050;background-color:#1e0010">`</span><span style="color:#ae81ff">7</span><span style="color:#66d9ef">d566010</span> <span style="color:#66d9ef">nt</span>!<span style="color:#66d9ef">KiServiceTablesLocked</span>
+</span></span></code></pre></div><p>Göründüğü gibi KiServiceTablesLocked adresini tutmakta. Şimdi bu yapının içeriğine göz atalım:</p>
+<!-- raw HTML omitted -->
+<p>Böylece bu yapının KI_FILTER_FIBER_PARAM olduğunu doğrulayabiliriz. Diğer kullanılan HalReserved alanına göz atarsak, KiFilterFiberContext&rsquo;in adresini tuttuğunu da doğrulayabiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Diğer başlığımıza geçmeden önce önemli bir notu eklemem gerekiyor ki, KiFilterFiberContext&rsquo;in bu yapıyla çağırılması sadece ExpLicenseWatchInıtWorker tarafından gerçekleştirilmektedir. KeInitAmd64SpecificState fonksiyonu ise direkt olarak NULL ile çağırmaktadır.</p>
+<h4 id="decompiling-kifilterfibercontext"><strong>Decompiling KiFilterFiberContext</strong></h4>
+<p>Daha önceden anlattığım gibi bu fonksiyonun başlıca görevi PatchGuard&rsquo;ı başlatmasıdır. KiFilterFiberContext fonksiyonu PatchGuard&rsquo;ın ayarlanması ve başlatılması için birkaç farklı yöntem kullanılıyor. Bunlardan biri ise literatürde <strong>KiInitializePatchGuardContext</strong> adı verilen fonksiyonu çağırması.</p>
+<p>Fonksiyonun başına göz atarsak ilk olarak debugging&rsquo;i devre dışı bıraktığını görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Ancak bu fonksiyonda bulunan bir garip ve PatchGuard&rsquo;ın başlatılması için kullanılan bir farklı method olan detay ise KiFilterFiberContext ntoskrnl&rsquo;de bulunmayan küçük bir callback fonksiyonu içermektedir:</p>
+<!-- raw HTML omitted -->
+<p><strong>ExNotifyCallback</strong> fonksiyonu birinci parametre olarak PatchGuardTVCallBack&rsquo;in pointer&rsquo;ını almaktadır. Bu pointer, mssecflt.sys içerisinde SecInitializeKernelIntegrityCheck tarafından ayarlanmaktadır. Dediğim gibi bu, PatchGuard&rsquo;ın başlatılması için ayrı bir yöntem olarak kullanılmakta ve ileride ayrı başlık olarak göz atacağız dolayasıyla şimdi KiInitializePatchGuardContext&rsquo;e göz atacağız.</p>
+<p>KiInitializePatchGuardContext fonksiyonu KiFilterFiberContext tarafından üç defa farklı yöntemler ile çağırılmaktadır; ilk seferde ne olursa olsun direkt çağırılır, ikinci defada %50 oranla çağırılmaktadır, üçüncü defa ise ileride değineceğimiz farklı bir yöntemle çağırılmaktadır. Bu kısmın pseudocode&rsquo;ına göz atabiliriz:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>g_GlobalCtxPointer <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span>KpgApiRegistered <span style="color:#f92672">&amp;&amp;!</span>pKiFilterFiberParam) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (PsIntegrityCheckEnabled) {
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">/* Initialize ObjectAttributes */</span>
+</span></span><span style="display:flex;"><span>	    ObjectAttributes.Length <span style="color:#f92672">=</span> <span style="color:#ae81ff">48</span>;
+</span></span><span style="display:flex;"><span>	    ObjectAttributes.ObjectName <span style="color:#f92672">=</span> (PUNICODE_STRING)<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;TV&#34;</span>;
+</span></span><span style="display:flex;"><span>        ObjectAttributes.RootDirectory <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>        ObjectAttributes.Attributes <span style="color:#f92672">=</span> <span style="color:#ae81ff">64</span>;
+</span></span><span style="display:flex;"><span>	    <span style="color:#f92672">&amp;</span>ObjectAttributes.SecurityDescriptor <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	    
+</span></span><span style="display:flex;"><span>		Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExCreateCallback</span>(<span style="color:#f92672">&amp;</span>CallbackObject, <span style="color:#f92672">&amp;</span>ObjectAttributes, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (Status <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">ExNotifyCallback</span>(CallbackObject, PatchGuardTVCallBack, <span style="color:#f92672">&amp;</span>KpgApiConsumerRanges);
+</span></span><span style="display:flex;"><span>	        <span style="color:#a6e22e">ObfDereferenceObject</span>(CallbackObject);
+</span></span><span style="display:flex;"><span>		} 
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	...
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">/* Initialize First Context */</span>
+</span></span><span style="display:flex;"><span>	Result <span style="color:#f92672">=</span> <span style="color:#a6e22e">KeExpandKernelStackAndCallout</span>(KiInitPatchGuardContext, ParameterArray, <span style="color:#ae81ff">0xC000u</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (Result) {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (random5 <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">6</span>) {
+</span></span><span style="display:flex;"><span>			...
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">/* Initialize second context */</span>
+</span></span><span style="display:flex;"><span>			Result <span style="color:#f92672">=</span> <span style="color:#a6e22e">KeExpandKernelStackAndCallout</span>(KiInitPatchGuardContext, ParameterArray, <span style="color:#ae81ff">0xC000u</span>);
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (Result) {
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>g_GlobalCtxPointer <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span>pKiFilterFiberParam <span style="color:#f92672">&amp;&amp;</span> (<span style="color:#a6e22e">KiSwInterruptPresent</span>() <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span>) <span style="color:#f92672">&amp;&amp;</span> KpgApiRegistered) {
+</span></span><span style="display:flex;"><span>				...
+</span></span><span style="display:flex;"><span>				Result <span style="color:#f92672">=</span> <span style="color:#a6e22e">KeExpandKernelStackAndCallout</span>(KiInitPatchGuardContext, ParameterArray, <span style="color:#ae81ff">0xC000u</span>);
+</span></span><span style="display:flex;"><span>				
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Bu fonksiyon,   aracılığıyla çağrılmaktadır. <strong>KeExpandKernelStackAndCallout</strong>, parametre olarak verilen fonksiyonu (örneğin kodumuzdaki KiInitPatchGuardContext gibi) çağırmadan önce, yeterli miktarda kernel stack alanı bulunduğundan emin olmak için kullanılır. Eğer mevcut stack alanı yetersizse, geçici olarak daha büyük bir kernel stack segmenti ayırır ve hedef fonksiyonu (callout) bu genişletilmiş stack üzerinde çalıştırır.<!-- raw HTML omitted -->[2]<!-- raw HTML omitted --></p>
+<p>Pseudocode eklemediğim bir detay ise her KiInitPatchGuardContext çağırılmadan önce random değerler oluşturulması. ExpLicenseWatchInitWorker başlığı altında konuştuğumuz gibi yine burada da rdtsc instruction&rsquo;ı aracılığıyla parametreler için random değerler oluşturulmakta.</p>
+<p>KeExpandKernelStackAndCallout aracılığıyla çağırılan fonksiyonun içeriğine göz atabiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Daha önceden konuştuğumuz ve ileride detaylı bir şekilde göreceğimiz beş parametrenin hazırlandığını ve ardından fonksiyonun kendisi çağırıldığını görebiliriz.</p>
+<p>Dinamik olarak hazırlanan bu parametrelere göz atabiliriz. KiInitializePatchGuardContext&rsquo;in ilk defa çağırılması esnasında bu parametrelere göz atalım:</p>
+<!-- raw HTML omitted -->
+<p>Parametreler hazırlandı ve KiInitPatchGuardContext çağırıldı. Alınan değerler şu şekilde:</p>
+<ul>
+<li>RCX =&gt; 1 (Argument 1 olarak)</li>
+<li>RDX =&gt; 5 (Argument 2 olarak)</li>
+<li>R8 =&gt; 2 (Argument 3 olarak)</li>
+<li>R9 =&gt; 0 (Argument 4 olarak)</li>
+<li>RSP+0x20 =&gt;1 (Argument 5 olarak)</li>
+</ul>
+<p>Argument 5 stack&rsquo;e aktarılmaktadır:</p>
+<!-- raw HTML omitted -->
+<p>Hazırlanan random değerleri dinamik olarak gördük. Bunların ne amaçla kullanıldığını da ileride göreceğiz.</p>
+<h4 id="initialization-of-patchguard-context"><strong>Initialization of PatchGuard Context</strong></h4>
+<p>KiInitPatchGuardContext&rsquo;ın üç defa farklı yöntemlerle çağırıldığını gördük. Ancak bunun detayına girmeden önce PatchGuard Context&rsquo;in içeriğini anlamamız gerekecek.</p>
+<h5 id="patchguard-context"><strong>PatchGuard Context</strong></h5>
+<p>PatchGuard Context yapısı esasen üç bölüme ayrılmıştır: <strong>İlk bölüm</strong> 0x928 gibi büyük bir boyut olarak ayrılmış ve PatchGuard mekanizmalarının temel içeriğini saklar, <strong>ikinci bölüm</strong> orijinal verileri daha sonra kullanmak üzere saklayan veri alıcısını saklar ve üçüncü bölüm ise kontrol edilecek veriler hakkında bilgiler saklar.</p>
+<h6 id="first-section"><strong>First Section</strong></h6>
+<ul>
+<li><strong>CmpAppendDllSection</strong></li>
+</ul>
+<p>Yapının başlangıç kısmı, doğrudan yapıya kopyalanan CmpAppendDllSection fonksiyonun kodlarını içermektedir. Bu işlemleri <strong>loc_140BD65C4</strong> adresinde görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>CmpAppendDllSection&rsquo;ın adresinin alınması ardından r14&rsquo;e aktarılan yapıya kodlar tek tek aktarılmaktadır. CmpAppendDllSection fonksiyonu daha sonra PatchGuard tarafından bütünlük kontrolü tetiklendiğinde kullanılacaktır.</p>
+<p>Bu fonksiyon esasen önemlidir çünkü ana görevi PatchGuard context yapısının geri kalanını random oluşturulmuş bir key ile decryptlemektedir (xor ile):</p>
+<!-- raw HTML omitted -->
+<p>CmpAppendDllSection fonksiyonu iki parametre almaktadır: QWORD Parameter (Yapı adresi) ve <strong>INT64 Parameter (random oluşturulmuş key)</strong>.</p>
+<!-- raw HTML omitted -->
+<ul>
+<li><strong>NTAPI Pointers</strong></li>
+</ul>
+<p>Yapının bir sonraki bölümü NTAPI fonksiyonları ile alakalıdır. Bu kısım, ntoskrnl&rsquo;den birçok fonksiyonun adresini (100&rsquo;den fazla) tutar. Daha sonra PatchGuard mekanizmaları bunları yer değiştirmeden bağımsız olarak kullanacaktır.</p>
+<p>Bu pointer&rsquo;lar <strong>0x140BD66C9</strong> adresinde aktarılmaktadır:</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<ul>
+<li><strong>Global Variables</strong></li>
+</ul>
+<p>Yapının bu bölümü de <strong>PsLoadedModuleList</strong>, <strong>KiWaitNever</strong> veya <strong>KiWaitAlways</strong> gibi birçok global değişkeni tutmaktadır. Bu değerler boot sırasında rastgele başlatılır ve bu rastgele değerler daha sonra göreceğimiz gibi PatchGuard DPC Pointer&rsquo;ları tarafından kodlama ve kod çözme için kullanılacaktır.</p>
+<p>Bu kısmı <strong>0x140BD6F20</strong> adresinde görebiliriz:</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<ul>
+<li><strong>Flags</strong></li>
+</ul>
+<p>İlk bölümün son kısmı  iseana bayrakları tutar. (Kapsamlı olmayan liste) gibi boolean&rsquo;ları temsil eden bir bitmap olarak kullanılır:</p>
+<pre tabindex="0"><code>BIT 6 0x40 Only one processor 
+BIT 8 0x100 Use of KiDpcDispatch 
+BIT 9 0x200 Use of KiTimerDispatch 
+BIT 15 0x8000 Use of KeSetEvent 
+BIT 18 0x40000 Related to the ntoskrnl routines checksum 
+BIT 20 0x100000 Should DR7 be cleared 
+BIT 24 0x1000000 loc_1402F4907 
+BIT 27 0x8000000 Should PTE be restored loc_1402F117F 
+BIT 28 0x10000000 Scheduling method 7, use of KiInterruptThunk 
+BIT 30 0x40000000 loc_1408A836F Again, scheduling method 7 
+BIT 31 0x80000000 Result of KiSwInterruptPresent
+...
+</code></pre><!-- raw HTML omitted -->
+<h6 id="second-section"><strong>Second Section</strong></h6>
+<ul>
+<li><strong>Critical Kernel Routines Save</strong></li>
+</ul>
+<p>Kritik kernel fonksiyon adresleri qword_140E00210 adlı bir yapıya aktarılır. İleride göreceğimiz gibi, bu fonksiyonlar KeBugCheck&rsquo;i tetiklemeden hemen önce geri yükleniyor. Windows 11&rsquo;de bu yapının adresleri aşağıdaki gibidir:</p>
+<!-- raw HTML omitted -->
+<p>Ancak iş burada bitmiyor. İlerideki süreçlerde xHalHaltSystem&rsquo;in adreside yapıya eklenir. Bu işlemi <strong>0x140BD4449</strong> veya <strong>0x140BD56CF</strong> adreslerinde görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Bu bağlamda, yapının tüm üyeleri aşağıdaki gibidir:</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left"><strong>Field</strong></th>
+          <th style="text-align: left">Routine</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><strong>Hal</strong></td>
+          <td style="text-align: left"><strong>xHalHaltSystem</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KeBugCheckEx</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KeBugCheck2</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KiBugCheckDebugBreak</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KiDebugTrapOrFault</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>DbgBreakPointWithStatus</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>RtlCaptureContext</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KeQueryCurrentStackInformation</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KiSaveProcessorControlState</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>memmove</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>IoSaveBugCheckProgress</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KeIsEmptyAffinityEx</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>VfNotifyVerifierOfEvent</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>_guard_check_icall_no_overrides</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Ntoskrnl</strong></td>
+          <td style="text-align: left"><strong>KeGuardDispatchICall</strong></td>
+      </tr>
+  </tbody>
+</table>
+<h6 id="third-section"><strong>Third Section</strong></h6>
+<ul>
+<li><strong>Criticial Structure for Checks</strong></li>
+</ul>
+<p>Üçüncü kısımda, kontroller için kullanılan önemli bir yapı aşağıdaki gibidir:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> pg_crit_struct_check_data { 
+</span></span><span style="display:flex;"><span>ULONG64 KeBugCheckType_0x0; 
+</span></span><span style="display:flex;"><span>ULONG64 pData_0x8; 
+</span></span><span style="display:flex;"><span>ULONG32 szData_0x10; 
+</span></span><span style="display:flex;"><span>ULONG32 hash_0x14; 
+</span></span><span style="display:flex;"><span>LONG64 specific[<span style="color:#ae81ff">3</span>]; 
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>İlk üye KeBugCheckType ayırt edici yapı tipidir. İkinci ve üçüncü değişkenler ise kontrol edilecek veriler için kullanılmaktadır.</p>
+<p>Yapının önemli üyesi ise checksum sonucunu tutan değişkendir ve bu checksum PatchGuard&rsquo;ın başlatılması sırasında hesaplanır.  Cheksum gerçekten önemli çünkü PatchGuard ilgili yapının bütünlüğünü kontrol ettiğinde bu checksum&rsquo;u referans olarak kullanılacaktır. Son üye ise özel verilerle ilgilidir.</p>
+<p>Bu yapıyı <strong>loc_140BD3795</strong>&lsquo;de görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Bu bölüme göz atarsak eğer, yapının hazırlanmaya başlandığını görebiliriz.  Yapının üyeleri KeBugCheckEx tarafından sıkça kullanılır. İşte bir örnek:</p>
+<!-- raw HTML omitted -->
+<h5 id="initialization-of-patchguard"><strong>Initialization of PatchGuard</strong></h5>
+<p>Artık PatchGuard&rsquo;ın nasıl initialize edildiğine göz atabiliriz. Esasen PatchGuard&rsquo;ın initialize edilmesi birkaç yöntem içeririyor ve yukarıda gördüğümüz gibi KiInitPatchGuardContext fonksiyonu kullanmak bu yöntemlerden biri.</p>
+<p>Esasen KiInitPatchGuardContext fonksiyonu PatchGuard&rsquo;ın başlatması için kendi içinde birkaç method kullanıyor. Methodun seçilmesi ise fonksiyona verilen parametrelerle alakalıdır.</p>
+<p>KiFilterFiberContext&rsquo;i decompiler ettiğimizde, KiInitPatchGuardContext fonksiyonu için random hazırlanan parametreleri dinamik olarak görmüştük. Bu fonksiyonun argümanları esasen şu amaçlarla kullanılmaktadır:</p>
+<ul>
+<li>
+<p><strong>Argüman 1: DPC methodu için kullanılan index değeri</strong></p>
+</li>
+<li>
+<p><strong>Argüman 2: Zamanlama (scheduling) yöntemi</strong></p>
+</li>
+<li>
+<p><strong>Argüman 3: Kontrol edilecek maksimum boyutu belirlemek için kullanılan rastgele değer</strong></p>
+</li>
+<li>
+<p><strong>Argüman 4: ExpLicenseWatchInitWorker&rsquo;dan gelen yapının pointer&rsquo;ı (sadece %4 oranla olduğunu unutmayın)</strong></p>
+</li>
+<li>
+<p><strong>Argüman 5: NT rutinlerinin bütünlüğünün kontrol edilip edilmeyeceğine karar veren bir boolean değer</strong></p>
+</li>
+</ul>
+<p>Dinamik analizle elde ettiğimiz değerleri tekrar hatırlayalım:</p>
+<ul>
+<li>RCX =&gt; 1 (as Argument 1)</li>
+<li>RDX =&gt; 5 (as Argument 2)</li>
+<li>R8 =&gt; 2 (as Argument 3)</li>
+<li>R9 =&gt; 0 (as Argument 4)</li>
+<li>RSP+0x20 =&gt;1 (as Argument 5)</li>
+</ul>
+<p>Bu değerlerin random olarak hazırlandığını burada tekrar hatırlatmak istiyorum ve ileride bu argümanların ne amaçla kullanıldığını tekrar göreceğiz.</p>
+<h6 id="method-0-inserting-a-timer"><strong>Method 0: Inserting a timer</strong></h6>
+<p>Bu method içerisinde, PatchGuard tarafından PatchGuard Context Structure ve DPC başlatılacaktır. Devam etmeden belirtmem gerekiyor ki DPC hakkında bilginiz yoksa DPC ile alakalı dökümanıma hızlı bir şekilde göz atabilirsiniz.</p>
+<p>İlk olarak bir timer ayarlanmaktadır. Daha sonra bu timer <strong>KeSetCoalescableTimer</strong> tarafından eşleşmeye alınmaktadır. Bu kısmı <strong>0x140BF97F6</strong> yakınlarında görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Daha sonrasında hızlı bir şekilde eşleşmeye alınan timer tarafından birinci parametre aracılığıyla (2 - 2'10 arasında)  DPC başlatılacaktır. TolerableDelay parametresi random olarak 0 ile 0.001 saniyeye denk gelecek şekilde ayarlanmaktadır.</p>
+<h6 id="method-1-and-2-hiding-dpc"><strong>Method 1 and 2: Hiding DPC</strong></h6>
+<ul>
+<li><strong>AcpiReserved (0x140BF97DD)</strong></li>
+</ul>
+<p>Method 1 ve 2&rsquo;in fikirleri aynıdır. Method 1&rsquo;de DPC pointer&rsquo;ı PRCB yapısının AcpiReserved bölümüne aktarılmaktadır:</p>
+<!-- raw HTML omitted -->
+<ul>
+<li><strong>HalReserved (0x140BF97C9)</strong></li>
+</ul>
+<p>Aynı şekilde Method 2&rsquo;de ise DPC&rsquo;in pointer&rsquo;i daha önce yakından gördüğümüz PRCB yapısının HalReserved alanına saklamaktadır:</p>
+<!-- raw HTML omitted -->
+<p>HalReserved alanı esasen bir array&rsquo;dır ve PRCB&rsquo;nin <strong>0x48</strong> ila <strong>0x88</strong> bölümünü kapsar:</p>
+<pre tabindex="0"><code>kd&gt; dt nt!_KPRCB fffff8026f748180+0x80
+   +0x000 MxCsr            : 0
+   +0x004 LegacyNumber     : 0 &#39;&#39;
+   +0x005 ReservedMustBeZero : 0 &#39;&#39;
+   ...
+   +0x048 HalReserved      : [8] 1
+   +0x088 MinorVersion     : 0x7000
+   +0x08a MajorVersion     : 0xee23
+   ...
+</code></pre><p>DPC ise bu array&rsquo;ın 0x80 offset&rsquo;inde saklanmakta.</p>
+<p>Daha sonra bu DPC HalpMcaQueueDpc tarafından eşleşmeye alınacaktır.</p>
+<h6 id="method-3-system-thread"><strong>Method 3: System Thread</strong></h6>
+<p>Method 3&rsquo;ün gerçekleşebilmesi için KI_FILTER_FIBER_PARAM yapısına ihtiyaç duyar. Bu yapının içerisinde PsCreateSystemThread fonksiyonun adresi içermekte. Yapının üyelerini hatırlayın. Bu fonksiyon aracılığıyla yeni bir system thread oluşturulmakta. Bu kısmı esasen <strong>0x140BFAC24</strong> (Bu fonksiyonu Tetrane gibi Pg_InitMethodSystemThread olarak adlandıracağım) adresinde görebiliriz ve bu fonksiyona göz atarsak, PsCreateSystemThread rutinine <strong>0x14068F650</strong> adresini StartParameter için argüman olarak verilemekte ve bu fonksiyon adresi KI_FILTER_FIBER_PARAM&rsquo;de bulunmaktadır:</p>
+<!-- raw HTML omitted -->
+<p>Pg_InitMethodSystemThread fonksiyonu direkt olarak KiInitPatchGuardContext içerisinde çağırılmaktadır:</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<ul>
+<li><strong>Pg_InitMethodSystemThread&rsquo;dan Obfuscation Mekanizması</strong></li>
+</ul>
+<p>Bu fonksiyonun içinde ayrıca tespiti engellemek için kullanılan ilginç bir obsufcation mekanizması bulunmaktadır. Genel olarak, PatchGuard&rsquo;ın thread&rsquo;lerini tanımlamak için kullanılan bazı yöntemler  ETHREAD yapısından <strong>StartAddress</strong> ve <strong>Win32StartAddress</strong> alanların kontrol etmesine dayanmaktadır. Buna karşı koymak için, Windows sistemlerde bu alanların üzerine <strong>kasıtlı olarak</strong> yaygın, şüpheli olmayan fonksiyon adresleri yazılır.</p>
+<p>System Thread&rsquo;ın oluşturulması ardından hızlı bir şekilde PatchGuard ETHREAD ile alakalı bir pointer alır ve bu yapının StartAddress ve Win32StartAddress alanlarını işlemeye başlar. Esasen zararsız görünen bir fonksiyonun adresini bu alanlardan biri içinde değiştirir:</p>
+<!-- raw HTML omitted -->
+<p>off_140C63540 ise birkaç fonksiyon adresi tutan bir array&rsquo;dır:</p>
+<!-- raw HTML omitted -->
+<p>Array&rsquo;ın son üyesi doğru olan adrestir. Böylece ETHREAD&rsquo;ın bu alanların doğru olma olasılığının yedide bir olduğunu görebiliriz.</p>
+<h6 id="method-4-asynchronous-procedure-call"><strong>Method 4: Asynchronous Procedure Call</strong></h6>
+<p>Method 4&rsquo;te, bir PatchGuard context ve bir APC structure başlatılır ve mevcut bir system thread&rsquo;e eklenir. <strong>NormalArgument</strong> için XHalTimerWatchdogStop&rsquo;ın adresi verilirken, <strong>KernelRoutine</strong> parametre için ise KiDispatchCallout verilir</p>
+<p>Bu parametrelerin <strong>0x140BD9617</strong>&lsquo;de ayarlandığını görebiliriz:</p>
+<!-- raw HTML omitted -->
+<h6 id="method-5-hook-a-regular-dpc"><strong>Method 5: Hook a Regular DPC</strong></h6>
+<p>Method 5, esasen method 3 gibi  KI_FILTER_FIBER_PARAM yapısına ihtiyaç duyar. Eğer bu yapı yoksa method 0&rsquo;a geri dönülecektir. Bu yapı içerisinden <strong>KiBalanceSetManagerPeriodicDpc</strong> kullanılacaktır. Bu değişken <strong>KDPC</strong> yapısına işaret etmektedir ve sistemin başlatılması esnasında <strong>KiInitSystem</strong> tarafından ayarlanmaktadır. Bunu <strong>0x140C1A303</strong> adresinde izini sürebiliriz:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140C1A13A:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">dword</span> <span style="color:#66d9ef">ptr</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KiBalanceSetManagerPeriodicDpc</span>, <span style="color:#ae81ff">113</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KiBalanceSetManagerPeriodicDpc.DpcData</span>, <span style="color:#66d9ef">rdi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KiBalanceSetManagerPeriodicDpc.ProcessorHistory</span>, <span style="color:#66d9ef">rdi</span>
+</span></span></code></pre></div><p>Bu yöntemi ilginç kılan bir detay, sistemin <strong>KiUpdateTime</strong> aracılığıyla düzenli olarak - kabaca her saniye - sıraya koyduğu <strong>meşru bir DPC&rsquo;yi</strong> hedeflemesidir. <strong>0x14026D299</strong>&lsquo;dan:</p>
+<!-- raw HTML omitted -->
+<p>PatchGuard bu DPC&rsquo;yi orijinal rutini, kendi rutini ile değiştirerek hook&rsquo;lar. Sonuç olarak, sistemin orijinal rutinini çalıştırmak yerine, PatchGuard bunu <strong>her 120 yürütmede bir</strong> kendi özel DPC rutini ile değiştirir.</p>
+<p>Bu, PatchGuard&rsquo;ın sistemin normal davranışını bozmadan periyodik olarak bütünlük kontrollerini yapmasını sağlar - ve daha da önemlisi, tespit edilmesini önlemeye yardımcı olur. Olayın daha iyi anlaşılması için hazırlanmış bir şema:</p>
+<!-- raw HTML omitted -->
+<h6 id="method-7-nothingless"><strong>Method 7: Nothingless</strong></h6>
+<p>(Çalışmada Method 6 için bir açıklama yoktur.)</p>
+<p>KiInitPatchGuardContext&rsquo;a index olarak 7 verildiğinde esasen kendisi iki şey gerçekleştirecektir: Bunlardan ilki bir DPC initialize edecektir ve ardından bu DPC&rsquo;i eşleşmeye alacaktır ancak bu DPC&rsquo;i hiçbir şekilde kullanmadan geri silecektir. İkincisi ise bir PatchGuard Context yapısı oluşturucaktır edecektir.  Bu oluşturulan yeni PatchGuard yapısı esasen global bir yapıdır.</p>
+<p>Method 7&rsquo;de bir DPC başlatılır ve rutin <strong>KiInterruptThunk</strong> veya <strong>KiMachineCheckControl</strong> fonksiyonlarından biri olarak tanımlanır. Bu fonksiyonlar için <strong>16 stub</strong> bulunmaktadır. KiInterruptThunk fonksiyonu esasen KiInitPatchGuardContext tarafından kullanılmaktadır ancak bazı PatchGuard mekanizmaları KiMachineCheckControl fonksiyonu da kullanılmaktadır.</p>
+<p>İlk olarak, rdtsc aracılığıyla 0 ila 0xf arasında bir random değer oluşturuluyor ve bu random değer stub&rsquo;lar için bir index olarak kullanılıyor. Bu kısımdan bir örneği <strong>0x140BCBADF</strong>&lsquo;de görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Bu kısımda KiMachineCheckControl&rsquo;dan bir stub belirlenmektedir. Alınan random değer 3 bit sağ kaydırılıyor ve 0 ila 0xF değer arasından bir stub index belirleniyor.</p>
+<p>KiInterruptThunk içerisinde iki farklı stub vardır. Bunlardan biri (0x1406AFE60):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">$$1</span> <span style="color:#66d9ef">proc</span> <span style="color:#66d9ef">near</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">dr7</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">jmp</span> <span style="color:#66d9ef">FsRtlTruncateSmallMcb</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">$$1</span> <span style="color:#66d9ef">endp</span>
+</span></span></code></pre></div><p>Ve ikincisi (0x1406AFE70):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">$$2</span> <span style="color:#66d9ef">proc</span> <span style="color:#66d9ef">near</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">xor</span>     <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">nop</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">nop</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">nop</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">jmp</span>     <span style="color:#66d9ef">FsRtlTruncateSmallMcb</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">$$2</span> <span style="color:#66d9ef">endp</span>
+</span></span></code></pre></div><p>Bu iki stub&rsquo;un boyutlarının aynı olduğunu da buraya söylemem gerekiyor (NOP instruction&rsquo;ları sayesinde).</p>
+<p>Method&rsquo;a tekrar dönersek, esasen bu method hiçbir şey yapmıyor gibi gözüküyor ve problemimiz de tam olarak bu. Diğer method&rsquo;lara kıyasla amacı olmayan bir yöntem gibi gözüksede bu method için gerçekten önemli kısımlar var. Şimdi bu method&rsquo;a yakından bakacağız.</p>
+<ul>
+<li><strong>İlk Test Bayrağı: 0x8000000</strong></li>
+</ul>
+<p>KiInterruptThunk&rsquo;ı kontrol edersek, <strong>0x140BF8859</strong> adresinde 0x8000000 yani bir test bayrağı olduğunu görebiliriz:</p>
+<pre tabindex="0"><code>loc_140BF8859:
+...
+test    [rsp+2568h+var_150], 8000000h
+jz      short loc_140BF88E1
+</code></pre><p>Bu test bayrağı <strong>0x140BD5661</strong>&lsquo;de oluşturuluyor:</p>
+<!-- raw HTML omitted -->
+<p>Tetrane&rsquo;in makalesinde aktardığına göre, bu kısımda Windows 11&rsquo;den farklı olarak Windows 10 RS4&rsquo;te 0x10000000 bayrağı kullanılmakta. <strong>0x1408A82901</strong> adresinden bunu görebiliriz:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_1408A8291:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span> [<span style="color:#66d9ef">rsp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">2238</span><span style="color:#66d9ef">h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_140</span>], <span style="color:#ae81ff">10000000</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span> <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_1408A830E</span>
+</span></span></code></pre></div><p>Windows sürümlerine göre bayraklar değişiklik gösterebiliyor.</p>
+<ul>
+<li><strong>İkinci Test Bayrağı: 0x20000000</strong></li>
+</ul>
+<p>Ayrıca ikinci bir test bayrağı da var. <strong>0x140BF893D</strong>&lsquo;de görebildiğimiz gibi, method dispatcher&rsquo;in 0x20000000 bayrağı ile alınıp alınmayacağına karar verir:</p>
+<!-- raw HTML omitted -->
+<p>Aynı şekilde bu ikinci bayrak ise <strong>0x140BD7937</strong>&lsquo;de ayarlanıyor:</p>
+<!-- raw HTML omitted -->
+<p>Farklı detay ise, r13d&rsquo;nin 7 değeri ile kontrol edildiğine dikkat edin. Anlayabileceğimiz gibi, seçilen method&rsquo;un 7 olup olmadığı kontrol ediliyor. Ardından birkaç modifikasyonlar ile ikinci bayrak oluşturuluyor.</p>
+<p>Windows 10&rsquo;da ise bu kısımda <strong>0x40000000</strong> bayrağı kullanılmakta (<strong>0x1408A836F</strong>):</p>
+<!-- raw HTML omitted -->
+<ul>
+<li><strong>Üçüncü Kontrol: Stack Değişkeninden</strong></li>
+</ul>
+<p>Son kontrol ise <strong>0x140BF9E3F</strong> adresinde üçüncü kontrolü görebiliriz. Belirli parametrelerle <strong>KeSetEvent</strong> çağırılıp çağırılmayacağı karar veriliyor:</p>
+<!-- raw HTML omitted -->
+<p>İlk olarak KeSetEvent&rsquo;in çağırılıp çağırılmayacağı karar veriliyor:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rsp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">2568</span><span style="color:#66d9ef">h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_24C0</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span>    <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span>      <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140BF9E70</span>
+</span></span></code></pre></div><p>Bu işlem ise rax&rsquo;a verilen değer aracılığıyla kontrol ediliyor. <strong>var_24C0</strong>&lsquo;in ayarlanmasını <strong>0x140BF677A</strong> adresinde gerçekleşiyor:</p>
+<pre tabindex="0"><code>Set_Variable_To_Zero:
+; Address: 0x140BF677A
+xor     eax, eax
+mov     [rsp+2568h+var_24C0], rax
+</code></pre><p>Direkt olarak sıfır yani NULL ile ayarlanmakta. Ancak bu durum her zaman böyle değildir. Eğer method 3 seçilmişse ve system thread oluşturulduysa bu değişkene PsCreateSystemThread&rsquo;e verilen StartContext pointer&rsquo;ı verilecektir.  Bu da esasen, Method 3 kısmında görüldüğümüz gibi Pg_InitMethodSystemThread fonksiyonun direkt çağırıldığı kısımda gerçekleşiyor:</p>
+<!-- raw HTML omitted -->
+<p>Böylece bu değişken NULL olarak ayarlanmazsa, oluşturulan thread bu nesneyi bekleyecek ve KeSetEvent ise notify edecektir.</p>
+<p>Daha önce tartıştığımız gibi, KiInitPatchGuardContext&rsquo;e 7 indeksi verildiğinde küresel bir PatchGuard bağlam yapısını başlatır. ve bu küresel PatchGuard bağlamı aslında diğer yeni yöntemler tarafından kullanılır (Windows 8.1 ile karşılaştırıldığında). Bu yapıya <strong>0x140FC4A48</strong>adresindeki MaxDataSize isimli yanıltıcı isme sahip global yapıdan erişilebilir:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>ALMOSTRO:<span style="color:#960050;background-color:#1e0010">0000000140</span><span style="color:#a6e22e">FC4A48</span> <span style="color:#66d9ef">MaxDataSize</span>     <span style="color:#66d9ef">dq</span> <span style="color:#ae81ff">0</span>
+</span></span></code></pre></div><p>Bu değişkenin bir yapı olarak kullanıldığını KiSwInterruptDispatch fonksiyondan görebiliriz (0x14050EB4D&rsquo;den):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">KiSwInterruptDispatch</span> <span style="color:#66d9ef">proc</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rdi</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">MaxDataSize</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">r13</span>, <span style="color:#66d9ef">rcx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span>    <span style="color:#66d9ef">dword</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rdi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">9</span><span style="color:#66d9ef">DCh</span>], <span style="color:#ae81ff">100000</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span>      <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_14050EB6A</span>
+</span></span></code></pre></div><p>Kontrol edilen değere dikkat edin. Farklı bir test flag&rsquo;ı kontrol edilmekte.</p>
+<p>Aynı zamanda KiInitPatchGuardContext&rsquo;te (<strong>0x140BF86A2</strong> adresinde), yapının adresi üzerine işlemler yapıldığını görebiliriz:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BF86A2:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">MaxDataSize</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">r13d</span>, [<span style="color:#66d9ef">rbx-7</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">ecx</span>, <span style="color:#ae81ff">0</span><span style="color:#66d9ef">FFFFF000h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">r9</span>, [<span style="color:#66d9ef">r15</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">20</span><span style="color:#66d9ef">h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">add</span>     <span style="color:#66d9ef">edi</span>, <span style="color:#66d9ef">r13d</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">r8d</span>, <span style="color:#66d9ef">edi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">shl</span>     <span style="color:#66d9ef">r8</span>, <span style="color:#ae81ff">6</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">add</span>     <span style="color:#66d9ef">r9</span>, <span style="color:#66d9ef">r8</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">r8</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">r15</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span>], <span style="color:#66d9ef">rax</span>
+</span></span></code></pre></div><p>Burada biraz duralım ve nefes alalım. Bir sonraki konuda bu fonksiyonun diğer parametrelerine yakından göz atarak devam edeceğiz.</p>
+
+    <h4><a href="http://localhost:1313/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2025</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://twitter.com">Twitter</a> 
+        
+        <a href="https://github.com">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: true , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

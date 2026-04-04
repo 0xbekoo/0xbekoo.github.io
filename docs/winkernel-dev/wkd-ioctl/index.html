@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=38385&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:38385//favicon.ico">
+    <link rel="canonical" href="http://localhost:38385/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:38385/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>Input/Output Control (IOCTL) - Mon, Aug 26, 2024</h1>
+    </div>
+    <p class="lead"></p>
+    <p>In this documentation, we will discuss IOCTL mechanism on Windows.</p>
+<h3 id="what-is-ioctl"><strong>What is IOCTL?</strong></h3>
+<p><strong>I/O Control Codes (IOCTLs)</strong> are a mechanism used for communication between user-mode applications and drivers, or between drivers within a stack. I/O control codes are sent via IRPs (I/O Request Packets), as mentioned in the previous section. If you are not familiar with IRPs, click here to learn more about them.</p>
+<p>In Windows, user-mode programs send IOCTL codes to drivers using the DeviceIoControl API. This API delivers the received IOCTL code to the driver through the IRP_MJ_DEVICE_CONTROL request. It’s important to note that this is not the only way the IOCTL mechanism is used. Advanced drivers can also generate requests using IRP_MJ_DEVICE_CONTROL or IRP_MJ_INTERNAL_DEVICE_CONTROL to send IOCTL requests to lower-level drivers in the stack.</p>
+<p>IOCTL codes can be custom-defined by driver developers, but Windows also provides a set of predefined codes for common operations. These standard IOCTL codes are intended to standardize and simplify communication between hardware and software components. For example, some IOCTL codes are used for general tasks such as querying device properties or initiating specific operations. Developers can customize these codes or define new ones according to their specific needs, providing flexibility and extensibility.</p>
+<h3 id="coding"><strong>Coding</strong></h3>
+<h4 id="kernel-mode-driver"><strong>Kernel Mode Driver</strong></h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;main.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define TAG &#39;beko&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_ALLOCATE \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_READ \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>PVOID GlobalMemoryAddr <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IoCreateClose</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	PIO_STACK_LOCATION Stack <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoGetCurrentIrpStackLocation</span>(Irp);
+</span></span><span style="display:flex;"><span>	NTSTATUS status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">switch</span> (Stack<span style="color:#f92672">-&gt;</span>MajorFunction) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> IRP_MJ_CREATE:
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> IRP_MJ_CLOSE:
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>		status <span style="color:#f92672">=</span> STATUS_INVALID_DEVICE_REQUEST;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IoControl</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	PIO_STACK_LOCATION Stack <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoGetCurrentIrpStackLocation</span>(Irp);
+</span></span><span style="display:flex;"><span>	PVOID Data <span style="color:#f92672">=</span> Irp<span style="color:#f92672">-&gt;</span>AssociatedIrp.SystemBuffer;
+</span></span><span style="display:flex;"><span>	PCHAR UserBuffer <span style="color:#f92672">=</span> (PCHAR)Data;
+</span></span><span style="display:flex;"><span>	ULONG OutLength <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.OutputBufferLength;
+</span></span><span style="display:flex;"><span>	ULONG Length <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.InputBufferLength;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	ULONG Tag <span style="color:#f92672">=</span> TAG;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">switch</span> (Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.IoControlCode) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> IOCTL_MEM_ALLOCATE:
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> UserBuffer <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Length) {
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_PARAMETER;
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Data from UserLand program: %.*s&#34;</span>, Length, UserBuffer);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		GlobalMemoryAddr <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExAllocatePool2</span>(POOL_FLAG_NON_PAGED, Length, Tag);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> GlobalMemoryAddr) {
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>			Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">RtlCopyMemory</span>(GlobalMemoryAddr, UserBuffer, Length);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> Length;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> IOCTL_MEM_READ:
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">RtlCopyMemory</span>(UserBuffer, GlobalMemoryAddr, OutLength);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> OutLength;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_DEVICE_REQUEST;
+</span></span><span style="display:flex;"><span>		Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">DriverEntry</span>(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(RegistryPath);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	UNICODE_STRING DeviceName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Device</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>	UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>	PDEVICE_OBJECT DeviceObject;
+</span></span><span style="display:flex;"><span>	NTSTATUS Status;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateDevice</span>(DriverObject, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>DeviceName, FILE_DEVICE_UNKNOWN, <span style="color:#ae81ff">0</span>, FALSE, <span style="color:#f92672">&amp;</span>DeviceObject);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create I/O Device!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateSymbolicLink</span>(<span style="color:#f92672">&amp;</span>SymName, <span style="color:#f92672">&amp;</span>DeviceName);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create Symbolic Link!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CREATE] <span style="color:#f92672">=</span> IoCreateClose;
+</span></span><span style="display:flex;"><span>	DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CLOSE] <span style="color:#f92672">=</span> IoCreateClose;
+</span></span><span style="display:flex;"><span>	DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_DEVICE_CONTROL] <span style="color:#f92672">=</span> IoControl;
+</span></span><span style="display:flex;"><span>	DriverObject<span style="color:#f92672">-&gt;</span>DriverUnload <span style="color:#f92672">=</span> UnloadDriver;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">UnloadDriver</span>(PDRIVER_OBJECT DriverObject) {
+</span></span><span style="display:flex;"><span>	UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Unloading the Driver...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoDeleteSymbolicLink</span>(<span style="color:#f92672">&amp;</span>SymName);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoDeleteDevice</span>(DriverObject<span style="color:#f92672">-&gt;</span>DeviceObject);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>If you are familiar with the previous IRP documentation, you will already understand that the code is almost identical. Let&rsquo;s take a closer look:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_ALLOCATE \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_READ \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span></code></pre></div><p>The <strong>CTL_CODE</strong> macro is used to define IOCTL codes, and it creates an IOCTL code from various parameters:</p>
+<ul>
+<li>
+<p><strong>DeviceType</strong> – Specifies the type of device. This can be FILE_DEVICE_UNKNOWN, FILE_DEVICE_DISK, FILE_DEVICE_KEYBOARD, and others. In our case, we use FILE_DEVICE_UNKNOWN to indicate that we’re not targeting a specific hardware type, but rather a generic device type.</p>
+</li>
+<li>
+<p><strong>FunctionCode</strong> – Specifies a unique code for the IOCTL operation. This is a number that identifies the operation and is typically defined by the application or driver developer. For example, it could be values like 0x800 or 0x801.</p>
+</li>
+<li>
+<p><strong>Method</strong> – Defines how the IOCTL operation transfers data. Possible values include METHOD_BUFFERED,  METHOD_IN_DIRECT, METHOD_OUT_DIRECT, and METHOD_NEITHER.</p>
+</li>
+<li>
+<p><strong>Access</strong> – Specifies the access permissions required for the IOCTL operation. Examples include FILE_ANY_ACCESS, FILE_SHARE_READ, and FILE_SHARE_WRITE.</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>UNICODE_STRING DeviceName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Device</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>PDEVICE_OBJECT DeviceObject;
+</span></span><span style="display:flex;"><span>NTSTATUS Status;
+</span></span></code></pre></div><p>These store the driver’s device name and symbolic name, respectively, which we will use to identify and access the driver.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateDevice</span>(DriverObject, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>DeviceName, FILE_DEVICE_UNKNOWN, <span style="color:#ae81ff">0</span>, FALSE, <span style="color:#f92672">&amp;</span>DeviceObject);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create I/O Device!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Here, we call IoCreateDevice to create a device object for our driver. This object is stored in the DeviceObject variable.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateSymbolicLink</span>(<span style="color:#f92672">&amp;</span>SymName, <span style="color:#f92672">&amp;</span>DeviceName);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create Symbolic Link!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Next, we create a symbolic link using IoCreateSymbolicLink. This allows a user-mode program to access the driver via its symbolic name.</p>
+<p>We then set up the major function callbacks:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CREATE] <span style="color:#f92672">=</span> IoCreateClose;
+</span></span><span style="display:flex;"><span>DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CLOSE] <span style="color:#f92672">=</span> IoCreateClose;
+</span></span><span style="display:flex;"><span>DriverObject<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_DEVICE_CONTROL] <span style="color:#f92672">=</span> IoControl;
+</span></span><span style="display:flex;"><span>DriverObject<span style="color:#f92672">-&gt;</span>DriverUnload <span style="color:#f92672">=</span> UnloadDriver;
+</span></span></code></pre></div><p>Now we can take a look at IoControl:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>PIO_STACK_LOCATION Stack <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoGetCurrentIrpStackLocation</span>(Irp);
+</span></span><span style="display:flex;"><span>PVOID Data <span style="color:#f92672">=</span> Irp<span style="color:#f92672">-&gt;</span>AssociatedIrp.SystemBuffer;
+</span></span><span style="display:flex;"><span>PCHAR UserBuffer <span style="color:#f92672">=</span> (PCHAR)Data;
+</span></span><span style="display:flex;"><span>ULONG OutLength <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.OutputBufferLength;
+</span></span><span style="display:flex;"><span>ULONG Length <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.InputBufferLength;
+</span></span><span style="display:flex;"><span>ULONG Tag <span style="color:#f92672">=</span> TAG;
+</span></span></code></pre></div><ul>
+<li>
+<p>We get the current IRP stack location using IoGetCurrentIrpStackLocation.</p>
+</li>
+<li>
+<p>We retrieve data sent from user-mode via Irp-&gt;AssociatedIrp.SystemBuffer.</p>
+</li>
+<li>
+<p>We extract the input and output buffer sizes from the DeviceIoControl parameters.</p>
+</li>
+<li>
+<p>We define a memory allocation TAG to identify our memory block in pool tracking.</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">switch</span> (Stack<span style="color:#f92672">-&gt;</span>Parameters.DeviceIoControl.IoControlCode) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> IOCTL_MEM_ALLOCATE:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> UserBuffer <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Length) {
+</span></span><span style="display:flex;"><span>            Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_PARAMETER;
+</span></span><span style="display:flex;"><span>            Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        GlobalMemoryAddr <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExAllocatePool2</span>(POOL_FLAG_NON_PAGED, Length, Tag);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> GlobalMemoryAddr) {
+</span></span><span style="display:flex;"><span>            Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>            Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">RtlCopyMemory</span>(GlobalMemoryAddr, UserBuffer, Length);
+</span></span><span style="display:flex;"><span>        Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>        Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> Length;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> IOCTL_MEM_READ:
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">RtlCopyMemory</span>(UserBuffer, GlobalMemoryAddr, OutLength);
+</span></span><span style="display:flex;"><span>        Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>        Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> OutLength;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>        Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_DEVICE_REQUEST;
+</span></span><span style="display:flex;"><span>        Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span></code></pre></div><p>We check IoControlCode to determine the requested operation.</p>
+<ul>
+<li>
+<p><strong>IOCTL_MEM_ALLOCATE</strong></p>
+<ul>
+<li>Validate input parameters.
+<br></li>
+<li>Allocate non-paged kernel memory using ExAllocatePool2.
+<br></li>
+<li>Copy user-mode data into kernel memory using RtlCopyMemory.</li>
+</ul>
+</li>
+</ul>
+<br>
+<ul>
+<li>
+<p><strong>IOCTL_MEM_READ</strong></p>
+<ul>
+<li>Copy data from the allocated kernel buffer back to user-mode.</li>
+</ul>
+</li>
+</ul>
+<br>
+<ul>
+<li>
+<p><strong>Default</strong></p>
+<ul>
+<li>Return an error for unsupported IOCTL codes.</li>
+</ul>
+</li>
+</ul>
+<h4 id="user-mode-program"><strong>User Mode Program</strong></h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Windows.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define DEVICE_NAME L&#34;\\\\.\\MyDevice&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_ALLOCATE \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_READ \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> argv[]) {
+</span></span><span style="display:flex;"><span>	HANDLE HandleDevice <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>	CHAR InBuffer[] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Piyanis bana biraaak&#34;</span>;
+</span></span><span style="display:flex;"><span>	CHAR OutBuffer[<span style="color:#66d9ef">sizeof</span>(InBuffer)] <span style="color:#f92672">=</span> { <span style="color:#ae81ff">0</span> };
+</span></span><span style="display:flex;"><span>	DWORD InputBytesReturned <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	DWORD OutputBytesReturned <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	BOOL Result <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	HandleDevice <span style="color:#f92672">=</span> <span style="color:#a6e22e">CreateFile</span>(DEVICE_NAME, GENERIC_WRITE <span style="color:#f92672">|</span> GENERIC_READ, <span style="color:#ae81ff">0</span>, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> HandleDevice) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to connect Driver! Error Code: 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Result <span style="color:#f92672">=</span> <span style="color:#a6e22e">DeviceIoControl</span>(HandleDevice, IOCTL_MEM_ALLOCATE, InBuffer, <span style="color:#66d9ef">sizeof</span>(InBuffer), NULL, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>InputBytesReturned, NULL);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Result) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to Allocate Memory! Error Code: 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Result <span style="color:#f92672">=</span> <span style="color:#a6e22e">DeviceIoControl</span>(HandleDevice, IOCTL_MEM_READ, NULL, <span style="color:#ae81ff">0</span>, OutBuffer, <span style="color:#66d9ef">sizeof</span>(OutBuffer), <span style="color:#f92672">&amp;</span>OutputBytesReturned, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Result) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to get Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Output Buffer: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, OutBuffer);
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Let&rsquo;s see the code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Windows.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define DEVICE_NAME L&#34;\\\\.\\MyDevice&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_ALLOCATE \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define IOCTL_MEM_READ \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
+</span></span></span></code></pre></div><p>We define the device name and the same IOCTL codes that the driver understands.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>HANDLE HandleDevice <span style="color:#f92672">=</span> <span style="color:#a6e22e">CreateFile</span>(
+</span></span><span style="display:flex;"><span>    DEVICE_NAME,
+</span></span><span style="display:flex;"><span>    GENERIC_WRITE <span style="color:#f92672">|</span> GENERIC_READ,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0</span>, NULL, OPEN_EXISTING,
+</span></span><span style="display:flex;"><span>    FILE_ATTRIBUTE_NORMAL, NULL
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> HandleDevice) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to connect Driver! Error Code: 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Here, we connect to the driver using CreateFile.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>CHAR InBuffer[] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Piyanis bana biraaak&#34;</span>;
+</span></span><span style="display:flex;"><span>CHAR OutBuffer[<span style="color:#66d9ef">sizeof</span>(InBuffer)] <span style="color:#f92672">=</span> { <span style="color:#ae81ff">0</span> };
+</span></span><span style="display:flex;"><span>DWORD InputBytesReturned <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>DWORD OutputBytesReturned <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>BOOL Result <span style="color:#f92672">=</span> <span style="color:#a6e22e">DeviceIoControl</span>(
+</span></span><span style="display:flex;"><span>    HandleDevice,
+</span></span><span style="display:flex;"><span>    IOCTL_MEM_ALLOCATE,
+</span></span><span style="display:flex;"><span>    InBuffer, <span style="color:#66d9ef">sizeof</span>(InBuffer),
+</span></span><span style="display:flex;"><span>    NULL, <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>InputBytesReturned, NULL
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>We Send IOCTL_MEM_ALLOCATE to the driver with our input data. If the call fails, print the error and exit.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Result <span style="color:#f92672">=</span> <span style="color:#a6e22e">DeviceIoControl</span>(
+</span></span><span style="display:flex;"><span>    HandleDevice,
+</span></span><span style="display:flex;"><span>    IOCTL_MEM_READ,
+</span></span><span style="display:flex;"><span>    NULL, <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>    OutBuffer, <span style="color:#66d9ef">sizeof</span>(OutBuffer),
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>OutputBytesReturned, <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Result) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to get Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Output Buffer: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, OutBuffer);
+</span></span></code></pre></div><p>Then we send anohter IOCTL Code, IOCTL_MEM_READ to retrieve the data from kernel memory. This time, no input buffer is provided (NULL, 0). The driver writes the result to OutBuffer, which we print to the console.</p>
+<h3 id="running-the-project"><strong>Running the Project</strong></h3>
+<div style="text-align: center;">
+  <img src="/images/posts/ioctl/video.gif" style="width: 100%" />
+</div>
+<p>As you can see, when we run our program, we can see that Windbg prints the data sent by the user-mode program to the screen, and then prints the data sent by the driver to the user-mode program to the screen.</p>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>In this documentation, we have explored the complete process of implementing a simple Windows kernel-mode driver that communicates with a user-mode application using IOCTL (Input/Output Control) codes.</p>
+<p>We demonstrated how to define IOCTL codes using the CTL_CODE macro, create device and symbolic link objects in the kernel, and handle IRP requests in the driver. Specifically, we implemented memory allocation and memory reading operations in kernel space and exposed them to user-mode applications.</p>
+<h3 id="references"><strong>References</strong></h3>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/introduction-to-i-o-control-codes">Windows Docs - Introduction to I/O Control Codes</a></li>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/devio/device-input-and-output-control-ioctl-">Windows Docs - Device Input and Output Control</a></li>
+</ul>
+
+    <h4><a href="http://localhost:38385/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

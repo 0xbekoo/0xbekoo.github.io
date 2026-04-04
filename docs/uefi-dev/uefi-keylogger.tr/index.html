@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:1313//favicon.ico">
+    <link rel="canonical" href="http://localhost:1313/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:1313/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>UEFI Keylogger - Tue, Jan 28, 2025</h1>
+    </div>
+    <p class="lead"></p>
+    <p>Merhabalar. Bu blogta UEFI&rsquo;de basit bir keylogger geliştireceğiz. Bir önceki blogta temel olarak UEFI&rsquo;yi anlamıştık ve edk2 kurulumunu tamamlamıştık ve ardından bir adet gereği &ldquo;Hello World&rdquo; çıktısı veren sürücü yazmıştık. Artık basit projeler geliştirebilir hale geldik.</p>
+<p>Kabaca yapacağımız şey UEFI&rsquo;de klavyeden basılan tuşları ekrana bastıran bir sürücü yazacağız.</p>
+<h2 id="kodlama"><strong>Kodlama</strong></h2>
+<p>KeyLogger.c projesi oluşturalım ve aşağıdaki kodları yapıştıralım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Uefi.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiLib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>EFI_STATUS
+</span></span><span style="display:flex;"><span>EFIAPI
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">UefiMain</span>(
+</span></span><span style="display:flex;"><span>    EFI_HANDLE        ImageHandle,
+</span></span><span style="display:flex;"><span>    EFI_SYSTEM_TABLE  <span style="color:#f92672">*</span>SystemTable
+</span></span><span style="display:flex;"><span>) {
+</span></span><span style="display:flex;"><span>  EFI_SIMPLE_TEXT_INPUT_PROTOCOL <span style="color:#f92672">*</span>TextInput;
+</span></span><span style="display:flex;"><span>  EFI_INPUT_KEY Key;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">/* Protokole erişim sağla */</span>
+</span></span><span style="display:flex;"><span>  TextInput <span style="color:#f92672">=</span> SystemTable<span style="color:#f92672">-&gt;</span>ConIn;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;UEFI Keylogger!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>    TextInput<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">ReadKeyStroke</span> (
+</span></span><span style="display:flex;"><span>        TextInput, 
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>Key
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (Key.ScanCode <span style="color:#f92672">==</span> SCAN_ESC) {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;ESC Button Detected</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (Key.UnicodeChar <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Pressed: %c</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Key.UnicodeChar);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> EFI_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Kodumuz oldukça basit. Detaylıca göz atalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>EFI_SIMPLE_TEXT_INPUT_PROTOCOL <span style="color:#f92672">*</span>TextInput;
+</span></span><span style="display:flex;"><span>EFI_INPUT_KEY Key;
+</span></span></code></pre></div><p>Sürücümüzde <strong>EFI_SIMPLE_TEXT_INPUT_PROTOCOL</strong> protokolü ile bir pointer oluşturarak başlıyoruz. Bu pointer, klavyeden gelen girişleri yakalamak için kullanacağız. EFI_SIMPLE_TEXT_INPUT_PROTOCOL protokolü, klavye girişlerini okuma işlemini gerçekleştiren temel bir protokoldür.</p>
+<p>Daha sonra klavyeden basılan tuşları bir değişkene kaydetmek için EFI_INPUT_KEY tipinde bir değişken oluşturuyoruz.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>TextInput <span style="color:#f92672">=</span> SystemTable<span style="color:#f92672">-&gt;</span>ConIn;
+</span></span></code></pre></div><p>Bu kısımda ise <strong>EFI_SIMPLE_TEXT_INPUT_PROTOCOL</strong>&rsquo;e erişim sağlıyoruz. ConIn, Console Input Protocol (Konsol Giriş Protokolü) için kullanılan bir üye değişkendir.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>    TextInput<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">ReadKeyStroke</span> ( 
+</span></span><span style="display:flex;"><span>        TextInput, 
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>Key
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (Key.ScanCode <span style="color:#f92672">==</span> SCAN_ESC) {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;ESC Button Detected</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (Key.UnicodeChar <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Pressed: %c</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Key.UnicodeChar);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Artık bir döngü ile basılan tuşları ekrana bastırmaya başlıyoruz. <strong>ReadKeyStroke</strong> ile basılan tuşları <strong>Key</strong> değişkenine aktarıyoruz.</p>
+<p>Eğer basılan tuş ESC (SCAN_ESC) tuşuysa sürücünün döngüden çıkmasını sağlıyoruz. Eğer değilse basılan tuşu ekrana bastırıyoruz.</p>
+<h2 id="sürücüyü-çalıştırma"><strong>Sürücüyü Çalıştırma</strong></h2>
+<p>KeyLogger.inf dosyasını oluşturalım ve aşağıdaki kodları yapıştıralım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-inf" data-lang="inf"><span style="display:flex;"><span><span style="color:#66d9ef">[Defines]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">INF_VERSION</span>                    <span style="color:#f92672">=</span> <span style="color:#e6db74">0x00010006
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  BASE_NAME                      = KeyLogger
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  MODULE_TYPE                    = UEFI_APPLICATION
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  VERSION_STRING                 = 1.0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  ENTRY_POINT                    = UefiMain</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Sources]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">KeyLogger.c</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Packages]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">MdePkg/MdePkg.dec</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ShellPkg/ShellPkg.dec</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">MdeModulePkg/MdeModulePkg.dec</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[LibraryClasses]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">UefiApplicationEntryPoint</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">UefiLib</span>
+</span></span></code></pre></div><p>Aşağıdaki kodla projemizi build edelim:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>Build -m ShellPkg<span style="color:#ae81ff">\A</span>pplication<span style="color:#ae81ff">\K</span>eyLogger<span style="color:#ae81ff">\K</span>eyLogger.inf
+</span></span></code></pre></div><p>Her şey tamam olduğuna göre sonuca bakabiliriz:</p>
+<p><img src="/images/posts/uefi-keylogger/result.png" alt=""></p>
+<p>Gördüğünüz gibi klavyeden bastığım tuşlar ekrana bastırılıyor. ESC tuşuna basıldığında ise sürücü kapanıyor.</p>
+<h2 id="sonuç"><strong>Sonuç</strong></h2>
+<p>Bu blogta UEFI sürücüsü ile basit bir Keylogger geliştirmeyi öğrendik. Blogun basit olduğunun farkındayım ancak daha yeni olduğumuz için ve UEFI projelerine adepte olabilmek için böyle basit projelerle ilerlemenin güzel olacağını düşünüyorum. İlerideki süreçlerde daha derin projelere girişeceğiz.</p>
+
+    <h4><a href="http://localhost:1313/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://twitter.com">Twitter</a> 
+        
+        <a href="https://github.com">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

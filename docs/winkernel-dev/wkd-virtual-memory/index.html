@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=38385&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:38385//favicon.ico">
+    <link rel="canonical" href="http://localhost:38385/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:38385/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>Virtual Memory - Fri, Aug 30, 2024</h1>
+    </div>
+    <p class="lead"></p>
+    <p>In this documentation we will discuss Virtual Memory in Windows Kernel.</p>
+<h3 id="what-is-virtual-memory"><strong>What is Virtual Memory</strong></h3>
+<blockquote>
+<p><em>&ldquo;Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.&rdquo;</em>
+-<strong>Windows Internals Part 1 - Chapter 1, Page 39</strong></p>
+</blockquote>
+<p>Virtual Memory is a memory management technique that provides an idealized abstraction of the data stored in physical memory addresses. This allows the operating system to prevent one process from interfering with another process’s memory or overwriting the operating system’s critical data.</p>
+<p>This system uses a method to store data both in RAM and on the hard disk. The data is divided into small units called <em>pages</em>, each typically 4 KB in size.</p>
+<p>These pages do not need to be stored contiguously in memory. In other words, an application’s data can be scattered in memory — some parts may reside in RAM while others are stored on disk. This method optimizes memory usage without affecting application performance.</p>
+<p>An advantage of this system is that applications do not need to be specially modified to benefit from paging. The memory management system performs these operations automatically. The diagram below illustrates this more clearly.</p>
+<div style="text-align: center;">
+  <img src="/images/posts/virtual-memory/img1.png" style="width: 100%" />
+</div>
+<p>The size of the virtual address space varies depending on the hardware platform. For example, in Windows, the total virtual address space on 32-bit x86 systems is at most 4 GB. On this platform, by default, Windows allocates the lower half of this address space (addresses from 0x00000000 to 0x7FFFFFFF) for user-mode processes and the upper half (addresses from 0x80000000 to 0xFFFFFFFF) for the protected memory used by the operating system.</p>
+<p>In 64-bit (x64) Windows systems, the virtual address space is much larger. Theoretically, a 64-bit addressing system provides up to 16 exabytes (2^64 bytes) of virtual address space. However, due to current hardware and operating system limitations, not all of this space is usable. In Windows x64 operating systems, the virtual address space is typically limited to 256 terabytes (2^48 bytes).</p>
+<h3 id="coding"><strong>Coding</strong></h3>
+<p>We will allocate a memory from the kernel space via the driver and then map it to the virtual address.</p>
+<p>You can <a href="https://github.com/0xbekoo/WinKernelDev/blob/main/Virtual_Memory/src/main.c">click here</a> for the Github link.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#pragma warning(disable: 4996)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;ntddk.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">UnloadDriver</span>(PDRIVER_OBJECT DriverObject) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DriverObject);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Driver Unloaded</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">DriverEntry</span>(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(RegistryPath);
+</span></span><span style="display:flex;"><span>	SIZE_T MemorySize <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x1000</span>;
+</span></span><span style="display:flex;"><span>	PVOID VirtualAddress <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>	PVOID MappedAddress <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>	PMDL MDL <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	VirtualAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExAllocatePool</span>(NonPagedPool, MemorySize);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> VirtualAddress) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Allocate Memory!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Allocated Memory at 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, VirtualAddress);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	MDL <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoAllocateMdl</span>(VirtualAddress, (ULONG)MemorySize, FALSE, FALSE, NULL);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> MDL) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to MDL Creation!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">MmBuildMdlForNonPagedPool</span>(MDL);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	MappedAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">MmMapLockedPagesSpecifyCache</span>(MDL, KernelMode, MmCached, NULL, FALSE, NormalPagePriority);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> MappedAddress) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Virtual Address Mapping!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">IoFreeMdl</span>(MDL);
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Virtual Address mapping is successful! Address: 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, MappedAddress);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">MmUnmapLockedPages</span>(MappedAddress, MDL);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoFreeMdl</span>(MDL);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	DriverObject<span style="color:#f92672">-&gt;</span>DriverUnload <span style="color:#f92672">=</span> UnloadDriver;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This is our code. Now let&rsquo;s analyze this code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>SIZE_T MemorySize <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x1000</span>;
+</span></span><span style="display:flex;"><span>PVOID VirtualAddress <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>PVOID MappedAddress <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>PMDL MDL <span style="color:#f92672">=</span> NULL;
+</span></span></code></pre></div><p>First, we start by defining the parameters in our driver. Their purposes are as follows:</p>
+<ul>
+<li>
+<p><strong>MemorySize</strong>: Specifies the size of the memory block to be allocated. In this example, I set it to <code>0x1000</code> (4 KB).</p>
+</li>
+<li>
+<p><strong>VirtualAddress</strong>: Holds the address returned when the memory allocation is performed.</p>
+</li>
+<li>
+<p><strong>MappedAddress</strong>: Holds the address to which the memory is mapped with a virtual address.</p>
+</li>
+<li>
+<p><strong>MDL</strong>: Holds the MDL (Memory Descriptor List) structure used for mapping the memory to a virtual address.</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>VirtualAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExAllocatePool</span>(NonPagedPool, MemorySize);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> VirtualAddress) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Memory allocation failed</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Allocated Memory Address: 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, VirtualAddress);
+</span></span></code></pre></div><p>In the first step, we allocate a 4 KB memory block from the <strong>Nonpaged Pool</strong>. If the allocation fails, we print an error message and exit. If it succeeds, we print the address of the allocated memory.</p>
+<p>If you are unfamiliar with the Nonpaged Pool, here’s a short explanation:<br>
+The <strong>Nonpaged Pool</strong> is one of the memory pools used by the operating system. It refers to a memory area that is always accessible and cannot be paged out to disk (i.e., cannot undergo “paging”). Memory in the nonpaged pool is reserved for tasks of critical importance to the system. For example, hardware drivers or other kernel-mode components allocate from this pool because their memory access must always be fast and uninterrupted.</p>
+<p>Alongside this, there is also the <strong>Paged Pool</strong>, another memory pool used by the operating system. This pool refers to a memory area that can be paged out to disk. Memory in the paged pool is generally allocated for user-mode applications and services.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>MDL <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoAllocateMdl</span>(VirtualAddress, (ULONG)MemorySize, FALSE, FALSE, NULL);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> MDL) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;MDL allocation failed!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Next, we create an <strong>MDL (Memory Descriptor List)</strong> structure to access the physical addresses of the memory block and map this block to a virtual address. The MDL stores the physical addresses and size of the memory, describing how the associated data is mapped from virtual to physical memory.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">MmBuildMdlForNonPagedPool</span>(MDL);
+</span></span></code></pre></div><p>We then use this API to build the MDL structure. While building, this function fills in the physical memory addresses and size within the MDL.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>MappedAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">MmMapLockedPagesSpecifyCache</span>(MDL, KernelMode, MmCached, NULL, FALSE, NormalPagePriority);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> MappedAddress) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Virtual address mapping failed!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IoFreeMdl</span>(MDL);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_INSUFFICIENT_RESOURCES;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Virtual address mapping successful! Address: 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, MappedAddress);
+</span></span></code></pre></div><p>Finally, to map the memory to a virtual address, we use the <strong>MmMapLockedPagesSpecifyCache</strong> API. This function uses the MDL to map the specified memory block into virtual memory. If the operation fails, we print an error message and exit. If it succeeds, we print the mapped virtual address.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">MmUnmapLockedPages</span>(MappedAddress, MDL);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">IoFreeMdl</span>(MDL);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ExFreePool</span>(VirtualAddress);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>DriverObject<span style="color:#f92672">-&gt;</span>DriverUnload <span style="color:#f92672">=</span> UnloadDriver;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span></code></pre></div><p>At the end, when we are done, we free the memory. This is done by first calling <strong>MmUnmapLockedPages</strong> to unmap the virtual memory, then <strong>IoFreeMdl</strong> to free the MDL structure, and finally <strong>ExFreePool</strong> to release the allocated memory.</p>
+<h3 id="running-the-driver"><strong>Running the Driver</strong></h3>
+<p>Well, let&rsquo;s run our driver:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/virtual-memory/img3.png" style="width: 100%" />
+</div>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>In this documentation, we explored how Windows implements virtual memory in the kernel and how developers can work with it programmatically. We learned that virtual memory abstracts the physical memory layout, giving each process its own protected address space while enabling efficient memory utilization through paging.</p>
+<p>Understanding how virtual memory works at the kernel level — and how to manage memory safely and efficiently — is a critical skill for Windows kernel development. The techniques covered here form the basis for more advanced topics, such as direct hardware access, DMA operations, and custom memory management strategies in drivers.</p>
+<h3 id="references"><strong>References</strong></h3>
+<ul>
+<li><a href="https://empyreal96.github.io/nt-info-depot/Windows-Internals-PDFs/Windows%20System%20Internals%207e%20Part%201.pdf"><strong>Windows Internals Part 1 - Chapter 1, Virtual Memory (PAGE 39- 41)</strong></a></li>
+<li><a href="https://en.wikipedia.org/wiki/Virtual_memory"><strong>EN Wikipedia - Virtual Memory</strong></a></li>
+</ul>
+
+    <h4><a href="http://localhost:38385/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

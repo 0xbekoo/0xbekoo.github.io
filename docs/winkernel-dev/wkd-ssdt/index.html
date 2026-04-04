@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=38385&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:38385//favicon.ico">
+    <link rel="canonical" href="http://localhost:38385/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:38385/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>System Service Descriptor Table - Thu, Dec 26, 2024</h1>
+    </div>
+    <p class="lead"></p>
+    <p>In this documentation we will discuss SSDT in the windows systems.</p>
+<h3 id="what-is-ssdt"><strong>What is SSDT?</strong></h3>
+<p>So, SSDT (System Service Descriptor Table) is a list of system calls supported by the operating system.  Recall the syscalls. SSDT is the first member of the Service Descriptor Table kernel memory structure:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> tagSERVICE_DESCRIPTOR_TABLE {
+</span></span><span style="display:flex;"><span>    SYSTEM_SERVICE_TABLE nt;    <span style="color:#75715e">// SSDT Tablosu kendisine etkili bir pointer
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    SYSTEM_SERVICE_TABLE win32k;
+</span></span><span style="display:flex;"><span>    SYSTEM_SERVICE_TABLE sst3; 
+</span></span><span style="display:flex;"><span>    SYSTEM_SERVICE_TABLE sst4;
+</span></span><span style="display:flex;"><span>} SERVICE_DESCRIPTOR_TABLE;
+</span></span></code></pre></div><p>SSDT maps system calls (syscalls) to kernel API addresses. When a syscall is made by a user-mode program, it contains a service index. This index specifies which syscall to use. The operating system uses this index to parse the address of the corresponding function from the System Service Descriptor Table (SSDT) and redirects to the correct kernel function in ntoskrnl.exe. In case it sounds confusing, let me explain it in a diagram:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/diagram.png" style="width: 100%" />
+</div>
+<p>Let&rsquo;s say you call CreateFile from User-Mode and the syscall number is 0x2. When the syscall is executed, the flow continues from the kernel space. You can see this in the diagram.</p>
+<p>When switching to the kernel space, the first section will be SSDT (KiServiceTable). Here I would like you to think that it typically contains a list of offsets to access Kernel Routine Addresses. The offset is calculated with the corresponding syscall number and then redirected to the corresponding Routine Address. Thus NtCreateFile is executed. The following formula is used for the calculation:</p>
+<div align="center">
+	<b>
+		<i> Offset = KiServiceTableAddress + 4 * SSN </i>
+	</b>
+</div>
+<p>In short, SSDT and syscalls act as a bridge between API calls from user-mode and the corresponding kernel routine addresses. In this way, the kernel determines which function responds to a system call from user-mode space.</p>
+<h3 id="analysis-with-windbg"><strong>Analysis with WinDBG</strong></h3>
+<p>Now let&rsquo;s take a look at this SSDT with WinDBG:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img1.png" style="width: 65%" />
+</div>
+<p>The first address given in the output is fffff800798c7cb0, the address of the SSDT.</p>
+<p>I wanted you to think of SSDT as a table, so let&rsquo;s take a look at a few offsets in the table with the address:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img2.png" style="width: 45%" />
+</div>
+<p>The first 5 offsets from the table are sorted as shown. Now let&rsquo;s take 056b3400 from these offsets and calculate its address.</p>
+<p>If you look at the diagram again, the following formula is used to access the kernel routine address:</p>
+<div align="center">
+	<b>
+		<i> KernelRoutineAddress = KiServiceTableAddress + ( Offset >>> 4 ) </i>
+	</b>
+</div>
+<p>Now let&rsquo;s take a look at the address of the routine using this formula:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img3.png" style="width: 75%" />
+</div>
+<p>As you can see, the offset we took as an example belongs to NtWaitForSingleObject.</p>
+<h4 id="finding-routine-address-with-syscall"><strong>Finding Routine Address with Syscall</strong></h4>
+<p>Now let&rsquo;s see how we can find the Routine address using Syscall.</p>
+<p>I mentioned NtCreateFile as an example. With WinDBG we can find the SSN number of this API from ntdll.dll:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img4.png" style="width: 65%" />
+</div>
+<p>We see that 0x55 is passed to the eax register. This is the syscall number of NtCreateFile.</p>
+<p>Now let&rsquo;s calculate the offset using this syscall number and then access the routine address:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img5.png" style="width: 85%" />
+</div>
+<p>As we can see from the output, the routine address of NtCreateFile is fffff80431a2d240. We can recreate the diagram to better understand these steps:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/diagram2.png" style="width: 100%" />
+</div>
+<h3 id="coding"><strong>Coding</strong></h3>
+<p>Let&rsquo;s simply code what we have learned using the Kernel Driver.</p>
+<p>Our scenario is that we will create a .txt file using the NtCreateFile and NtWriteFile APIs and write some text in it, but we will take the kernel routine addresses of the APIs and run the APIs directly from the routine address.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#pragma warning(disable: 4083 4005)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;main.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define KiServiceTableAddress 0xfffff800798c7cb0
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define SSN_NtCreateFile 0x55
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define SSN_NtWriteFile 0x8
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> (NTAPI<span style="color:#f92672">*</span> My_NtCreateFile)(
+</span></span><span style="display:flex;"><span>	_Out_ PHANDLE FileHandle,
+</span></span><span style="display:flex;"><span>	_In_ ACCESS_MASK DesiredAccess,
+</span></span><span style="display:flex;"><span>	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
+</span></span><span style="display:flex;"><span>	_Out_ PIO_STATUS_BLOCK IoStatusBlock,
+</span></span><span style="display:flex;"><span>	_In_opt_ PLARGE_INTEGER AllocationSize,
+</span></span><span style="display:flex;"><span>	_In_ ULONG FileAttributes,
+</span></span><span style="display:flex;"><span>	_In_ ULONG ShareAccess,
+</span></span><span style="display:flex;"><span>	_In_ ULONG CreateDisposition,
+</span></span><span style="display:flex;"><span>	_In_ ULONG CreateOptions,
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">_In_reads_bytes_opt_</span>(EaLength) PVOID EaBuffer,
+</span></span><span style="display:flex;"><span>	_In_ ULONG EaLength
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> (NTAPI<span style="color:#f92672">*</span> My_NtWriteFile)(
+</span></span><span style="display:flex;"><span>	IN HANDLE FileHandle,
+</span></span><span style="display:flex;"><span>	IN HANDLE Event OPTIONAL,
+</span></span><span style="display:flex;"><span>	IN PIO_APC_ROUTINE ApcRoutine OPTIONAL,
+</span></span><span style="display:flex;"><span>	IN PVOID ApcContext OPTIONAL,
+</span></span><span style="display:flex;"><span>	OUT PIO_STATUS_BLOCK IoStatusBlock,
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">_In_reads_bytes_</span>(Length) PVOID Buffer,
+</span></span><span style="display:flex;"><span>	IN ULONG Length,
+</span></span><span style="display:flex;"><span>	IN PLARGE_INTEGER ByteOffset OPTIONAL,
+</span></span><span style="display:flex;"><span>	IN PULONG Key OPTIONAL
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">uint32_t</span> <span style="color:#a6e22e">ReadMemory</span>(<span style="color:#66d9ef">uint64_t</span> Address) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#f92672">*</span>(<span style="color:#66d9ef">volatile</span> <span style="color:#66d9ef">uint32_t</span><span style="color:#f92672">*</span>)Address;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">uint64_t</span> <span style="color:#a6e22e">GetAbsoluteAddress</span>(<span style="color:#66d9ef">int</span> SSN, UNICODE_STRING APIName) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> SSN) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;SSN is 0</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Target API Name: %wZ</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, APIName);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">uint64_t</span> RoutineAbsoluteAddress <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">uint64_t</span> OffsetAddress;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">uint32_t</span> Offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	OffsetAddress <span style="color:#f92672">=</span> KiServiceTableAddress <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">*</span> SSN;
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Offset Address: 0x%llx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, OffsetAddress);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Offset <span style="color:#f92672">=</span> <span style="color:#a6e22e">ReadMemory</span>(OffsetAddress);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Offset: 0x%08x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Offset);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	RoutineAbsoluteAddress <span style="color:#f92672">=</span> KiServiceTableAddress <span style="color:#f92672">+</span> (Offset <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">4</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;The absolute address of %wZ is: 0x%llx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, APIName, RoutineAbsoluteAddress);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> RoutineAbsoluteAddress;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">DriverEntry</span>(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(RegistryPath);
+</span></span><span style="display:flex;"><span>	DriverObject<span style="color:#f92672">-&gt;</span>DriverUnload <span style="color:#f92672">=</span> UnloadDriver;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	HANDLE HandleFile <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>	OBJECT_ATTRIBUTES ObjAttr;
+</span></span><span style="display:flex;"><span>	IO_STATUS_BLOCK IoStatusBlock;
+</span></span><span style="display:flex;"><span>	NTSTATUS Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">uint64_t</span> Address <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>	UNICODE_STRING FileName;
+</span></span><span style="display:flex;"><span>	UNICODE_STRING NtCreateFileName;
+</span></span><span style="display:flex;"><span>	UNICODE_STRING NtWriteFileName;
+</span></span><span style="display:flex;"><span>	UNICODE_STRING Data;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">RtlInitUnicodeString</span>(<span style="color:#f92672">&amp;</span>NtCreateFileName, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;NtCreateFile&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">RtlInitUnicodeString</span>(<span style="color:#f92672">&amp;</span>NtWriteFileName, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;NtWriteFile&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">RtlInitUnicodeString</span>(<span style="color:#f92672">&amp;</span>FileName, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">C:</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">ssdt.txt&#34;</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">RtlInitUnicodeString</span>(<span style="color:#f92672">&amp;</span>Data, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Hello SSDT!&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">InitializeObjectAttributes</span>(<span style="color:#f92672">&amp;</span>ObjAttr, <span style="color:#f92672">&amp;</span>FileName, OBJ_CASE_INSENSITIVE <span style="color:#f92672">|</span> OBJ_KERNEL_HANDLE, NULL, NULL);	
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Address <span style="color:#f92672">=</span> <span style="color:#a6e22e">GetAbsoluteAddress</span>(SSN_NtCreateFile, NtCreateFileName);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Address) {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> STATUS_NOT_FOUND;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	My_NtCreateFile MyNtCreateFile <span style="color:#f92672">=</span> (My_NtCreateFile)Address;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">MyNtCreateFile</span>(<span style="color:#f92672">&amp;</span>HandleFile, GENERIC_WRITE, <span style="color:#f92672">&amp;</span>ObjAttr, <span style="color:#f92672">&amp;</span>IoStatusBlock, NULL, FILE_ATTRIBUTE_NORMAL, \
+</span></span><span style="display:flex;"><span>								<span style="color:#ae81ff">0</span>, FILE_OVERWRITE_IF, FILE_SYNCHRONOUS_IO_NONALERT, NULL, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create File! Error: 0x%08x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Status);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Created File!</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Address <span style="color:#f92672">=</span> <span style="color:#a6e22e">GetAbsoluteAddress</span>(SSN_NtWriteFile, NtWriteFileName);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Address) {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> STATUS_NOT_FOUND;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	My_NtWriteFile MyNtWriteFile <span style="color:#f92672">=</span> (My_NtWriteFile)Address;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>	Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">MyNtWriteFile</span>(HandleFile, NULL, NULL, NULL, <span style="color:#f92672">&amp;</span>IoStatusBlock, Data.Buffer, Data.Length, NULL, NULL);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to ZwWriteFile! Error: 0x%08x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Status);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">ZwClose</span>(HandleFile);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Wrote to File</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ZwClose</span>(HandleFile);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">UnloadDriver</span>(PDRIVER_OBJECT DriverObject) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DriverObject);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Unloading the Driver...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This is our code. Let&rsquo;s start analyzing in detail:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define KiServiceTableAddress 0xfffff800798c7cb0
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define SSN_NtCreateFile 0x55
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define SSN_NtWriteFile 0x8
+</span></span></span></code></pre></div><p>First, in the project, we define the address of the KiServiceTable and the SSN numbers of the two APIs. Change the address of SSDT and SSN numbers which you get from WinDbg.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Address <span style="color:#f92672">=</span> <span style="color:#a6e22e">GetAbsoluteAddress</span>(SSN_NtCreateFile, NtCreateFileName);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Address) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_NOT_FOUND;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>In Driverentry, we call the GetAbsoluteAddress function with the SSN number and the name of the API. With this API, we will get the kernel routine address of the API.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>OffsetAddress <span style="color:#f92672">=</span> KiServiceTableAddress <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">*</span> SSN;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Offset Address: 0x%llx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, OffsetAddress);
+</span></span></code></pre></div><p>When we look at the codes of the GetAbsoluteAddress function, we make the calculation mentioned before to find the address of the Offset in SSDT. Then we print the offset address.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Offset <span style="color:#f92672">=</span> <span style="color:#a6e22e">ReadMemory</span>(OffsetAddress);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Offset: 0x%08x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Offset);
+</span></span></code></pre></div><p>Then we obtain the offset by reading the content of the address we received and in the same way we print the offset to the screen.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>RoutineAbsoluteAddress <span style="color:#f92672">=</span> KiServiceTableAddress <span style="color:#f92672">+</span> (Offset <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">4</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;The absolute address of %wZ is: 0x%llx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, APIName, RoutineAbsoluteAddress);
+</span></span></code></pre></div><p>Finally, we apply the formula to access the corresponding routine address.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>My_NtCreateFile MyNtCreateFile <span style="color:#f92672">=</span> (My_NtCreateFile)Address;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">MyNtCreateFile</span>(<span style="color:#f92672">&amp;</span>HandleFile, GENERIC_WRITE, <span style="color:#f92672">&amp;</span>ObjAttr, <span style="color:#f92672">&amp;</span>IoStatusBlock, NULL, FILE_ATTRIBUTE_NORMAL, \
+</span></span><span style="display:flex;"><span>								<span style="color:#ae81ff">0</span>, FILE_OVERWRITE_IF, FILE_SYNCHRONOUS_IO_NONALERT, NULL, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create File! Error: 0x%08x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Status);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Created File!</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span></code></pre></div><p>After getting the routine address of NtCreateFile, we give this address to the MyNtCreateFile structure we created and then call the NtCreateFile API using the routine address.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// NtWriteFile&#39;in Routine adresini al 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Address <span style="color:#f92672">=</span> <span style="color:#a6e22e">GetAbsoluteAddress</span>(SSN_NtWriteFile, NtWriteFileName);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Address) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> STATUS_NOT_FOUND;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>My_NtWriteFile MyNtWriteFile <span style="color:#f92672">=</span> (My_NtWriteFile)Address;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// NtWriteFile&#39;i çağır
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">MyNtWriteFile</span>(HandleFile, NULL, NULL, NULL, <span style="color:#f92672">&amp;</span>IoStatusBlock, Data.Buffer, Data.Length, NULL, NULL);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to ZwWriteFile! Error: 0x%08x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Status);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ZwClose</span>(HandleFile);
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Wrote to File</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span></code></pre></div><p>After running NtCreateFile, we get the routine address of NtWriteFile with the same codes and give the address to the structure we created and then run the NtWriteFile API.</p>
+<h4 id="analyzing-driver"><strong>Analyzing Driver</strong></h4>
+<p>Now let&rsquo;s follow Driver step by step and see what it does. I think this will help us to better understand it.</p>
+<p>Firstly add the bp to the driver name, then run it. After running it, we need to get an output on the WinDBG screen that bp is triggered:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img6.png" style="width: 75%" />
+</div>
+<p>Then add a bp to GetAbsoluteAddress function to see the addresses we obtained and continue the program:</p>
+<pre tabindex="0"><code>kd&gt; bp SSDT!GetAbsoluteAddress
+kd&gt; g
+Breakpoint 1 hit
+SSDT!GetAbsoluteAddress:
+fffff802`333c12f0 4889542410      mov     qword ptr [rsp+10h],rdx
+</code></pre><p>We can examine the GetAbsoluteAddress function in the Disassembly screen. Our first section will be the part where we calculate the address of Offset:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img7.png" style="width: 100%" />
+</div>
+<p>First, we see that the value of the SSN variable, which is the first parameter of the function, is transferred to the eax register. Since the program enters the GetAbsoluteAddress function for the first time, we know that 0x55, NtCreateFile, contains the SSN number.</p>
+<p>Then the received SSN number shl eax,2 shifts the value of eax 2 bits to the left. Let&rsquo;s look at the formula for this part again to understand what it does:</p>
+<div align="center">
+	<b>
+		<i> Offset = KiServiceTableAddress + 4 * SSN </i>
+	</b>
+</div>
+<p>Now you may ask this: &ldquo;The formula is multiplying, but in the background it is shifting 2 bits to the left&rdquo;.</p>
+<p>The shift left (shl) operation is equivalent to multiplying a number by a multiple of 2. Here shl eax, 2 multiplies eax by 4. To verify this, we can add a bp in this section and see what eax gets:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img9.png" style="width: 60%" />
+</div>
+<p>In this image, we can see the value of eax before and after the operation. Before the operation the value of eax is 0x55 (Dec: 85), after the operation the result is 0x154 (Dec: 340).</p>
+<p>In the last part of this formula, the address of KiServiceTable is passed to rcx and the value of KiServiceTableAddress is subtracted from the rax register which stores the result 4 * SSN. Now I realize that you are confused here again.</p>
+<p>Notice that it subtracts the value rcx from rax, even though subtraction is typically done using sub. So in other words, this means subtracting KiServiceTableAddress from rax. So this will give the same result as KiServiceTableAddress + 4 * SSN. I realize that you are confused, but you can keep in mind that it will give the same result as the formula we want to do.</p>
+<p>To see the address of the offset, mov qword ptr OffsetAddress (rsp+40h), add a bp at the address corresponding to rax and continue the program. Let&rsquo;s take a look at the address we get:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img10.png" style="width: 80%" />
+</div>
+<p>We see that the address is fffffff8046a6c7e04. We already did an example with NtCreateFile above, so the addresses match.</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img12.png" style="width: 85%" />
+</div>
+<p>Our last section will be the formula part where we calculate the Routine address. After taking the offset of NtCreateFile from SSDT, we give the offset value to eax and then we see that it shifts 4 bit right. This is part of our formula.</p>
+<p>Then rcx is given the address of KiServiceTable and then we see that it subtracts rcx from rax (as I mentioned above, don&rsquo;t get confused, think of it as addition). Thus, we have accessed the routine address of NtCreateFile. Let&rsquo;s take a look at the resulting address:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img13.png" style="width: 75%" />
+</div>
+<p>As you can see, we successfully get the result fffffff8046ac2d240. Let&rsquo;s add a bp where the routing address is called and see where it redirects the flow:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img15.png" style="width: 100%" />
+</div>
+<p>Theen let&rsquo;s see the result:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img16.png" style="width: 80%" />
+</div>
+<p>Finally, let&rsquo;s continue the driver and see if a .txt is actually created and data is written into it:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/ssdt/img17.png" style="width: 70%" />
+</div>
+<p>That&rsquo;s all!</p>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>In this documantetion, we analyzed SSDT in WinDBG and coded the findings. In the coding phase, we calculated the routine addresses of NtCreateFile and NtWriteFile with the formulas we learned. Using these addresses, we created a .txt file and wrote text in it. Finally, we analyzed the driver we coded in windbg.</p>
+<p>I hope this documentation was useful for you. SSDT may seem confusing at first glance, but I have tried to explain the details as much as possible so that it does not remain theoretical and can be better understood.</p>
+<h3 id="references"><strong>References</strong></h3>
+<ul>
+<li>
+<p><a href="https://www.ired.team/miscellaneous-reversing-forensics/windows-kernel-internals/glimpse-into-ssdt-in-windows-x64-kernel">iRedTeam Notes - SSDT</a></p>
+</li>
+<li>
+<p><a href="https://en.wikipedia.org/wiki/System_Service_Descriptor_Table">Wikipedia - System Service Descriptor Table</a></p>
+</li>
+</ul>
+
+    <h4><a href="http://localhost:38385/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

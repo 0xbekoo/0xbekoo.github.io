@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Processor on 0xbekoo</title>
+    <link>http://localhost:1313/tags/processor/</link>
+    <description>Recent content in Processor on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 24 Dec 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/processor/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>A Journey For X86 Reset Vector</title>
+      <link>http://localhost:1313/blogs/a-journey-from-reset-vector/</link>
+      <pubDate>Wed, 24 Dec 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/a-journey-from-reset-vector/</guid>
+      <description>Introduction Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&amp;rsquo;s very first breath.&#xA;Lately, I’ve been getting up close and personal with the CPU, trying to understand what happens in that split second of silence before the screen even lights up. Honestly, my obsession with this &amp;ldquo;big bang&amp;rdquo; moment skyrocketed while I was digging into UEFI Development. There is a whole hidden world running in the background that we usually take for granted.</description>
+    </item>
+  </channel>
+</rss>

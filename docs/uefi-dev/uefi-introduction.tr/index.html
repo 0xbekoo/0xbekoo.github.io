@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:1313//favicon.ico">
+    <link rel="canonical" href="http://localhost:1313/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:1313/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>Introduction to UEFI - Sun, Jan 19, 2025</h1>
+    </div>
+    <p class="lead"></p>
+    <p>Merhabalar efenimm. UEFI Development&rsquo;ın ilk bu dökümanında UEFI konusuna teorik olarak giriş yapacağız.</p>
+<p>Dün gece boş boş duvara bakma aktivemi gerçekleştirirken &ldquo;hayatımı daha da nasıl mahvedebilirim&rdquo; diye düşünürken aklıma UEFI Development&rsquo;a girişmek aklıma geldi. Gerçekten uzun zamandır ilgilenmek istediğim bir alandı ve hayatımı daha derine ve kötüye götürmek için efsane bir fırsat olduğunu düşünerek şuan bu blogu yazıyorum.</p>
+<h2 id="uefi-nedir"><strong>UEFI Nedir?</strong></h2>
+<p>Direkt olarak kodlamaya girişmek olmaz. Bazı temel şeyleri öğrenmemiz gerekecek.</p>
+<p>Kabaca bizim hayatımızı mahvedecek bu <strong>UEFI</strong> (Unified Extensible Firmware Interface), bir bilgisayarın firmware&rsquo;i için bir spesifikasyondur. UEFI bir Bilgisayarın güç tuşuna basıldığı ilk süreçlerde UEFI, işletim sistemi başlatılmadan önce çalışır.</p>
+<p>UEFI dediğimiz bu şeyi eski BIOS sistemin geliştirilmiş hali olduğunu düşünebiliriz. UEFI modelleri ayrıca donanıma etkileşim için temel I/O sistemlerine de sahiptir ancak sistem önyükleme işlemleri farklıdır. UEFI GPT (Guid Partition Table) kullanır. <strong>GPT</strong>, bir bilgisayarın depolama cihazındaki bölümlerin düzenini belirleyen ve modern yapısı olan bir standarttır. Hepimizin bildiği HDD veya SSD gibi cihazlarda kullanılan standarttır.  BIOS&rsquo;un yerini alan UEFI gibi, GPT ise de önceden kullanılan MBR (Master Boot Record) bölümleme tablosunun yerini almıştır. GPT ile UEFI uyumlu çalışır.</p>
+<p>UEFI ve GPT birleştirdiğimizde elde edilen avantajlar şu şekildedir:</p>
+<ul>
+<li>2TB veya daha büyük diskleri desteklemek</li>
+<li>Daha hızlı Booting İşlemi</li>
+<li>Eski BIOS&rsquo;a kıyasla daha da basitleştirilmiş geliştirme sunma</li>
+</ul>
+<p>Gibi şeyler vs. Yani UEFI ve GPT&rsquo;nin eski sistemlere kıyasla daha avantaj sunduğunu görebiliriz.</p>
+<p>UEFI&rsquo;in BIOS ile aynı görevleri vardır: I/O cihazlarını çalıştırmak ve kontrolü OS&rsquo;a aktarmak. Fakat görevi sadece bununla sınırlı kalmayıp ve yukarıda anlattığım gibi, aynı zamanda işletim sistemi öncesi yani pre-OS geliştirme için geniş bir yelpaze sunar.</p>
+<p>Aşağıda gösterilen Legacy BIOS ve UEFI arasındaki farkı gösteren şemaya göz atalım:</p>
+<p><img src="/images/posts/introduction-to-uefi/img1.png" alt=""></p>
+<p>Şemaya göz attığımızda BIOS, donanım ile doğrudan iletişim kuran bir firmware ve aynı zamanda bir donanımdır. Şemadan UEFI&rsquo;ye göz attığımızda donanım ile işletim sisteminin arasındaki arayüzü birleştirdiğini görebiliriz. UEFI&rsquo;nin bu işlevi, geliştiriciler için kolaylık sağlar.</p>
+<p>Kısacası UEFI&rsquo;ye göz attığımızda GPT ile beraber eski Legacy BIOS&rsquo;a kıyasla daha modern ve hızlı bir süreç sunduğunu görmemiz mümkün.</p>
+<h2 id="uefi-önyükleme-süreci"><strong>UEFI Önyükleme Süreci</strong></h2>
+<p>UEFI bir bilgisayarın güç tuşuna bastıktan sonrasında logo görülmeden önce arka planda neler gerçekleştiğine bir de yakından göz atalım.</p>
+<p>UEFI, platformun başlatılması sürecinde kritik öneme sahip <strong>altı ana</strong> önyükleme aşamasına sahiptir:</p>
+<p><img src="/images/posts/introduction-to-uefi/img2.png" alt=""></p>
+<ul>
+<li>
+<p><strong>Security (SEC)</strong>: Security aşaması, UEFI önyükleme sürecin ilk aşamasıdır. Genel amacı ise Geçici Bellek Deposunu başlatmak, Sistemde root of trust olarak hareket etmek ve Pre-EFI çekirdek aşamasına bilgi sağlamaktır. Bahsi geçen Root of Trust ise tam olarak şöyledir: SEC mekanizması ayrıca PI&rsquo;da çalıştırılan herhangi bir kodun dijital olarak imzalanmasını sağlayan ve &lsquo;Secure Boot&rsquo; ortamı yaratan bir mekanizma olarak da işlev görür.</p>
+</li>
+<li>
+<p><strong>Pre-EFI Initialization (PEI)</strong>: İkinci aşamada, EFI kodunun çalışması sağlanır. Ana görevi ise bir sonraki aşama olan ve DXE sürücülerini başlatacak olan DXE Foundation&rsquo;ı indirmektir. Ayrıca işlemci kaynaklarını kullanarak Pre-EFI Initialization Modules (PEIM)&rsquo;leri dispatch etmekten sorumludur. Bu PEIM&rsquo;ler, bazı kalıcı bellek tamamlayıcılarının başlatılması gibi kritik süreçlerden sorumlu olduğu gibi bir sonraki aşama olan Driver Execution Environment (DXE)&rsquo;e geçişi sağlar.</p>
+</li>
+<li>
+<p><strong>Driver Execution Environment (DXE)</strong>: Bu aşamanın gerçekten önemli olduğunu düşünüyorum çünkü sistemi başlatmak için gerekli büyük işlemler burada gerçekleşiyor. Bir önceki aşamada olan PEI&rsquo;de, DXE&rsquo;nin çalışması için gereken bellek tahsis edilir ve başlatılır. Artık kontroller DXE&rsquo;e aktarılmasıyla <strong>DXE Dispatcher</strong> çağırılır. Bu Dispatcher, donanım sürücülerini, runtime hizmetlerini ve işletim sisteminin başlaması için gereken tüm önyükleme hizmetlerini yüklemesinden ve yürütmesinden sorumludur.  Amacımızı düşünürsek, önceden dediğim gibi burası bizim için önemli bir aşamadır. Çünkü geliştireceğimiz sürücü burada çalıştırılacaktır.</p>
+</li>
+<li>
+<p><strong>Boot Device Selection (BDS)</strong>: DXE sürücüleri çalıştırılması ardından kontrol, muhtemelen hepinizin gördüğü BSD&rsquo;ye aktarılır. Bu aşamada ise işletim sistemi yükleyicisinin hangi aygıtta aranacağına dair bir seçim yapılır. Ardından işletim sistemi yüklenmeye başlanır ve Transient System Load (TSL) aşamasına geçiş için hazırlanılır.</p>
+</li>
+<li>
+<p><strong>Transient System Load (TSL)</strong>: Bu aşamada, seçilen önyükleme yükleyicisinin çalıştığı ve UEFI önyükleme hizmetlerinin sonlandırıldığı aşamadır.</p>
+</li>
+<li>
+<p><strong>Runtime (RT)</strong>: Bu aşamada ise artık UEFI&rsquo;nin akışı işletim sistemine devrediliyor. Fakat UEFI bu kısımdan itibaren tamamen ortadan kaybolduğu anlamına gelmez. UEFI&rsquo;ye ait olan Runtime Services (Runtime Hizmetleri) işletim sistemini desteklemek için kullanılabilir durumda kalmaya devam eder. Bu Runtime hizmetleri, donanımla ilgili bazı özel işler için System Management Mode (SMM) devreye girer. SMM, işlemcinin kritik donanım işlevlerini işletim sisteminden bağımsız olarak yönettiği güvenli bir moddur. Örneğin, fan hızının ayarlanması veya batarya durumunun izlenmesi gibi işlemler bu modda yapılır. Eğer İşletim sistemi, donanımla ilgili bir işi kendi başına yapamazsa, <strong>SMI</strong> (System Management Interrupt) adı verilen bir sinyal gönderir. Bu, “yardım çağrısı” gibidir. Örneğin, işletim sistemi fan hızını kontrol etmek istediğinde bir SMI gönderir, SMM devreye girer ve bu işi halleder.</p>
+</li>
+</ul>
+<h2 id="uefi-development"><strong>UEFI Development&rsquo;a Giriş</strong></h2>
+<p>Gelelim önemli bu kısma.</p>
+<p>Söz konusu UEFI Development için kaynak olduğunda gerçekten bu süreçte kaynakların kısıtlı olduğunu göreceksiniz. Popüler olarak Development sürecinde, aşağıda sıralanan araçlar kullanılabilir:</p>
+<ul>
+<li><strong>EDK2</strong>: EDK2, UEFI ve PI spesifikasyonlar için modern, zengin ve platformlar arası kodlama gibi özelliklerine sahip bir araçtır. EDK2 projesi, UEFI spesifikasyonuna katkıda bulunan geliştiricilerin birçoğu tarafından (topluluk gönüllüleriyle birlikte) geliştirilmekte ve günümüzde sürdürülmektedir. Bu blog sürecinde ise kodlamayı bununla yapacağız.</li>
+</ul>
+<p>EDK2&rsquo;nin en son UEFI protokollerini içerdiğinden bu araç son derece yararlıdır. Buna ek olarak, öğrenme sürecinde rehber olarak kullanabileceğimiz projeler çok fazladır.</p>
+<ul>
+<li><strong>VisualUEFI</strong> VisualUEFI aracı, Windows kullanıcıları için Visual Studio IDE ile EDK2 projeleri geliştirmesine imkan veren bir araçtır. EDK2 projesinin karmaşık düzeninden kurtulmak ve rahat bir şekilde çalışmak isterseniz bu aracı tercih edebilirsiniz.</li>
+</ul>
+<p>Windows kullanıcısı olsam da bu blog sürecinde VisualUEFI&rsquo;ye yer vermeyeceğim. VisualUEFI kodlama için rahat bir ortam sunsa da, benim için EDK2 gibi projelerin düzenini manuel olarak uğraşmak daha rahat oluyor. Eğer VisualUEFI&rsquo;yi kurmak isterseniz internette birçok kaynak bulunmakta.</p>
+<p>Projelerimizi geliştirdikten sonra bunları simüle etmemiz gerekecek. Bunun için aşağıdakilerden biri kullanılabilir:</p>
+<ul>
+<li>
+<p><strong>QEMU</strong>: QEMU&rsquo;nun zaten ne olduğunu biliyorsunuzdur. Bir sanal makineden ziyade bir emülatör olması nedeniyle iyi bir debugging olanaklarını sağlayan çok platformlu bir emülatör. Linux veya Windows ortamında bunu tercih edebilirsiniz.</p>
+</li>
+<li>
+<p><strong>VMWare / VirtualBox</strong>: Vmware, VirtualBox gibi sanal makineleri de tercih edebilirsiniz.</p>
+</li>
+</ul>
+<p>Bu süreçte ise simüle için VMWare&rsquo;i tercih edeceğim. Özellikle VMware&rsquo;in doğru çalışan NVRAM emülasyonu ile iyi performans sunar. Benim için en önemli sunduğu özellik ise Windows&rsquo;ta TSL ve RT aşamalarında debugging için WinDbg ile güzel çalışması.</p>
+<h2 id="windows"><strong>Windows&rsquo;ta EDK2&rsquo;nin Kurulumu</strong></h2>
+<p>EDK2 projesini kurmadan önce aşağıdaki araçları kurmamız lazım:</p>
+<ul>
+<li><strong>Git</strong></li>
+<li><strong>Python</strong></li>
+<li><strong>NASM</strong></li>
+<li><strong>Visual Studio</strong></li>
+</ul>
+<p>Öncelikle git indirelim ve ardından Python&rsquo;u indirelim. Python&rsquo;u Microsoft Store yerine direkt olarak orijinal sitesinden indirin ve kurulumda ise aşağıda gösterilene dikkat edin:</p>
+<p><img src="/images/posts/introduction-to-uefi/img5.png" alt=""></p>
+<p>Fotoğrafta gösterilmiş alandaki kutucukları işaretlemeyi unutmayın.</p>
+<p>Daha sonra NASM&rsquo;ı orijinal sitesinden indirelim ve indirdiğimiz .exe dosyasını yönetici ile çalıştıralım:</p>
+<p><img src="/images/posts/introduction-to-uefi/img8.png" alt=""></p>
+<p>Kurulum esnasında NASM projesinin lokasyonunu <strong>C:\NASM</strong> olarak ayarlayalım.</p>
+<p>NASM kurulumundan sonra ise Windows&rsquo;un <strong>Enviroment Variables</strong> ayarından User Variables için NASM_PREFIX adında bir değişken oluşturalım:</p>
+<p><img src="/images/posts/introduction-to-uefi/img6.png" alt=""></p>
+<p>Değeri C:\NASM\ olarak ayarlayalım.</p>
+<p>Daha sonra Visual Studio&rsquo;nın C++ araçlarını kurmamız gerekecek. Bu araçları indirmek için Downloads sayfasından Build Tools araması yapalım:</p>
+<p><img src="/images/posts/introduction-to-uefi/img3.png" alt=""></p>
+<p><strong>Tools for Visual Studio</strong> olanı indirelim ve ardından:</p>
+<p><img src="/images/posts/introduction-to-uefi/img4.png" alt=""></p>
+<p>Kurulumda <strong>Desktop Development with C++</strong> olanı seçelim ve kurulumu başlatalım.</p>
+<p>Bunları tamamladıktan sonra <strong>cmd.exe</strong> açalım ve edk2 projesini kuralım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git clone https://github.com/tianocore/edk2.git
+</span></span><span style="display:flex;"><span>cd edk2
+</span></span><span style="display:flex;"><span>git submodule update --init
+</span></span></code></pre></div><p>edk2 projesini de indirdikten sonra <strong>Developer Command Prompt VS 2022</strong> aracını açalım ve daha sonra indirdiğimiz edk2 projesine gidelim. Config/target.txt&rsquo;i notepad ile açalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>notepad Conf<span style="color:#ae81ff">\t</span>arget.txt
+</span></span></code></pre></div><p>Bu .txt içerisinde, aşağıda size gösterdiğim değerler ile değiştirin:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ACTIVE_PLATFORM       <span style="color:#f92672">=</span> ShellPkg<span style="color:#f92672">/</span>ShellPkg.dsc
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>TARGET                <span style="color:#f92672">=</span> RELEASE
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>TARGET_ARCH           <span style="color:#f92672">=</span> X64
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>TOOL_CHAIN_TAG        <span style="color:#f92672">=</span> VS2022
+</span></span></code></pre></div><p>Aynen böyle olacak şekilde değerleri değiştirin ve kaydedip kapatabilirsiniz. Daha sonra <strong>edksetup.bat</strong>&lsquo;ı çalıştıralım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>&gt; C:<span style="color:#ae81ff">\e</span>dk2&gt;edksetup.bat
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span> WORKSPACE      <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2
+</span></span><span style="display:flex;"><span> EDK_TOOLS_PATH      <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools
+</span></span><span style="display:flex;"><span> BASE_TOOLS_PATH     <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools
+</span></span><span style="display:flex;"><span> EDK_TOOLS_BIN      <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools<span style="color:#ae81ff">\B</span>in<span style="color:#ae81ff">\W</span>in32
+</span></span><span style="display:flex;"><span> CONF_PATH      <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\C</span>onf
+</span></span><span style="display:flex;"><span> PYTHON_COMMAND <span style="color:#f92672">=</span> py -3
+</span></span><span style="display:flex;"><span> PYTHONPATH <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools<span style="color:#ae81ff">\S</span>ource<span style="color:#ae81ff">\P</span>ython;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>!!! WARNING !!! NASM_PREFIX environment variable is not set
+</span></span><span style="display:flex;"><span>  Found nasm.exe, setting the environment variable to C:<span style="color:#ae81ff">\n</span>asm<span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>!!! WARNING !!! CLANG_BIN environment variable is not set
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>!!! WARNING !!! No CYGWIN_HOME set, gcc build may not be used !!!
+</span></span></code></pre></div><p>Daha sonra araçları derlemek için BaseTools dizinine gidelim:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>&gt; C:<span style="color:#ae81ff">\e</span>dk2&gt;cd BaseTools
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>&gt; C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools&gt;nmake
+</span></span></code></pre></div><p>Araçları derledikten sonra tekrar ana dizine dönelim ve Build komutunu çalıştıralım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>&gt; C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools&gt;cd ..
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>&gt; C:<span style="color:#ae81ff">\e</span>dk2&gt;Build
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>- Done -
+</span></span><span style="display:flex;"><span>Build end time: 13:14:44, Jan.28 <span style="color:#ae81ff">2025</span>
+</span></span><span style="display:flex;"><span>Build total time: 00:02:03
+</span></span></code></pre></div><p>Derlemeden sonra <strong>Done</strong> çıktısını almamız gerekiyor.</p>
+<h2 id="hello-uefi-world"><strong>Hello UEFI World!</strong></h2>
+<p>Artık UEFI sürücüsü geliştirmek için gerekli her şeye sahibiz. Programlama geleneğine uygun davranarak &ldquo;Hello UEFI World&rdquo; çıktısı veren basit bir proje geliştirelim. Geliştireceğimiz projeleri ShellPkg/Application dizin altında oluşturabiliriz.</p>
+<p>Bir sürücü geliştirirken .c projesinin olması yanı sıra bir de .inf dosyası oluşturmamız gerekiyor. Bu INF dosyası, modülü oluşturmak ve paketlemek için gerekli bilgileri sağlar. Yani sürücümüzün paketlenmesi için gerekli bilgiler sağlayacağız.</p>
+<p>edk2/ShellPkg/Application dizini altında HelloWorld adında bir klasör oluşturalım ve ardından HelloWorld.c projemizi kodlamaya başlayalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Uefi.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiLib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/PcdLib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>EFI_STATUS
+</span></span><span style="display:flex;"><span>EFIAPI
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">UefiMain</span> (
+</span></span><span style="display:flex;"><span>  IN EFI_HANDLE        ImageHandle,
+</span></span><span style="display:flex;"><span>  IN EFI_SYSTEM_TABLE  <span style="color:#f92672">*</span>SystemTable
+</span></span><span style="display:flex;"><span>  )
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Hello UEFI World!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> EFI_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Bazı detaylar haricinde kodlar bizlere yabancı gelmeyecektir.</p>
+<p>Main fonksiyon için kodlamalarımızı <strong>UefiMain</strong> içerisinde yapacağız. UefiMain, UEFI sürücülerin başlangıç noktasıdır. Geleneksel main fonksiyonuna benzer şekilde, bir UEFI uygulamasının giriş noktasıdır. UefiMain iki parametre alır:</p>
+<ul>
+<li>
+<p><strong>ImageHandle:</strong> Uygulamanın UEFI firmware tarafından temsil edilen benzersiz bir tanımlayıcısıdır.</p>
+</li>
+<li>
+<p><strong>SystemTable:</strong> UEFI sisteminde tanımlanan çeşitli hizmetlere ve tablolara erişim sağlayan bir veri yapısıdır.</p>
+</li>
+</ul>
+<p>Kodlara biraz detaylı göz attığınızda tıpkı benim gibi syntax&rsquo;ın farklılığı yüzünden eliniz ayağınız titremiş olabilir (örneğin çağırılan Print ile parantez arasına boşluk bırakılması vs). İlk başta benim gibi hatalı bir syntax olduğunu düşünseniz de hatalı değil. Bu EDK2 topluluğuna ait <a href="https://github.com/tianocore/tianocore.github.io/wiki/Code-Style-C">C kodu tipiyle</a> alakalıdır:</p>
+<p><img src="/images/posts/introduction-to-uefi/img9.png" alt=""></p>
+<p>İlgili blogta syntax kurallarına göz atabilirsiniz. Aklınızda bulunsun eğer ileride edk2 projesine katkıda bulunursanız bu syntax kuralına dikkat edin. Madem edk2&rsquo;den yararlanacağız kurallarına uyalım değil mi?</p>
+<p>Daha sonra <strong>HelloWorld.inf</strong> adında bir proje daha oluşturalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-inf" data-lang="inf"><span style="display:flex;"><span><span style="color:#66d9ef">[Defines]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">INF_VERSION</span>                    <span style="color:#f92672">=</span> <span style="color:#e6db74">0x00010006
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  BASE_NAME                      = HelloWorld
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  MODULE_TYPE                    = UEFI_APPLICATION
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  VERSION_STRING                 = 1.0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  ENTRY_POINT                    = UefiMain</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Sources]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">HelloWorld.c</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Packages]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">MdePkg/MdePkg.dec</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ShellPkg/ShellPkg.dec</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">MdeModulePkg/MdeModulePkg.dec</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[LibraryClasses]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">UefiApplicationEntryPoint</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">UefiLib</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">PcdLib</span>
+</span></span></code></pre></div><p>.inf dosyasını da kodladıktan sonra her şey tamam ancak derlemeye geçmeden önce <strong>/edk2/ShellPkg/ShellPkg.dsc</strong> içerisine projemizi eklememiz gerekecek:</p>
+<pre tabindex="0"><code class="language-dsc" data-lang="dsc">...
+[Components]
+  #
+  # Build all the libraries when building this package.
+  # This helps developers test changes and how they affect the package.
+  #
+  ShellPkg/Library/UefiShellLib/UefiShellLib.inf
+  ShellPkg/Library/UefiShellAcpiViewCommandLib/UefiShellAcpiViewCommandLib.inf
+  ShellPkg/Library/UefiShellCommandLib/UefiShellCommandLib.inf
+  ShellPkg/Library/UefiShellCEntryLib/UefiShellCEntryLib.inf
+  ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
+  ShellPkg/Library/UefiShellBcfgCommandLib/UefiShellBcfgCommandLib.inf
+  ShellPkg/Library/UefiShellLevel1CommandsLib/UefiShellLevel1CommandsLib.inf
+  ShellPkg/Library/UefiShellLevel2CommandsLib/UefiShellLevel2CommandsLib.inf
+  ShellPkg/Library/UefiShellLevel3CommandsLib/UefiShellLevel3CommandsLib.inf
+  ShellPkg/Library/UefiShellDriver1CommandsLib/UefiShellDriver1CommandsLib.inf
+  ShellPkg/Library/UefiShellInstall1CommandsLib/UefiShellInstall1CommandsLib.inf
+  ShellPkg/Library/UefiShellDebug1CommandsLib/UefiShellDebug1CommandsLib.inf
+  ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
+  ShellPkg/Library/UefiShellNetwork2CommandsLib/UefiShellNetwork2CommandsLib.inf
+  ShellPkg/Application/HelloWorld/HelloWorld.inf
+</code></pre><p>Yukarıda gösterildiği gibi <strong>Components</strong> altına HelloWorld projenizi ekleyin</p>
+<p>Şimdi ise projemizi derleyelim:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>Build -m ShellPkg<span style="color:#ae81ff">\A</span>pplication<span style="color:#ae81ff">\H</span>elloWorld<span style="color:#ae81ff">\H</span>elloWorld.inf
+</span></span></code></pre></div><p>Derlemeden sonra efi dosyamız <strong>/edk2/Build/Shell/RELEASE_VS2022/X64</strong> dizini altında &lsquo;HelloWorld.efi&rsquo; olarak oluşturulacaktır.</p>
+<h2 id="sürücüyü-çalıştırma"><strong>Sürücüyü Çalıştırma</strong></h2>
+<p>Önceden de bahsettiğim gibi simüle işlemleri için VMWare ortamını kullanacağım. Eğer benim gibi VMware veya VirtualBox vs. kullanacaksınız FAT32 ile biçimlendirilmiş bir USB Flash gerekecek. FAT 32 Biçimlendirmeden sonra USB Flash içerisinde <strong>efi/boot</strong> olarak bir dizin oluşturun.</p>
+<p>Yine <strong>/edk2/Build/Shell/RELEASE_VS2022/X64</strong> dizini altında iki shell dosyası olacak:</p>
+<p><img src="/images/posts/introduction-to-uefi/img10.png" alt=""></p>
+<p>Buradan herhangi birini efi/boot dizini altında <strong>bootx64.efi</strong> olarak kopyalayın. Daha sonra HelloWorld.efi dosyasını da kök dizine kopyalayın.</p>
+<p>Sanal makineyi başlatalım ve aşağıdaki adımları gerçekleştirelim:</p>
+<p><img src="/images/posts/introduction-to-uefi/img11.png" alt=""></p>
+<p><strong>Removable Devices &gt; USB Flash Belleğiniz &gt; Connect</strong> seçeneğine tıklayalım.</p>
+<p>Sanal makineyi yeniden başlatalım ve açılışta DEL tuşuna basalım:</p>
+<p><img src="/images/posts/introduction-to-uefi/img12.png" alt=""></p>
+<p>Boot Manager ekranından USB Flashımızı seçelim. Bu kadar basit!</p>
+<p>Şimdi ise HelloWorld sürücümüzü çalıştıralım:</p>
+<p><img src="/images/posts/introduction-to-uefi/img13.png" alt=""></p>
+<p>Başarıyla <strong>&lsquo;Hello UEFI World&rsquo;</strong> çıktımızı alıyoruz.</p>
+<h2 id="sonuç"><strong>Sonuç</strong></h2>
+<p>Evet arkadaşlar bu dökümanda temel olarak UEFI&rsquo;nin ne olduğunu, Windows&rsquo;ta EDK2 kurulumunu ve basitçe UEFI sürücüsü ile &lsquo;Hello UEFI World&rsquo; çıktısı veren bir proje geliştirdik. Umarım faydalı olmuştur.</p>
+<p>Konuları daha detaylı öğrenmek isterseniz referanslarda verdiğim kaynaklara göz atabilirsiniz.</p>
+<p>İyi çalışmalar dilerim efenimm.</p>
+<h1 id="references"><strong>References</strong></h1>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/UEFI"><strong>Wikipedia - UEFI</strong></a></li>
+<li><a href="https://habr.com/en/companies/acronis/articles/535848/"><strong>Dabudabot - Beginning UEFI Development</strong></a></li>
+<li><a href="https://secret.club/2020/05/26/introduction-to-uefi-part-1.html"><strong>Secret Club - Introduction to UEFI: Part 1</strong></a></li>
+<li><a href="https://binary.ninja/2024/08/23/uefi-firmware-analysis.html"><strong>Binary Ninja - Advanced UEFI Analysis with Binary Ninja</strong></a></li>
+</ul>
+
+    <h4><a href="http://localhost:1313/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://twitter.com">Twitter</a> 
+        
+        <a href="https://github.com">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

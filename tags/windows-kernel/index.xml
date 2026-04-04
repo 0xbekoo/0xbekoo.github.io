@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Windows-Kernel on 0xbekoo</title>
+    <link>http://localhost:38385/tags/windows-kernel/</link>
+    <description>Recent content in Windows-Kernel on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 22 Feb 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:38385/tags/windows-kernel/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Loading Driver from User-Mode Program via SSDT Hooking</title>
+      <link>http://localhost:38385/blogs/ssdt-hooking/</link>
+      <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/ssdt-hooking/</guid>
+      <description>Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.&#xA;In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the System Service Descriptor Table (SSDT) and its role in managing system calls within the Windows kernel.&#xA;Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking.</description>
+    </item>
+    <item>
+      <title>Reversing System Call Mechanism in Windows Kernel</title>
+      <link>http://localhost:38385/blogs/syscalls/</link>
+      <pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/syscalls/</guid>
+      <description>Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel.&#xA;In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what&amp;rsquo;s NTAPI, Syscall or SSDT etc. in this blog because i wrote many documents for these topics and if you&amp;rsquo;re beginner in the topics, you can start with the documents mentioned.</description>
+    </item>
+  </channel>
+</rss>

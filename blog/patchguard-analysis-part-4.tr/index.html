@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:1313//favicon.ico">
+    <link rel="canonical" href="http://localhost:1313/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:1313/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/about/">
+                                    
+                                    <span>About</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>PatchGuard Analysis - Part 4 - Wed, Aug 6, 2025</h1>
+    </div>
+    <p class="lead"></p>
+    <h3 id="verification-routines"><strong>Verification Routines</strong></h3>
+<p>Artık PatchGuard&rsquo;ın kalbine geldik. PatchGuard artık bir timer, bir DPC, system thread ya da diğer mekanizmalar aracılığıyla tetiklendikten sonra kendisi bir takım doğrulama işlemlerine başlıyor. Doğrulama kodları PatchGuard durumunu ve kernel yapılarını decryptleyip ardından incelemeye başlar.</p>
+<p>Esasen doğrulama rutini olarak birkaç rutin var ancak bunlardan en sıka kullanılan rutin ise daha öncede bahsedilen <strong>FsRtlMdlReadCompleteDevEx</strong> fonksiyonu olacaktır. Bu arkadaş ntoskrnl.exe&rsquo;nin en uzun rutini olabilir. Diğer rutinler ise şunlar:</p>
+<ul>
+<li><strong>TVCallBack Routine</strong>: Bu rutin FsRtlMdlReadCompleteDevEx&rsquo;e baya benzemekte. Bu fonksiyonu KiFilterFiberContext&rsquo;ten tekrar hatırlayalım.</li>
+</ul>
+<!-- raw HTML omitted -->
+<ul>
+<li><strong>CcBcbProfiler</strong>: Bu fonksiyonun daha önceden görmüştük. Hatırlayalım fonksiyon ntoskrnl.exe&rsquo;den random olarak seçtiği rıutinleri kontrol ediyordu.</li>
+</ul>
+<p>Bu başlıkta ana odağımız FsRtlMdlReadCompleteDevEx fonksiyonu olacaktır. Dediğim gibi bu fonksiyon PatchGuard&rsquo;ın birçok doğrulamasını üstleniyor ve fonksiyon gerçekten çok uzun, ayrıca analiz etmesi bir o kadar uğraş verici ancak düzenli olması açısından bu bölümü üç başlığa böleceğiz:</p>
+<ol>
+<li>Prologue</li>
+<li>Check of Structures</li>
+<li>Epilogue</li>
+</ol>
+<h4 id="prologue"><strong>Prologue</strong></h4>
+<h5 id="verifying-patchguard-context-integrity-part-1-2-3"><strong>Verifying PatchGuard Context Integrity (Part 1, 2, 3)</strong></h5>
+<p>Bu aşamada, PatchGuard Context&rsquo;i artık decryptlenmiş ve ve bellekte plaintext halde olacaktır. İlk adım ise PatchGuard Context&rsquo;in üç kısmın checksum&rsquo;ların hesaplanmasını ve ardından KiInitPatchGuardContext tarafından initialization esnasında oluşturulmuş değerler tarafından karşılaştırılmasını içerir.</p>
+<p>Ancak bu doğrulama gerçekleşmeden önce, Context&rsquo;in checksum veya geçici WorkItem yapıları gibi bazı volatile alanlar, geçici olarak bellek bölgesinden kaldırılır veya yığına taşınır. Bu değerler, checksum doğrulamaları tamamlandıktan hemen sonra geri yüklenecektir (0x140BB308F):</p>
+<!-- raw HTML omitted -->
+<p>Stack ve r13 register&rsquo;ı fonksiyonun başında ayarlanır:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>FsRtlMdlReadCompleteDevEx:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">rbp</span>, [<span style="color:#66d9ef">rsp-898h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sub</span> <span style="color:#66d9ef">rsp</span>, <span style="color:#ae81ff">998</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r13</span>, <span style="color:#66d9ef">rcx</span> <span style="color:#75715e">; Pass the Context to r13
+</span></span></span></code></pre></div><p>Bu adım, PatchGuard Context&rsquo;in hiçbir parçasının başlatma işleminden bu yana değiştirilmemesini sağlar ve etkili bir şekilde kendi kendini kontrol eden bir bütünlük mekanizması görevi görecektir.</p>
+<h5 id="re-encrypting-the-primary-context-region-part-1"><strong>Re-Encrypting the Primary Context Region (Part 1)</strong></h5>
+<p>Doğrulama tamamlandıktan sonra PatchGuard artık Context&rsquo;in ilk kısmını tekrar encryptleyerek devam eder. Bu bölüm meta veriler içerir ve asla plaintext biçiminde kalıcı olması hedeflenmez.</p>
+<p>İlginç bir şekilde PatchGuard kritik bilgiler içermesine rağmen Part 2 ve 3 bölümlerini hemen yeniden şifrelemiyor. Bu kısmi yeniden şifreleme stratejisinin arkasındaki kesin nedeni belirsizdir; Bu bir performans optimizasyonu olabilir.</p>
+<h5 id="checksum-verification-of-parts-2-and-3"><strong>Checksum Verification of Parts 2 and 3</strong></h5>
+<p>Artık bu kısımda Context&rsquo;in Part 1&rsquo;i tekrar şifrelendi. Artık bu noktada PatchGuard Part 2 ve 3&rsquo;ün doğrulama işlemlerine odaklanacak. Context&rsquo;in bu kısımların neler tuttuklarını tekrar hatırlayalım:</p>
+<ul>
+<li>ntoskrnl rutinlerin kopyaları</li>
+<li>Kritik kernel yapılarını ve bunların önceden hesaplanmış checksum&rsquo;ları.</li>
+</ul>
+<p>Bu kısımlar, sonraki doğrulamalar sırasında doğrudan erişime izin vermek için bu aşamada şifrelenmemiş olarak kalacaktır.</p>
+<h5 id="timed-delay-via-sleep-or-wait-routine"><strong>Timed Delay via Sleep or Wait Routine</strong></h5>
+<p>Sık kontrolleri önlemek ve belirli zamanlama tabanlı saldırıları engellemek için PatchGuard doğrulama döngüleri arasında zorunlu bir bekleme süresi içeriyor. Bu bekleme süreleri önceleri çok defa gördüğümüz 2 dakika ile 2 dakika 10 saniye arasında değişiyor ve üç yöntemden biri kullanılarak uygulanabilir:</p>
+<ul>
+<li><strong>SelfEncryptWaitAndDecrypt (sub_140510430)</strong>: Context&rsquo;i şifreler ve KeDelayExecutionThread&rsquo;i çağırır, ardından bekleme süresi dolduktan sonra Context&rsquo;i geri çözer.</li>
+</ul>
+<p>SelfEncryptWaitAndDecrypt&rsquo;in (fonksiyonun literatürdeki adı) bir örneğini <strong>0x140BC274E</strong> adresinde görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Ekstra olarak, bu fonksiyon parametre olarak KeDelayExecutionThread adresini de almakta. Bu adresler yani hem SelfEncryptWaitAndDecrypt hem de KeDelayExecutionThread 0x140BC252F adresinde hazırlanıyor. Ayrıca timer da aynı adreste hazırlanır:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BC252F:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">2</span><span style="color:#66d9ef">C8h</span>] <span style="color:#75715e">; Get the address of KeWaitForSingleObject
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r9</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">170</span><span style="color:#66d9ef">h</span>]  <span style="color:#75715e">; Get the address of KeDelayExecutionThread
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_8D8</span>], <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">340</span><span style="color:#66d9ef">h</span>] <span style="color:#75715e">; Get the address of SelfEncryptWaitAndDecrypt
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_8F0</span>], <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_950</span>], <span style="color:#66d9ef">r9</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">[</span><span style="color:#a6e22e">...</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_850</span>], <span style="color:#66d9ef">rcx</span> <span style="color:#75715e">; Pass the timer
+</span></span></span></code></pre></div><p>SelfEncryptWaitAndDecrypt&rsquo;te içine baktığımızda ilk olarak context&rsquo;i şifreler ve 0x140510567&rsquo;de direkt olarak KeDelayExecutionThread&rsquo;i çağırır:</p>
+<!-- raw HTML omitted -->
+<p>KeDelayExecutionThread&rsquo;in çalıştırılmasından sonra, 0x1405105AB adresindeki context&rsquo;i decryptler ve fonksiyondan çıkar:</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<ol start="2">
+<li><strong>KeWaitForSingleObject</strong>: Bir kernel events veya timer object&rsquo;i bekler; eğer zaten sinyal gönderilmişse hemen geri döner.</li>
+</ol>
+<p>KeWaitForSingleObject&rsquo;in bir örneği, SelfEncryptWaitAndDecrypt&rsquo;in çağrıldığı bölümün hemen yakınlarında <strong>0x140BC278A</strong> adresinde bulunabilir:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>loc_140BC2770:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span>     <span style="color:#66d9ef">edx</span>, <span style="color:#66d9ef">edx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span>    <span style="color:#66d9ef">r11</span>, <span style="color:#66d9ef">r11</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jnz</span>     <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140BC278A</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>[...]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>loc_140BC278A:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_850</span>] <span style="color:#75715e">; Get the address of KeWaitForSingleObject
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">r9d</span>, <span style="color:#66d9ef">r9d</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rsp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">9</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">BugCheckParameter4</span>], <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">r8d</span>, <span style="color:#66d9ef">r8d</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_8D8</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">r11</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span> <span style="color:#66d9ef">KeGuardDispatchICall</span> <span style="color:#75715e">; Call KeWaitForSingleObject
+</span></span></span></code></pre></div><p>Aynı şekilde KeWaitForSingleObject&rsquo;in adresi <strong>0x140BC252F</strong>&lsquo;de hazırlanır.</p>
+<!-- raw HTML omitted -->
+<ol start="3">
+<li><strong>KeDelayExecutionThread</strong>: Süreç boyunca uyku durumunda öylece durur ve yedek olarak kullanılır. <strong>0x140BC2770</strong> adresinden:</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BC2770:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">edx</span>, <span style="color:#66d9ef">edx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span> <span style="color:#66d9ef">r11</span>, <span style="color:#66d9ef">r11</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jnz</span> <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140BC278A</span> <span style="color:#75715e">; Call KeWaitForSingleObject
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">r8</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_850</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">ecx</span>, <span style="color:#66d9ef">ecx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">r9</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span> <span style="color:#66d9ef">KeGuardDispatchICall</span> <span style="color:#75715e">; Call KeDelayExecutionThread
+</span></span></span></code></pre></div><p>Burada kullanılacak herhangi bir yöntem, PatchGuard context&rsquo;indeki değerler, özellikle KiInitPatchGuardContext tarafından ayarlanan flag&rsquo;ler ve object pointer&rsquo;ları tarafından belirlenir. Örneğin:</p>
+<!-- raw HTML omitted -->
+<ul>
+<li><strong>0xAB8</strong> ofsetindeki bir flag SelfEncryptWaitAndDecrypt yöntemini seçmek için kullanır. Bu flag <strong>0x140BC251D</strong>&lsquo;de hazırlanmaya başlanır ve ardından bu fonksiyonun çağırılıp çağırılmayacağı belirlenir:</li>
+</ul>
+<!-- raw HTML omitted -->
+<p>Daha sonradan bu flag, yukarıda gördüğümüz yöntemlerin kısımlarında kullanılmaktadır. Eğer bu flag set edilmiş ise SelfEncryptWaitAndDecrypt çağırılacaktır. Kodlara tekrar bakalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BC26F1:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r10</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">arg_8</span>] <span style="color:#75715e">; Get the Flag
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">[</span><span style="color:#a6e22e">...</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>loc_140BC274E:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span> <span style="color:#66d9ef">r10</span>, <span style="color:#66d9ef">r10</span> <span style="color:#75715e">; If the flag is 0, then jump
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span> <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140BC2770</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">; /* Call SelfEncryptWaitAndDecrypt */ 
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_8F0</span>] <span style="color:#75715e">; Get the address of SelfEncryptWaitAndDecrypt
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">r8</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_850</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">edx</span>, <span style="color:#66d9ef">r14d</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rsp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">9</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">BugCheckParameter4</span>], <span style="color:#66d9ef">r10</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">rsi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span> <span style="color:#66d9ef">KeGuardDispatchICall</span> 
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">jmp</span> <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140BC27A8</span>
+</span></span></code></pre></div><!-- raw HTML omitted -->
+<ul>
+<li>Offset <strong>0xA40</strong> veya <strong>0x5D0</strong> KeWaitForSingleObject için Object tutabilir. KeWaitForSingleObject çağırılırken r11 register&rsquo;ın değeri Object olarak geçiliyor:</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BC2770:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">edx</span>, <span style="color:#66d9ef">edx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span> <span style="color:#66d9ef">r11</span>, <span style="color:#66d9ef">r11</span>        
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">jnz</span> <span style="color:#66d9ef">loc_140BC278A</span> <span style="color:#75715e">; If the object is initialized, then jump it
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">[</span><span style="color:#a6e22e">..</span> <span style="color:#66d9ef">Calling</span> <span style="color:#66d9ef">KeDelayExecutionThread</span> <span style="color:#66d9ef">Function..</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>loc_140BC278A:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_8D8</span>] <span style="color:#75715e">; Get the address of KeWaitForSingleObject
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">r11</span> <span style="color:#75715e">; Pass the object as a parameter
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span> <span style="color:#66d9ef">KeGuardDispatchICall</span> 
+</span></span></code></pre></div><p>r11&rsquo;in değeri yine aynı adreste, 0x140BC251D&rsquo;de ayarlanıyor:</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<ul>
+<li>Bunlar geçerli değilse, KeDelayExecutionThread aracılığıyla Sleep uygulanır (bknz loc_140BC2770 fonksiyon).</li>
+</ul>
+<h5 id="decrypt-part-1-of-the-context"><strong>Decrypt Part 1 of the Context</strong></h5>
+<p>Uyku veya bekleme işlemleri sona erdikten sonra, PatchGuard yürütme işlemlerine devam eder ve context&rsquo;in  ilk segmenti decryptler. Bu segment daha önce koruma için yeniden şifrelenmişti.</p>
+<h6 id="revalidate-checksums-for-parts-2-and-3"><strong>Revalidate Checksums for Parts 2 and 3</strong></h6>
+<p>Bekleme aşamasında herhangi bir kurcalama olmadığından emin olmak için PatchGuard, Bölüm 2 ve 3&rsquo;ün sağlama toplamlarını yeniden hesaplar ve bunları daha önce depolanan orijinal değerlerle karşılaştırır. Bu checksum değerleri, push/pop komutları kullanılarak geçici olarak yığına kaydedilerek bekleme boyunca korunuyor.</p>
+<p>Orijinal değerler bekleme sırasında statik belleğe asla dokunmadığından, bunları yakalamak ve değiştirmek son derece zor olacaktır. Bu adım PatchGuard&rsquo;ın kendi kendine bütünlük uygulamasının çok önemli bir parçasıdır.</p>
+<h6 id="final-checksum-of-part-1"><strong>Final Checksum of Part 1</strong></h6>
+<p>Bu son kontrolünde, PatchGuard context&rsquo;in ilk 0x618 byte&rsquo;ın checksum&rsquo;unu tekrar kontrol eder. Hesaplanan sonuç, context&rsquo;in initialize edile sırasında oluşturulan orijinal checksum değeri ile karşılaştırılır (0x8b8 ofsetinde saklanır).</p>
+<h6 id="set-thread-affinity-to-a-target-processor"><strong>Set Thread Affinity to a Target Processor</strong></h6>
+<p>Doğrulama kısmını tamamlamak için PatchGuard, bütünlük kontrolünün çalışması gereken belirli bir işlemci çekirdeği seçme işleminden devam eder. Bu önemlidir çünkü bazı kernel yapıları işlemciye özeldir - IDT gibi - ve tutarlı bir kernel üzerinde çalıştırılması kontrol ve güvenilirliğin korunmasına yardımcı olur.</p>
+<p>PatchGuard, context&rsquo;i başlatma sırasında saklanan session ID&rsquo;i alarak başlar. Daha sonra sıfır ile toplam aktif process sayısı arasında bir değer üretir ve sistemden rastgele bir process seçer. Doğrudan bir PID seçmek yerine, sistemin process listesinde numaralandırma yapar ve üretilen numaraya göre entry seçer.</p>
+<p>Bir süreç seçildiğinde, PatchGuard ayarlanmış bitlerin sayısını sayarak (yani, bir Hamming ağırlık işlemi gerçekleştirerek) bu yakınlıkta kaç işlemcinin mevcut olduğunu hesaplar. Bu izin verilen işlemciler kümesinden rastgele birini seçer ve KeSetSystemGroupAffinityThread API&rsquo;sini kullanır.</p>
+<h4 id="kernel-yapısının-bütünlük-kontrolü"><strong>Kernel Yapısının Bütünlük Kontrolü</strong></h4>
+<h5 id="idt-verfication"><strong>IDT Verfication</strong></h5>
+<p>IDT&rsquo;yi kontrol etmek için PatchGuard bazı ön adımlardan geçer. İlk olarak, bugcheck göndererek başlar. IDT için tür 0x2&rsquo;dir, daha sonra dispatcher 0x140BBFC59&rsquo;a gider:</p>
+<!-- raw HTML omitted -->
+<p>Interrupt Descriptor Table (IDT) işlemciye özgü olduğundan ve idtr kaydı üzerinden erişildiğinden, PatchGuard&rsquo;ın belirli işlemciyi kontrol etmek için <strong>doğru işlemciyi seçmesi gerekiyor</strong>. Ve bu bilgi yapının 3. bölümünde 0x28 ofsetinde saklanır (0x140BEA994 adresinde başlatılır). Daha sonra PatchGuard bu bilgi ile bir KAFFINITY yapısını başlatır ve system thread&rsquo;i çalıştırmak için KeSetSystemGroupAffinityThread&rsquo;i çağırır. Son olarak idr ve gdtr değerlerini almak için KiGetGdtIdt&rsquo;yi çağırır.</p>
+<p>Daha sonra PatchGuard kontrolü iki parçaya böler: ilk parça KxUnexpectedInterrupt fonksiyonlarını ve ikincisi IDT&rsquo;nin kendisine odaklanır. İlk olarak, PatchGuard aslında bir fonksiyon dizisi olan KxUnexpectedInterrupt0&rsquo;ın adresini alarak başlar.</p>
+<p>Her entry için, CR8&rsquo;i 0xF&rsquo;ye (0x140BBFCFA) ayarlayarak  external interrupt&rsquo;i devre dışı bırakır:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BBFCBD:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r15</span>, <span style="color:#66d9ef">cr8</span>        <span style="color:#75715e">; Keep Original Value of CR8
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">0</span><span style="color:#66d9ef">Fh</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cr8</span>, <span style="color:#66d9ef">rax</span>        <span style="color:#75715e">; Disable all external interrupt (CR8 = 0xF)
+</span></span></span></code></pre></div><p>Ardından <strong>0x140BBFD34</strong> adresinde kontrolü başlatır:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, [<span style="color:#66d9ef">rcx</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">4</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rcx</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">628</span><span style="color:#66d9ef">h</span>] <span style="color:#75715e">; Get the entry from KxUnexpectedInterrupt0
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">edi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">rdx</span>, [<span style="color:#66d9ef">rcx</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">rax</span>*<span style="color:#ae81ff">8</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cmp</span> <span style="color:#66d9ef">rbx</span>, <span style="color:#66d9ef">rdx</span>
+</span></span></code></pre></div><p>KxUnexpectedInterrupt0&rsquo;ın bu entryleri esasen <strong>0x140BD724F</strong> adresinde başlatılır:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BD71C0:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">KxUnexpectedInterrupt0</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">r14</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">628</span><span style="color:#66d9ef">h</span>], <span style="color:#66d9ef">rax</span>
+</span></span></code></pre></div><p>ilgili KxUnexpectedInterrupt(s) entry ile eşleşirse, <strong>0x140BBFD4E</strong> adresindeki KINTERRUPT nesnesini almak için KiGetInterruptObjectAddress&rsquo;i çağıracaktır:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BBFD4E:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">470</span><span style="color:#66d9ef">h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ecx</span>, <span style="color:#66d9ef">edi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span> <span style="color:#66d9ef">KeGuardDispatchICall</span> <span style="color:#75715e">; Call KiGetInterruptObjectAddress
+</span></span></span></code></pre></div><p>The address of KiGetInterruptObjectAddress is initialized at <strong>0x140BD6D09</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BD6CE6:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">KiGetInterruptObjectAddress</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">r14</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">470</span><span style="color:#66d9ef">h</span>], <span style="color:#66d9ef">rax</span>
+</span></span></code></pre></div><p>Ardından PatchGuard <strong>RtlSectionTableFromVirtualAddress</strong> aracılığıyla aşağıda listelenmiş üç şeyi kontrol etmeye başlar:</p>
+<ul>
+<li>adresin discardable bir image&rsquo;a ait olup olmadığı (IMAGE_SCN_MEM_DISCARDABLE);</li>
+<li>adresin ntoskrnl.exe&rsquo;nin eşlemesine ait olup olmadığı;</li>
+<li>ntoskrnl.exe&rsquo;nin export listesinden bir rutine ait olup olmadığı (RtlLookupFunctionEntry kullanarak).</li>
+</ul>
+<p><strong>0x140BBFDDA</strong> adresinde, RtlSectionTableFromVirtualAddress çağırarak başlar:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BBFDA2:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r8d</span>, <span style="color:#66d9ef">dword</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_8A8</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rcx</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">F8h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sub</span> <span style="color:#66d9ef">r8d</span>, <span style="color:#66d9ef">edx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>  <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">220</span><span style="color:#66d9ef">h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span> <span style="color:#66d9ef">KeGuardDispatchICall</span> <span style="color:#75715e">; Call RtlSectionTableFromVirtualAddress
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span> <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span> <span style="color:#66d9ef">loc_140BC010A</span>
+</span></span></code></pre></div><p>Ardından <strong>0x140BBFE41</strong> adresinde RtlLookupFunctionEntry rutinini çalıştırır:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BBFDF5:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">rdx</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_878</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">r8d</span>, <span style="color:#66d9ef">r8d</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">rbx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span> <span style="color:#66d9ef">KeGuardDispatchICall</span> <span style="color:#75715e">; Call RtlLookupFunctionEntry
+</span></span></span></code></pre></div><p>var_878 is initialized at <strong>0x140BBFCBD</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BBFCBD:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">E8h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r9</span>, <span style="color:#66d9ef">r15</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_878</span>], <span style="color:#66d9ef">rax</span>
+</span></span></code></pre></div><p>0x8E8 ofseti 0x140000000 değerini içerir. Bu ofsetin <strong>0x140BFB409</strong> adresinde hazırlandığını görebiliriz:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BFB402:                          
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">rbx</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#ae81ff">140000000</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rdi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">E8h</span>], <span style="color:#66d9ef">rbx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span></code></pre></div><p>İkinci kısım için PatchGuard, diğer yapıların çoğunu doğruladığı gibi IDT kaydı tarafından başvurulan tablonun checksum&rsquo;unu hesaplar. Hash hesaplamasını tamamladıktan sonra PatchGuard, KeRevertToUserGroupAffinityThread&rsquo;i çağırarak önceki işlemci yakınlığını geri yükler, ardından hesaplanan hash&rsquo;i bellekte saklanan ile karşılaştırarak işlemi tamamlar.</p>
+<h4 id="epilogue"><strong>Epilogue</strong></h4>
+<p>Kontrol rutininin epilogue&rsquo;i iki bölüme ayrılabilir: bir değişiklik tespit edildiğinde gerçekleşen bölüm ve her şey yolunda gittiğinde gerçekleşen bölüm.</p>
+<h5 id="normal-completion-no-issues-detected"><strong>Normal Completion: No Issues Detected</strong></h5>
+<p>Bir yapının son hash karşılaştırmasından sonra, daha önce belirtildiği gibi, doğrulanan toplam veri miktarı KiInitPatchGuardContext&rsquo;te tanımlanan maksimum değerden azsa, PatchGuard dizideki bir sonraki yapıya geçer. Aksi takdirde, PatchGuard context&rsquo;i daha sonra kullanmak üzere yeniden silahlandırır. Bu işlem birden fazla adım içerir, ancak bunlar temelde başlatma adımlarıyla aynıdır.</p>
+<p>0, 1, 2, 4 ve 5 methodları için kodlar, uygulanan yönteme göre KiInitPatchGuardContext içinde bulunan uygulama ile neredeyse aynıdır:</p>
+<ol>
+<li>KeSetCoalescableTimer doğrudan çağrılır</li>
+<li>DPC, KPRCB.AcpiReserved içinde saklanır</li>
+<li>DPC KPRCB.HalReserved içinde saklanır</li>
+<li>APC, KeInsertQueueApc ile eklenir</li>
+<li>DPC zaten global bir değişkende ayarlanmıştı</li>
+</ol>
+<p>Bir system thread&rsquo;i oluşturulmasını içeren üçüncü yöntem, aynı ana fonksiyon içinde değil, yeniden ayarlar. Doğrulama rutini bittiğinde, küçük bir gönderici KeDelayExecutionThread veya KeWaitForSingleObject çağrısı arasında seçim yapar:</p>
+<ul>
+<li>
+<p>KeDelayExecutionThread seçilirse, 2 dakika ile 2 dakika 10 saniye arasında olağan bir zaman aşımı ayarlanır.</p>
+</li>
+<li>
+<p>KeWaitForSingleObject seçilirse, bu kez 2 dakikalık sabit bir zaman aşımı uygulanır.</p>
+</li>
+</ul>
+<p>Yedinci yöntem için kesinlikle hiçbir şey yapılmaz: kod hemen kontrol rutininin sonuna atlar. Daha önce de belirtildiği gibi, bu yöntem intilization başladıktan hemen sonra temizlenir, bu nedenle buradaki davranışı belirsiz kalır.</p>
+<h5 id="modification-detection-system-integrity-compromised"><strong>Modification Detection: System Integrity Compromised</strong></h5>
+<p>Checksum toplama işlemi tamamlandığında, Interrupt Descriptor Table (IDT) durumunda, PatchGuard ilk olarak mevcut thread için önceki işlemci yakınlığını geri yükler. Bunu takiben, yeni hesaplanan hash&rsquo;i KiInitPatchGuardContext&rsquo;in initilization sırasında saklanan orijinal hash ile karşılaştırır. Herhangi bir değişiklik tespit edilirse, PatchGuard, sonuçta bir BSOD tetikleyen kontrollü bir dizi adım yürütmeye başlayacaktır.</p>
+<h5 id="checksum-encryption-and-verifications"><strong>Checksum, Encryption, and Verifications</strong></h5>
+<p>İlk aşama PatchGuard Context Yapısını içerir. PatchGuard tüm yapı üzerinde bir checksum kontrolü yapar, ancak bunu yapmadan önce, kontroller arasında dalgalanabilecek uçucu veya dinamik alanları temizleyerek veya sıfırlayarak yapıyı &ldquo;ortak&rdquo; bir duruma dönüştürür. Bu, çağrılar arasında tutarlı checksum sonuçları sağlamak için önemlidir.</p>
+<p>Checksum hesaplamasından önce gerçekleştirilen işlemler şunları içerir:</p>
+<ul>
+<li>
+<p>Tüm context yapısı (1., 2. ve 3. bölümler) içinde checksum alanının kendisini (0x658 offsetinde bulunur) sıfırlama veya temizleme.</p>
+</li>
+<li>
+<p>Kontrol edilen verilerin toplam boyutunu (0x6C8 offsetinde) context&rsquo;in ilk bölümünün boyutuyla eşleşecek şekilde ayarlayarak işlemi başlatmadan itibaren tekrarlar.</p>
+</li>
+<li>
+<p>Workitem alanını (&ldquo;0x638&rdquo; ofsetinde) stack&rsquo;E kaydetmek</p>
+</li>
+</ul>
+<p>Yapıyı bu değişikliklerle hazırladıktan sonra, checksum hesabı tüm context üzerinden hesaplanır.</p>
+<p>Checksum hesaplandıktan sonra, workitem stackten context&rsquo;e geri yüklenir ve checksum sonucu 0x658 offsetinde saklanır.</p>
+<p>Bu yeni hesaplanan checksum bu noktada önceki checksum ile doğrudan karşılaştırılmadığına dikkat etmek önemli olacaktır.</p>
+<p>Daha sonra PatchGuard, PatchGuard Context&rsquo;in en başını, yani CmpAppendDllSection kodunu yeniden şifrelemeye devam eder.</p>
+<h5 id="restore-sensitive-data"><strong>Restore Sensitive Data</strong></h5>
+<h6 id="additional-anti-debug-technique-overwriting-dbgprint-with-aret-instruction"><strong>Additional Anti-Debug Technique: Overwriting DbgPrint with a RET Instruction</strong></h6>
+<p>PatchGuard, yürütme boyunca birden fazla Anti-Debug tekniği kullanır. Bu önlemlerden biri, ilk komutun üzerine RET işlem koduna karşılık gelen 0xC3 yazarak DbgPrint rutininin basit ama etkili bir şekilde tahrif edilmesi gibi görünmektedir.</p>
+<h6 id="clearing-specific-context-entries"><strong>Clearing Specific Context Entries</strong></h6>
+<p>PatchGuard Context&rsquo;teki iki özel offseti temizler: KxUnexpectedInterrupt0 ve KiIsrThunkShadow. Bunun kesin nedeni, özellikle checksum zaten hesaplanmış olduğundan, belirsizdir.</p>
+<h6 id="kebugcheckex-or-sdpbcheckdll"><strong>KeBugCheckEx or SdpbCheckDll</strong></h6>
+<p>Doğrulama rutininin sonuna doğru PatchGuard, KeBugCheckEx argümanı ile KeGuardCheckICall çağrısı yapar. Kullanılan zamanlama yöntemi 7 ise, KeGuardCheckICall, KeGuardDispatchICall ile birlikte 0x140BFB3FD adresindeki KiInitPatchGuardContext içine yeniden yazılır:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BFB3EF:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">KeGuardCheckICall</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sub</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">ecx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span> <span style="color:#66d9ef">r9d</span>, <span style="color:#66d9ef">r9d</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span> <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140BFB402</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">byte</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rax</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">r8</span>], <span style="color:#ae81ff">0</span><span style="color:#66d9ef">C3h</span> <span style="color:#75715e">; Ret Instruction
+</span></span></span></code></pre></div><p>Bu, kullanılan yöntem 7 değilse KeBugCheckEx yerine SdpbCheckDll&rsquo;in çağrılacağı anlamına gelir.</p>
+<p>SdpbCheckDll aslında KeBugCheckEx&rsquo;e giden bir stub&rsquo;tur, ancak atlamadan önce ETHREAD.InitialStack&rsquo;ten alınan thread&rsquo;ın yığınını temizler. Eğer mevcut iş parçacığı bir DPC yürütüyorsa (KPCRB.DpcRoutineActive ile gösterilir), PatchGuard mevcut yığının DPC yığınıyla (KPCRB.DpcStack ile gösterilir) eşleşip eşleşmediğini kontrol eder. Bu durumda, ETHREAD.InitialStack&rsquo;ı temizlemek yerine, DpcStack&rsquo;ı temizler.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>Bu yolculuk gerçekten uzun ve yoğun geçti. Nisan ayında başlayan bu çalışma, Ağustos ayında nihayet tamamlandı. Süreç boyunca yürüttüğüm analizler, yaklaşık 90 sayfalık teknik not ve belgeyle şekillendi. Bugün artık PatchGuard’a dair çok daha derin bir anlayışa sahibiz: kendisini gizlemek için uyguladığı yöntemler, gerçekleştirdiği denetim türleri ve farklı tekniklerle nasıl başlatıldığı gibi birçok yönünü detaylarıyla inceledik.</p>
+<p>Bu çalışmada, PatchGuard’ın temel yapı taşlarını, başlatılma sürecini ve genel işleyişini yüksek seviyede ele alarak sistem mimarisine dair bütünsel bir bakış sunmayı amaçladım. Tersine mühendislik araçları ve metodolojileri kullanılarak yürütülen analiz, bu karmaşık güvenlik mekanizmasının işleyiş mantığını anlaşılır kılmayı hedefledi.</p>
+<p>Tüm bu emek ve süreç sonucunda ortaya çıkan bu çalışmanın, güvenlik araştırmalarında başvuru niteliğinde bir kaynak olarak kullanılacağına inanıyorum.</p>
+<h2 id="references"><strong>References</strong></h2>
+<p>Bu makale boyunca ana kaynak olarak Tetrane&rsquo;in <strong>&ldquo;Updated Analysis of PatchGuard on Microsoft Windows 10 RS4&rdquo;</strong> kaynağını kullandım. Bu çalışma, PatchGuard&rsquo;ın başlatılması, kernel düzeyinde bütünlük kontrolleri ve koruma stratejileri de dahil olmak üzere mekanizmaları hakkında ayrıntılı bilgiler sağladı.</p>
+<ol>
+<li><a href="https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf">AMD64 Architecture Programmer’s Manual Volume 2</a>, see page 109</li>
+<li><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-keexpandkernelstackandcallout">Microsoft Docs - KeExpandKernelStackAndCallout</a></li>
+<li><a href="https://courses.cs.washington.edu/courses/cse451/24sp/resources/x2apic.pdf">Intel® 64 Architecture x2APIC Specification</a>, see page 2-2</li>
+<li><a href="https://www.intel.com/content/dam/develop/external/us/en/documents/335592-sdm-vol-4.pdf">Intel 64 and IA-32 Architectures Software Developer&rsquo;s Manual Volume 4: Model-Specific Registers</a>, see Page 2-4</li>
+<li><a href="https://www.felixcloutier.com/x86/cpuid">Felix Clouiter - CPUID</a></li>
+</ol>
+
+    <h4><a href="http://localhost:1313/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2025</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://twitter.com">Twitter</a> 
+        
+        <a href="https://github.com">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: true , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

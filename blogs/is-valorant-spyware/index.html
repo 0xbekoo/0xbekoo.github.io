@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=38385&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:38385//favicon.ico">
+    <link rel="canonical" href="http://localhost:38385/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:38385/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>Is Valorant Spyware? - Wed, Apr 17, 2024</h1>
+    </div>
+    <p class="lead"></p>
+    <h3 id="understanding-how-anti-cheat-software-works"><strong>Understanding How Anti-Cheat Software Works</strong></h3>
+<p>To begin our exploration, we first need to understand how anti-cheat software works. In general, anti-cheat software is developed for two main purposes: to prevent cheating within a game and to detect those who do.</p>
+<p>We can categorize how this software operates into two main methods: <strong>server-side</strong> and <strong>client-side</strong><sup>[1]</sup>.</p>
+<p><strong>Server-side</strong> anti-cheat software typically monitors and analyzes the data a player sends to the game server. This data can include how the player is playing, what commands they are sending, and how quickly they react. Its goal is to detect discrepancies between normal gameplay behavior and potential cheat usage.</p>
+<p><strong>Client-side</strong> anti-cheat, on the other hand, runs on the player&rsquo;s own computer and can have complete access to their machine. It attempts to detect cheat programs running on the computer and can use various techniques to block or report them. Furthermore, this software often operates at the kernel level with full privileges and access. In other words, it has total control over the player&rsquo;s computer.</p>
+<p>Both types of anti-cheat have their advantages and disadvantages. Server-side anti-cheats are generally more reliable because they run on the server and are less susceptible to manipulation on the player&rsquo;s end. Client-side anti-cheats, however, can provide more comprehensive control over the player&rsquo;s computer, which can lead to privacy violations or security concerns—a topic we will discuss frequently in this article.</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/rings.png" style="width: 100%" />
+</div>
+<p>Initially, anti-cheat software operated at the <strong>Ring 3</strong> level. As you may know, Ring 3 is also known as <strong>User Mode</strong>. (If you&rsquo;re not familiar with this concept, I recommend doing a quick search.)</p>
+<p>In User Mode, privileges are very limited. It&rsquo;s an environment where you don&rsquo;t have full privileges over the operating system and are highly restricted. Because they couldn&rsquo;t directly access hardware or memory from this level, anti-cheat programs needed to have the necessary permissions before performing any scans. Moreover, in this mode, anti-cheat software ran in isolation from other applications, meaning it couldn&rsquo;t interfere with or modify data belonging to another program<sup>[2]</sup>.</p>
+<p>However, cheaters, knowing that anti-cheat software was running at Ring 3, developed more sophisticated methods. Their tactic was to run their cheats not at Ring 3, but in the <strong>Ring 0</strong> space—that is, in <strong>Kernel Mode</strong>. This gave their cheats far greater privileges and made them significantly harder to detect. Unlike the restricted User Mode, Ring 0 (Kernel Mode) allows any instruction to be executed, any memory address to be read, and most importantly, direct communication with hardware. Cheaters even advanced to the point where they could <strong>hook the system calls</strong> used by Ring 3 anti-cheat software to intercept its data<sup>[2]</sup>.</p>
+<p>Game companies had to respond to this tactic, so they moved their anti-cheat software from the restricted User Mode to the kernel level, into Ring 0. Software running in Ring 0 can scan the system just as before, but it does so directly from the kernel level, with complete and elevated privileges. This has its advantages, but also a significant disadvantage that we will discuss at length. The advantage of running anti-cheat in Ring 0 is its ability to easily detect even the most elusive cheats, keeping the game more secure. The disadvantage, however, is the privacy problem.</p>
+<p>Consider this: if this software can scan and read everything with high privileges to protect you from cheaters, it theoretically means it can also access <em>everything</em> on your computer. This software operates at the kernel level. This means it can read and access everything happening on your computer in real-time, with the highest privileges.</p>
+<p>This brings me to a question for you: You don&rsquo;t want to put up with cheaters in the games you play, and you want measures taken against them. But in exchange for that, would you be willing to risk your privacy?</p>
+<h3 id="potential-dangers-posed-by-anti-cheat-software"><strong>Potential Dangers posed by Anti-Cheat Software</strong></h3>
+<p>There have been incidents in the past years that violated the privacy principles of anti-cheat software. A good example was in 2013, when a developer from ESEA used the kernel level of the operating system to mine bitcoins secretly and on a large scale from players&rsquo; computers. The developer obtained about $4,000 from mining software that he planted on the GPUs of 14,000 players<sup>[3]</sup> and after this incident was revealed, ESEA was fined $1,000,000 by the US Regulators. After these incidents, ESEA publicly apologized and ESEA distributed the mining money to players through prize pots and donated $7,427.10 to the American Cancer Society<sup>[3]</sup>.</p>
+<p>However, they can cause problems for some Operating systems. If you are a gamer, you may have encountered this situation. Since Anti-Cheat software works as a kernel driver, a small error in the code in the driver can cause Blue Screen of Death (BSOD) like crashes. Take a look at this image for example:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img1.png" style="width: 100%" />
+</div>
+<p>In this case, as soon as the user turns on the computer, the blue error screen appears with the SYSTEM THREAD EXCEPTION NOT HANDLED error code I mentioned above. vgk.sys is a driver file for Vanguard anti-cheat software from RIOT Games.</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img2.png" style="width: 100%" />
+</div>
+<p>Here, the user states that as long as they play Counter Strike 2, they are blue screened with the same error code and are looking for a solution.</p>
+<h3 id="spyware-allegations-for-valorant"><strong>Spyware Allegations for Valorant</strong></h3>
+<p>One of the biggest reasons for these claims for Valorant is that the Chinese company Tencent owns 100% of Riot Games, leading to these claims. Tencent invested 400 million for a 93 percent stake in Riot Games in February 2011, and on December 16, 2015, Tencent invested the remaining 7 percent at an unspecified price to acquire 100% ownership<sup>[4]</sup>.</p>
+<p>Tencent is a company with close ties to the Chinese government, which wants to control all activities on the internet. This, coupled with the fact that Tencent owns 100% of RIOT Games and that Valorant&rsquo;s anti-cheat software runs at the kernel level, has led to allegations that this software could be used by the Chinese government.</p>
+<p>We can see the beginning of these discussions starting 3-4 years ago. For example, take a look at this thread I came across in the r/privacy subreddit:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img3.png" style="width: 100%" />
+</div>
+<p>OP asks whether Valorant&rsquo;s anti-cheat software, Vanguard, could be dangerous. It also says that this software is constantly running in the background.</p>
+<p>I decided to start by investigating the veracity of these claims and started with RIOT&rsquo;s own article &lsquo;What is Vanguard&rsquo;. This part of the article caught my attention:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img4.png" style="width: 100%" />
+</div>
+<p>Frankly, I am not satisfied with these texts. Yes, the RIOT article clearly states that Vanguard is already running from bootup, but if you ask me, the explanation is insufficient.</p>
+<p>Since this article was unsatisfactory to me, I went back to the reddit and started searching again. Then I came across <a href="https://www.reddit.com/r/VALORANT/comments/fzxdl7/comment/fn6yqbe/">a long explanation</a> by u/RiotArkem under a post in the r/VALORANT subreddit about this problem:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img12.png" style="width: 100%" />
+</div>
+<p>This explanation was more revealing than the article I read on Vanguard. Let&rsquo;s take a look.</p>
+<p>He says that the vgk.sys driver does indeed run at computer startup, but he says that it doesn&rsquo;t scan anything unless the game is running, it doesn&rsquo;t communicate with servers and it runs using as few system resources as possible, and he says that this software can be uninstalled at any time.</p>
+<p>He also talked about the security and privileges of this driver. In terms of security, he said that they had their security investigation team look into it, that the driver did as little as possible, and that they gave the driver minimal privileges.</p>
+<h3 id="performing-analysis"><strong>Performing Analysis</strong></h3>
+<p>Now, after the basics, we have figured out what we can do in a simple way and we can start the analysis slowly.</p>
+<p>First of all, I wanted to start the analysis with wireshark. Let&rsquo;s start by seeing where it connects when the RIOT Client application is launched:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/video/wireshark-video.gif" style="width: 100%" />
+</div>
+<p>As you can see, when the Client application is run, data is sent to many more places than you might think.</p>
+<p>We can&rsquo;t see the content of the data sent here because, as you can see in the video, the data is encrypted. So it will not be possible to trace this. So I decided to take a look at a few of the addresses of the individual links:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img5.png" style="width: 100%" />
+</div>
+<p>When I tried to trace where the data was sent, I couldn&rsquo;t find anything, but The PC Security Channel&rsquo;s analysis of the &lsquo;Is Valorant Spyware?&rsquo; video tells that many of its IP addresses belong to Amazon servers. You can also take a look at the aforementioned video, which was my inspiration for this topic. It&rsquo;s a really good and revealing analysis.</p>
+<p>When we look at the number of connections here, we can see that there are a lot of connections and unfortunately it&rsquo;s not encouraging. I thought to myself that this is an exaggeration and I wanted to check it for the Epic Games app installed on my PC and here is the result:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img6.png" style="width: 100%" />
+</div>
+<p>As you can see, there is less connection compared to the RIOT Client app. So we can see that the RIOT Client is really sending a lot of data.</p>
+<p>I then turned my attention to the .sys file and took a brief look at vgk.sys via Process Explorer:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img7.png" style="width: 100%" />
+</div>
+<p>We can also check the status of vgk.sys faster with the driverquery tool:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img8.png" style="width: 100%" />
+</div>
+<p>But there is a problem - i think. Right now, no RIOT app runs on the operating system - not even in the background. This also applies to Riot Vanguard:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/video/process-explorer.gif" style="width: 100%" />
+</div>
+<p>In my operating system, i turned off  RIOT services at the beginning. However, I saw that vgk.sys is running.</p>
+<p>Although RIOT&rsquo;s article states that it already runs in the background, it is highly unlikely that this kernel driver will still run in the background even if all RIOT-related applications are closed. If the game is completely closed, what can software that protects me from cheating in games protect me from?</p>
+<p>I&rsquo;d like to continue my research by addressing the part mentioned above by Arkhem, the former leader of Vanguard:</p>
+<blockquote>
+<p><em>“Yes we run a driver at system startup, it doesn’t scan anything (unless the game is running), it’s designed to take up as few system resources as possible and it doesn’t communicate to our servers. You can remove it at anytime.&quot;</em></p>
+</blockquote>
+<p>He says that the software can be uninstalled at any time. After reading this again, I uninstalled Vanguard, then rebooted the OS and checked that vgk.sys was still on the system and the result:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img9.png" style="width: 100%" />
+</div>
+<p>Indeed, when the Vanguard software is uninstalled, vgk.sys is removed from the system. We have confirmed this.</p>
+<h3 id="analyzing-the-vgk-driver"><strong>Analyzing the vgk Driver</strong></h3>
+<p>I was going to start a close analysis of the vgk.sys driver, but unfortunately I couldn&rsquo;t pursue it because I found out that RIOT doesn&rsquo;t allow us to analyze vgk.sys in any way.</p>
+<p>At first, I installed the VALORANT game in the virtual machine and after rebooting the system I noticed that the VANGUARD software was not starting. I tried various ways thinking that it might be a bug, but it&rsquo;s didn&rsquo;t work:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img10.png" style="width: 100%" />
+</div>
+<p>This is because the vgk.sys driver is not initialized. I noticed that if valorant is installed in any virtual machine, then vgk.sys will be not initialized. Also if debugging is enabled in the operating system, vgk.sys is not run. So even if you enable debugging to analyze the vgk.sys file running on your host machine, it will disable itself.</p>
+<p>Since I couldn&rsquo;t go to the dynamic analysis, I decided to go to the static analysis and I wanted to take a look at the functions used by the .sys file:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/is-valorant-spyware/img11.png" style="width: 100%" />
+</div>
+<p>When we took a look at the APIs, I noticed that the vgk.sys driver uses APIs that allow the player to control the computer&rsquo;s operating environment, obtain the system clock and system directory. Of course, since we cannot perform dynamic analysis, we cannot know what these are used for.</p>
+<p>If you want to take a look at the full list of functions, here&rsquo;s the list:</p>
+<pre tabindex="0"><code>ZwClose	
+KeInitializeSpinLock	
+KeAcquireSpinLockAtDpcLevel	
+KeAcquireSpinLockRaiseToDpc	
+KeReleaseSpinLock	
+KeReleaseSpinLockFromDpcLevel	
+ExAllocatePoolWithTag	
+KeLowerIrql	
+KfRaiseIrql	
+KeInitializeDpc	
+KeInitializeTimer	
+KeSetTimer	
+MmMapLockedPagesSpecifyCache	
+MmUnmapLockedPages	
+MmAllocatePagesForMdl	
+MmFreePagesFromMdl	
+IoFreeMdl	
+IoAllocateWorkItem	
+IoQueueWorkItem	
+IoInitializeWorkItem	
+RtlDuplicateUnicodeString	
+ObfDereferenceObject	
+KeBugCheckEx	
+_stricmp	
+__C_specific_handler	
+KeIpiGenericCall	
+ExFreePoolWithTag	
+ProbeForRead	
+IoGetCurrentProcess	
+wcscpy_s	
+RtlInitUnicodeString	
+RtlTimeToTimeFields	
+KeAreAllApcsDisabled	
+ExSystemTimeToLocalTime	
+ZwWriteFile	
+IoCreateFileEx	
+ZwFlushBuffersFile	
+swprintf_s	
+vswprintf_s	
+_vsnwprintf	
+KeInitializeApc	
+KeInsertQueueApc	
+wcscat_s	
+ZwReadFile	
+ZwQuerySystemInformation	
+IoGetStackLimits	
+strchr	
+RtlPrefixUnicodeString	
+RtlMultiByteToUnicodeN	
+MmHighestUserAddress	
+ObReferenceObjectByHandle	
+IoFileObjectType	
+strnlen	
+</code></pre><h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>Based on the analysis of the behavior of Vanguard&rsquo;s driver, vgk.sys, I think that the Valorant game is closer to being spyware. However, this conclusion can be confirmed or refuted by deeper analysis. I also think that RIOT should be more transparent about this issue. In particular, it is important that they provide more information about what Vanguard does and how it works. I think RIOT should adopt a more open communication policy to address users&rsquo; privacy and security concerns.</p>
+<h1 id="references">References</h1>
+<ul>
+<li><a href="https://helda.helsinki.fi/server/api/core/bitstreams/89d7c14b-58e0-441f-a0de-862254f95551/content"><strong>[1] - University of HELSINKI: Comparative Study of Anti-cheat Methods in Video Games</strong></a></li>
+<li><a href="https://www.schellman.com/blog/cybersecurity/what-is-anti-cheat"><strong>[2] - Schellman: Understanding Anti-Cheat</strong></a></li>
+<li><a href="https://www.theregister.com/2013/11/20/esea_gaming_bitcoin_fine/"><strong>[3] - TheRegister: Gaming co ESEA hit by $1m fine for hidden Bitcoin mining enslaver</strong></a></li>
+<li><a href="http://en.wikipedia.org/wiki/Riot_Games"><strong>[4] - EN Wikipedia: Riot Games</strong></a></li>
+</ul>
+
+    <h4><a href="http://localhost:38385/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

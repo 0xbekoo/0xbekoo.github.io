@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=38385&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:38385//favicon.ico">
+    <link rel="canonical" href="http://localhost:38385/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:38385/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>Debugging QEMU &#43; OVMF with GDB - Mon, Oct 27, 2025</h1>
+    </div>
+    <p class="lead"></p>
+    <h3 id="introduction"><strong>Introduction</strong></h3>
+<p>Probably you know the signifince of debugging in any low-level programming projects. In the same way, we need to debug our UEFI Driver in some cases.</p>
+<p>For me, debugging is essential — I can’t do my work properly without it. Even though I’m still new to UEFI development, I wanted to start debugging my own UEFI drivers as early as possible. Because many existing resources are outdated, I decided to share my debugging journey and update the information for 2025.</p>
+<h3 id="using-macros-for-debugging"><strong>Using Macros for Debugging</strong></h3>
+<p>In edk2 project, we can use <strong>DEBUG</strong> and <strong>ASSERT</strong> macros for debugging the uefi driver. To enable them, we need to configure our .dsc project.</p>
+<h4 id="debug-macro"><strong>DEBUG() Macro</strong></h4>
+<p>In .dsc file, there are two PCDs:</p>
+<ul>
+<li><strong>PcdDebugPropertyMask</strong> - Bit mask to determine which features are on/off</li>
+<li><strong>PcdDebugPrintErrorLevel</strong> - Types of messages produced</li>
+</ul>
+<p>In other word, if we can enable these macros we can modify these values.</p>
+<p>Let&rsquo;s modify our .dsc file. Open OvmfPkgX64.dsc and and search <strong>PcdDebugPrintErrorLevel</strong>:</p>
+<pre tabindex="0"><code># DEBUG_INIT      0x00000001  // Initialization
+  # DEBUG_WARN      0x00000002  // Warnings
+  # DEBUG_LOAD      0x00000004  // Load events
+  # DEBUG_FS        0x00000008  // EFI File system
+  # DEBUG_POOL      0x00000010  // Alloc &amp; Free (pool)
+  # DEBUG_PAGE      0x00000020  // Alloc &amp; Free (page)
+  # DEBUG_INFO      0x00000040  // Informational debug messages
+  # DEBUG_DISPATCH  0x00000080  // PEI/DXE/SMM Dispatchers
+  # DEBUG_VARIABLE  0x00000100  // Variable
+  # DEBUG_BM        0x00000400  // Boot Manager
+  # DEBUG_BLKIO     0x00001000  // BlkIo Driver
+  # DEBUG_NET       0x00004000  // SNP Driver
+  # DEBUG_UNDI      0x00010000  // UNDI Driver
+  # DEBUG_LOADFILE  0x00020000  // LoadFile
+  # DEBUG_EVENT     0x00080000  // Event messages
+  # DEBUG_GCD       0x00100000  // Global Coherency Database changes
+  # DEBUG_CACHE     0x00200000  // Memory range cachability changes
+  # DEBUG_VERBOSE   0x00400000  // Detailed debug messages that may
+  #                             // significantly impact boot performance
+  # DEBUG_ERROR     0x80000000  // Error
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x8000004F
+
+!if $(SOURCE_DEBUG_ENABLE) == TRUE
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x17
+!else
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x2F
+!endif
+</code></pre><p>In this configuration, two PCDs control the behavior of debugging features:</p>
+<p>PcdDebugPrintErrorLevel</p>
+<p>Defines which types of debug messages are enabled.</p>
+<p>The value 0x8000004F enables:</p>
+<ul>
+<li>
+<p>DEBUG_ERROR – Error messages</p>
+</li>
+<li>
+<p>DEBUG_INIT – Initialization messages</p>
+</li>
+<li>
+<p>DEBUG_WARN – Warning messages</p>
+</li>
+<li>
+<p>DEBUG_LOAD – Load events</p>
+</li>
+<li>
+<p>DEBUG_INFO – Informational messages</p>
+</li>
+</ul>
+<p>This means the firmware will print these categories of debug logs during execution.</p>
+<p>If SOURCE_DEBUG_ENABLE is true, then it sets bits as 0x2F, which means that enables additional debug features, including extended diagnostics and code tracking.</p>
+<p>Since we&rsquo;re working on <strong>OvmfPkgX64</strong> the macros will be enabled. Let&rsquo;s create a project:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Uefi.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiLib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/DebugLib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>EFI_STATUS EFIAPI <span style="color:#a6e22e">UefiMain</span>(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE <span style="color:#f92672">*</span>SystemTable) {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">DEBUG</span>((DEBUG_INFO, <span style="color:#e6db74">&#34;Hello from DEBUG Macro!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>));
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> EFI_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>and .inf file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-inf" data-lang="inf"><span style="display:flex;"><span><span style="color:#66d9ef">[Defines]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">INF_VERSION</span>                    <span style="color:#f92672">=</span> <span style="color:#e6db74">0x00010006
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  BASE_NAME                      = HelloWorld
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  MODULE_TYPE                    = UEFI_APPLICATION
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  VERSION_STRING                 = 1.0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  ENTRY_POINT                    = UefiMain</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Sources]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">HelloWorld.c</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Packages]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">MdePkg/MdePkg.dec</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">MdeModulePkg/MdeModulePkg.dec</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[LibraryClasses]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">UefiApplicationEntryPoint</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">UefiLib</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">DebugLib</span>
+</span></span></code></pre></div><p>These macros are defined from DebugLib. Then invoke QEMU + OVMF with this code:</p>
+<pre tabindex="0"><code>sudo qemu-system-x86_64 -s  -pflash bios.bin -hda fat:rw:hda-contents -net none -debugcon file:debug.log -global isa-debugcon.iobase=0x402
+</code></pre><p>Start HelloWorld.efi and check the debug.log file:</p>
+<pre tabindex="0"><code>cat debug.log
+
+[...]
+
+InstallProtocolInterface: 5B1B31A1-9562-11D2-8E3F-00A0C969723B 626B040
+Loading driver at 0x00006202000 EntryPoint=0x00006202F8F HelloWorld.efi
+InstallProtocolInterface: BC62157E-3E33-4FEC-9920-2D3B36D750DF 6270818
+ProtectUefiImageCommon - 0x626B040
+  - 0x0000000006202000 - 0x0000000000001BC0
+InstallProtocolInterface: 752F3136-4E16-4FDC-A22A-E5F46812F4CA 7E7F168
+Hello from DEBUG Macro!
+FSOpen: Open &#39;\&#39; Success
+</code></pre><p>We can see our message. Let&rsquo;s use ASSERT Macro.</p>
+<h4 id="assert-macro"><strong>ASSERT() Macro</strong></h4>
+<p>Also we have ASSERT() macro in EDK II and it is used to verify that certain conditions in the code are always true during development.</p>
+<p>When the specified condition evaluates to FALSE, the macro prints a detailed error message showing the file name, line number, and failed expression, then halts execution by triggering a breakpoint or entering an infinite loop (usually through CpuDeadLoop()).</p>
+<p>Let&rsquo;s see an example. Change the project with this code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>EFI_STATUS EFIAPI <span style="color:#a6e22e">UefiMain</span>(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE <span style="color:#f92672">*</span>SystemTable) {
+</span></span><span style="display:flex;"><span>  INTN Number <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ASSERT</span>(Number <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">DEBUG</span>((DEBUG_INFO, <span style="color:#e6db74">&#34;This line will be printed!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>));
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> EFI_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>And run the project and check debug.log file:</p>
+<pre tabindex="0"><code>[...]
+
+Loading driver at 0x00006243000 EntryPoint=0x00006243F8F HelloWorld.efi
+InstallProtocolInterface: BC62157E-3E33-4FEC-9920-2D3B36D750DF 626AE98
+ProtectUefiImageCommon - 0x626A040
+  - 0x0000000006243000 - 0x0000000000001BC0
+InstallProtocolInterface: 752F3136-4E16-4FDC-A22A-E5F46812F4CA 7E7F168
+This line will be printed!
+</code></pre><p>Let&rsquo;s think a sceneario that if the condition is not correct. Change the content of ASSERT Macro like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">ASSERT</span>(Number <span style="color:#f92672">!=</span> <span style="color:#ae81ff">10</span>);
+</span></span></code></pre></div><p>After the exection, the shell will be stuck and you will be see this output from debug.log:</p>
+<pre tabindex="0"><code>[...]
+ASSERT HelloWorld.c(8): Number != 10
+</code></pre><p>This means that ASSERT macro has failed. You can use DEBUG and ASSERT macro for this sceneario.</p>
+<h3 id="debugging-uefi-driver-with-gdb"><strong>Debugging UEFI Driver with GDB</strong></h3>
+<p>Now we will see how can we debug our UEFI driver with GDB. Change the code of the project with this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Uefi.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiLib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>EFI_STATUS EFIAPI <span style="color:#a6e22e">UefiMain</span>(EFI_HANDLEImageHandle, EFI_SYSTEM_TABLE  <span style="color:#f92672">*</span>SystemTable)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Hello UEFI World!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> EFI_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Compile them and move these files to hda-contents:</p>
+<ul>
+<li>HelloWorld.efi</li>
+<li>HelloWorld.debug</li>
+</ul>
+<p>Then invoke QEMU + OVMF with this command:</p>
+<pre tabindex="0"><code>qemu-system-x86_x64 -s  -pflash bios.bin -hda fat:rw:hda-contents -net none -debugcon file:debug.log -global isa-debugcon.iobase=0x402 
+</code></pre><p>Run the HelloWorld.efi and open the second terminal. Then check the content of debug.log:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>InstallProtocolInterface: 5B1B31A1-9562-11D2-8E3F-00A0C969723B 626B040
+</span></span><span style="display:flex;"><span>Loading driver at 0x00006201000 EntryPoint<span style="color:#f92672">=</span>0x00006202314 HelloWorld.efi
+</span></span><span style="display:flex;"><span>InstallProtocolInterface: BC62157E-3E33-4FEC-9920-2D3B36D750DF <span style="color:#ae81ff">6270818</span>
+</span></span></code></pre></div><p>Note the address of loaded driver (in my case it is <strong>0x00006201000</strong>).</p>
+<p>Invoke GDB with &ndash;tui parameter in another terminal and load the .efi file from hda-contents:</p>
+<img src="/images/posts/documents/debugging-qemu-ovmf/img2.png">
+<p>Now we need to calculate .text and .data section for the debug file. Here&rsquo;re the formulas:</p>
+<pre tabindex="0"><code>.text = LoadedAddress + TextAddress
+.data = LoadedAddress + TextAddress + DataAddress
+</code></pre><p>With the values from the gdb&rsquo;s output we will perform the calculation:</p>
+<pre tabindex="0"><code>.text = 0x00006201000 + 0x0000000240 = 0x6201240
+.data = 0x00006201000 + 0x0000000240 + 0x0000001f80 = 0x62031c0
+</code></pre><p>Perform this calculation with your loaded driver address. You can use an online hex calculator.</p>
+<p>Replace the results to the .debug life:</p>
+<pre tabindex="0"><code>(gdb) add-symbol-file hda-contents/HelloWorld.debug 0x6201240 -s .data 0x62031c0
+add symbol table from file &#34;hda-contents/HelloWorld.debug&#34; at
+	.text_addr = 0x6201240
+	.data_addr = 0x62031c0
+(y or n) y
+Reading symbols from hda-contents/HelloWorld.debug...
+</code></pre><p>You should see this output from tui screen:</p>
+<img src="/images/posts/documents/debugging-qemu-ovmf/img3.png">
+<p>Now we can debug our UEFI driver.</p>
+<p>Set a bp to UefiMain and continue with QEMU:</p>
+<pre tabindex="0"><code>(gdb) break UefiMain
+Breakpoint 1 at 0x6202467: file /home/bekoo/edk2/OvmfPkg/HelloWorld/HelloWorld.c, line 7.
+
+(gdb) target remote localhost:1234
+Remote debugging using localhost:1234
+warning: No executable has been specified and target does not support
+determining executable automatically.  Try using the &#34;file&#34; command.
+0x0000000006ce6de1 in ?? ()
+
+(gdb) c
+Continuing.
+</code></pre><p>Run HelloWorld.efi again and check the GDB:</p>
+<img src="/images/posts/documents/debugging-qemu-ovmf/img4.png">
+<p>That&rsquo;s all!</p>
+<h4 id="possible-an-issue"><strong>Possible An Issue</strong></h4>
+<p>When i tried these steps for another projects, i usually saw an issue; Although the calculation is correct, it didn&rsquo;t calculate correctly .text and .data sections:</p>
+<p>If you have this problem, probably it will not find your UefiMain symbol:</p>
+<img src="/images/posts/documents/debugging-qemu-ovmf/img11.png">
+<p>For the solution, set a bp to the EntryAddress of UEFI Driver. You can get the address of EntryPoint from debug.log:</p>
+<pre tabindex="0"><code>Loading driver at 0x00006201000 EntryPoint=0x00006202314 HelloWorld.efi
+</code></pre><p>Then delete the bp of EntryPoint address and connect the QEMU:</p>
+<img src="/images/posts/documents/debugging-qemu-ovmf/img6.png">
+<p>And run the .efi file again and check the GDB:</p>
+<img src="/images/posts/documents/debugging-qemu-ovmf/img7.png">
+<p>You can fix this issue with this way.</p>
+<h4 id="simple-scenerio-for-debugging"><strong>Simple Scenerio for Debugging</strong></h4>
+<p>As a simple scenerio, we will debug our UEFI driver:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Uefi.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiLib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/DebugLib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>EFI_STATUS EFIAPI <span style="color:#a6e22e">UefiMain</span>(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE <span style="color:#f92672">*</span>SystemTable) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DEBUG</span>((DEBUG_INFO, <span style="color:#e6db74">&#34;Hello!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> EFI_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Follow the steps above and then set bp to UefiMain:</p>
+<img src="/images/posts/documents/debugging-qemu-ovmf/img14.png">
+<p>Now we are in UefiMain. We will examine DebugPrint :&gt;</p>
+<p>Firstly we can see that our parameters are prepared and DebugPrint is called. This is simply track. Set a bp and check the registers:</p>
+<img src="/images/posts/documents/debugging-qemu-ovmf/img15.png">
+<p>In this case, 0x40 is DEBUG_INFO. Let&rsquo;s see DebugPrint:</p>
+<pre tabindex="0"><code>Dump of assembler code for function DebugPrint:
+=&gt; 0x0000000006243f64 &lt;+0&gt;:	push   rbp
+   0x0000000006243f65 &lt;+1&gt;:	mov    rbp,rsp
+   0x0000000006243f68 &lt;+4&gt;:	push   rdi
+   0x0000000006243f69 &lt;+5&gt;:	mov    rdi,rcx
+   0x0000000006243f6c &lt;+8&gt;:	push   rsi
+   0x0000000006243f6d &lt;+9&gt;:	mov    rsi,rdx
+   0x0000000006243f70 &lt;+12&gt;:	lea    rdx,[rbp+0x20]
+   0x0000000006243f74 &lt;+16&gt;:	sub    rsp,0x10
+   0x0000000006243f78 &lt;+20&gt;:	mov    QWORD PTR [rbp-0x18],rdx
+   0x0000000006243f7c &lt;+24&gt;:	mov    QWORD PTR [rbp+0x20],r8
+   0x0000000006243f80 &lt;+28&gt;:	mov    QWORD PTR [rbp+0x28],r9
+   0x0000000006243f84 &lt;+32&gt;:	call   0x6243eef &lt;DebugPrintMarker&gt;
+   0x0000000006243f89 &lt;+37&gt;:	pop    rdx
+   0x0000000006243f8a &lt;+38&gt;:	pop    rcx
+   0x0000000006243f8b &lt;+39&gt;:	pop    rsi
+   0x0000000006243f8c &lt;+40&gt;:	pop    rdi
+   0x0000000006243f8d &lt;+41&gt;:	pop    rbp
+   0x0000000006243f8e &lt;+42&gt;:	ret
+</code></pre><p>The message is passed to rsi, while the 0x40 value is passed to rdi. Then it calls DebugPrintMarker:</p>
+<img src="/images/posts/documents/debugging-qemu-ovmf/img16.png">
+<p>Here, our message is printed via IoWriteFile. This function gets three parameters:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>VOID
+</span></span><span style="display:flex;"><span>EFIAPI
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">IoWriteFifo8</span> (
+</span></span><span style="display:flex;"><span>  IN      UINTN  Port,
+</span></span><span style="display:flex;"><span>  IN      UINTN  Count,
+</span></span><span style="display:flex;"><span>  IN      VOID   <span style="color:#f92672">*</span>Buffer
+</span></span><span style="display:flex;"><span>  )
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">IsTdxGuest</span> ()) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">TdIoWriteFifo8</span> (Port, Count, Buffer);
+</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">SevIoWriteFifo8</span> (Port, Count, Buffer);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Let&rsquo;s see our parameters:</p>
+<img src="/images/posts/documents/debugging-qemu-ovmf/img17.png">
+<p>Also notice that the 0x402 value is passed to the Port parameter as hardocoded value. This is our iobase value provided to QEMU.</p>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>In this documentation, we learned how to debug a UEFI driver using different methods and tools. First, we explored how to enable and use the DEBUG() and ASSERT() macros in the EDK II environment. Then we saw how to using GDB for debugging.</p>
+<p>Overall, this documentation showed the complete process of setting up and performing UEFI driver debugging — from using macros for quick checks to using GDB for deep analysis.</p>
+<p>I hope this documentation helps you understand and apply effective debugging techniques in your own UEFI development projects :&gt;</p>
+<h3 id="references"><strong>References</strong></h3>
+<ul>
+<li><a href="https://github.com/tianocore/tianocore.github.io/wiki/EDK-II-Debugging"><strong>Tianocore - EDK II Debugging</strong></a></li>
+<li><a href="https://tianocore-docs.github.io/edk2-UefiDriverWritersGuide/draft/31_testing_and_debugging_uefi_drivers/314_debugging_code_statements/3141_configuring_debuglib_with_edk_ii.html"><strong>Tianocore Docs - Configuring DebugLib with EDK II</strong></a></li>
+<li><a href="https://github.com/tianocore/tianocore.github.io/wiki/How-to-debug-OVMF-with-QEMU-using-GDB"><strong>Tianocore - How to debug OVMF with QEMU using GDB</strong></a></li>
+<li><a href="https://uefi.org/sites/default/files/resources/EDK_II_SW_debugger_v0.1_lj-Plugfest.pdf"><strong>Intel - EDK II Remote Debug Support</strong></a></li>
+</ul>
+
+    <h4><a href="http://localhost:38385/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

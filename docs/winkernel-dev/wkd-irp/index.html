@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=38385&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:38385//favicon.ico">
+    <link rel="canonical" href="http://localhost:38385/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:38385/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>I/O Request Packets (IRP) - Thu, Aug 22, 2024</h1>
+    </div>
+    <p class="lead"></p>
+    <p>In this documentation, we will discuss IRP.</p>
+<h3 id="what-is-io-request-packet"><strong>What is I/O Request Packet</strong></h3>
+<p>An <strong>I/O Request Packet</strong> (IRP) in the Windows operating system is a structure used to facilitate communication between drivers and the operating system. You can think of it as a <em>“message carrier”</em>.</p>
+<p>In most cases, requests sent to drivers are packaged into an IRP. An operating system component or another driver sends an IRP to a driver using the IoCallDriver function. This function takes two parameters: a <strong>device object</strong> (DEVICEOBJECT) and a pointer to an IRP. The device object points to the driver object associated with that device. Therefore, when IoCallDriver is called, the IRP is sent to the corresponding device object and, by extension, to its associated driver. This process is often referred to as <em>“passing”</em> or <em>“forwarding”</em> the IRP.</p>
+<p>An IRP is often processed by multiple drivers, which are arranged in a specific order. While being processed, drivers are treated like layers in a stack. The IRP first reaches the driver at the top of the stack. Each driver processes the IRP in turn, performs the necessary operations, and then passes it on to the next driver in the stack. This step-by-step processing continues until the IRP has passed through all the relevant drivers. Once the processing is complete, the desired operation is performed, and the result is returned.</p>
+<p>An IRP also serves as the mechanism for handling user-initiated operations within the kernel. It ensures that drivers receive and respond to requests in a consistent and structured way. For example, when you print a document, the request is sent as an IRP to the printer driver. The printer driver receives the IRP and initiates the printing process. This system provides a safe and efficient bridge between user operations and hardware.</p>
+<h3 id="coding"><strong>Coding</strong></h3>
+<p>We will create two separate projects for the sample code. In the first project we will create a driver and I will talk about how to handle IRP. In the other project we will create a user mode program and in this program I will show how to send IRP to the driver using the WriteFile function.</p>
+<h4 id="kernel-mode-driver"><strong>Kernel Mode Driver</strong></h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;main.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IrpCreate</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">MJ_Create Received!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;;
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IrpWrite</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>    PIO_STACK_LOCATION  Stack   <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoGetCurrentIrpStackLocation</span>(Irp);
+</span></span><span style="display:flex;"><span>    PCHAR               Buffer  <span style="color:#f92672">=</span> Irp<span style="color:#f92672">-&gt;</span>UserBuffer;
+</span></span><span style="display:flex;"><span>    ULONG               Length  <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.Write.Length;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">MJ_WRITE Received!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> Buffer <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Length) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Received Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_PARAMETER;
+</span></span><span style="display:flex;"><span>        Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Data to be written received: %.*s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Length, Buffer);
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> Length;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">DriverEntry</span>(PDRIVER_OBJECT PDrvObj, PUNICODE_STRING RegistryPath) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(RegistryPath);
+</span></span><span style="display:flex;"><span>    UNICODE_STRING DeviceName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Device</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>    UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>    PDEVICE_OBJECT DeviceObject;
+</span></span><span style="display:flex;"><span>    NTSTATUS Status;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateDevice</span>(
+</span></span><span style="display:flex;"><span>        PDrvObj,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>DeviceName,
+</span></span><span style="display:flex;"><span>        FILE_DEVICE_UNKNOWN,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>        FALSE,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>DeviceObject
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create IO Device!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateSymbolicLink</span>(
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>SymName,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>DeviceName
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create Smybolic Link!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    PDrvObj<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CREATE]   <span style="color:#f92672">=</span> IrpCreate;
+</span></span><span style="display:flex;"><span>    PDrvObj<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_WRITE]    <span style="color:#f92672">=</span> IrpWrite;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">UnloadDriver</span>(PDRIVER_OBJECT PDrvObj) {
+</span></span><span style="display:flex;"><span>    UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Unloading Driver...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">IoDeleteSymbolicLink</span>(<span style="color:#f92672">&amp;</span>SymName);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">IoDeleteDevice</span>(PDrvObj<span style="color:#f92672">-&gt;</span>DeviceObject);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>It looks very long, but I assure you it is a very simple driver code. Let&rsquo;s look at the code step by step and start with the DriverEntry function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>UNICODE_STRING DeviceName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Device</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>UNICODE_STRING SymName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">??</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">MyDevice&#34;</span>);
+</span></span><span style="display:flex;"><span>PDEVICE_OBJECT DeviceObject;
+</span></span></code></pre></div><p>First, we define two UNICODE_STRING variables called <strong>DeviceName</strong> and <strong>SymName</strong>. These two variables hold the name and symbolic name of our driver.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateDevice</span>(
+</span></span><span style="display:flex;"><span>    PDrvObj,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>DeviceName,
+</span></span><span style="display:flex;"><span>    FILE_DEVICE_UNKNOWN,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>    FALSE,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>DeviceObject
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create IO Device!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Then we create a device object with the IoCreateDevice function. This function creates a device object for our driver and assigns it to the DeviceObject variable.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoCreateSymbolicLink</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>SymName,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>DeviceName
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Create Smybolic Link!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>We create a symbolic link with the IoCreateSymbolicLink function. In this way, we will be accessing our drive using the name and symbolic name of the drive in our user mode program.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>PDrvObj<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_CREATE]   <span style="color:#f92672">=</span> IrpCreate;
+</span></span><span style="display:flex;"><span>PDrvObj<span style="color:#f92672">-&gt;</span>MajorFunction[IRP_MJ_WRITE]    <span style="color:#f92672">=</span> IrpWrite;
+</span></span></code></pre></div><p>Finally, we specify the IRP functions of our driver. These functions determine how our driver handles IRPs. In the code, we use IrpCreate and IrpWrite. MJ_CREATE determines what our drive does when a file is created. IrpWrite determines what our driver does when a file is written to. IRPs are passed to our driver through these functions and our driver processes the IRPs through these functions.</p>
+<p>Now let&rsquo;s take a look at our functions to handle IRP requests:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IrpCreate</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">MJ_Create Received!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    ...
+</span></span></code></pre></div><p>Firstly, when we look at IrpCreate, it takes the DeviceObject and Irp parameters. These parameters represent our driver&rsquo;s device object and IRP, as mentioned above. Then, we print an information message using the DbgPrintEx function.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;;
+</span></span><span style="display:flex;"><span>Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span></code></pre></div><p>In the last part of the MJ_CREATE function, we set the status and information of the IRP. This status and information determine the result of the IRP operation. Finally, we complete the IRP with the IoCompleteRequest function and terminate the operation.</p>
+<p>Now let&rsquo;s look at the IrpWrite function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">IrpWrite</span>(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DeviceObject);
+</span></span><span style="display:flex;"><span>    PIO_STACK_LOCATION  Stack   <span style="color:#f92672">=</span> <span style="color:#a6e22e">IoGetCurrentIrpStackLocation</span>(Irp);
+</span></span><span style="display:flex;"><span>    PCHAR               Buffer  <span style="color:#f92672">=</span> Irp<span style="color:#f92672">-&gt;</span>UserBuffer;
+</span></span><span style="display:flex;"><span>    ULONG               Length  <span style="color:#f92672">=</span> Stack<span style="color:#f92672">-&gt;</span>Parameters.Write.Length;
+</span></span><span style="display:flex;"><span>    ...
+</span></span></code></pre></div><ul>
+<li><strong>Stack</strong> variable represents the stack location of the IRP.</li>
+<li><strong>Buffer</strong> variable represents the data area of the IRP. This data area contains the data carried by the IRP.</li>
+<li><strong>Length</strong> variable represents the data length of the IRP. This length specifies the length of the data carried by the IRP.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> Buffer <span style="color:#f92672">||</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">==</span> Length) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Received Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_INVALID_PARAMETER;
+</span></span><span style="display:flex;"><span>    Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>We check whether the Buffer pointer is NULL and whether the Length value is 0.</p>
+<p>If the condition is met, i.e., no data has been received, we set the value of Irp-&gt;IoStatus.Status to STATUS_INVALID_PARAMETER. This indicates a parameter error. We set the value of Irp-&gt;IoStatus.Information to 0. Finally, the IRP&rsquo;s operation status is returned, and the process is terminated.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Data to be written received: %.*s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Length, Buffer);
+</span></span><span style="display:flex;"><span>Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
+</span></span><span style="display:flex;"><span>Irp<span style="color:#f92672">-&gt;</span>IoStatus.Information <span style="color:#f92672">=</span> Length;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">IoCompleteRequest</span>(Irp, IO_NO_INCREMENT);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> Irp<span style="color:#f92672">-&gt;</span>IoStatus.Status;
+</span></span></code></pre></div><p>In this section, if the data has been retrieved correctly, we print this data. Then, in the same way, we set the status and information of the IRP and terminate the process.</p>
+<h4 id="user-mode-program"><strong>User Mode Program</strong></h4>
+<p>Now let&rsquo;s create our user mode program. In this program, we will send an IRP to our driver using the WriteFile function.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;main.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> argv[]) {
+</span></span><span style="display:flex;"><span>    HANDLE	HandleDevice <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>    CHAR	Buffer[] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Hello, kernel!&#34;</span>;
+</span></span><span style="display:flex;"><span>    DWORD	BytesWritten <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    DWORD	BytesRead <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    BOOL	Status	<span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    HandleDevice <span style="color:#f92672">=</span> <span style="color:#a6e22e">CreateFile</span>(
+</span></span><span style="display:flex;"><span>	    DEVICE_NAME,
+</span></span><span style="display:flex;"><span>	    GENERIC_WRITE <span style="color:#f92672">|</span> GENERIC_READ,
+</span></span><span style="display:flex;"><span>	    <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>	    NULL,
+</span></span><span style="display:flex;"><span>	    OPEN_EXISTING,
+</span></span><span style="display:flex;"><span>	    FILE_ATTRIBUTE_NORMAL,
+</span></span><span style="display:flex;"><span>	    NULL
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> HandleDevice) {
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to Open Device! Error Code: 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>	    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">WriteFile</span>(
+</span></span><span style="display:flex;"><span>	    HandleDevice,
+</span></span><span style="display:flex;"><span>	    Buffer,
+</span></span><span style="display:flex;"><span>	    (DWORD)<span style="color:#66d9ef">sizeof</span>(Buffer),
+</span></span><span style="display:flex;"><span>	    <span style="color:#f92672">&amp;</span>BytesWritten,
+</span></span><span style="display:flex;"><span>	    NULL
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Status) {
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to Write Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>	    <span style="color:#a6e22e">CloseHandle</span>(HandleDevice);
+</span></span><span style="display:flex;"><span>	    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">CloseHandle</span>(HandleDevice);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;   
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now let&rsquo;s take a closer look:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>HandleDevice <span style="color:#f92672">=</span> <span style="color:#a6e22e">CreateFile</span>(
+</span></span><span style="display:flex;"><span>	DEVICE_NAME,
+</span></span><span style="display:flex;"><span>	GENERIC_WRITE <span style="color:#f92672">|</span> GENERIC_READ,
+</span></span><span style="display:flex;"><span>	<span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>	NULL,
+</span></span><span style="display:flex;"><span>	OPEN_EXISTING,
+</span></span><span style="display:flex;"><span>	FILE_ATTRIBUTE_NORMAL,
+</span></span><span style="display:flex;"><span>	NULL
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (INVALID_HANDLE_VALUE <span style="color:#f92672">==</span> HandleDevice) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to Open Device! Error Code: 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>First, we open our drive using CreateFile in our program. This function opens our drive and returns a handle.</p>
+<p>Some may wonder, “Is the drive opened using CreateFile?” . The CreateFile function can be used to create or open a file or device object in the Windows operating system. You can refer to the documentation for further research.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">WriteFile</span>(
+</span></span><span style="display:flex;"><span>    HandleDevice,
+</span></span><span style="display:flex;"><span>    Buffer,
+</span></span><span style="display:flex;"><span>    (DWORD)<span style="color:#66d9ef">sizeof</span>(Buffer),
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>BytesWritten,
+</span></span><span style="display:flex;"><span>    NULL
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>Status) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Failed to Write Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">CloseHandle</span>(HandleDevice);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>In this section, we send an IRP request to our drive using the WriteFile function.</p>
+<h3 id="running-the-project"><strong>Running the Project</strong></h3>
+<p>Here&rsquo;s the result:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/irp/result.gif" style="width: 100%" />
+</div>
+<p>As you can see, when we run our user mode program, we see that it sends data to the driver and prints the sent data to the screen:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/irp/img2.png" style="width: 70%" />
+</div>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>An <strong>I/O Request Packet (IRP)</strong> is Windows’ standard mechanism for delivering requests from user-mode applications to kernel-mode drivers. In our example, the driver registered specific routines (IrpCreate, IrpWrite) to handle incoming IRPs, while the user-mode program opened the device with CreateFile and sent data using WriteFile, which internally generated an IRP.</p>
+<h3 id="references"><strong>References</strong></h3>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/i-o-request-packets">Microsoft Docs - I/O Request Packets</a></li>
+</ul>
+
+    <h4><a href="http://localhost:38385/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=38385&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:38385//favicon.ico">
+    <link rel="canonical" href="http://localhost:38385/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:38385/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>A Journey For X86 Reset Vector - Wed, Dec 31, 2025</h1>
+    </div>
+    <p class="lead"></p>
+    <h3 id="introduction"><strong>Introduction</strong></h3>
+<p>Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&rsquo;s very first breath.</p>
+<p>Lately, I’ve been getting up close and personal with the CPU, trying to understand what happens in that split second of silence before the screen even lights up. Honestly, my obsession with this &ldquo;big bang&rdquo; moment skyrocketed while I was digging into UEFI Development. There is a whole hidden world running in the background that we usually take for granted.</p>
+<p>It’s going to get a bit dusty and complex down here, so&hellip; let&rsquo;s put on our gas masks, i guess&hellip;</p>
+<h3 id="reading-the-address-from-reset-vector"><strong>Reading the Address from Reset Vector</strong></h3>
+<p>When a system is restarting, the processor reads the first instruction from a hard-coded pointer, and we call this <strong>Reset Vector</strong>. This Reset Vector is actually a pointer that the processor reads after a reset. In Intel 8086, the pointer is at <strong>0xFFFFFFF0</strong> (16 bytes below 1 MB). In other words, the processor starts from <strong>0xFFFFFFF0</strong> address after a reset.</p>
+<p>In beginning of the process the processor is in <strong>Real Mode</strong> and <strong>16-byte (8086)</strong>. Don&rsquo;t be suprised that even modern processors runs in 16-byte state in the beginning, but some processors will boot into protected mode instead. But now we need to understand this <strong>Real Mode</strong> and <strong>Protected Mode</strong> before the Reset Vector.</p>
+<h4 id="real-mode-and-protected-mode"><strong>Real Mode and Protected Mode</strong></h4>
+<p>In all x86 CPUs, Real Mode is an operating mode that provides compatibility with the original 8086 processor, allowing software to access memory using a simple addressing scheme and execute legacy code. This mode was the only available mode in X86 CPUs before the introduction of <strong>Protected Mode</strong>. Even in these times the X86 CPUs is started from Real Mode like today.</p>
+<p>While the <strong>80286 processor</strong> introduced &ldquo;virtual addresses&rdquo; and hardware-level protection, modern x86 processors still initialize in <strong>Real-Address Mode</strong> to ensure that legacy code written for the original 8086 can still execute. In this mode, the processor utilizes a <strong>segmented memory model</strong> where 16-bit segment selectors are combined with 16-bit effective addresses to determine the memory location. The standard architectural calculation involves <strong>left-shifting the segment selector by 4 bits</strong> and adding the offset, a process that normally restricts the addressable range to the first <strong>1 MByte (000F_FFFFH)</strong> of physical memory</p>
+<p>In fact, <strong>this creates a technical paradox</strong>: if the processor is in 16-bit Real Mode and limited to 1 MB, it should not be able to reach the <strong>Reset Vector at FFFF_FFF0H</strong>, which sits at the very top of the 4 GB address space. The solution to this is a hardware mechanism involving the <strong>&ldquo;hidden part&rdquo;</strong> of the segment registers (we will see later).</p>
+<h5 id="calculation-of-any-address-in-real-mode"><strong>Calculation of Any Address in Real Mode</strong></h5>
+<p>As established, memory addressing in Real Mode relies on the <strong>Segment:Offset</strong> logical addressing scheme. Since the registers are only 16-bit (ranging from <strong>0000H</strong> to <strong>FFFFH</strong>), they cannot directly index the full memory space individually.</p>
+<p>To generate a linear <strong>20-bit Physical Address</strong>, the CPU performs the following calculation:</p>
+<p><i><b><a>Physical Address = (Segment Selector * 16) + Offset</a></b></i></p>
+<br>
+<p>If we can talk with hexadecimal terms, multiplying by 16 (<strong>10H</strong>) is equivalent to shifting the Segment value one digit to the left (or 4 binary bits).</p>
+<p>Let&rsquo;s think that if the Code Segment (CS) register holds 2000H and the Instruction Pointer (IP) holds 1234H, the physical address is derived as follows:</p>
+<ol>
+<li>
+<p><strong>Shift Segment:</strong> <strong>2000H</strong> -&gt; <strong>20000H</strong></p>
+</li>
+<li>
+<p><strong>Add Offset:</strong> <strong>20000H</strong> + <strong>1234H</strong></p>
+</li>
+</ol>
+<p>In the result we have 21234H value for <strong>Physical Address</strong>.</p>
+<h4 id="processor-status-and-calculation-of-reset-vector"><strong>Processor Status and Calculation of Reset Vector</strong></h4>
+<p>When the processor first powers up, it starts in <strong>Real Mode</strong> (16-bit state). However, it fetches the very first instruction from the physical address <strong>0xFFFFFFF0</strong>.</p>
+<p>Now we know the calculation formula of Real Mode but at reset, <strong>the processor does NOT use this formula</strong>. Instead, it relies on the specific initial values of the CS (Code Segment) and EIP (Instruction Pointer) registers.</p>
+<p>Immediately after a hard reset, the register states are as follows:</p>
+<ul>
+<li>
+<p><strong>EAX, EBX, ECX, EBP, ESI, EDI, ESP:</strong> Reset to <strong>0</strong>.</p>
+</li>
+<li>
+<p><strong>EDX:</strong> Contains the <strong>CPU Stepping Identification Information</strong>.</p>
+</li>
+<li>
+<p><strong>EIP:</strong> Initialized to <strong>0xFFF0</strong>.</p>
+</li>
+</ul>
+<p>The <strong>CS</strong> register is the exception. To understand why, we must look at the internal structure of Segment Registers. Every segment register consists of a <strong>Visible Part</strong> and a <strong>Hidden Part</strong> (Intel refers to this as the &lsquo;Descriptor Cache&rsquo;):</p>
+<p><img src="/images/posts/reset-vector/img1.png" alt=""></p>
+<p><strong>Here is the trick:</strong> Upon reset, the CS register&rsquo;s <em>Visible Selector</em> is set to <strong>0xF000</strong>, but the processor forcibly sets the CS <strong>Hidden Base Address</strong> to FFFF_0000 (Don&rsquo;t forget Real Mode&rsquo;s Segment:Offset addresses).</p>
+<p>Therefore, the processor calculates the Reset Vector by combining the <strong>Hidden Base</strong> of CS with the value of <strong>EIP</strong>:</p>
+<div align="center"> CS Base (<b>0xFFFF0000</b>) + EIP (<b>0xFFF0</b>) = <b>0xFFFFFFF0</b> </div>
+<p>We can check this in QEMU:</p>
+<p><img src="/images/posts/reset-vector/img2.png" alt=""></p>
+<p>We can&rsquo;t see the values of hidden part using <strong>info registers</strong> command. Instead we need to use <strong>monitor info registers</strong> command (in QEMU + GDB combination). Also you can check the status of each register.</p>
+<p>Lastly i need to mention this that these control registers CR2, CR3 and CR4 are all reset to 0 but CR0 is set to <strong>6000_0010h</strong> value:</p>
+<p><img src="../../images/posts/reset-vector/cr0.gif" alt=""></p>
+<div align="center">
+	The diagram was taken from <b>Stanford Secure Computer Systems Group</b>'s <a href="https://www.scs.stanford.edu/05au-cs240c/lab/i386/s10_01.htm">Article</a>
+</div>
+<p>After the reset, <strong>Paging</strong> (Bit 31) is disabled and <strong>Protection</strong> (Bit 0) is not enabled. If this Protection bit were 1, then it would indicate that the processer is in <strong>Protection Mode</strong>. Also we can see the result of CR0 in GDB:</p>
+<p><img src="../../images/posts/reset-vector/img4.png" alt=""></p>
+<h3 id="fetching-instruction-from-the-reset-vector"><strong>Fetching Instruction from the Reset Vector</strong></h3>
+<p>Once the processor calculates this <strong>0xFFFFFFF0</strong> address, it places it onto the system bus to fetch the instruction. However, the processor itself is agnostic about where this data resides. It does not know if the target address belongs to the system RAM, a PCI device, or the BIOS chip.</p>
+<p>This is where the Chipset (specifically the Southbridge or PCH - Platform Controller Hub) acts as the traffic controller. The chipset monitors the address bus, and when it detects a request for this specific high-memory range, it must decide where to route it.</p>
+<p>To handle this, the chipset utilizes a specific configuration register known as <strong>FWH_DEC_EN1</strong> (Firmware Hub Decode Enable 1). <strong>FWH_DEC_EN1</strong> is located within the <strong>LPC (Low Pin Count) Interface Bridge</strong> registers of the chipset. Its primary function is to tell the chipset which memory ranges should be redirected to the <strong>Firmware Hub (FWH)</strong>—which is the Flash ROM chip containing the BIOS/UEFI code—instead of the main system memory (RAM). From <strong>Intel® 5 Series Chipset and Intel® 3400 Series Chipset</strong> (Page 487):</p>
+<p><img src="../../images/posts/reset-vector/img3.png" alt=""></p>
+<p>The mechanism works as follows:</p>
+<ol>
+<li>
+<p><strong>Decoding Ranges:</strong> The <strong>FWH_DEC_EN1</strong> register contains specific bits (like Bit 7, Bit 6, etc.) that correspond to different memory segments at the top of the 4GB address space (e.g., the range <strong>FFFF_0000h</strong> to <strong>FFFF_FFFFh</strong>).
+<br></p>
+</li>
+<li>
+<p><strong>Redirection:</strong> When the system resets, the hardware defaults for these bits are typically set to <strong>&ldquo;Enabled&rdquo;</strong>. This ensures that when the CPU requests <strong>0xFFFFFFF0</strong>, the chipset instantly recognizes this address falls within the &ldquo;BIOS Range.&rdquo;
+<br></p>
+</li>
+<li>
+<p><strong>The Fetch:</strong> Instead of sending the request to the DRAM controller, the chipset asserts the <strong>LPC (or SPI)</strong> bus signals, activating the Flash ROM chip.</p>
+</li>
+</ol>
+<p>A simple diagram is shown below:</p>
+<p><img src="../../images/posts/reset-vector/diagram2.png" alt=""></p>
+<p>In short, the area the processor wants to read (0xFFFFFF0) is actually located in the BIOS chip, not in RAM, and the instruction is taken from this address in the BIOS chip within the Reset Vector and given to the processor.</p>
+<h3 id="analyzing--x86-bios"><strong>Analyzing  X86 BIOS</strong></h3>
+<p>Now time to analyze any X86 BIOS. For the tool usually i used Ghidra (for decompiler) and QEMU + GDB (for debugging).</p>
+<h4 id="determining-whether-boot-process-is-cold-or-warm"><strong>Determining Whether Boot Process is Cold or Warm</strong></h4>
+<p>If we check the <strong>FFFF0</strong> address, we can see a simple jump code:</p>
+<p><img src="../../images/posts/reset-vector/img5.png" alt=""></p>
+<p>0xEA opcode corresponds to <strong>jmp</strong> code. In the Reset Vector there is only one command, and that command is only the jmp command. <strong>Because</strong> the Reset Vector is located at physical address <strong>FFFF_FFF0H</strong>, remember that there are only <strong>16 bytes</strong> of addressable memory remaining before the end of the 4 GB address space (<strong>FFFF_FFFFH</strong>). In my case the address is <strong>FFFF_E05B</strong>.</p>
+<p>Let&rsquo;s see this address in Ghidra:</p>
+<p><img src="../../images/posts/reset-vector/img6.png" alt=""></p>
+<p>The processor quickly checks whether the boot is a Cold Boot or a Warm Boot. Cold and Warm Boot are actually two different <strong>types of system startup</strong>:</p>
+<ul>
+<li>
+<p><strong>Cold Boot</strong> happens when the computer is started from a completely powered-off state. In this case, the processor performs a full initialization: it checks the hardware (POST – Power-On Self Test), initializes memory and devices, and then loads the operating system.
+<br></p>
+</li>
+<li>
+<p><strong>Warm Boot</strong> occurs when the system is restarted without turning off the power, such as pressing the reset button or choosing “Restart” from the operating system. Here, some hardware checks may be skipped, making the boot process faster.</p>
+</li>
+</ul>
+<p>If the value is 0 this means that the boot is <strong>Cold</strong>, in other word the system was powered off completely. But if the address carries a value higher than 0, then the processor determines the boot process as &lsquo;Warm Boot&rsquo;. In the redirected section (For Warm Boot), there is a jump command, and the main steps begin here. However, if the value is 0, it begins to switch to Protection Mode.</p>
+<p>I need to quickly mention that we know that the processor is currently running in 16-bit mode and in Real Mode. <strong>In the following sections, the processor will attempt to switch to Protected Mode as quickly as possible.</strong> I will come back to this later.</p>
+<h4 id="extracting-shutdown-byte"><strong>Extracting Shutdown Byte</strong></h4>
+<p>If we can track this <strong>f000_d44a</strong> address, we may see a jump code and this jmp code jumps to an important section:</p>
+<p><img src="../../images/posts/reset-vector/img8.png" alt=""></p>
+<p>At the beginning of this function, the code checks the <strong>Shutdown Status Byte</strong>. According to IBM, this byte is located at offset <strong>0x0F</strong> in the CMOS RAM. The code interacts with the CMOS to read this value and determine the cause of the system reset. This check is a vital part of the BIOS POST sequence, allowing the system to distinguish between a cold start, a soft reset, or a return from Protected Mode.</p>
+<p>The <strong>Shutdown Status Byte (Hex 0F)</strong> can hold specific values that dictate the BIOS&rsquo;s next action. These values are defined by the power-on diagnostics. From IBM Technical Reference (1985):</p>
+<p><img src="../../images/posts/reset-vector/img16.png" alt=""></p>
+<p>However, in our case we can see that it checks <strong>0x8F</strong>. Don&rsquo;t be surprised that we read the byte with this 0x8F value. The main difference here <strong>is to set the first bit of the 0xF value to 1</strong>. 0xF value corresponds to <strong>1111</strong> binary and if you add this value to <strong>0x80</strong>, you have <strong>10001111</strong> (0x8F) result. In this case, the byte that will read from CMOS will be Shutdown byte. The reason the processor adds the value 0x80 here is to activate the NMI bit and perform this bit read. NMI (Non-Maskable Interrupt) is masked off (disabled) during this operation.</p>
+<p>Accessing the CMOS RAM is a two-step process involving I/O ports <strong>0x70</strong> (Address) and <strong>0x71</strong> (Data):</p>
+<pre tabindex="0"><code>MOV AL,0x8f
+OUT 0x70,AL ; Determine the byte
+IN AL,0x71  ; Pass the result to AL Register
+</code></pre><p>This sequence must be atomic; if an NMI were to occur between writing the address to port 0x70 and reading the data from port 0x71, the interrupt handler might itself try to access the CMOS, changing the address register and corrupting the original read. The system architecture uses <strong>Bit 7</strong> of port 0x70 as the <strong>NMI Mask</strong>:</p>
+<ul>
+<li>
+<p><strong>Bit 7 = 1 (Values 0x80–0xFF):</strong> NMI is <strong>Disabled</strong> (Masked).</p>
+</li>
+<li>
+<p><strong>Bit 7 = 0 (Values 0x00–0x7F):</strong> NMI is <strong>Enabled</strong> (Unmasked).</p>
+</li>
+</ul>
+<p>And if you look at the rest of the code you can see that the processor sets this shutdown byte as <strong>0</strong>:</p>
+<pre tabindex="0"><code>MOV AL,0x8f
+OUT 0x70,AL ; Determine Shutdown Byte
+XOR EAX,EAX 
+OUT 0x71,AL ; Pass the 0 to the Byte
+</code></pre><p>And now we are in important section:</p>
+<p><img src="../../images/posts/reset-vector/img9.png" alt=""></p>
+<p>After the getting the Shutdown Byte, the processor starts to check the byte. If the value is greater than 0x3 or the value is 0xc then it switches to Protection Mode. Like i said, <strong>the processor tries to escape from the 1 MB narrow space of Real Mode as quickly as possible.</strong></p>
+<p>However, if the value is 0xA or 0x5, the processor tries to jump to the address of 0000_4067h. Here&rsquo;s an example:</p>
+<p><img src="../../images/posts/reset-vector/img10.png" alt=""></p>
+<p>The address 0000_4067h actually is really important. This is a check related to waking up from sleep mode on this operating system.</p>
+<p>Modern Operating Systems run in 64-bit Long Mode or 32-bit Protected Mode, but the BIOS reset vector (remember that it is FFFF_0000) always starts in 16-bit Real Mode. The BIOS cannot directly jump into a 64-bit kernel. To solve this, the OS prepares a small, specialized piece of 16-bit code—often called a <strong>&ldquo;Trampoline&rdquo;</strong> or <strong>&ldquo;Real Mode Stub&rdquo;</strong>—somewhere in the low memory (usually below 1MB). The OS calculates the segment and offset of this trampoline code and writes it to <strong>0000:0467</strong></p>
+<p>When you press the power button to wake the PC, the following sequence occurs, validating our previous findings:</p>
+<ul>
+<li>The processor starts at <strong>FFFF:0000</strong>.</li>
+<li>The BIOS code queries the CMOS Shutdown Byte (Port 0x70/0x71).</li>
+<li>It sees the value <strong>0x0A</strong> (Resume from S3).</li>
+<li>Instead of scanning for bootloaders or counting RAM, the BIOS immediately loads the address stored at <strong>0040:0067</strong></li>
+</ul>
+<p>Let&rsquo;s check the codes again. EAX register gets 0x40 value, then the processor tries to jump the address of 0000_0467 address. If the computer is in sleeping mode and you press Wake button, the processor tries to jump the address which given from operating system to continue the process. Otherwise it switches to Protection Mode. Also we can benefit from <a href="https://github.com/cirosantilli/ralf-brown-interrupt-list/blob/fde1a5ac1b7e8a45ff4255ee275ee77c7fe7e256/inter61c/MEMORY.LST#L4">ralf-brown-interrupt-list</a>:</p>
+<p><img src="../../images/posts/reset-vector/img11.png" alt=""></p>
+<p>However if the value is <strong>0xb</strong> or <strong>0xc</strong>, it uses <strong>LSS</strong> (Load Far Pointer) for the address:</p>
+<p><img src="../../images/posts/reset-vector/img12.png" alt=""></p>
+<p>The status codes <strong>0x0B</strong> and <strong>0x0C</strong> reinterpret this exact same memory location as a stack pointer (<strong>SS:SP</strong>). This is a critical distinction in x86 architecture known as context restoration. If we can observe the code, it loads SS:SP from 0040:0067 and it executes return instruction from the stack.</p>
+<h4 id="switching-to-protection-mode"><strong>Switching to Protection Mode</strong></h4>
+<p>As we can see, the processor is trying to switch to protection mode quickly. Let&rsquo;s see this section:</p>
+<p><img src="../../images/posts/reset-vector/img13.png" alt=""></p>
+<p>In the beginning of the function, the code performs a strategic check of the <strong>CMOS Shutdown Byte</strong>, immediately after retrieving the system status, the routine targets <strong>I/O Port 0x92</strong> (System Control Port A). By executing the <strong>OR AL, 0x02</strong> operation, it sets <strong>Bit 1</strong>, which corresponds to the <strong>Fast A20 Gate</strong>.</p>
+<p>It is preparing for a potential &ldquo;Warm Boot&rdquo; or &ldquo;S3 Resume.&rdquo; Since the Operating System (which controls the computer before the reset) likely resides in Protected Mode using memory above 1MB, the BIOS pre-emptively unlocks the A20 Line using this fast port method. It effectively bypasses the slower, legacy method of asking the Keyboard Controller (8042) to do it.</p>
+<p>Now we are in important section:</p>
+<p><img src="../../images/posts/reset-vector/img14.png" alt=""></p>
+<p>Before the CPU can enter Protected Mode, it needs to know the new rules of the road. In Real Mode, memory is free-for-all. In Protected Mode, everything is strictly regulated. Let&rsquo;s meet our commands:</p>
+<ul>
+<li>
+<p><strong>LGDT (Load Global Descriptor Table):</strong> Think of the GDT as the <strong>&ldquo;Master Map of Memory.&rdquo;</strong> In Real Mode, the CPU uses physical addresses directly. In Protected Mode, it uses &ldquo;Selectors.&rdquo; The GDT tells the CPU: &ldquo;This chunk of memory is for Code, this chunk is for Data, and this chunk is Read-Only.
+<br></p>
+</li>
+<li>
+<p><strong>LIDT (Load Interrupt Descriptor Table):</strong> Think of the IDT as the <strong>&ldquo;Emergency Contact List.&rdquo;</strong> If the software crashes (Exception) or the hardware needs attention (Interrupt) while in Protected Mode, the CPU needs to know where to jump to handle it. The IDT provides these addresses.</p>
+</li>
+</ul>
+<p>Then the processor clears the <strong>Paging</strong> (Bit 31). We want Paging <strong>OFF</strong> during this transition to ensure we are working with raw physical addresses initially. After that it sets the <strong>PE (Protection Enable)</strong> bit with OR instruction.</p>
+<p>After the value of CR0 is set, it continues processing by jumping to the specified point:</p>
+<p><img src="../../images/posts/reset-vector/img15.png" alt=""></p>
+<p>That&rsquo;s all!</p>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>My analysis of Reset Vector ends here. I hope this article has been informative. After reading this blog post, you can analyze the next steps yourself.</p>
+<p>Good luck with your research!</p>
+<h3 id="references"><strong>References</strong></h3>
+<ul>
+<li><a href="https://cdrdv2.intel.com/v1/dl/getContent/671190"><strong>Intel® 64 and IA-32 Architectures Software Developer&rsquo;s Manual Volume 3A: System Programming Guide, Part 1</strong></a></li>
+<li><a href="https://minuszerodegrees.net/manuals/IBM_5170_Technical_Reference_6280070_SEP85.pdf"><strong>IBM Technical Reference (1985)</strong></a></li>
+<li><a href="https://opensecuritytraining.info/IntroBIOS.html"><strong>John Butterworth &amp; Xeno Kovah’s ‘Advanced Intel x86: BIOS and SMM’</strong></a></li>
+<li><a href="https://wiki.osdev.org/System_Initialization_(x86)"><strong>OSDEV - System Initialization (x86)</strong></a></li>
+<li><a href="https://en.wikipedia.org/wiki/Reset_vector"><strong>Wikipedia - Reset Vector</strong></a></li>
+</ul>
+
+    <h4><a href="http://localhost:38385/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

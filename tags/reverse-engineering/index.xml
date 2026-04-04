@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Reverse-Engineering on 0xbekoo</title>
+    <link>http://localhost:38385/tags/reverse-engineering/</link>
+    <description>Recent content in Reverse-Engineering on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 31 Dec 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:38385/tags/reverse-engineering/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>A Journey For X86 Reset Vector</title>
+      <link>http://localhost:38385/blogs/a-journey-from-reset-vector/</link>
+      <pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/a-journey-from-reset-vector/</guid>
+      <description>Introduction Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&amp;rsquo;s very first breath.&#xA;Lately, I’ve been getting up close and personal with the CPU, trying to understand what happens in that split second of silence before the screen even lights up. Honestly, my obsession with this &amp;ldquo;big bang&amp;rdquo; moment skyrocketed while I was digging into UEFI Development. There is a whole hidden world running in the background that we usually take for granted.</description>
+    </item>
+    <item>
+      <title>Detecting SSDT Hook with User Mode Program via BYOVD</title>
+      <link>http://localhost:38385/blogs/ssdt-hook-detector-usermode/</link>
+      <pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/ssdt-hook-detector-usermode/</guid>
+      <description>Introduction Github Link: github.com/0xbekoo/SSDT-Hook-Detector&#xA;Welcome to my blog! Today we will dive into a little adventure&amp;hellip;&#xA;Recently, I developed malware related to SSDT Hooking, but it&amp;rsquo;s not the kind of software that causes damage. The main goal of the malware is detecting the Hooked routines. However, my real goal was to develop malware that performs SSDT Unhooking in the first place. But after a few problems, i developed this project.</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 4</title>
+      <link>http://localhost:38385/blogs/patchguard-analysis-part-4/</link>
+      <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/patchguard-analysis-part-4/</guid>
+      <description>Verification Routines This phase is the heart of PatchGuard&amp;rsquo;s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a system thread, or other dispatch mechanisms—it enters the validation routine. The validation code decrypts and inspects internal PatchGuard state and memory-resident kernel structures.&#xA;There are several checking routines involved, with the main one called FsRtlMdlReadCompleteDevEx. Other routines include:&#xA;TVCallBack Routine: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext.</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 3</title>
+      <link>http://localhost:38385/blogs/patchguard-analysis-part-3/</link>
+      <pubDate>Fri, 08 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/patchguard-analysis-part-3/</guid>
+      <description>Triggering a check As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.&#xA;DPC Execution The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:&#xA;0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch Among index 0 to 9, functions use an exception handler to fire the check.</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 2</title>
+      <link>http://localhost:38385/blogs/patchguard-analysis-part-2/</link>
+      <pubDate>Thu, 07 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/patchguard-analysis-part-2/</guid>
+      <description>Arguments of KiInitPatchGuardContext Now, we can see another Arguments of the function.&#xA;Argument 1: DPC Routine Pointer As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.&#xA;The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 1</title>
+      <link>http://localhost:38385/blogs/patchguard-analysis-part-1/</link>
+      <pubDate>Wed, 06 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/patchguard-analysis-part-1/</guid>
+      <description>This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.&#xA;Introduction Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.</description>
+    </item>
+    <item>
+      <title>Loading Driver from User-Mode Program via SSDT Hooking</title>
+      <link>http://localhost:38385/blogs/ssdt-hooking/</link>
+      <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/ssdt-hooking/</guid>
+      <description>Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.&#xA;In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the System Service Descriptor Table (SSDT) and its role in managing system calls within the Windows kernel.&#xA;Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking.</description>
+    </item>
+    <item>
+      <title>Reversing System Call Mechanism in Windows Kernel</title>
+      <link>http://localhost:38385/blogs/syscalls/</link>
+      <pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/syscalls/</guid>
+      <description>Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel.&#xA;In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what&amp;rsquo;s NTAPI, Syscall or SSDT etc. in this blog because i wrote many documents for these topics and if you&amp;rsquo;re beginner in the topics, you can start with the documents mentioned.</description>
+    </item>
+    <item>
+      <title>ARM Firmware Reverse Engineering</title>
+      <link>http://localhost:38385/blogs/bare-metal-reversing/</link>
+      <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/bare-metal-reversing/</guid>
+      <description>Hello everyone. In this blog we continue with Firmware Reverse Engineering. We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.&#xA;I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board.</description>
+    </item>
+    <item>
+      <title>Router Firmware Reverse Engineering</title>
+      <link>http://localhost:38385/blogs/router-firmware-reversing/</link>
+      <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/router-firmware-reversing/</guid>
+      <description>Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&amp;rsquo;s Archer AX 21 V4.6 modem. You can check TP-Link&amp;rsquo;s original page to download the firmware.&#xA;[!WARNING] The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.</description>
+    </item>
+    <item>
+      <title>Is Valorant Spyware?</title>
+      <link>http://localhost:38385/blogs/is-valorant-spyware/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:38385/blogs/is-valorant-spyware/</guid>
+      <description>Understanding How Anti-Cheat Software Works To begin our exploration, we first need to understand how anti-cheat software works. In general, anti-cheat software is developed for two main purposes: to prevent cheating within a game and to detect those who do.&#xA;We can categorize how this software operates into two main methods: server-side and client-side[1].&#xA;Server-side anti-cheat software typically monitors and analyzes the data a player sends to the game server. This data can include how the player is playing, what commands they are sending, and how quickly they react.</description>
+    </item>
+  </channel>
+</rss>

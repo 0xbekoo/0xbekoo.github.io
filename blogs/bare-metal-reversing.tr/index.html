@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:1313//favicon.ico">
+    <link rel="canonical" href="http://localhost:1313/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:1313/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/about/">
+                                    
+                                    <span>About</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>ARM Firmware Reverse Engineering - Wed, Dec 4, 2024</h1>
+    </div>
+    <p class="lead"></p>
+    <p>Merhabalar. Bu yazıda Firmware Reverse Engineering&rsquo;e devam ediyoruz. Bu blogta ise Bare Metal Reversing&rsquo;e girişeceğiz.</p>
+<p>Hatırlarsanız önceki konumuzda TP-LINK Archer AX 21 V4.6&rsquo;ın 2024 yılında çıkmış Firmware&rsquo;ini analiz etmiştik. Bu konuda ise işleri birazcık ileriye götüreceğiz.</p>
+<p>Elimde bir Nucleo F030R8 kart (ARM Cortex M0 işlemcili) var ve bunu Firmware Reverse Engineering için değerlendirmek istedim. Bu blogta yapacağımız şey de bu kart&rsquo;ı basitçe programlayacağız ve ardından firmware&rsquo;ini reverse edip karta tekrar yükleyeceğiz. Tipik olarak bir Iot kartını hackliyor gibi düşünelim ancak daha basit bir senaryo ile.</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/nucleo-card.jpg" alt=""></p>
+<p>Elimdeki kart bu. Eğer elinizde nucleo&rsquo;nun farklı bir kartı var ise de bu blogtaki adımları takip edebilirsiniz.</p>
+<p>Açıkçası mikrodenetleyici kodlama konusunda kendimi geliştirmedim. Ancak bu konsept sürecinde beraber hem mikrodenetleyici kodlamaya hem de firmware reverse engineering alanlarında kendimizi geliştireceğiz.</p>
+<p>Gerekli programlar ise CubeIde, CubeProgrammer ve Ghidra olacaktır. CubeIde ile kartımız için programlamayı yapacağız, Ghidra ile aldığımız firmware yani .bin dosyasını reverse edeceğiz ve son adımda CubeProgrammer ile reverse ettiğimiz firmware’i kartımıza yükleyeceğiz.</p>
+<h2 id="kodlama"><strong>Kodlama</strong></h2>
+<p>Yapacağımız kodlama tamamen basit. <strong>Nucleo F030R8</strong> kartında bir adet User Button (Fotoğrafta mavi button&rsquo;a göz atabilirsiniz) ve Green led (LD2) bulunmakta. Button&rsquo;a basıldığında Green Led&rsquo;i yakan bir kodlama yapacağız. Daha sonra Ghidra kullanarak IDE&rsquo;den aldığımız firmware reverse ederek bu programın çalışma prensibini tersine çevireceğiz. Yani reverse ettikten sonra button&rsquo;a basmadığımız durumlarda Green led&rsquo;i yakacak.</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img1.png" alt=""></p>
+<p>CubeIDE&rsquo;de projeyi oluşturduktan sonra <strong>.ioc</strong> dosyasına yönlenebiliriz. Kart üzerindeki button ve led ile çalışacağımız için fotoğraftan da görüldüğü üzere ayarlamalar zaten IDE tarafından yapılmış durumda. Bu yüzden burada yapacağımız ekstra bir şey yok. Benim kartımdan User Button <strong>PC13</strong>&lsquo;da ve Led2 ise <strong>PA5</strong>&lsquo;de bulunmakta.</p>
+<p>Kodlamaya geçmeden önce oluşturduğumuz projede ufak bir ayar yapmamız gerekecek. Firmware&rsquo;i analiz edeceğimiz için programın karta yüklenmesiyle .bin dosyasını almamız gerekecek:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img3.png" alt=""></p>
+<p>Oluşturduğumuz projeye sağ tıklayalım ve <strong>Properties</strong> seçeğine tıklayalım. Daha sonra <strong>C/C++ Build &gt; Settings &gt; MCU/MPU Post Build Outputs</strong>&lsquo;a gidelim ve <strong>Convert to binary file (-O binary)</strong> seçeneğini aktifleştirelim.</p>
+<p>Şimdi ise IDE&rsquo;nin en solunda bulunan <strong>Project Explorer</strong> sekmesinde <strong>Core &gt; Src &gt; main.c</strong> projesine yönelelim. Bu bizim ana projemiz.</p>
+<p><strong>main.c</strong> içerisinde kodlamaya geçmeden önce oluşturulmuş <strong>MX_GPIO_Init</strong> fonksiyonuna göz atabiliriz. Bu fonksiyon, IDE tarafından hazırlanan pin&rsquo;lerin konfigurasyonunu içerir:</p>
+<p><img src="../../images/posts/bare-metal-reversing-0x0/img2.png" alt=""></p>
+<p>Göründüğü üzere <strong>F030R8</strong> kartı için User Button&rsquo;a GPIOA olarak B1_Pin (GPIO_PIN_13) ve LED2 için ise GPIOA ve LD2_PIN (GPIO_PIN_5) olarak ayarlanmış. Eğer farklı bir kartta iseniz bu ayarları kontrol edebilirsiniz.</p>
+<p>Şimdi ise main fonksiyonuna dönelim ve kodlamalara başlayalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>  <span style="color:#75715e">/* USER CODE BEGIN 2 */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">uint8_t</span> ButtonStatus <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>	  ButtonStatus <span style="color:#f92672">=</span> <span style="color:#a6e22e">HAL_GPIO_ReadPin</span>(B1_GPIO_Port, B1_Pin);
+</span></span><span style="display:flex;"><span>	  <span style="color:#66d9ef">if</span> (ButtonStatus <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>		  <span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, SET);
+</span></span><span style="display:flex;"><span>	  }
+</span></span><span style="display:flex;"><span>	  <span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, RESET);
+</span></span><span style="display:flex;"><span>  }
+</span></span></code></pre></div><p>Göründüğü üzere kod gayet basit bir durumda. Şimdi tek tek ele alalım:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ButtonStatus <span style="color:#f92672">=</span> <span style="color:#a6e22e">HAL_GPIO_ReadPin</span>(B1_GPIO_Port, B1_Pin);
+</span></span></code></pre></div><p>İlk olarak main&rsquo;in while içerisinde <strong>HAL_GPIO_ReadPin</strong> fonksiyonunu kullanıyoruz.Bu fonksiyon ilgili pinin durumunu okumak için kullanılıyor ve iki parametre almaktadır. İlk parametre, pinin bulunduğu GPIO portunu belirtir. STM32 mikrodenetleyicilerinde, GPIO pinleri belirli portlara (A, B, C, vb.) bağlıdır. Örneğin, GPIOA, GPIOB, GPIOC gibi portlar bulunur. Bu parametre, pinin hangi portta yer aldığını belirtmek için kullanılır. Kodumuzda ise <strong>GPIOA</strong> olduğunu belirtiyoruz.</p>
+<p>İkinci parametre ise okumak istediğiniz GPIO pinini belirtir. Her portun üzerinde birden fazla pin bulunabilir (örneğin, port A&rsquo;da PA0, PA1, PA2 vb.). Bu parametre, hangi pinin durumunu okuyacağınızı belirtir. Kodumuzda ise B1_Pin yani <strong>GPIO_PIN_13</strong> olduğunu belirtiyoruz.</p>
+<p>Son olarak ise bu fonksiyonun dönüş adresi <strong>uint8_t</strong> tipinde olan ButtonStatus değişkenine aktarılır. Yani kısaca bu fonksiyon, belirtilen pin&rsquo;deki durumu okur ve ButtonStatus değişkenine sonucu aktarır.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (ButtonStatus <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, SET);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, RESET);
+</span></span></code></pre></div><p>Pin okumasından sonra bir if karşılaştırması yapıyoruz. ButtonStatus&rsquo;a atanan değer eğer sıfır ise <strong>HAL_GPIO_WritePin</strong>  ile LED2 için işlem yapıyor.</p>
+<p>ButtonStatus değerinin 0 olması demek Button&rsquo;a basıldığı anlamına gelmektedir. 1 olması durumunda Button&rsquo;a basılmadığı anlamına gelir. Yani biz bu if içerisinde Button&rsquo;a basıldığında Led&rsquo;in yanmasını sağlayacağız.</p>
+<p><strong>HAL_GPIO_WritePin</strong> fonksiyonu, belirli bir GPIO pinini t1 - HIGH durumu) veya &ldquo;reset&rdquo; (0 - LOW durumu) durumuna getirmek için kullanılır.</p>
+<p>İlk parametre, önceden anlatıldığı gibi hangi GPIO portunun kullanılacağını belirtir ve kodumuzda GPIOA olarak belirttim. İkinci parametre, ayarlanacak veya sıfırlanacak GPIO pinini belirtir ve tanımlanan GPIO_PIN_5 değerini taşıyan LD2_PIN değişkeni verdim. Son olarak üçüncü parametre ise Pinin durumu belirtilir. İf içerisindeki amacımız led&rsquo;i yakmak olduğu için <strong>SET</strong> değerini verebiliriz. Bu ilgili pinin durumunu 1 olarak ayarlayacaktır.</p>
+<p>Eğer button&rsquo;a basılmadığı sürece yine <strong>HAL_GPIO_WritePin</strong> fonksiyonunu kullanıyoruz ancak son parametresi <strong>RESET</strong> olarak belirtiliyor. Bu, button&rsquo;a basılmadığı zaman ilgili pini 0 olarak ayarlar. Böylece button&rsquo;a basılmadığı zaman led yanmayacaktır.</p>
+<p>Şimdi ise bu kodu kartımıza yükleyelim ve sonuca bir bakalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/video/coding.gif" alt=""></p>
+<p>Göründüğü gibi sorunsuz bir şekilde programımız çalışıyor. Button&rsquo;a tıkladığım anda green Led yanmakta. Şimdi ise Ghidra&rsquo;ya dönelim ve aldığımız .bin dosyasını ghidra&rsquo;da analiz etmeye başlayalım. Oluşturulan .bin dosyası Debug dosyasının altında olacaktır:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img4.png" alt=""></p>
+<h2 id="firmware-reversing"><strong>Firmware Reversing</strong></h2>
+<p>.bin dosyasını ghidra&rsquo;da <strong>File &gt; Import File</strong> tıklayarak .bin dosyamızı seçelim ancak direkt olarak çıkan ekranı kapatmayın önemli ayarlamaları yapmamız gerekecek.</p>
+<p>Öncelikle Languages kısmını ayarlayarak başlayalım ve filter alanına <strong>ARM</strong> diye aratalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img5.png" alt=""></p>
+<p>Ben Language olarak <strong>Cortex 32-bit, Little Endian</strong> olarak seçtim. Eğer aynı karta sahip iseniz bu seçeneği, farklı karta sahip iseniz kartınıza uygun olarak dil seçimini yapın. Daha sonra OK diyerek bu Language sekmesinden çıkabilirsiniz.</p>
+<p>Daha sonra aynı ekrandan <strong>Options</strong> kısmına tıklayalım ve burada yapacağımız ayar gerçekten önemli. Burada Base Address gibi ayarlamalar yapacağız.</p>
+<p>İlk olarak base address ayarını yapmamız gerekecek. **ki ama bir firmware&rsquo;in Base Addresini nasıl bulabiliriz? diye bir soru gelebilir. En iyi yöntem cihazın memory haritasına bakmak olacaktır.</p>
+<p>ARM tabanlı bir kartta çalışıyoruz. Nucleo&rsquo;nun datasheet&rsquo;leri aracılığıyla Base Address&rsquo;i bulabiliriz:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img6.png" alt=""></p>
+<p>Yukarıdaki fotoğraf <strong>STM32F030x4/x6/x8/xC</strong> kartlarının memory haritası. Benim kartım bu cihazlar arasından olduğundan dolayı bu memory haritasından yararlanmam gerekecek:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img7.png" alt=""></p>
+<p>Fotoğrafa daha detaylı baktığımızda Flash memory alanın <strong>0x8000000</strong> olduğunu görebiliriz. ARM Tabanlı işlemcilerin Base Address&rsquo;in çoğu zaten bu adrestedir ancak yine de farklı karta sahip iseniz datasheet ile adresine bakmakta fayda olacaktır.</p>
+<p>Daha sonra datasheet ile elde ettiğimiz adresi Ghidra&rsquo;nın Options sekmesinden <strong>Base Address</strong> alanına yazalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img8.png" alt=""></p>
+<p>Block Name ismine <strong>flash</strong> olarak verdim. Sizde böyle yapabilirsiniz. Diğer ayarlara dokunmamıza gerek yok sadece <strong>Block Name</strong> ve <strong>Base Address</strong> değerlerini vermemiz yeterlidir. OK button&rsquo;a tıklayalım ve artık ekranda .bin dosyasına çift tıklayalım.</p>
+<p>Fakat birkaç daha ayar yapmamız gerekecek. CodeBrowser ekranı açıldığında ekranın ortasında bulunan <strong>Memory Map</strong> kısmına tıklayalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img9.png" alt=""></p>
+<p>Daha sonra bu ekranda sağ üste bulunan &lsquo;+&rsquo; işaretine tıklayalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img10.png" alt=""></p>
+<p>Yine burada birkaç bellek alanı ayarlamamız gerekecek. İlk olarak <strong>Flash Memory</strong> alanını ayarlamamız gerekecek. Peki nedir bu?</p>
+<p>Flash Mirror, firmware&rsquo;in çalıştırılabilir kodunun genellikle saklandığı alanı temsil eder. Çoğu gömülü sistemde, bu bölge işlemciye bağlı olarak 0x0 adresinden başlar ve firmware&rsquo;in yüklenip çalıştırılacağı yerdir. Flash bölgesi kod bölgesini (örneğin, main fonksiyon, başlangıç kodları, vb.) içerir</p>
+<p>Yinede offset&rsquo;i doğrulamak için datasheet&rsquo;e bakabiliriz. Yukarıda paylaştığım fotoğrafa tekrar göz atarsak benim kart için 0x0 alanında olduğunu görebiliriz. Şimdi ise bu alanı ayarlayalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img11.png" alt=""></p>
+<p><strong>Block Name</strong> alanına &lsquo;flash_mirror&rsquo; ismini verebiliriz. <strong>Start Addr</strong> alanına ise default olarak 0&rsquo;da bırakalım. <strong>Length</strong> alanını ise okla gösterildiği gibi flash ismi ile ayarladığımız alanın boyutu ile aynı olacak şekilde ayarlayın. Daha sonra Execute kutucuğunu işaretleyelim. <strong>Block Types</strong> alanında File Bytes kutucuğunu işaretleyelim ve <strong>File Offsett</strong> değerini 0 olarak bırakalım ve bitirmek için OK tuşuna basalım.</p>
+<p>Son alanımızı ayarlamak için yine &lsquo;+&rsquo; tuşuna basalım. Bu sefer ise SRAM alanını ayarlayacağız. Genel olarak adresi <strong>0x20000000</strong>&lsquo;dir ancak yine de bunu doğrulamak için kartımızın dahasheet&rsquo;ine bakabiliriz:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img12.png" alt=""></p>
+<p>Göründüğü üzere 0x20000000 adresinde olduğunu görebiliyoruz. Şimdi SRAM&rsquo;in de alanını ayarlayalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img13.png" alt=""></p>
+<p><strong>Block Name</strong> alanına &lsquo;RAM&rsquo; ismini verebiliriz. <strong>Start Addr</strong> alanına 20000000 değerini verelim. <strong>Length</strong> değerine ise 80000 verelim. Daha sonra OK diyerek ekranı kapatalım.</p>
+<p>İşlemlerimiz bitti. Şimdi ise ekranın sol üstünde bulunan kaydetme tuşuna basalım ve Memory Map ekranını kapatalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img14.png" alt=""></p>
+<p>Son bir işlemimiz kaldı. Ekranı kapattıktan sonra Ghidra&rsquo;nın sol üstündeki bar&rsquo;dan <strong>Analysis &gt; Auto Analyze&rsquo;<!-- raw HTML omitted -->.bin&rsquo;</strong> kısmına gidelim ve bu ekranda <strong>&lsquo;ARM Aggressive Instruction Finder (Prototype)&rsquo;</strong> seçeceğini aktifleştirelim ve &lsquo;Analyze&rsquo; button&rsquo;a tıklayalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img15.png" alt=""></p>
+<p>Artık her şey için hazırız. Şimdi ise Disassembly ekranından en üst tarafa bir göz atalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img16.png" alt=""></p>
+<p>Eğer benim gibi yeni iseniz burada işaretlenenleri gördüğünüzde biraz kafanız karışabilir ama aslında basit.</p>
+<p>Fotoğrafta gördüğünüz bu alana &lsquo;vektör tablosu&rsquo; deniyor. CPU, sistem başlatıldığında ilk olarak buradan Stack Pointer’ı (yığın işaretçisi) yükler. Yani tablonun ilk adresi, sistemin yığın belleğinin başlangıç adresini gösterir. Daha sonra işlemci, bu tabloda tanımlı olan Reset Handler (Reset İşleyicisi) adresine sıçrayarak çalışmaya başlar.</p>
+<p>Vektör tablosu, mikrodenetleyicinin işletim sırasında karşılaşabileceği tüm kesme (interrupt) ve hata (fault) durumlarına nasıl tepki vereceğini tanımlar. Örneğin:</p>
+<ul>
+<li><strong>Reset:</strong> CPU yeniden başlatıldığında çalışacak kodun adresini belirler. Bu, genellikle sistemin ilk ayarlarını yapan başlatma fonksiyonudur.</li>
+<li><strong>NMI (Non-Maskable Interrupt):</strong> Maskelenemeyen, yani her zaman işlenmesi gereken bir kesme durumudur.</li>
+<li><strong>HardFault:</strong> Kritik bir hata meydana geldiğinde çağrılan işleyicidir.</li>
+<li><strong>BusFault:</strong> Bellek erişim hataları gibi donanım sorunlarını yönetir.</li>
+<li><strong>UsageFault:</strong> Yanlış talimat veya matematiksel hatalar gibi yazılımla ilgili sorunlar için işleyici sağlar.</li>
+</ul>
+<p>Bizim burada ilgileneceğimiz kısım <strong>Reset</strong> alanı olacaktır. <strong>Reset</strong> vektörü, C Programın giriş bölümüne benzer şekilde basit kurulum kodları içermektedir. Bu vektör içerisinde main fonksiyon çağırıldığı için buradan ana fonksiyonu bulacağız.</p>
+<p>Şimdi Reset vektör ile işaretlenen adrese çift tıklayalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img17.png" alt=""></p>
+<p>Assembly kodlarını okuyan hayatsız bir birey olmak yerine normal bir insan gibi decompiler ile bakabiliriz:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img18.png" alt=""></p>
+<p>Burada umursamadığımız birkaç döngü vs. kullanıldığını ve fonksiyon çağırıldığını görmekteyiz. Çağırılan üç fonksiyonundan ikisine göz attım ancak bir şey anlamadım ve son çağırılan fonksiyona göz attığımda main fonksiyon olduğunu doğruladım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img19.png" alt=""></p>
+<p>Daha anlaşılır gözükmesi için Fonksiyon adlarını vs. güncelledim. Fonksiyona baktığımızda zaten kodlama yaptığımız esnada anlatmıştım. Bir farklılık bulunmamakta. Şimdi Assembly kodlarına dönüp Patch işlemi yapacağız.</p>
+<p>Yapacağımız şey de basit. if koşulundaki &lsquo;0&rsquo; değerini &lsquo;1&rsquo; ile değiştireceğiz. Böylece button&rsquo;a basmadığımız zamanlarda led yanmış olacak.</p>
+<p>main fonksiyonun Dissassembly ekranında if koşuluna karşılık gelen instruction&rsquo;u bulalım ve sağ tıklayıp <strong>Patch Instruction</strong> seçeceğine tıklayalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img20.png" alt=""></p>
+<p>Daha sonra 0x0 değerini <strong>0x1</strong> olarak değiştirelim ve enter tuşuna basalım. Bu işlemden sonra Decompiler&rsquo;dan kontrol ettiğimizde sonuç şu şekilde olmalı:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img21.png" alt=""></p>
+<p>Her şey bu kadar. Şimdi Ghidra ekranında sol üstünde **File &gt; <strong>Save &lsquo;.bin&rsquo; As&hellip;</strong> sekmesine tıklayalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img22.png" alt=""></p>
+<p>Sonu &lsquo;.bin&rsquo; ile bitecek şekilde bir isim vererek projeyi kaydedin.</p>
+<p>Son olarak CodeBrowser ekranını kapatın ve kaydettiğiniz projeye sağ tıklayıp export diyerek projeyi bilgisayara kaydedin:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img23.png" alt=""></p>
+<p>Şimdi bu reverse ettiğimiz .bin dosyasını CubeProgrammer aracılığıyla kartımıza yükleyeceğiz.</p>
+<p>CubeProgrammer&rsquo;i başlatalım ve programın sağ üstündeki <strong>Connect</strong> buttonu ile kartımızı bağlayalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img24.png" alt=""></p>
+<p>Göründüğü gibi kartımıza bağlandığında memory address&rsquo;leri vs görmekteyiz.</p>
+<p>Programda &lsquo;Open File&rsquo; seçeceğine tıklayarak reverse ettiğimiz .bin dosyasını seçelim ve ardından &lsquo;Download&rsquo; seçeceğine tıklayarak reverse ettiğimiz firmware&rsquo;i kartımıza yükleyelim:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/img25.png" alt=""></p>
+<p>Göründüğü gibi ekranda &lsquo;File Download Complete&rsquo; mesajı alıyoruz. Tebrikler artık elimizde reverse edilmiş bir firmware ile çalışan  kartımız var!</p>
+<h2 id="sonuç"><strong>Sonuç</strong></h2>
+<p>Şimdi kartın son haliyle bir kez daha göz atalım:</p>
+<p><img src="../../../images/posts/bare-metal-reversing-0x0/video/reversing.gif" alt=""></p>
+<p>Videodan göründüğü üzere Button&rsquo;a basmadığımız durumlarda Led yanıyor. Eğer button&rsquo;a basarsak led sönüyor.</p>
+<p>Temel olarak yaptığımız şey oldukça basitti. Basitçe kartımızı button&rsquo;a basıldığında led yakacak şekilde kodladık ve Ghidra ile kartın firmware&rsquo;ini reverse ederek kodladığımızın tersini yapacak şekilde ayarladık ve karta tekrar yükledik.</p>
+<p>Umarım içerik sizin için faydalı olmuştur. Eğer konuyu daha detaylı araştırmak isterseniz <strong>referans olarak bıraktığım kaynaklara göz atabilirsiniz.</strong></p>
+<p>İyi çalışmalar dilerim efenimmm.</p>
+<h2 id="references"><strong>References</strong></h2>
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=q4CxE5P6RUE"><strong>Stacksmashing - Bare-metal ARM Firmware Reverse Engineering with Ghidra</strong></a></p>
+</li>
+<li>
+<p><a href="https://www.cutawaysecurity.com/learning-ghidra-basics-analyzing-firmware/"><strong>Cutaway Security - Learning Ghidra Basics Analyzing Firmware</strong></a></p>
+</li>
+<li>
+<p><a href="https://cybergibbons.com/hardware-hacking/reading-and-writing-firmware-on-an-stm32-using-swd/"><strong>Cybergibbons - Reading and Writing Firmware on an STM32 using SWD</strong></a></p>
+</li>
+</ul>
+
+    <h4><a href="http://localhost:1313/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2025</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://twitter.com">Twitter</a> 
+        
+        <a href="https://github.com">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: true , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

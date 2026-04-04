@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=38385&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:38385//favicon.ico">
+    <link rel="canonical" href="http://localhost:38385/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:38385/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>PatchGuard Analysis - Part 2 - Thu, Aug 7, 2025</h1>
+    </div>
+    <p class="lead"></p>
+    <h6 id="arguments-of-kiinitpatchguardcontext"><strong>Arguments of KiInitPatchGuardContext</strong></h6>
+<p>Now, we can see another Arguments of the function.</p>
+<ul>
+<li><strong>Argument 1: DPC Routine Pointer</strong></li>
+</ul>
+<p>As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.</p>
+<p>The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><strong>Index</strong></th>
+<th style="text-align:center">Routine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>0</strong></td>
+<td style="text-align:center">CmpEnableLazyFlushDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>1</strong></td>
+<td style="text-align:center">ExpCenturyDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>2</strong></td>
+<td style="text-align:center">ExpTimeZoneDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>3</strong></td>
+<td style="text-align:center">ExpTimeRefreshDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>4</strong></td>
+<td style="text-align:center">CmpLazyFlushDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>5</strong></td>
+<td style="text-align:center">ExpTimerDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>6</strong></td>
+<td style="text-align:center">IopTimerDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>7</strong></td>
+<td style="text-align:center">IopIrpStackProfilerDpcRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>8</strong></td>
+<td style="text-align:center">KiBalanceSetManagerDeferredRoutine</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>9</strong></td>
+<td style="text-align:center">PopThermalZoneDpc</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>10</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>11</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>12</strong></td>
+<td style="text-align:center">KiTimerDispatch OR KiDpcDispatch</td>
+</tr>
+</tbody>
+</table>
+<p>This operation is performed at <strong>0x140BF6426</strong>:</p>
+<p><img src="/images/PatchGuard/img44.png" alt=""></p>
+<p>To clear understand, i created a Pseudocode:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>DWORD Argument0 <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(DWORD<span style="color:#f92672">*</span>)((rsp <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x2568</span>) <span style="color:#f92672">+</span> Arg0);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (Argument0 <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">6</span>) {	
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">switch</span>(Argument0) {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> CmpEnableLazyFlushDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> ExpCenturyDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">2</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> ExpTimeZoneDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> ExpTimeRefreshDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">4</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> CmpLazyFlushDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">5</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> ExpTimerDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">6</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> IopTimerDispatch;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>And finally, let&rsquo;s check <strong>0x140BF5AEE</strong>:</p>
+<p><img src="/images/PatchGuard/img45.png" alt=""></p>
+<p>Pseudocode of the function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">switch</span>(eax) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">7</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>		RoutinePointer <span style="color:#f92672">=</span> IopIrpStackProfilerDpcRoutine;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">8</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>		RoutinePointer <span style="color:#f92672">=</span> KiBalanceSetManagerDeferredRoutine;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">9</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>		RoutinePointer <span style="color:#f92672">=</span> PopThermalZoneDpc;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>If the second argument is less than 3, these routines KiTimerDispatch and KiDpcDispatch is used.</p>
+<p>As we have seen before in KiFilterFiberContext, the first parameter is generally chosen randomy except for the last call of KiInitPatchGuardContext where it is 0 (CmpEnableLazyFlushDpcRoutine), but it isn&rsquo;t used by the initialization function, as we will see later.
+<br></p>
+<ul>
+<li><strong>Argument 3:  Random Value To Determine The Total Size of Data To Check</strong></li>
+</ul>
+<p>As have seen before, the argument 3 can be one or two value (Check the header of <strong>Decompiling KilFilterFiberContext</strong>). This value is actually used to divide the hardcoded value <strong>0x140000</strong> and the result is passed to the structure. We can examine it at <strong>0x140BD6F20</strong>:</p>
+<p><img src="/images/PatchGuard/img49.png" alt=""></p>
+<p>After the divide operation, it passes the result the offset <strong>0x84C</strong> of the structure and this value is used to determine the maximum size of data to checksum at each PatchGuard check. The main idea of PatchGuard is that it use a list of structures to check the integrity and after each checksum a counter is incremented by the size of the data.</p>
+<br>
+<ul>
+<li><strong>Argument 5:  Boolean for ntoskrnl functions integrity check</strong></li>
+</ul>
+<p>The Argument 5 is a boolean value and with this parameter, it decides whether or not ntoskrnl functions checksum should be performed:</p>
+<p><img src="/images/PatchGuard/img50.png" alt=""></p>
+<p><strong>sil</strong> register contains boolean value and it is compared with 1 value. The checksum result is then stored in the PatchGuard context as every other Windows Kernel structures that are to be checked by PatchGuard.</p>
+<h5 id="other-initilization-methods"><strong>Other Initilization Methods</strong></h5>
+<p>Now we can examine other method that directly initialize PatchGuard.</p>
+<h6 id="tv-callback-from-kifilterfibercontext"><strong>TV Callback from KiFilterFiberContext</strong></h6>
+<p>As we saw before in KilFiterFiberContext, there&rsquo;s a callback function (<strong>KiFilterFiberContext+0x104</strong>):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rcx</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">57</span><span style="color:#66d9ef">h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">CallbackObject</span>] <span style="color:#75715e">; CallbackObject
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">r8</span>, <span style="color:#66d9ef">$$24</span>        <span style="color:#75715e">; Argument2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">rdx</span>, <span style="color:#66d9ef">sub_140510650</span> <span style="color:#75715e">; Argument1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">ExNotifyCallback</span>
+</span></span></code></pre></div><p>In this method, it is used global PatchGuard context structure:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>sub_140510650:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rsi</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">MaxDataSize</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span> <span style="color:#66d9ef">rsi</span>, <span style="color:#66d9ef">rsi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jnz</span> <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_1405106A5</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">0</span><span style="color:#66d9ef">C00000A3h</span> <span style="color:#75715e">; 0xC00000A3 == STATUS_DEVICE_NOT_READY
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">jmp</span>     <span style="color:#66d9ef">loc_14051ED9F</span>
+</span></span></code></pre></div><h6 id="ccinitializebcbprofiler"><strong>CcInitializeBcbProfiler</strong></h6>
+<p>PatchGuard uses an hidden way to perform checks with CcInitializeBcbProfiler, and this function starts by computing the checksum of a random ntoskrnl routine.</p>
+<p>This function sets up a DPC with the routine <strong>CcBcbProfiler</strong> and an important structure. We can trace this structure from <strong>0x140BD1606</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> pg_CcInitializeBcbProfiler 
+</span></span><span style="display:flex;"><span>{ 
+</span></span><span style="display:flex;"><span>	KDPC_ kdpc; 
+</span></span><span style="display:flex;"><span>	KTIMER timer; 
+</span></span><span style="display:flex;"><span>	ULONG64 res_RtlpLookupPrimaryFunctionEntry
+</span></span><span style="display:flex;"><span>	ULONG64 hardcoded_140000000h
+</span></span><span style="display:flex;"><span>	ULONG32 func_size_0x90; 
+</span></span><span style="display:flex;"><span>	ULONG32 padding_0x94; 
+</span></span><span style="display:flex;"><span>	ULONG64 checksum_function_0x98; 
+</span></span><span style="display:flex;"><span>	ULONG64 random_1_0xa0; 
+</span></span><span style="display:flex;"><span>	ULONG32 random_2_0xa8; 
+</span></span><span style="display:flex;"><span>	bool_CcBcbProfiler_or_sub_140499010_0xac; 
+</span></span><span style="display:flex;"><span>	ULONG64 KiAreCodePatchesAllowed; 
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">struct</span> _LIST_ENTRY_ workitem_List; 
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span> workitem_WorkerRoutine_sub_1406F86E0
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span> workitem_Parameter_CurrentStruct; 
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>Notice that this structure contains everything to compute the checksum of the random routine:</p>
+<ul>
+<li>Pointer of the Function Entry</li>
+<li>Base address of the image</li>
+<li>Size of the function</li>
+<li>Checksum</li>
+<li>Random values used at seed for the checksum</li>
+</ul>
+<p>The DPC is queued by <strong>KeSetCoalescableTime</strong> and DueTime parameter is set between 2 - 2'10 at <strong>0x140BD18D6</strong>:</p>
+<p><img src="/images/PatchGuard/img87.png" alt=""></p>
+<p>Or i created a Pseudocode:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/* Get initial timestamp and generate obfuscated value */</span>
+</span></span><span style="display:flex;"><span>RandomValue <span style="color:#f92672">=</span> <span style="color:#a6e22e">__rdtsc</span>();
+</span></span><span style="display:flex;"><span>RotatedValue <span style="color:#f92672">=</span> <span style="color:#a6e22e">__ROR8__</span>(RandomValue, <span style="color:#ae81ff">3</span>);
+</span></span><span style="display:flex;"><span>XoredValue <span style="color:#f92672">=</span> RotatedValue <span style="color:#f92672">^</span> RandomValue;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* Calculate TimeParameter using a specific multiplier and modulo */</span>
+</span></span><span style="display:flex;"><span>TimeParameter.QuadPart <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1200000000</span> 
+</span></span><span style="display:flex;"><span>                       <span style="color:#f92672">-</span> ((<span style="color:#ae81ff">0x7010008004002001</span> <span style="color:#f92672">*</span> XoredValue) 
+</span></span><span style="display:flex;"><span>                       <span style="color:#f92672">^</span> ((XoredValue <span style="color:#f92672">*</span> <span style="color:#ae81ff">0x7010008004002001</span>) <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">64</span>)) 
+</span></span><span style="display:flex;"><span>                       <span style="color:#f92672">%</span> <span style="color:#ae81ff">0x5F5E100</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* Get another timestamp */</span>
+</span></span><span style="display:flex;"><span>SecondTimestamp <span style="color:#f92672">=</span> <span style="color:#a6e22e">__rdtsc</span>();
+</span></span><span style="display:flex;"><span>SecondXored <span style="color:#f92672">=</span> <span style="color:#a6e22e">__ROR8__</span>(SecondTimestamp, <span style="color:#ae81ff">3</span>) <span style="color:#f92672">^</span> SecondTimestamp;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PeriodValue <span style="color:#f92672">=</span> ((<span style="color:#ae81ff">0x7010008004002001</span> <span style="color:#f92672">*</span> SecondXored) 
+</span></span><span style="display:flex;"><span>             <span style="color:#f92672">^</span> ((SecondXored <span style="color:#f92672">*</span> <span style="color:#ae81ff">0x7010008004002001</span>) <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">64</span>)) 
+</span></span><span style="display:flex;"><span>             <span style="color:#f92672">%</span> <span style="color:#ae81ff">0x2710</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* Set the coalescable timer with calculated parameters */</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">LOBYTE</span>(Pool2) <span style="color:#f92672">=</span> <span style="color:#a6e22e">KeSetCoalescableTimer</span>(
+</span></span><span style="display:flex;"><span>    Dpc <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>,            <span style="color:#75715e">// Timer object
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    TimeParameter,      <span style="color:#75715e">// Due time
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0</span>,                  <span style="color:#75715e">// Tolerance
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    PeriodValue,        <span style="color:#75715e">// Period
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    Dpc                 <span style="color:#75715e">// DPC routine
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>);
+</span></span></code></pre></div><h6 id="pspprocessdelete"><strong>PspProcessDelete</strong></h6>
+<p>The another integrity verification can also performed by another ntoskrnl.exe functions, such as PspProcessDelete. Don&rsquo;t be fooled by the name &lsquo;PspProcessDelete&rsquo;, believe me that this function does more than that.</p>
+<p>Althought it is just a small piece of verification, here an integrity check will be performed independently on <strong>KeServiceDescriptorTable</strong> or <strong>KeServiceDescriptorTableShadow</strong> without any PatchGuard context structure or any system thread. There are the original checksum of the both table and shift value necessary to compute in the global variable, so if an attacker wants to patch an entry of the Descriptor Table (Shadow or not), then computing again the checksum and replacing the original one is completely feasible.</p>
+<p>First of all, a random value is generated with <strong>KiQueryUnbiaisedInterruptTime</strong> at <strong>0x1407D430C</strong>:</p>
+<p><img src="/images/PatchGuard/img61.png" alt=""></p>
+<p>And this timer is stored at 0x140E620C0. The checksum results are stored in <strong>0x140E620C8</strong>, <strong>0x140E620D0</strong> and <strong>0x140E620D8</strong> and these checksums are initialized in <strong>CmpInitializeDelayedCloseTable</strong> function (also the timer is initialized in this function). For instance, we can check one of them at <strong>0x1407D4245</strong>:</p>
+<p><img src="/images/PatchGuard/img62.png" alt=""></p>
+<p>One important detail is that if one of these checksum fails, then a KeBugCheck is triggered through a Dpc inserted with KiSchedulerDpc at <strong>0x140897E11</strong>:</p>
+<p><img src="/images/PatchGuard/img64.png" alt=""></p>
+<p>The shift value is stored in <strong>0x140E620B8</strong> and it is initialized in <strong>0x1407D41DA</strong> address of CmpInitializeDelayedCloseTable:</p>
+<p><img src="/images/PatchGuard/img63.png" alt=""></p>
+<p>Well, we can examine one check with IDA and Windbg. Here&rsquo;s our target:</p>
+<p><img src="/images/PatchGuard/img65.png" alt=""></p>
+<p>First of all, r9 contains address of KeServiceDescriptorTable:</p>
+<pre tabindex="0"><code>kd&gt; t
+nt!PspProcessDelete+0x408:
+fffff802`a7772448 410fb601        movzx   eax,byte ptr [r9]
+kd&gt; r r9
+r9=fffff802a7f818c8
+kd&gt; u fffff802a7f818c8 L1
+nt!KeServiceDescriptorTable+0x8:
+fffff802`a7f818c8 0000            add     byte ptr [rax],al
+</code></pre><p>edi contains the shift value. We can see this in IDA (0x140897D0D):</p>
+<pre tabindex="0"><code>loc_140897CC7:
+mov     rdi, cs:qword_140E620B8
+</code></pre><p>Shift value is actually <strong>0x70f59b2a</strong></p>
+<pre tabindex="0"><code>kd&gt; t
+nt!PspProcessDelete+0x40c:
+fffff802`a777244c 8bcf            mov     ecx,edi
+
+kd&gt; r edi
+edi=70f59b2a
+</code></pre><p>but in the loop, it uses <strong>0xc2</strong>:</p>
+<pre tabindex="0"><code>kd&gt; t
+nt!PspProcessDelete+0x414:
+fffff802`a7772454 48d3ca          ror     rdx,cl
+
+kd&gt; r cl
+cl=2a
+</code></pre><p>And r10d register contains <strong>0x38</strong> value as loop counter. This value is taken from <strong>0x140897D09</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">r10d</span>, [<span style="color:#66d9ef">r15</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">40</span><span style="color:#66d9ef">h</span>] <span style="color:#75715e">; pass 0x38 value to r10d
+</span></span></span></code></pre></div><p>Or:</p>
+<pre tabindex="0"><code>kd&gt; t
+nt!PspProcessDelete+0x417:
+fffff802`a7772457 4183c2ff        add     r10d,0FFFFFFFFh
+kd&gt; r r10d
+r10d=38
+</code></pre><p>In this section the r10d value will be reduced by one.</p>
+<p>Lastly, here are checksums which initialized by CmpInitializeDelayedCloseTable:</p>
+<pre tabindex="0"><code>kd&gt; dps fffff802a7be2108 L1 
+fffff802`a7be2108  72e10000`09fcd74a
+kd&gt; dps fffff802a7be2110 L1
+fffff802`a7be2110  620ad43a`aeef4fce
+kd&gt; dps fffff802a7be2118 L1
+fffff802`a7be2118  fcd74a72`e1000009
+</code></pre><p>To disable this method, one can just patch the timer to infinity or compute again the checksum of the modified table.</p>
+<h6 id="kiinitializeuserapc"><strong>KiInitializeUserApc</strong></h6>
+<p>Like PspProcessDelete function, this function contains small piece of code to check the integrity for the IDT. The checksum is stored at <strong>0x140E62170</strong>, shift value is stored at <strong>0x140E62178</strong> and the timer is stored at <strong>0x140E62180</strong>.</p>
+<p>We can start by examining <strong>0x1403DC674</strong> address with WinDBG and IDA:</p>
+<p><img src="/images/PatchGuard/img66.png" alt=""></p>
+<p>With sidt instruction, it gets 10 bytes from IDT, then it gets base address of IDT:</p>
+<pre tabindex="0"><code>kd&gt; t
+nt!KiInitializeUserApc+0x3c8:
+fffff804`e4895430 0f018c24a8000000 sidt    tbyte ptr [rsp+0A8h]
+
+kd&gt; r r10 
+r10=fffff80476b5e000
+kd&gt; r idtr
+idtr=fffff80476b5e000
+</code></pre><p>8 bytes contains the base address. After that it starts the loop for checksum. We can check the values of the shift and checksum:</p>
+<pre tabindex="0"><code>kd&gt; t
+nt!KiInitializeUserApc+0x415:
+fffff804`e489547d 8b0d35cda500    mov     ecx,dword ptr [nt!MiSystemPartition+0x299b8 (fffff804`e52f21b8)]
+
+kd&gt; dps fffff804`e52f21b0 L1
+fffff804`e52f21b0  00000000`560451ca   ; Checksum
+
+kd&gt; dps fffff804`e52f21b8 L1
+fffff804`e52f21b8  00000000`5d83c49b   ; Shift Value
+</code></pre><p>After the loop, it checks the result of the checksum at <strong>0x1403DC88E</strong>:</p>
+<p><img src="/images/PatchGuard/img67.png" alt=""></p>
+<p>Or:</p>
+<pre tabindex="0"><code>kd&gt; bp fffff804`e48954ba
+kd&gt; g
+Breakpoint 5 hit
+nt!KiInitializeUserApc+0x452:
+fffff804`e48954ba 48391507cda500  cmp     qword ptr [nt!MiSystemPartition+0x299c8 (fffff804`e52f21c8)],rdx
+
+kd&gt; dps fffff804`e52f21c8 L1
+fffff804`e52f21c8  2884d739`2257ef7f
+kd&gt; r rdx
+rdx=2884d7392257ef7f
+</code></pre><p>rdx register contains the result.</p>
+<p>Let&rsquo;s do something crazy and change the value of rdx:</p>
+<pre tabindex="0"><code>kd&gt; r rdx
+rdx=2884d7392257ef7f
+kd&gt; r rdx = 2884d7392257ef7a
+kd&gt; g
+</code></pre><p>ANDDDDD BOOOM:</p>
+<p><img src="/images/PatchGuard/img68.png" alt=""></p>
+<p>Okaay, I was just bored. Let&rsquo;s keep going.</p>
+<p>As we seen before from PspProcessDelete, if there is a problem with the check, it calls KeBugCheck via DPC (0x1403DC8DF):</p>
+<p><img src="/images/PatchGuard/img69.png" alt=""></p>
+<h6 id="exception-worlds-kiverifyxcpt15"><strong>Exception Worlds: KiVerifyXcpt15</strong></h6>
+<p>KiInitPatchGuardContext can also called from <strong>KiVerifyXcpt15</strong>. But in here, some interesting technique is used.</p>
+<p>If you check all codes of the KiVerifyXcpt15, you&rsquo;ll see this simple codes:</p>
+<p><img src="/images/PatchGuard/img75.png" alt=""></p>
+<p>It is simple, right? This is the visible front of the mountain. Now let&rsquo;s take a look at the back:</p>
+<p><img src="/images/PatchGuard/img76.png" alt="">
+Almost a lot exceptions are used in the function. If you&rsquo;re wondering &lsquo;what&rsquo;s an exception&rsquo;, you can check this function lol&hellip; but don&rsquo;t worry. We&rsquo;ll analyze just small piece of the code.  NOWWW Let&rsquo;s put on the gas maskk.</p>
+<br>
+<ul>
+<li><strong>Calling KiVerifyXcpt15</strong></li>
+</ul>
+<p>KiVerifyXcpt15 is called before KeInitAmd64SpecificState and ExpLicenseWatchInitWorker, and essentially KiVerifyXcpt15 is called from <strong>KiVerifyScopesExecute</strong>.</p>
+<p>KiVerifyScopesExecute calls not only KiVerifyXcpt15 but also other functions from a structure which named <strong>KiVerifyXcptRoutines</strong>. Here are the functions in the list (0x1410060D8):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><strong>Index</strong></th>
+<th style="text-align:center"><strong>Routine</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center"><strong>KiVerifyXcpt0</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center"><strong>KiVerifyXcpt1</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:center"><strong>KiVerifyXcpt15</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:center"><strong>KiVerifyXcpt3</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:center"><strong>KiVerifyXcpt4</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:center"><strong>KiVerifyXcpt5</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">6</td>
+<td style="text-align:center"><strong>KiVerifyXcpt6</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">7</td>
+<td style="text-align:center"><strong>KiVerifyXcpt7</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">8</td>
+<td style="text-align:center"><strong>KiVerifyXcpt8</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">9</td>
+<td style="text-align:center"><strong>KiVerifyXcpt9</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:center"><strong>KiVerifyXcpt10</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">11</td>
+<td style="text-align:center"><strong>KiVerifyXcpt11</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">11</td>
+<td style="text-align:center"><strong>KiVerifyXcpt12</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">12</td>
+<td style="text-align:center"><strong>KiVerifyXcpt13</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:center"><strong>KiVerifyXcpt14</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The beginning of the function it gets data from <strong>KiVerifyPass</strong> variable which holds <strong>0xA</strong> value at <strong>0x140C1C2FD</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">KiVerifyScopesExecute</span> <span style="color:#66d9ef">proc</span> <span style="color:#66d9ef">near</span>:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ebx</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KiVerifyPass</span> <span style="color:#75715e">; Get data of KiVerifyPass
+</span></span></span></code></pre></div><p>This variable is actually important because this variable will used for the loop, as we will see later.</p>
+<p>After that it compares the value which taken from the variable with 0. If the variable is not zero, then it calls the routines from the structure at <strong>0x140C1C314</strong>:</p>
+<p><img src="/images/PatchGuard/img83.png" alt=""></p>
+<p>After gets the address of the structure, it calls the routines from the structure:</p>
+<p><img src="/images/PatchGuard/img84.png" alt=""></p>
+<p>If the all routines are called, KiVerifyPass variable subtract 1 at <strong>0x140C1C371</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140C1C371:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">dec</span>     <span style="color:#66d9ef">ebx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jmp</span>     <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140C1C314</span>
+</span></span></code></pre></div><p>Then it jumps the beginning of the loop (<strong>0x140C1C314</strong>) and again it calls the routines. In other words, It will call these routines until KiVerifyPass is zero.</p>
+<p>I have prepared a diagram for clarity:</p>
+<p><img src="/images/PatchGuard/diagram-kiverifyx15.png" alt=""></p>
+<br>
+<ul>
+<li><strong>Disassembling KiVerifyXcpt15</strong></li>
+</ul>
+<p>The beginning of the function, it calls <strong>KiVerifyXcpt2</strong> (Probably this function does original verifies). Then it calls the main function (0x140C6023D) with an exception.</p>
+<p>As we&rsquo;ve already seen,  here, KiVerifyPass is processed. Firstly it gets the current data from the KiVerifyPass and decrements it:</p>
+<pre tabindex="0"><code>loc_140C6023D:
+...
+mov     eax, cs:KiVerifyPass ; Get Data
+dec     eax                  ; Decrements eax
+mov     cs:KiVerifyPass, eax ; Store the result in KiVerifyPass
+</code></pre><p>This variable decreases until it becomes zero. If this variable is not zero, the function exits:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140C6023D:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KiVerifyPass</span> <span style="color:#75715e">; Get 0xA
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">dec</span> <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KiVerifyPass</span>, <span style="color:#66d9ef">eax</span> <span style="color:#75715e">; Pass the result to KiVerifyPass
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KiVerifyPass</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jnz</span> <span style="color:#66d9ef">loc_140C60EA0</span>   <span style="color:#75715e">; Exit the function
+</span></span></span></code></pre></div><p>When KiVerifyPass reach zero, it reads an MSR. Specifically, it adds <strong>0x1B</strong> (27 decimal, the MSR address for <strong>IA32_APIC_BASE</strong>):</p>
+<p><img src="/images/PatchGuard/img85.png" alt=""></p>
+<p>The IA32_APIC_BASE located at address 0x1B, is a critical control register in Intel processors that manages the configuration and operation of the local Advanced Programmable Interrupt Controller (APIC)<sup>[3][4]</sup>.</p>
+<p>Then it checks the 10th bit of the result. This 10th byte of IA32_APIC_BASE corresponds to <strong>x2APIC Mode</strong> status in Intel Processors. From <strong>Intel® 64 Architecture x2APIC Specification</strong> documentation:<sup>[3]</sup></p>
+<blockquote>
+<p>[!NOTE]
+<em>&ldquo;System software can place the local APIC in the x2APIC mode by setting the x2APIC mode enable bit (bit 10) in the IA32_APIC_BASE MSR at MSR address 01BH.&rdquo;</em></p>
+</blockquote>
+<p>Also we can benefit from <strong>Intel 64 and IA-32 Architectures Software Developer&rsquo;s Manual Volume 4: Model-Specific Registers</strong><sup>[4]</sup>:</p>
+<p><img src="/images/PatchGuard/intel.png" alt=""></p>
+<p>If the 10th bit is not set, it maps an virtual address with <strong>MmMapIoSpaceEx</strong> (<strong>0x140C6028E</strong>):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140C6028E:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rax</span>, <span style="color:#ae81ff">0</span><span style="color:#66d9ef">FFFFFF000h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">and</span>     <span style="color:#66d9ef">rbx</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">edx</span>, <span style="color:#ae81ff">1000</span><span style="color:#66d9ef">h</span>      <span style="color:#75715e">; Protect
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">r8d</span>, <span style="color:#ae81ff">204</span><span style="color:#66d9ef">h</span>       <span style="color:#75715e">; Size
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">rbx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">MmMapIoSpaceEx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span>    <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jnz</span>     <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140C602DA</span> <span style="color:#75715e">; Pass the address to the variable
+</span></span></span></code></pre></div><p>and then this virtual address - or zero value - is passed to global variable (qword_141006090):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140C602DA:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">qword_141006090</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span></code></pre></div><p>i also created a pseudocode:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">func_140C6023D</span>() {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> UpdateVerifyPassData <span style="color:#f92672">=</span> KiVerifyPass <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>; 
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (UpdateVerifyPassData <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span>) {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">int</span> number <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x1B</span>;
+</span></span><span style="display:flex;"><span>		ULONG64 MappedVirtualAddress <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>		ULONG64 GlobalVirtualAddress <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">/* Read MSR */</span> 
+</span></span><span style="display:flex;"><span>		ULONG64 ResultAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">rdmsr</span>(number);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> ([ResultAddress<span style="color:#f92672">+</span><span style="color:#ae81ff">0x10</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span>) {
+</span></span><span style="display:flex;"><span>			MappedVirtualAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">MmMapIoSpaceEx</span>(ResultAddress, <span style="color:#ae81ff">0x1000</span>, <span style="color:#ae81ff">0x204</span>);
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">if</span> (MappedVirtualAddress <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0x0</span>) {
+</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">goto</span> SetGlobalVariable;
+</span></span><span style="display:flex;"><span>			}
+</span></span><span style="display:flex;"><span>			MappedVirtualAddress <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0</span>;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>SetGlobalVariable:
+</span></span><span style="display:flex;"><span>		GlobalVirtualAddress <span style="color:#f92672">=</span> MappedVirtualAddress;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This virtual address is taken by KiInitPatchGuardContext and the passed the address to the context structure at <strong>0x140BEA132</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BEA10F:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">qword_141006090</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">rdi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">A58h</span>], <span style="color:#66d9ef">rax</span>
+</span></span></code></pre></div><p>Then it checks the first byte of the hardcoded address <strong>0x0FFFFFFF78000000289</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140C602DA:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">MappedVirtualAddress</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, <span style="color:#ae81ff">0</span><span style="color:#66d9ef">FFFFF78000000289h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cmp</span> <span style="color:#66d9ef">byte</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rax</span>], <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span>  <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140C6034D</span>
+</span></span></code></pre></div><p>We can use WinDBG to see the byte of the address:</p>
+<pre tabindex="0"><code>kd&gt; dps 0FFFFF78000000289 l1 
+fffff780`00000289  01000000`00010100
+</code></pre><p>If the byte isn&rsquo;t 0,  then KiSwInterruptPresent is executed and the random value is generated. The random value is used to determine whether a variable (dword_141006088) should be set to 1 or not:</p>
+<p><img src="/images/PatchGuard/img97.png" alt=""></p>
+<p>This variable is then used to determine whether the KiInitPatchGuardContext should be redirected to the part that prepares for the call:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">cmp</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">dword_141006088</span>, <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span> <span style="color:#66d9ef">loc_140C60D7B</span>
+</span></span></code></pre></div><p>If the first byte of the hardcoded address 0FFFFF78000000289 is 0 then this variable will be 0 and it will start the first steps for KiInitPatchGuardContext, but if it is 1 then it will continue with another part that does different operations.</p>
+<p>We can focus on the <strong>0x140C60E1D</strong> address. A random value is created and then the values from the debugger flags are taken, as we saw before in KeInitAmd64SpecificState:</p>
+<p><img src="/images/PatchGuard/img78.png" alt=""></p>
+<p>After a few operations, the random value is compared with the result of the flags. If the result of the flags (r9) is greater than the random value (r10), it disables Debugger and calls KiInitPatchGuardContext with an exception. Otherwise, it jumps to exit:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">cmp</span>     <span style="color:#66d9ef">r10</span>, <span style="color:#66d9ef">r9</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jnb</span>     <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140C60EA0</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">KdDisableDebugger</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">A4h</span>], <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">; Call KiInitPatchGuardContext
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>loc_140C60E8C:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">rdx</span>, <span style="color:#66d9ef">loc_140BD11D4</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rcx</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">C8h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">_local_unwind</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">nop</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">; Exit
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>loc_140C60EA0:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">add</span>     <span style="color:#66d9ef">rsp</span>, <span style="color:#ae81ff">30</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">r15</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">r14</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">r12</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">rdi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">rsi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">rbp</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">rbx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">retn</span>
+</span></span></code></pre></div><p>Let&rsquo;s take a look at this part with dynamic analysis:</p>
+<pre tabindex="0"><code>kd&gt; g
+Breakpoint 1 hit
+nt!KeInitAmd64SpecificState$filt$0+0xc86:
+fffff800`7d174e82 4d3bd1          cmp     r10,r9
+kd&gt; r r10
+r10=000000000000003b
+
+kd&gt; g
+Breakpoint 1 hit
+nt!KeInitAmd64SpecificState$filt$0+0xc86:
+fffff800`7d174e82 4d3bd1          cmp     r10,r9
+kd&gt; r r10 
+r10=0000000000000041
+</code></pre><p>Seems like r10 always gets a higher value than r9. therefore the condition is not met. But i changed the r9&rsquo;s value:</p>
+<pre tabindex="0"><code>kd&gt; r r9 = 45
+kd&gt; t
+nt!KeInitAmd64SpecificState$filt$0+0xc8b:
+fffff800`7d174e87 e8c45493ff      call    nt!KdDisableDebugger (fffff800`7caaa350)
+</code></pre><p>Like i said, for the condition to be met, r9&rsquo;s value is greater than r10.</p>
+<p>The interesting part is that the arguments of the KiInitPatchGuardContext are not randomized (<strong>0x140C60EFE</strong>):</p>
+<p><img src="/images/PatchGuard/img80.png" alt=""></p>
+<p>Except ecx. This register is taken random value for DPC Routine Pointer. Here&rsquo;s dynamic analysis:</p>
+<pre tabindex="0"><code>kd&gt; g
+Breakpoint 4 hit
+nt!KiFilterFiberContext+0x2916d:
+fffff802`a666e69d e80e8afdff      call    nt!KiFilterFiberContext+0x1b80 (fffff802`a66470b0)
+
+kd&gt; r 
+rax=0000000000000002 rbx=ffffa60199a5fdd8 rcx=0000000000000003
+rdx=0000000000000000 rsi=0000000000000000 rdi=ffffa60199a5fdd8
+rip=fffff802a666e69d rsp=ffffa60199a5d360 rbp=ffffa60199a5fd90
+ r8=0000000000000001  r9=0000000000000000 ...
+
+kd&gt; ? rsp+20h
+Evaluate expression: -98949173750912 = ffffa601`99a5d380
+
+kd&gt; dps ffffa601`99a5d380 l1
+ffffa601`99a5d380  ffffa601`00000002
+</code></pre><p>Or:</p>
+<ul>
+<li>RCX: 3 (As Argument 1)</li>
+<li>RDX: 0 (As Argument 2)</li>
+<li>R8: 1 (As Argument 3)</li>
+<li>R9: 0 (As Argument 4)</li>
+<li>RSP+0x20: 2 (As Argument 5)</li>
+</ul>
+<p>With these information, we can now get rid of this complex function. The function content is really long&hellip;</p>
+<h6 id="kecheckedkernelinitialize"><strong>KeCheckedKernelInitialize</strong></h6>
+<p>Finally, KiInitPatchGuardContext can be called from KeCheckedKernelInitialize. Apparently, this function is actually coded for PatchGuard itself. Here, KiInitPatchGuardContext is called with method 7.</p>
+<p>First of all, this function uses Global PatchGuard Context (Check the <strong>Method 7</strong> Header), and if the global context structure is 0, it jumps directly to exit without calling KiInitPatchGuardContext:</p>
+<p><img src="/images/PatchGuard/img70.png" alt=""></p>
+<p>This function uses an anti-debugging technique which used by KiInitPatchGuardContext. After the check of the global context structure, the anti-debugging function is called (I renamed &lsquo;InterestingAntiDebuggingStuff&rsquo;). The Anti-Debugging function is actually simple:</p>
+<p><img src="/images/PatchGuard/img71.png" alt=""></p>
+<p>This code implements an anti-debugging technique by attempting to execute the LIDT (Load Interrupt Descriptor Table) instruction inside a __try/__except block.</p>
+<p>By checking whether an exception is raised, the program can detect the presence of a debugger or virtualized environment. If the exception is triggered, eax is set to 1 (indicating a restricted environment); otherwise, it remains 0, suggesting normal execution without interference.</p>
+<p>And then you can see this message from VM:</p>
+<p><img src="/images/PatchGuard/message.png" alt=""></p>
+<p>I got this message from VMware after the lidt instruction. This technique is also used by KiInitPatchGuardContext at <strong>0x140BD36A2</strong>.</p>
+<p>As we saw before from <strong>KiVerifyXcpt15</strong>, the parameters of the KiInitPatchGuardContext are not randomized:</p>
+<p><img src="/images/PatchGuard/img72.png" alt=""></p>
+<p>This calling methos is exactly same with the third call of KiInitPatchGuardContext in KiFilterFiberContext as we will see later. From <strong>0x140BD1DD8</strong>:</p>
+<p><img src="/images/PatchGuard/img73.png" alt=""></p>
+<p>KeCheckedKernelInitialize is called after the KeInitAmd64SpecificState function. If the <strong>KeHotpatchTestMode</strong> flag is not 0 (Essentially this variable is set to 0 in ntoskrnl), then it calls KeCheckedKernelInitialize. We can check this section at <strong>0x140C55A71</strong> of PipInitializeCoreDriversAndElam function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">loc_140C55A3A</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">KeInitAmd64SpecificState</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cmp</span>     <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KeHotpatchTestMode</span>, <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span>      <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140C55A84</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">KeCheckedKernelInitialize</span>
+</span></span></code></pre></div><p>That&rsquo;s all there is to the initialization methods. Now in the Part 3, we&rsquo;ll take a look at how the controls are triggered, which is really an important topic.</p>
+
+    <h4><a href="http://localhost:38385/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

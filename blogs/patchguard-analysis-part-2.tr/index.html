@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:1313//favicon.ico">
+    <link rel="canonical" href="http://localhost:1313/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:1313/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/about/">
+                                    
+                                    <span>About</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>PatchGuard Analysis - Part 2 - Wed, Aug 6, 2025</h1>
+    </div>
+    <p class="lead"></p>
+    <h6 id="arguments-of-the-kiinitpatchguardcontext"><strong>Arguments of the KiInitPatchGuardContext</strong></h6>
+<p>Şimdi ise diğer kalan argümanların ne işe yaradığına göz atalım:</p>
+<ul>
+<li><strong>Argument 1: DPC Routine Pointer</strong></li>
+</ul>
+<p>Daha önce de gördüğümüz gibi, çeşitli methodlar PatchGuard&rsquo;ı gizlemek ve sıraya almak için bir DPC yapısı kullanmıştı. Bu DPC aslında, DPC&rsquo;yi sıradan çıkaran bir işlevi gösteren bir pointer içerir ve bu DPC gerçekten bir PatchGuard DPC’si olduğunda özel bir işlem gerçekleştirir.</p>
+<p>İlk argüman esasen rastgele bir rutin seçmek için bir index&rsquo;tir ve bu rutinlerden birini seçecektir:</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: center"><strong>Index</strong></th>
+          <th style="text-align: center">Routine</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center"><strong>0</strong></td>
+          <td style="text-align: center">CmpEnableLazyFlushDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>1</strong></td>
+          <td style="text-align: center">ExpCenturyDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>2</strong></td>
+          <td style="text-align: center">ExpTimeZoneDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>3</strong></td>
+          <td style="text-align: center">ExpTimeRefreshDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>4</strong></td>
+          <td style="text-align: center">CmpLazyFlushDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>5</strong></td>
+          <td style="text-align: center">ExpTimerDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>6</strong></td>
+          <td style="text-align: center">IopTimerDispatch</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>7</strong></td>
+          <td style="text-align: center">IopIrpStackProfilerDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>8</strong></td>
+          <td style="text-align: center">KiBalanceSetManagerDeferredRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>9</strong></td>
+          <td style="text-align: center">PopThermalZoneDpc</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>10</strong></td>
+          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>11</strong></td>
+          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>12</strong></td>
+          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
+      </tr>
+  </tbody>
+</table>
+<p>Bu işlem <strong>0x140BF6426</strong> adresinde gerçekleştirilir:</p>
+<!-- raw HTML omitted -->
+<p>Daha basit anlaşılması için bir Pseudocode oluşturdum:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>DWORD Argument0 <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(DWORD<span style="color:#f92672">*</span>)((rsp <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x2568</span>) <span style="color:#f92672">+</span> Arg0);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (Argument0 <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">6</span>) {	
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">switch</span>(Argument0) {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> CmpEnableLazyFlushDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> ExpCenturyDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">2</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> ExpTimeZoneDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> ExpTimeRefreshDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">4</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> CmpLazyFlushDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">5</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> ExpTimerDpcRoutine;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">6</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>			RoutinePointer <span style="color:#f92672">=</span> IopTimerDispatch;
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Ve son olarak <strong>0x140BF5AEE</strong> adresini kontrol edelim:</p>
+<!-- raw HTML omitted -->
+<p>Fonksiyonun Pseudocode&rsquo;su:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">switch</span>(Argument0) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">7</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>		RoutinePointer <span style="color:#f92672">=</span> IopIrpStackProfilerDpcRoutine;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">8</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>		RoutinePointer <span style="color:#f92672">=</span> KiBalanceSetManagerDeferredRoutine;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> <span style="color:#ae81ff">9</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>		RoutinePointer <span style="color:#f92672">=</span> PopThermalZoneDpc;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>KiFilterFiberContext&rsquo;de KiInitPatchGuardContext&rsquo;in üçüncü çağrısını yaparken sabit olarak 0 (CmpEnableLazyFlushDpcRoutine) verilmesi dışında ilk parametre genellikle rastgele seçilir, ancak daha sonra göreceğimiz gibi initilization fonksiyonu tarafından kullanılmayacaktır.</p>
+<ul>
+<li><strong>Argument 3:  Random Value To Determine The Total Size of Data To Check</strong></li>
+</ul>
+<p>Argüman 3 esasen bir veya iki değer olabilir (<strong>Decompiling KilFilterFiberContext</strong> başlığını kontrol edin). Bu değer aslında sabit kodlanmış <strong>0x140000</strong> değerini bölmek için kullanılır ve sonuç direkt olarak yapıya aktarılır. <strong>0x140BD6F20</strong> adresinden bunu inceleyebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Bölme işleminden sonra, sonuç hızlı bir şekilde yapının <strong>0x84C</strong> ofsetine geçirilir ve bu değer her PatchGuard kontrolünde checksum yapılacak maksimum veri boyutunu belirlemek için kullanılır. PatchGuard&rsquo;ın ana fikri, bütünlüğü kontrol etmek için bir yapı listesi kullanması ve her checksum sonra bir sayacın verinin boyutu kadar artırılmasıdır.</p>
+<ul>
+<li><strong>Argument 5:  Boolean for ntoskrnl functions integrity check</strong></li>
+</ul>
+<p>Argüman 5 bir boolean değeridir ve bu parametre ile ntoskrnl fonksiyonları için checksum gerçekleştirilip gerçekleştirilmeyeceğine karar verir:</p>
+<!-- raw HTML omitted -->
+<p><strong>sil</strong> register argüman 5&rsquo;i tutar ve 1 değeri ile karşılaştırılır. Cheksum sonucu ise daha sonra PatchGuard tarafından kontrol edilecek diğer Windows Kernel yapıları gibi PatchGuard context&rsquo;inde saklanır.</p>
+<h5 id="other-initilization-methods"><strong>Other Initilization Methods</strong></h5>
+<p>Artık şimdi PatchGuard&rsquo;ı direkt olarak initialize eden methodları inceleyebiliriz.</p>
+<h6 id="tv-callback-from-kifilterfibercontext"><strong>TV Callback from KiFilterFiberContext</strong></h6>
+<p>KiFilterFiberContext&rsquo;te gördüğümüz callback functionu tekrar hatırlayalım. <strong>KiFilterFiberContext+0x104</strong>&lsquo;dan:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rcx</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">57</span><span style="color:#66d9ef">h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">CallbackObject</span>] <span style="color:#75715e">; CallbackObject
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">r8</span>, <span style="color:#66d9ef">$$24</span>        <span style="color:#75715e">; Argument2
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">rdx</span>, <span style="color:#66d9ef">sub_140510650</span> <span style="color:#75715e">; Argument1
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">ExNotifyCallback</span>
+</span></span></code></pre></div><p>Bu method&rsquo;da esasen Method 7&rsquo;de gördüğümüz Global PatchGuard Context yapısını kullanılmakta:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>sub_140510650:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rsi</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">MaxDataSize</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span> <span style="color:#66d9ef">rsi</span>, <span style="color:#66d9ef">rsi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jnz</span> <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_1405106A5</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">0</span><span style="color:#66d9ef">C00000A3h</span> <span style="color:#75715e">; 0xC00000A3 == STATUS_DEVICE_NOT_READY
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">jmp</span>     <span style="color:#66d9ef">loc_14051ED9F</span>
+</span></span></code></pre></div><h6 id="ccinitializebcbprofiler"><strong>CcInitializeBcbProfiler</strong></h6>
+<p>PatchGuard kontrolleri gerçekleştirmek için gizli yollara başvurmakta. CcInitializeBcbProfiler fonksiyon içinde PatchGuard tarafından bazı gizli kontroller gerçekleştiriliyor. Fonksiyonda random ntoskrnl rutinlerin checksum&rsquo;larını kontrol etmekte. Fonksiyon CcBcbProfiler aracılığıyla bir DPC ve önemli yapı oluşturmakta. Bu yapının izini <strong>0x140BD1606</strong> adresinde sürebiliriz:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> pg_CcInitializeBcbProfiler 
+</span></span><span style="display:flex;"><span>{ 
+</span></span><span style="display:flex;"><span>	KDPC_ kdpc; 
+</span></span><span style="display:flex;"><span>	KTIMER timer; 
+</span></span><span style="display:flex;"><span>	ULONG64 res_RtlpLookupPrimaryFunctionEntry
+</span></span><span style="display:flex;"><span>	ULONG64 hardcoded_140000000h
+</span></span><span style="display:flex;"><span>	ULONG32 func_size_0x90; 
+</span></span><span style="display:flex;"><span>	ULONG32 padding_0x94; 
+</span></span><span style="display:flex;"><span>	ULONG64 checksum_function_0x98; 
+</span></span><span style="display:flex;"><span>	ULONG64 random_1_0xa0; 
+</span></span><span style="display:flex;"><span>	ULONG32 random_2_0xa8; 
+</span></span><span style="display:flex;"><span>	bool_CcBcbProfiler_or_sub_140499010_0xac; 
+</span></span><span style="display:flex;"><span>	ULONG64 KiAreCodePatchesAllowed; 
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">struct</span> _LIST_ENTRY_ workitem_List; 
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span> workitem_WorkerRoutine_sub_1406F86E0
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span> workitem_Parameter_CurrentStruct; 
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>Bu yapının random rutinin checksum kontrolleri için gerekli tüm alanları kapsadığına dikkat edin. İşte önemli üyeler:</p>
+<ul>
+<li>Fonksiyonun Başlangıç Adresinin Pointer&rsquo;i</li>
+<li>Image&rsquo;in Base Adresi</li>
+<li>Fonksiyonun boyutu</li>
+<li>Checksum</li>
+</ul>
+<p>İlgili DPC <strong>KeSetCoalescableTime</strong> aracılığıyla sıraya alınır DueTime parametresi 2 - 2'10 arasında ayarlanır. Bu kısmı <strong>0x140BD18D6</strong> adresinde görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Veya daha anlaşılır olması için bir Pseudocode oluşturdum:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/* Get initial timestamp and generate obfuscated value */</span>
+</span></span><span style="display:flex;"><span>RandomValue <span style="color:#f92672">=</span> <span style="color:#a6e22e">__rdtsc</span>();
+</span></span><span style="display:flex;"><span>RotatedValue <span style="color:#f92672">=</span> <span style="color:#a6e22e">__ROR8__</span>(RandomValue, <span style="color:#ae81ff">3</span>);
+</span></span><span style="display:flex;"><span>XoredValue <span style="color:#f92672">=</span> RotatedValue <span style="color:#f92672">^</span> RandomValue;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* Calculate TimeParameter using a specific multiplier and modulo */</span>
+</span></span><span style="display:flex;"><span>TimeParameter.QuadPart <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1200000000</span> 
+</span></span><span style="display:flex;"><span>                       <span style="color:#f92672">-</span> ((<span style="color:#ae81ff">0x7010008004002001</span> <span style="color:#f92672">*</span> XoredValue) 
+</span></span><span style="display:flex;"><span>                       <span style="color:#f92672">^</span> ((XoredValue <span style="color:#f92672">*</span> <span style="color:#ae81ff">0x7010008004002001</span>) <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">64</span>)) 
+</span></span><span style="display:flex;"><span>                       <span style="color:#f92672">%</span> <span style="color:#ae81ff">0x5F5E100</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* Get another timestamp */</span>
+</span></span><span style="display:flex;"><span>SecondTimestamp <span style="color:#f92672">=</span> <span style="color:#a6e22e">__rdtsc</span>();
+</span></span><span style="display:flex;"><span>SecondXored <span style="color:#f92672">=</span> <span style="color:#a6e22e">__ROR8__</span>(SecondTimestamp, <span style="color:#ae81ff">3</span>) <span style="color:#f92672">^</span> SecondTimestamp;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PeriodValue <span style="color:#f92672">=</span> ((<span style="color:#ae81ff">0x7010008004002001</span> <span style="color:#f92672">*</span> SecondXored) 
+</span></span><span style="display:flex;"><span>             <span style="color:#f92672">^</span> ((SecondXored <span style="color:#f92672">*</span> <span style="color:#ae81ff">0x7010008004002001</span>) <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">64</span>)) 
+</span></span><span style="display:flex;"><span>             <span style="color:#f92672">%</span> <span style="color:#ae81ff">0x2710</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* Set the coalescable timer with calculated parameters */</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">LOBYTE</span>(Pool2) <span style="color:#f92672">=</span> <span style="color:#a6e22e">KeSetCoalescableTimer</span>(
+</span></span><span style="display:flex;"><span>    Dpc <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>,            <span style="color:#75715e">// Timer object
+</span></span></span><span style="display:flex;"><span>    TimeParameter,      <span style="color:#75715e">// Due time
+</span></span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0</span>,                  <span style="color:#75715e">// Tolerance
+</span></span></span><span style="display:flex;"><span>    PeriodValue,        <span style="color:#75715e">// Period
+</span></span></span><span style="display:flex;"><span>    Dpc                 <span style="color:#75715e">// DPC routine
+</span></span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><h6 id="pspprocessdelete"><strong>PspProcessDelete</strong></h6>
+<p>Bir başka gizli integrity kontrolü PspProcessDelete fonksiyonunda gerçekleştirilir. Bu fonksiyonun ismi sizi yanıltmasın, güvenin bana bu fonksiyon isminden çok büyük işler yapıyor&hellip;</p>
+<p>Küçük bir kontrol kodları içermesine karşın burada önemli bir tablo olan <strong>KeServiceDescriptorTable</strong> veya <strong>KeServiceDescriptorTableShadow</strong> için kontroller gerçekleştirilmekte. Buradaki önemli bir detay ise bu kontroller hiçbir şekilde bir thread veya PatchGuard context yapısı aracılığıyla gerçekleştirilmiyor; bağımsız ve direkt olarak kontroller yapılıyor. Bu gerçekten önemli çünkü <strong>bu kontrollerin gerçekleştirilmesi için iki tablonun orijinal checksum değerleri ve kaydırma değerleri global değişkenlerde tutulamakta ve işlemler sırasında bu global değişkenler kullanılıyor.</strong> Bir saldırgan gözüyle bakarsak, bu SSDT tablolarında oynama yapmak istersek çok da zorlanmayacağımız anlamına gelir. Herhangi bir tablonun orijinal checksum değerini tekrar hesaplayıp ardından orijinal adresini değiştirmemiz yeterli olacaktır. Bu saldırganın amacına göre değişiklik gösterebilir.</p>
+<p>İlk olarak <strong>KiQueryUnbiaisedInterruptTime</strong> fonksiyon aracılığıyla bir random değer oluşturuluyor. Bu işlemi <strong>0x1407D430C</strong> adresinden görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Ve bu timer 0x140E620C0 adresinde depolanıyor. Bahsettiğim önemli bilgiler şu adreste tutulmakta: Checksum sonuçları <strong>0x140E620C8</strong>, <strong>0x140E620D0</strong> ve <strong>0x140E620D8</strong> adreslerinde tutulmakta ve bu checksum&rsquo;lar <strong>CmpInitializeDelayedCloseTable</strong> fonksiyonunda initialize edilmekte (ayrıca timer&rsquo;da burada ayarlanıyor). Örnek olarak  herhangi birine göz atabiliriz (<strong>0x1407D4245</strong>):</p>
+<!-- raw HTML omitted -->
+<p>Bir önemli detay da eğer herhangi bir checksum kontrolü başarısız olursa <strong>KeBugCheck</strong> tetiklenecektir ancak direkt olarak değil <strong>KiSchedulerDpc</strong> ile yerleştirilmiş bir DPC aracılığıyla fonksiyon tetiklenecektir. Bunu <strong>0x140897E11</strong> adresinden görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Kaydırma değeri <strong>0x140E620B8</strong> adresinde tutulmakta ve bu değer CmpInitializeDelayedCloseTable fonksiyonun <strong>0x1407D41DA</strong> adresinde hazırlanmaktadır:</p>
+<!-- raw HTML omitted -->
+<p>Şimdi ise bu fonksiyondan herhangi bir kontorlü IDA ve WinDBG ile göz atabiliriz. İşte hedefimiz şu kısım:</p>
+<!-- raw HTML omitted -->
+<p>İlk olarak r9 KeServiceDescriptorTable adresini almakta:</p>
+<pre tabindex="0"><code>kd&gt; t
+nt!PspProcessDelete+0x408:
+fffff802`a7772448 410fb601        movzx   eax,byte ptr [r9]
+kd&gt; r r9
+r9=fffff802a7f818c8
+kd&gt; u fffff802a7f818c8 L1
+nt!KeServiceDescriptorTable+0x8:
+fffff802`a7f818c8 0000            add     byte ptr [rax],al
+</code></pre><p>edi register&rsquo;ı kaydırma değerini tutmakta, esasen bunu IDA&rsquo;dan 0x140897D0D adresinde görebiliriz:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140897CC7:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rdi</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">qword_140E620B8</span>
+</span></span></code></pre></div><p>Kaydırma değeri ise <strong>0x70f59b2a</strong> olduğunu görebiliriz:</p>
+<pre tabindex="0"><code>kd&gt; t
+nt!PspProcessDelete+0x40c:
+fffff802`a777244c 8bcf            mov     ecx,edi
+
+kd&gt; r edi
+edi=70f59b2a
+</code></pre><p>Ancak kontrol esnasında <strong>0xc2</strong> kullanılmakta:</p>
+<pre tabindex="0"><code>kd&gt; t
+nt!PspProcessDelete+0x414:
+fffff802`a7772454 48d3ca          ror     rdx,cl
+
+kd&gt; r cl
+cl=2a
+</code></pre><p>r10 register kontrol esnasında döngü sayacını tutmakta ve 0x38 değerinden başlıyor. Bu sayaç <strong>0x140897D09</strong> adresinden alınıyor:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">r10d</span>, [<span style="color:#66d9ef">r15</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">40</span><span style="color:#66d9ef">h</span>] <span style="color:#75715e">; pass 0x38 value to r10d
+</span></span></span></code></pre></div><p>Veya:</p>
+<pre tabindex="0"><code>kd&gt; t
+nt!PspProcessDelete+0x417:
+fffff802`a7772457 4183c2ff        add     r10d,0FFFFFFFFh
+kd&gt; r r10d
+r10d=38
+</code></pre><p>Her döngü sonunda r10d değeri bir azaltılacaktır.</p>
+<p>Son olarak ise CmpInitializeDelayedCloseTable tarafından hazırlanan orijinal checksum değerlerini görebiliriz:</p>
+<pre tabindex="0"><code>kd&gt; dps fffff802a7be2108 L1 
+fffff802`a7be2108  72e10000`09fcd74a
+kd&gt; dps fffff802a7be2110 L1
+fffff802`a7be2110  620ad43a`aeef4fce
+kd&gt; dps fffff802a7be2118 L1
+fffff802`a7be2118  fcd74a72`e1000009
+</code></pre><p>Bu yöntemi devre dışı bırakmak için, timer&rsquo;ı sonsuza kadar patch edebilir veya değiştirilen tablonun checksum değerini yeniden hesaplayabilirsiniz.</p>
+<h6 id="kiinitializeuserapc"><strong>KiInitializeUserApc</strong></h6>
+<p>PspProcessDelete fonksiyonunda olduğu gibi KiInitializeUserApc içerisinde de IDT için küçük bir integrity kontrolü için kod parçası bulunmakta. The Checksum değeri <strong>0x140E62170</strong> adresinde, kaydırma değeri <strong>0x140E62178</strong> ve timer ise  <strong>0x140E62180</strong> adresinde tutulmakta.</p>
+<p>Başlangıç için <strong>0x1403DC674</strong> adresini inceleyerek başlayabiliriz:</p>
+<!-- raw HTML omitted -->
+<p>İlk olarak, sidt instruction aracılığıyla IDT tablosundan 10 byte&rsquo;lık bir veri alınmakta. Bu verilerden 8 byte&rsquo;ı IDT&rsquo;nin base adresini içermekte. Yani bu instruction aracılığıyla base adres alınmış oluyor. Ayrıca kaydırma ve checksum değerlerine göz atabiliriz:</p>
+<pre tabindex="0"><code>kd&gt; t
+nt!KiInitializeUserApc+0x415:
+fffff804`e489547d 8b0d35cda500    mov     ecx,dword ptr [nt!MiSystemPartition+0x299b8 (fffff804`e52f21b8)]
+
+kd&gt; dps fffff804`e52f21b0 L1
+fffff804`e52f21b0  00000000`560451ca   ; Checksum
+
+kd&gt; dps fffff804`e52f21b8 L1
+fffff804`e52f21b8  00000000`5d83c49b   ; Shift Value
+</code></pre><p>Döngüden sonra <strong>0x1403DC88E</strong> adresinde checksum sonucunu kontrol edildiğini görebiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Veya:</p>
+<pre tabindex="0"><code>kd&gt; bp fffff804`e48954ba
+kd&gt; g
+Breakpoint 5 hit
+nt!KiInitializeUserApc+0x452:
+fffff804`e48954ba 48391507cda500  cmp     qword ptr [nt!MiSystemPartition+0x299c8 (fffff804`e52f21c8)],rdx
+
+kd&gt; dps fffff804`e52f21c8 L1
+fffff804`e52f21c8  2884d739`2257ef7f
+kd&gt; r rdx
+rdx=2884d7392257ef7f
+</code></pre><p>rdx register&rsquo;ı sonucu tutmakta.</p>
+<p>Hadi bir çılgınlık yapalım ve rdx&rsquo;in değerini değiştirelim:</p>
+<pre tabindex="0"><code>kd&gt; r rdx
+rdx=2884d7392257ef7f
+kd&gt; r rdx = 2884d7392257ef7a
+kd&gt; g
+</code></pre><p>VEEEEEE BOOOOOM:</p>
+<!-- raw HTML omitted -->
+<p>Tamam, sadece sıkıldım. Kaldığımız yerden devam edelim&hellip;.</p>
+<p>Daha önce PspProcessDelete&rsquo;den gördüğümüz gibi, kontrol esnasında ilgili sorun varsa, DPC aracılığıyla KeBugCheck&rsquo;i çağırır (0x1403DC8DF):</p>
+<!-- raw HTML omitted -->
+<h6 id="exception-dünyası-kiverifyxcpt15"><strong>Exception Dünyası: KiVerifyXcpt15</strong></h6>
+<p>KiInitPatchGuardContext ayrıca KiVerifyXcpt15 aracılığıyla da çağırılabilir. Ancak burada birçok garip yöntemler kullanılmakta.</p>
+<p>KiVerifyXcpt15&rsquo;in tüm kodlarını kontrol ederseniz, bu basit kodları görürsünüz:</p>
+<!-- raw HTML omitted -->
+<p>Çok basit gözüküyor demi? 5 Dakikada analiz edebiliriz&hellip; Ancak  ne yazık kı bu dağın görünen önyüzü. Şimdi de arkasına bakalım:</p>
+<!-- raw HTML omitted -->
+<p>Fonksiyonda neredeyse birçok exception kullanılmakta. Ancak sakin olalım. Makalede sadece fonksiyonun bir kısmını analiz edeceğiz.</p>
+<!-- raw HTML omitted -->
+<ul>
+<li><strong>Calling KiVerifyXcpt15</strong></li>
+</ul>
+<p>KiVerifyXcpt15 fonksiyonu KeInitAmd64SpecificState ve ExpLicenseWatchInitWorker&rsquo;den önce çağırılır ve esasen bu fonksiyonun kendisi <strong>KiVerifyScopesExecute</strong> aracılığıyla çağırılmaktadır.</p>
+<p>KiVerifyScopesExecute sadece KiVerifyXcpt15&rsquo;i değil aynı zamanda <strong>KiVerifyXcptRoutines</strong> adlı bir yapıdaki diğer fonksiyonları da beraberinde çağırıyor. Listedeki fonksiyonlar (0x1410060D8):</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: center"><strong>Index</strong></th>
+          <th style="text-align: center"><strong>Routine</strong></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center">0</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt0</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">1</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt1</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">2</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt15</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">3</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt3</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">4</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt4</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">5</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt5</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">6</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt6</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">7</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt7</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">8</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt8</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">9</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt9</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">10</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt10</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">11</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt11</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">11</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt12</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">12</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt13</strong></td>
+      </tr>
+      <tr>
+          <td style="text-align: center">13</td>
+          <td style="text-align: center"><strong>KiVerifyXcpt14</strong></td>
+      </tr>
+  </tbody>
+</table>
+<p>Fonksiyonun başlangıcında, <strong>0x140C1C2FD</strong> adresinde <strong>0xA</strong> değerini tutan <strong>KiVerifyPass</strong> değişkeninden veri alarak işlemlere başlanıyor:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">KiVerifyScopesExecute</span> <span style="color:#66d9ef">proc</span> <span style="color:#66d9ef">near</span>:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ebx</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KiVerifyPass</span> <span style="color:#75715e">; Get data of KiVerifyPass
+</span></span></span></code></pre></div><p>Bu değişken aslında önemli çünkü daha sonra göreceğimiz gibi bu değişken döngü için kullanılacak.</p>
+<p>Daha sonra değişkenden alınan değeri 0 ile karşılaştırır. Değişken sıfır değilse, <strong>0x140C1C314</strong> adresindeki yapıdaki tüm rutinleri sırasıyla çağırmaya başlıyor:</p>
+<!-- raw HTML omitted -->
+<p>Yapının adresi hazırlandıktan sonra, rutinleri sırasıyla çağırmaya başlar:</p>
+<!-- raw HTML omitted -->
+<p>Listedeki tüm rutinlerin çağırılması sonrasında KiVerifyPass değişkeninden 1 değeri çıkarılır (0x140C1C371):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140C1C371:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">dec</span>     <span style="color:#66d9ef">ebx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jmp</span>     <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140C1C314</span>
+</span></span></code></pre></div><p>Bu kısımdan sonra tekrardan döngünün başına atlanıp (<strong>0x140C1C314</strong>) diğer rutinler sırasıyla çağırılacaktır.  Farklı bir deyişle ifade edilmesi gerekirse, değişkenin değeri 0 olana kadar bu adımlar tekrarlanacaktır. Değer 1 azaltılmadan önce tüm rutinler çağırılıyor ve ardından 1 değer azaltılıyor.</p>
+<p>Anlaşılır olması için bir diyagram hazırladım:</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<ul>
+<li><strong>Disassembling KiVerifyXcpt15</strong></li>
+</ul>
+<p>Fonksiyonun başlangıcında <strong>KiVerifyXcpt2</strong> çağırılarak başlanıyor (Muhtemelen bu gerçekten doğrulama yapan fonksiyonun kendisi). KiVerifyXcpt2 fonksiyonu <strong>KiVerifyXcptRoutines</strong> listesinde bulunmaz ve sadece KiVerifyXcpt15 çağırılan bir fonksiyondur.</p>
+<p>Ardından bir exception aracılığıyla işlemlere başlanıyor, 0x140C6023D adresi çağırılarak başlanır. Bu kısım da önceden gördüğümüz <strong>KiVerifyPass</strong>&lsquo;dan işlemler yaparak başlıyor:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KiVerifyPass</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">dec</span> <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KiVerifyPass</span>, <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KiVerifyPass</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span> <span style="color:#66d9ef">eax</span>, <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jnz</span> <span style="color:#66d9ef">loc_140C60EA0</span> <span style="color:#75715e">; Exit the function
+</span></span></span></code></pre></div><p>KiVerifyPass sıfıra ulaşana kadar denk fonksiyondan çıkılıyor. Eğer değişken sıfır olursa bir MSR okumaya başlıyor. <strong>IA32_APIC_BASE</strong>&lsquo;a karşılık gelen 0x1B değerini alıyor ve rdmsr instruction&rsquo;u çalıştırıyor:</p>
+<!-- raw HTML omitted -->
+<p>0x1B adresinde bulunan IA32_APIC_BASE, Intel işlemcilerde <strong>Local Advanced Programmable Interrupt Controller</strong> (APIC) yapılandırmasını ve çalışmasını yöneten kritik bir kontrol kaydıdır.<!-- raw HTML omitted -->[3]<!-- raw HTML omitted --><!-- raw HTML omitted -->[4]<!-- raw HTML omitted -->.</p>
+<p>Daha sonra sonucun 10. bitini kontrol ettiğini görebiliriz. IA32_APIC_BASE&rsquo;in 10. baytı Intel İşlemcilerdeki <strong>x2APIC Modu</strong> durumuna karşılık gelir. <strong>Intel 64 Architecture x2APIC Specification</strong> belgesinden:<!-- raw HTML omitted -->[3]<!-- raw HTML omitted --></p>
+<blockquote>
+<p>[!NOTE]
+&ldquo;Sistem yazılımı, MSR adresi 0x1B&rsquo;de bulunan IA32_APIC_BASE MSR&rsquo;de <strong>x2APIC</strong> modu etkinleştirme bitini (bit 10) ayarlayarak yerel APIC&rsquo;yi x2APIC moduna yerleştirebilir.&rdquo;</p>
+</blockquote>
+<p>Ayrıca <strong>Intel 64 and IA-32 Architectures Software Developer&rsquo;s Manual Volume 4: Model-Specific Registers</strong><!-- raw HTML omitted -->[4]<!-- raw HTML omitted -->&lsquo;dan da faydalanabiliriz:</p>
+<!-- raw HTML omitted -->
+<p>Eğer 10. bit set edilmemiş ise - yani 0 ise - <strong>MmMapIoSpaceEx</strong> aracılığıyla sanal adres olarak eşliyor (<strong>0x140C6028E</strong>) :</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140C6028E:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rax</span>, <span style="color:#ae81ff">0</span><span style="color:#66d9ef">FFFFFF000h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">and</span>     <span style="color:#66d9ef">rbx</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">edx</span>, <span style="color:#ae81ff">1000</span><span style="color:#66d9ef">h</span>      <span style="color:#75715e">; Protect
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">r8d</span>, <span style="color:#ae81ff">204</span><span style="color:#66d9ef">h</span>       <span style="color:#75715e">; Size
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">rbx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">MmMapIoSpaceEx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span>    <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jnz</span>     <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140C602DA</span> <span style="color:#75715e">; Pass the address to the variable
+</span></span></span></code></pre></div><p>Daha sonra bu sanal adres - veya 0 değeri - global bir değişkene (qword_141006090) aktarılıyor:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140C602DA:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">qword_141006090</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span></code></pre></div><p>Ayrıca daha anlaşılır olması için bir pseudocode oluşturdum:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">func_140C6023D</span>() {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">int</span> UpdateVerifyPassData <span style="color:#f92672">=</span> KiVerifyPass <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>; 
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (UpdateVerifyPassData <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span>) {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">int</span> number <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x1B</span>;
+</span></span><span style="display:flex;"><span>		ULONG64 MappedVirtualAddress <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>		ULONG64 GlobalVirtualAddress <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">/* Read MSR */</span> 
+</span></span><span style="display:flex;"><span>		ULONG64 ResultAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">rdmsr</span>(number);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> ([ResultAddress<span style="color:#f92672">+</span><span style="color:#ae81ff">0x10</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x0</span>) {
+</span></span><span style="display:flex;"><span>			MappedVirtualAddress <span style="color:#f92672">=</span> <span style="color:#a6e22e">MmMapIoSpaceEx</span>(ResultAddress, <span style="color:#ae81ff">0x1000</span>, <span style="color:#ae81ff">0x204</span>);
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">if</span> (MappedVirtualAddress <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0x0</span>) {
+</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">goto</span> SetGlobalVariable;
+</span></span><span style="display:flex;"><span>			}
+</span></span><span style="display:flex;"><span>			MappedVirtualAddress <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0</span>;
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>SetGlobalVariable:
+</span></span><span style="display:flex;"><span>		GlobalVirtualAddress <span style="color:#f92672">=</span> MappedVirtualAddress;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Bu sanal adres daha sonradan KiInitPatchGuardContext tarafından alınıyor ve PatchGuard Context Structure&rsquo;a hızlı bir şekilde aktarıyor (<strong>0x140BEA132</strong>):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BEA10F:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">qword_141006090</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">rdi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">A58h</span>], <span style="color:#66d9ef">rax</span>
+</span></span></code></pre></div><p>Daha sonra sabit adres <strong>0x0FFFFF78000000289</strong>&lsquo;in byte&rsquo;ını kontrol ederek işlemlere devam ediyor:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140C602DA:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">MappedVirtualAddress</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, <span style="color:#ae81ff">0</span><span style="color:#66d9ef">FFFFF78000000289h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cmp</span> <span style="color:#66d9ef">byte</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rax</span>], <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span>  <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140C6034D</span>
+</span></span></code></pre></div><p>Bu adresin bitini görmek için WinDBG kullanabiliriz:</p>
+<pre tabindex="0"><code>kd&gt; dps 0FFFFF78000000289 l1 
+fffff780`00000289  01000000`00010100
+</code></pre><p>Eğer byte 1 değil ise KiSwInterruptPresent çalıştırılıyor ve random değer oluşturuluyor. Bu oluşturulan random değer, bir değişkenin (dword_141006088) 1 ile ayarlanıp ayarlanamayacağına karar vermesi için kullanılıyor:</p>
+<!-- raw HTML omitted -->
+<p>Bu değişken daha sonra KiInitPatchGuardContext çağırılması için hazırlık yapan kısma yönlendirip yönlendirilmeyeceğini belirlemek üzere kullanılıyor:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140C6036D:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cmp</span>     <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">dword_141006088</span>, <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span>      <span style="color:#66d9ef">loc_140C60D7B</span>
+</span></span></code></pre></div><p>Eğer sabit adres 0FFFFF78000000289&rsquo;in ilk byte&rsquo;ı 0 ise bu değişkende 0 olacaktır ve KiInitPatchGuardContext için ilk adımları atmaya başlayacaktır, ancak eğer 1 değerini alırsa farklı işlemler yapan başka kısımdan devam edecektir.</p>
+<p><strong>0x140C60E1D</strong> adresine odaklanabiliriz. Burada rastgele değer oluşturuluyor ve daha önce KeInitAmd64SpecificState&rsquo;de gördüğümüz gibi Debugger bayraklarından değer alıyor:</p>
+<!-- raw HTML omitted -->
+<p>Bu kısım KiInitPatchGuardContext fonksiyonun çağırılıp çağırılmayacağını karar veren son kısım artık. Alınan bayrak sonuçları ile rastgele değer bir takım işlemlerden sonra karşılaştırma yapılıyor. Eğer bayrak sonucunu taşıyan r9 register&rsquo;ı r10 yani random sonuçtan büyük ise Debugger&rsquo;ı kapatıyor ve exception aracılığıyla KiInıtPatchGuardContext&rsquo;i çağırıyor. Aksi takdirde çıkışa yönlendiriyor:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">cmp</span>     <span style="color:#66d9ef">r10</span>, <span style="color:#66d9ef">r9</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jnb</span>     <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140C60EA0</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">KdDisableDebugger</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">A4h</span>], <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">; Call KiInitPatchGuardContext
+</span></span></span><span style="display:flex;"><span>loc_140C60E8C:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">rdx</span>, <span style="color:#66d9ef">loc_140BD11D4</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rcx</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">C8h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">_local_unwind</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">nop</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">; Exit
+</span></span></span><span style="display:flex;"><span>loc_140C60EA0:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">add</span>     <span style="color:#66d9ef">rsp</span>, <span style="color:#ae81ff">30</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">r15</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">r14</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">r12</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">rdi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">rsi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">rbp</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">rbx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">retn</span>
+</span></span></code></pre></div><p>Dinamik analiz ile bu kısma bir göz atalım:</p>
+<pre tabindex="0"><code>kd&gt; g
+Breakpoint 1 hit
+nt!KeInitAmd64SpecificState$filt$0+0xc86:
+fffff800`7d174e82 4d3bd1          cmp     r10,r9
+kd&gt; r r10
+r10=000000000000003b
+
+kd&gt; g
+Breakpoint 1 hit
+nt!KeInitAmd64SpecificState$filt$0+0xc86:
+fffff800`7d174e82 4d3bd1          cmp     r10,r9
+kd&gt; r r10 
+r10=0000000000000041
+</code></pre><p>Görünen o ki r10 her zaman r9&rsquo;dan daha yüksek bir değer alıyor. Yani r10&rsquo;un düşük değer alma olasılığı gerçekten düşük. Bu nedenle koşul karşılanmıyor. Doğrulamak adına r9&rsquo;un değerini değiştirdim ve:</p>
+<pre tabindex="0"><code>kd&gt; r r9 = 45
+kd&gt; t
+nt!KeInitAmd64SpecificState$filt$0+0xc8b:
+fffff800`7d174e87 e8c45493ff      call    nt!KdDisableDebugger (fffff800`7caaa350)
+</code></pre><p>Dediğim gibi, koşulun karşılanması için r9&rsquo;un değerinin r10&rsquo;dan büyük olması gerekiyor.</p>
+<p>İlginç olan kısım da KiVerifyXcpt15&rsquo;de KiInitPatchGuardContext&rsquo;in argümanlarının rastgele belirlenmemiş olmasıdır (<strong>0x140C60EFE</strong>):</p>
+<!-- raw HTML omitted -->
+<p>ecx register hariç. Bu register DPC Routine Pointer için rastgele değer alır. Dinamik analizden sonuçlar:</p>
+<pre tabindex="0"><code>kd&gt; g
+Breakpoint 4 hit
+nt!KiFilterFiberContext+0x2916d:
+fffff802`a666e69d e80e8afdff      call    nt!KiFilterFiberContext+0x1b80 (fffff802`a66470b0)
+
+kd&gt; r 
+rax=0000000000000002 rbx=ffffa60199a5fdd8 rcx=0000000000000003
+rdx=0000000000000000 rsi=0000000000000000 rdi=ffffa60199a5fdd8
+rip=fffff802a666e69d rsp=ffffa60199a5d360 rbp=ffffa60199a5fd90
+ r8=0000000000000001  r9=0000000000000000 ...
+
+kd&gt; ? rsp+20h
+Evaluate expression: -98949173750912 = ffffa601`99a5d380
+
+kd&gt; dps ffffa601`99a5d380 l1
+ffffa601`99a5d380  ffffa601`00000002
+</code></pre><p>Veya:</p>
+<ul>
+<li>RCX: 3 (Argüman 1 olarak)</li>
+<li>RDX: 0 (Argüman 2 olarak)</li>
+<li>R8: 1 (Argüman 3 olarak)</li>
+<li>R9: 0 (Argüman 4 olarak)</li>
+<li>RSP+0x20: 2 (Argüman 5 olarak)</li>
+</ul>
+<p>Bu bilgilerle artık bu karmaşık fonksiyondan kurtulabiliriz. Fonksiyon içeriği gerçekten çok uzun&hellip; Hemen bir sonraki başlığımıza kayalım.</p>
+<h6 id="kecheckedkernelinitialize"><strong>KeCheckedKernelInitialize</strong></h6>
+<p>Son olarak ise KiInitPatchGuardContext fonksiyonu KeCheckedKernelInitialize aracılığıyla da çağırılabilir. Fonksiyonun içeriğine göz atarsak kendisi sadece KiInitPatchGuardContext için hazırlanmış gibi görünüyor. Burada KiInitPatchGuardContext method 7 aracılığıyla çağırıyor.</p>
+<p>Öncelikle bu fonksiyon Method 7&rsquo;de gördüğümüz Global PatchGuard Context&rsquo;i kontrol ederek başlar. Eğer Global Structure 0 ise KiInitPatchGuardContext&rsquo;i çağırmadan doğrudan çıkışa atlar:</p>
+<!-- raw HTML omitted -->
+<p>Bu fonksiyon KiInitPatchGuardContext tarafından kullanılan bir hata ayıklama önleme tekniği kullanır. Global Structure kontrolünden sonra, hata ayıklama önleme ile alakalı bir fonksiyon çağırıyor (&lsquo;InterestingAntiDebuggingStuff&rsquo; olarak yeniden adlandırdım). Bu fonksiyon esasen basit:</p>
+<!-- raw HTML omitted -->
+<p>Bu kod, LIDT (Load Interrupt Descriptor Table) komutunu bir __try/__except bloğu içinde çalıştırarak bir hata ayıklama tekniği uygular.</p>
+<p>Bir istisnanın tetiklenip tetiklenmediğini kontrol ederek, program bir hata ayıklayıcının veya sanallaştırılmış ortamın varlığını tespit edebilir. İstisna tetiklenirse, eax 1 olarak ayarlanır (kısıtlı bir ortamı gösterir); aksi takdirde, 0 olarak kalır ve müdahale olmadan normal yürütmeyi gösterir.</p>
+<p>Ve sonra VM&rsquo;den bu mesajı görebilirsiniz:</p>
+<!-- raw HTML omitted -->
+<p>Daha önce <strong>KiVerifyXcpt15</strong>&rsquo;te gördüğümüz gibi, burada da aynı şekilde KiInitPatchGuardContext&rsquo;in parametreleri rastgele olarak ayarlanmıyor:</p>
+<!-- raw HTML omitted -->
+<p>Bu çağrı metodu, daha sonra göreceğimiz gibi KiFilterFiberContext&rsquo;teki KiInitPatchGuardContext&rsquo;in üçüncü çağrısı ile tamamen aynıdır. <strong>0x140BD1DD8</strong>&lsquo;den:</p>
+<!-- raw HTML omitted -->
+<p>KeCheckedKernelInitialize fonksiyonu, KeInitAmd64SpecificState fonksiyonundan sonra çağrılır. Eğer <strong>KeHotpatchTestMode</strong> bayrağı 0 değilse (Esasen bu değişken ntoskrnl&rsquo;de 0 olarak ayarlanmıştır), KeCheckedKernelInitialize&rsquo;ı çağırır. Bu bölümü PipInitializeCoreDriversAndElam fonksiyonunun <strong>0x140C55A71</strong> adresinden kontrol edebiliriz:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">loc_140C55A3A</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">KeInitAmd64SpecificState</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cmp</span>     <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">KeHotpatchTestMode</span>, <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jz</span>      <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140C55A84</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">KeCheckedKernelInitialize</span>
+</span></span></code></pre></div>
+    <h4><a href="http://localhost:1313/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2025</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://twitter.com">Twitter</a> 
+        
+        <a href="https://github.com">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: true , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

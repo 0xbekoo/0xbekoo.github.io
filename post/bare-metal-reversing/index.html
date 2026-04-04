@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:1313//favicon.ico">
+    <link rel="canonical" href="http://localhost:1313/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:1313/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/about/">
+                                    
+                                    <span>About</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>ARM Firmware Reverse Engineering - Wed, Dec 4, 2024</h1>
+    </div>
+    <p class="lead"></p>
+    <p>Hello everyone. In this blog we continue with Firmware Reverse Engineering.
+We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.</p>
+<p>I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let&rsquo;s think typically like hacking an IoT board but with a simpler scenario:</p>
+<!-- raw HTML omitted -->
+<p>This is the card I have. If you have a different board of nucleo, you can follow the steps in this blog.</p>
+<p>Obviously, I have not developed myself in microcontroller coding, but during this concept process, we will develop ourselves both in microcontroller coding and firmware reverse engineering.</p>
+<p>The necessary programs will be CubeIde, CubeProgrammer and Ghidra. With CubeIde we will do the programming for our board, with Ghidra we will reverse the firmware and in the last step we will load the firmware that we reverse with CubeProgrammer on our board.</p>
+<h3 id="coding"><strong>Coding</strong></h3>
+<p>The coding we will do is completely simple. The Nucleo F030R8 board has a User Button (you can take a look at the blue button in the photo) and a Green led (LD2). We will coding that lights the Green Led when the button is pressed, then we will reverse the firmware with using Ghidra.</p>
+<!-- raw HTML omitted -->
+<p>After creating the project in CubeIDE, we can focus on the .ioc file. Since we will work with the button and led on the board, as you can see from the photo, the adjustments have already been made by the IDE. So there is nothing extra to do here. From my card, User Button is on PC13 and Led2 is on PA5.</p>
+<p>Before we start coding, we will need to make a small adjustment to the project we have created. Since we will analyze the firmware, we will need to get the .bin file by loading the program on the card:</p>
+<!-- raw HTML omitted -->
+<p>Right click on the project and select Properties. Then go to C/C++ Build &gt; Settings &gt; MCU/MPU Post Build Outputs and enable Convert to binary file (-O binary) option. Now, in the Project Explorer tab on the far left of the IDE, go to Core &gt; Src &gt; main.c project. This is our main project.</p>
+<p>Before coding in main.c, we can take a look at the MX_GPIO_Init function. This function contains the configuration of the pins prepared by the IDE:</p>
+<!-- raw HTML omitted -->
+<p>As it can be seen, the User Button for the F030R8 board is set to B1_Pin (GPIO_PIN_13) as GPIOA and GPIOA and LD2_PIN (GPIO_PIN_5) for LED2. If you are on a different board you can check these settings.</p>
+<p>Now let&rsquo;s return to the main function and start coding:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>  <span style="color:#75715e">/* USER CODE BEGIN 2 */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">uint8_t</span> ButtonStatus <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>	  ButtonStatus <span style="color:#f92672">=</span> <span style="color:#a6e22e">HAL_GPIO_ReadPin</span>(B1_GPIO_Port, B1_Pin);
+</span></span><span style="display:flex;"><span>	  <span style="color:#66d9ef">if</span> (ButtonStatus <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>		  <span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, SET);
+</span></span><span style="display:flex;"><span>	  }
+</span></span><span style="display:flex;"><span>	  <span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, RESET);
+</span></span><span style="display:flex;"><span>  }
+</span></span></code></pre></div><p>The code is really simple. Now Let&rsquo;s take a look at the codes one by one:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ButtonStatus <span style="color:#f92672">=</span> <span style="color:#a6e22e">HAL_GPIO_ReadPin</span>(B1_GPIO_Port, B1_Pin);
+</span></span></code></pre></div><p>Firstly, we use the HAL_GPIO_ReadPin function in the while section of main. This function is used to read the state of the corresponding pin and takes two parameters. The first parameter specifies the GPIO port where the pin is located. In STM32 microcontrollers, GPIO pins are connected to specific ports (A, B, C, etc.). There are, for example, GPIOA, GPIOB, GPIOC, etc. This parameter is used to specify which port the pin is located on. In our code, we specify that it is GPIOA. The second parameter specifies the GPIO pin you want to read. Each port can have more than one pin on it (for example, port A has PA0, PA1, PA2, etc.). This parameter specifies which pin you want to read the status of. In our code, we specify that it is B1_Pin, GPIO_PIN_13.</p>
+<p>Finally, the return address of this function is passed to the ButtonStatus variable of type uint8_t. So, this function reads the status on the specified pin and passes the result to the ButtonStatus variable.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (ButtonStatus <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, SET);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">HAL_GPIO_WritePin</span>(LD2_GPIO_Port, LD2_Pin, RESET);
+</span></span></code></pre></div><p>After the pin reading, we make an if comparison. If the value assigned to ButtonStatus is zero, it lights the led. If the ButtonStatus value is 0, it means that the Button is pressed. If it is 1, it means that the Button is not pressed.</p>
+<p>The first parameter of the function - HAL_GPIO_WritePin - specifies which GPIO port to use as previously described and I specified it as GPIOA in our code. The second parameter specifies the GPIO pin to be set or reset and I gave the LD2_PIN variable with the defined value GPIO_PIN_5. Finally, the third parameter specifies the state of the pin.</p>
+<p>If the button is not pressed, we still use the HAL_GPIO_WritePin function but the last parameter is specified as RESET. This sets the corresponding pin to 0 when the button is not pressed. Thus, the led will not light up when the button is not pressed.</p>
+<p>Now let&rsquo;s load this code on our board and see the result:</p>
+<!-- raw HTML omitted -->
+<p>As it seems, our board is running perfect. As soon as I click on the button, the green LED lights up. Now let&rsquo;s go back to Ghidra and start analyzing the .bin file. The generated .bin file will be under the Debug file:</p>
+<!-- raw HTML omitted -->
+<h3 id="firmware-reversing"><strong>Firmware Reversing</strong></h3>
+<p>Let&rsquo;s select our .bin file by clicking File &gt; Import File in Ghidra, but do not close the screen that appears directly, we will need to make important adjustments.</p>
+<p>First of all, let&rsquo;s start by setting the Languages section and search for ARM in the filter field:</p>
+<!-- raw HTML omitted -->
+<p>I chose Cortex 32-bit, Little Endian as the Language. If you have the same board, choose this option, if you have different boards, choose the language according to your board. Then you can exit this Language tab by saying OK.</p>
+<p>Then let&rsquo;s click on Options from the same screen and the setting we will make here is really important. Here we will make adjustments such as Base Address.</p>
+<p>First we will need to set the base address. **But how can we find the Base Address of a firmware? The best method would be to look at the memory map of the device.</p>
+<p>We are working on an ARM based board. We can find the Base Address through Nucleo&rsquo;s datasheets:</p>
+<!-- raw HTML omitted -->
+<p>The photo above is the memory map of the STM32F030x4/x6/x6/x8/xC boards. Since my board is among these devices, I will need to make use of this memory map:</p>
+<!-- raw HTML omitted -->
+<p>When we look at the photo in more detail, we can see that the Flash memory field is 0x8000000. Most of the Base Address of ARM-based processors is already at this address, but if you still have a different board, it will be useful to look at the address with the datasheet.</p>
+<p>Then let&rsquo;s write the address we obtained with the datasheet in the Base Address field from Ghidra&rsquo;s Options tab:</p>
+<!-- raw HTML omitted -->
+<p>I gave the Block Name as flash, you can do the same. We don&rsquo;t need to touch other settings, we just need to give Block Name and Base Address values. Click the OK button and double click on the .bin file on the screen.</p>
+<p>But we will need to make a few more settings. When the CodeBrowser screen opens, click on the Memory Map section in the middle of the screen:</p>
+<!-- raw HTML omitted -->
+<p>Then click on the &lsquo;+&rsquo; sign at the top right of this screen:</p>
+<!-- raw HTML omitted -->
+<p>Again, we will need to set a few memory areas here. First, we will need to set the Flash Memory area. So what is this? Flash Mirror represents the area where the executable code of the firmware is usually stored. In most embedded systems, this region starts at address 0x0 depending on the processor and is where the firmware will be loaded and executed. The Flash region contains the code region (e.g. main function, startup code, etc.)</p>
+<p>We can still look at the datasheet to verify the offset. If we take a look again at the photo I shared above, we can see that it is in the 0x0 field for my board. Now let&rsquo;s set this field:</p>
+<!-- raw HTML omitted -->
+<p>We can name the Block Name field &lsquo;flash_mirror&rsquo;. Then let&rsquo;s give the Start Addr field at 0 by default. Set the Length field to be the same as the size of the field we set with the flash name as shown with the arrow. Then check the Execute box. In the Block Types field, check the File Bytes box and leave the File Offsett value at 0 and press OK to finish.</p>
+<p>Let&rsquo;s press the &lsquo;+&rsquo; key again to set our last field. This time we will set the SRAM field. Generally its address is 0x20000000, but we can still check our board&rsquo;s datasheet to verify this:</p>
+<!-- raw HTML omitted -->
+<p>As you can see, it is located at address 0x20000000. Now let&rsquo;s set the SRAM area:</p>
+<!-- raw HTML omitted -->
+<p>We can name the Block Name field as &lsquo;RAM&rsquo;. Let&rsquo;s give the value 20000000 to the Start Addr field, and lastly give 80000 to the Length value. Then close the screen.</p>
+<p>We are done. Now let&rsquo;s press the save button at the top left of the screen and close the Memory Map screen:</p>
+<!-- raw HTML omitted -->
+<p>We have one last operation left. After closing the screen, go to Analysis &gt; Auto Analyze&rsquo;.bin&rsquo; from the bar on the top left of Ghidra and activate the &lsquo;ARM Aggressive Instruction Finder (Prototype)&rsquo; option on this screen and click on the &lsquo;Analyze&rsquo; button:</p>
+<!-- raw HTML omitted -->
+<p>Now we are ready for everything. Now let&rsquo;s take a look at the top side from the Disassembly screen:</p>
+<!-- raw HTML omitted -->
+<p>If you are new like me, you might be a bit confused when you see what is marked here, but it is actually simple. This area you see in the photo is called the &lsquo;vector table&rsquo;. This is where the CPU first loads the Stack Pointer when the system starts up. So the first address of the table is the starting address of the system&rsquo;s stack memory. The processor then jumps to the Reset Handler address defined in this table.</p>
+<p>The vector table defines how the microcontroller reacts to all interrupt and fault conditions that the microcontroller may encounter during operation. For example:</p>
+<ul>
+<li><strong>Reset:</strong> Determines the address of the code that will run when the CPU is restarted. This is the initialization function that usually initializes the system.
+<!-- raw HTML omitted --></li>
+<li><strong>NMI (Non-Maskable Interrupt):</strong> An interrupt that cannot be masked, i.e. it must always be handled.
+<!-- raw HTML omitted --></li>
+<li><strong>HardFault:</strong> A handler that is called when a critical error occurs.
+<!-- raw HTML omitted --></li>
+<li><strong>BusFault:</strong> Handles hardware problems such as memory access errors.
+<!-- raw HTML omitted --></li>
+<li><strong>UsageFault:</strong> Provides handlers for software-related problems such as incorrect instructions or mathematical errors.</li>
+</ul>
+<p>The part we will be interested in here will be the Reset field. The Reset vector contains simple setup codes, similar to the introduction section of the C Program. Since the main function is called in this vector, we will find the main function here.</p>
+<p>Now double click on the address marked with the Reset vector:</p>
+<!-- raw HTML omitted -->
+<p>Now let&rsquo;s check the decompiler:</p>
+<!-- raw HTML omitted -->
+<p>Here we see a few loops etc. being used and functions being called. I took a look at two of the three functions called but I didn&rsquo;t understand anything and when I took a look at the last function called I confirmed that it was the main function:</p>
+<!-- raw HTML omitted -->
+<p>I updated the function names etc. to make it more understandable. When we look at the function, I already explained it when we were coding. There is no difference. Now we will return to Assembly codes and do Patch operation.</p>
+<p>We will replace the &lsquo;0&rsquo; value in the if condition with &lsquo;1&rsquo;. So the led will be on when we don&rsquo;t press the button. Let&rsquo;s find the instruction corresponding to the if condition in the Dissassembly screen of the main function and right click and select Patch Instruction:</p>
+<!-- raw HTML omitted -->
+<p>Then change 0x0 to 0x1 and press enter. After this process, when we check it from the Decompiler, the result should be as follows:</p>
+<!-- raw HTML omitted -->
+<p>Now click on **File &gt; Save &lsquo;.bin&rsquo; As&hellip; at the top left of the Ghidra screen:</p>
+<!-- raw HTML omitted -->
+<p>Save the project by giving it a name ending with &lsquo;.bin&rsquo;.</p>
+<p>Finally, close the CodeBrowser screen and save the project:</p>
+<!-- raw HTML omitted -->
+<p>Now we will upload this reversed .bin file to our board via CubeProgrammer.</p>
+<p>Let&rsquo;s start CubeProgrammer and connect our board with the Connect button on the top right of the program:</p>
+<!-- raw HTML omitted -->
+<p>As you can see, we see the memory addresses etc. when connected to our board.</p>
+<p>Let&rsquo;s select the .bin file that we have reversed by clicking on the &lsquo;Open File&rsquo; option in the program and then click on the &lsquo;Download&rsquo; option to upload the firmware we have reversed to our card:</p>
+<!-- raw HTML omitted -->
+<p>As you can see, we get the message &lsquo;File Download Complete&rsquo; on the screen.</p>
+<h3 id="the-result"><strong>The Result</strong></h3>
+<!-- raw HTML omitted -->
+<p>As it can be seen from the video, the Led lights up when we do not press the Button. If we press the button, the led goes out.</p>
+<p>Basically what we did was quite simple. We simply coded our card to turn on the led when the button is pressed, and we reversed the firmware of the card with Ghidra and adjusted it to do the opposite of what we coded and reinstalled it on the card.</p>
+<p>I hope the content was useful for you. If you want to investigate the subject in more detail, you can take a look at the resources I left as a reference.</p>
+<h3 id="references"><strong>References</strong></h3>
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=q4CxE5P6RUE"><strong>Stacksmashing - Bare-metal ARM Firmware Reverse Engineering with Ghidra</strong></a></p>
+</li>
+<li>
+<p><a href="https://www.cutawaysecurity.com/learning-ghidra-basics-analyzing-firmware/"><strong>Cutaway Security - Learning Ghidra Basics Analyzing Firmware</strong></a></p>
+</li>
+<li>
+<p><a href="https://cybergibbons.com/hardware-hacking/reading-and-writing-firmware-on-an-stm32-using-swd/"><strong>Cybergibbons - Reading and Writing Firmware on an STM32 using SWD</strong></a></p>
+</li>
+</ul>
+
+    <h4><a href="http://localhost:1313/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2025</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://twitter.com">Twitter</a> 
+        
+        <a href="https://github.com">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: true , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>

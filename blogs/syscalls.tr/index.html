@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="http://localhost:1313//favicon.ico">
+    <link rel="canonical" href="http://localhost:1313/">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="http://localhost:1313/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/about/">
+                                    
+                                    <span>About</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>Windows Kernel&#39;da Systemm Call Mekanızmasını Reverseleme - Tue, Dec 31, 2024</h1>
+    </div>
+    <p class="lead"></p>
+    <h2 id="giriş"><strong>Giriş</strong></h2>
+<p>Merhabalar efenimm. Syscall yolcuğuluma hoşgeldiniz.</p>
+<p>Birkaç gün önce SSDT tablosu üzerine bir <a href="https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/">döküman</a> paylaşmıştım. Bu dökümanda temel olarak SSDT&rsquo;nin ne olduğunu, adreslerin nasıl hesaplandığı vs anlatmıştım. Dökümanın son kısmında ise öğrendiğimiz şeylerin bir kernel sürücüsünü hazırlamıştık.</p>
+<p>Ancak SSDT için bu dökümanı hazırladıktan sonra SSDT için bu bilgiler benim için yetersiz gelmişti. Eğer benim gibi bir konunun derinine inmeye meraklı iseniz benimle kalın. Çünkü Windows Kernel&rsquo;da Syscall&rsquo;ların nasıl işlendiğini vs. yakından göreceğiz; Hem statik analiz hem de dinamik analizle!</p>
+<p>Bu blogta, temel bilgiler olan NTAPI&rsquo;ların ne olduğu ve syscall&rsquo;ın nasıl işlendiği vs. gibi konulara yer vermeyeceğim. Zira <a href="https://0xbekoo.github.io/tr/docs/malware-dev/ntapi-injection/"><strong>NTAPI Injection</strong></a> dökümanında NTAPI&rsquo;in ne olduğunu, <a href="https://0xbekoo.github.io/tr/docs/malware-dev/direct-syscalls"><strong>Direct Systemcalls</strong></a> dökümanında bir syscall&rsquo;ın nasıl işlendiğini ve  temel olarak <a href="https://0xbekoo.github.io/tr/docs/winkernel-dev/wkd-ssdt/"><strong>SSDT</strong></a> dökümanında SSDT ve kernel&rsquo;da syscall&rsquo;ın nasıl işlendiğini daha önceden anlattım. Eğer temel şeylerle öğrenmeye başlayacaksınız bu dökümanlardan başlamak sizin için daha iyi olacaktır. Bu blogta nihai amacımız kernel alanında bir syscall&rsquo;ın nasıl işlendiğini detaylı bir şekilde görmek olacak.</p>
+<h2 id="statik-analiz"><strong>Statik Analiz</strong></h2>
+<p>Bir syscall işlendiğinde, ntdll.dll&rsquo;den syscall yapıldığında kernel alanına geçişte ilk durağın KiSystemCall64 olduğunu biliyoruz. Statik olarak analizimizi buradan başlayacağız. IDA ortamında ntoskrnl.exe analiz etmekle başlayalım.</p>
+<h3 id="kisystemserviceuser"><strong>KiSystemServiceUser</strong></h3>
+<p><strong>KiSystemCall64/KiSystemCall64Shadow</strong> kodlarına göz attığınızda akışın <strong>KiSystemServiceUser</strong>&lsquo;a doğru yönlendiğini göreceksiniz:</p>
+<p><img src="../../../images/posts/syscall-journey/img1.png" alt=""></p>
+<p><strong>KiSystemServiceUser</strong>&lsquo;da syscall&rsquo;ın işlenmesi için hazırlıklar yapılıyor:</p>
+<p><img src="../../../images/posts/syscall-journey/img2.png" alt=""></p>
+<p>Burada odağımızı <code>mov rbx,gs:188h</code> kısmına çevirmemiz gerekiyor çünkü önemli bir yapı olan _KPCR yapısı içerisinden bir KTHREAD yapısı alınmakta.</p>
+<p>Bu yapının ne olduğunu anlamak için <a href="https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/amd64_x/kpcr.htm">Geoff Chappell, Software Analyst</a>&lsquo;ın açıklamasından yararlanabiliriz:</p>
+<blockquote>
+<p>&ldquo;KPCR yapısı, <strong>Kernel Processor Control Region</strong> anlamına gelir. Kernel, her mantıksal işlemci için bir KPCR yapısı tutar. KPCR, işlemci mimarisine son derece özeldir.&rdquo;</p>
+</blockquote>
+<p>Yani kısaca aklımızda şöyle kalabilir bu yapıda işlemciye özel verileri saklamak için kullanılır. Yani baya önemli bir yapı.</p>
+<p>x64 sistemlerde KPCR yapısı, gs:0 alanına işaret eder:</p>
+<pre tabindex="0"><code>kd&gt; dt nt!_KPCR
+   +0x000 NtTib            : _NT_TIB
+   +0x000 GdtBase          : Ptr64 _KGDTENTRY64
+   +0x008 TssBase          : Ptr64 _KTSS64
+   +0x010 UserRsp          : Uint8B
+   +0x018 Self             : Ptr64 _KPCR
+   +0x020 CurrentPrcb      : Ptr64 _KPRCB
+   +0x028 LockArray        : Ptr64 _KSPIN_LOCK_QUEUE
+   +0x030 Used_Self        : Ptr64 Void
+   +0x038 IdtBase          : Ptr64 _KIDTENTRY64
+   +0x040 Unused           : [2] Uint8B
+   +0x050 Irql             : UChar
+   +0x051 SecondLevelCacheAssociativity : UChar
+   +0x052 ObsoleteNumber   : UChar
+   +0x053 Fill0            : UChar
+   +0x054 Unused0          : [3] Uint4B
+   +0x060 MajorVersion     : Uint2B
+   +0x062 MinorVersion     : Uint2B
+   +0x064 StallScaleFactor : Uint4B
+   +0x068 Unused1          : [3] Ptr64 Void
+   +0x080 KernelReserved   : [15] Uint4B
+   +0x0bc SecondLevelCacheSize : Uint4B
+   +0x0c0 HalReserved      : [16] Uint4B
+   +0x100 Unused2          : Uint4B
+   +0x108 KdVersionBlock   : Ptr64 Void
+   +0x110 Unused3          : Ptr64 Void
+   +0x118 PcrAlign1        : [24] Uint4B
+   +0x180 Prcb             : _KPRCB
+</code></pre><p>Şimdi odağımızı çevirdiğimiz koda baktığımızda ilk olarak <strong>gs:188</strong> işaret edilen bölüm alınmakta. Windbg&rsquo;dan elde ettiğimiz çıktı ile KPCR yapıya baktığımızda bu kısmın <strong>0x180 Prcb _KPRCB</strong> alanından bir bölüme işaret ettiğini anlayabiliriz:</p>
+<pre tabindex="0"><code>dt nt!_KPRCB
+   +0x000 MxCsr            : Uint4B
+   +0x004 LegacyNumber     : UChar
+   +0x005 ReservedMustBeZero : UChar
+   +0x006 InterruptRequest : UChar
+   +0x007 IdleHalt         : UChar
+   +0x008 CurrentThread    : Ptr64 _KTHREAD
+</code></pre><p><code>gs:188h</code> olduğu için KRPCB yapısından KTHREAD yapısına işaret eden <strong>+0x008 CurrentThread</strong> alınmakta. <strong>KTHREAD</strong> yapısının ne olduğunu anlamak için yine <a href="https://www.geoffchappell.com/studies/windows/km/ntoskrnl/inc/ntos/ke/kthread/index.htm">Geoff Chappell</a>&lsquo;in makalesinden yararlanabiliriz:</p>
+<blockquote>
+<p>&ldquo;KTHREAD yapısı, ETHREAD yapısının çekirdek kısmıdır. ETHREAD, Nesne Yöneticisi (Object Manager) aracılığıyla sunulan iş parçacığı nesnesidir. KTHREAD ise bunun temel çekirdeğini oluşturur.&rdquo;</p>
+</blockquote>
+<p>Yani bildiğimiz ETHREAD yapısının kernel versiyonu. Thread yürütme/yönetimi için Kernel tarafından ihtiyaç duyulan birçok önemli bilgiyi içeriyor bu yapı. Bunlardan biri de bu yapıda TEB&rsquo;in adresi bulunmasıdır:</p>
+<pre tabindex="0"><code>kd&gt; dt nt!_KTHREAD
+...
+   +0x080 SystemCallNumber : Uint4B
+   +0x084 ReadyTime        : Uint4B
+   +0x088 FirstArgument    : Ptr64
+...
+   +0x0f0 Teb              : Ptr64 Void
+</code></pre><p><strong>KiSystemServiceUser</strong>&lsquo;ın son kısımlarında ise KTHREAD yapısından <strong>SystemCallNumber</strong> ve <strong>FirstArgument</strong> bayrakların ayarlandığını görebiliriz:</p>
+<p><img src="../../../images/posts/syscall-journey/img3.png" alt=""></p>
+<p>Bundan sonra akış <strong>KiSystemServiceStart</strong>&lsquo;a yönlendiriliyor.</p>
+<h3 id="syscall-numarasının-belirlenmesi-kisystemservicestart">Syscall Numarasının Belirlenmesi: <strong>KiSystemServiceStart</strong></h3>
+<p>Yapılan syscall&rsquo;ın ilk temelleri burada atılmaya başlanıyor.</p>
+<p>Bir syscall yapıldığında, içerdiği syscall index&rsquo;le beraber <strong>Table Identifier</strong> bilgisi de içermektedir. Kafanız karışmaması için bunu bir fotoğraf üzerinden anlatayım:</p>
+<p><img src="../../../images/posts/syscall-journey/byte-diagram.png" alt=""></p>
+<p>Bitler sağdan sola okunduğundan 0 ila 11 bit System Call Index&rsquo;ın bitini barındırır. 12 ila 13 bit arası ise Table Identifier&rsquo;ın biti barındırır. Bundan sonraki bitler kullanılmaz. Şimdi ki durağımız olan <strong>KiSystemServiceStart</strong> tam da bu konuyla alakalı:</p>
+<p><img src="../../../images/posts/syscall-journey/img4.png" alt=""></p>
+<p>Şimdi kafanızda daha iyi oturması için bir senaryo oluşturalım. Diyelim ki ntdll.dll&rsquo;den NtOpenProcess için syscall yapıldı. Bu senaryoda Syscall&rsquo;ın yapılmasını şöyle düşünmenizi istiyorum: içi beyaz sünger dolu kutu gibi düşünmenizi istiyorum.</p>
+<p>Diyelim ki biri tarafından içinde iki tane hediye olan bu kutuyu aldınız. İçini açtığınızda en üstünde gereksiz beyaz sünger olduğunu gördüğünüz. Beyaz süngerin altında ise iki tane hediye bulunmakta. Normal bir insan gibi  üsteki süngerleri kaldırır ve altında duran hediyeleri alırız demi?</p>
+<p>Syscall çağırısı kernel alanından KiSystemServiceStart&rsquo;a ulaştıktan sonra KiSystemServiceStart fonksiyonu aynen bunu yapıyor. Bu gereksiz süngerleri (kabaca kullanılmayan bitleri) kaldırıyor ve ilk olarak birinci eşyayı (Table Identifier) ve ikinci eşyayı (System Call Index) alıyor.</p>
+<p>Bu örnekten sonra fonksiyona tekrar göz atalım:</p>
+<p><img src="../../../images/posts/syscall-journey/img5.png" alt=""></p>
+<p>Örneğimizde NtOpenProcess&rsquo;i söylemiştim. NtOpenProcess&rsquo;in ssn numarası <strong>0x26</strong>&lsquo;dır. Yani bu kısımda eax&rsquo;ın 26h değeri barındırdığını düşünürsek:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">edi</span>,<span style="color:#66d9ef">eax</span>     <span style="color:#75715e">; eax = 0x26 (0010 0110)
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">shl</span> <span style="color:#66d9ef">edi</span>,<span style="color:#ae81ff">7</span>
+</span></span></code></pre></div><p>Burada yapılan işlem tam olarak aşağıda gösterildiği gibidir:</p>
+<p><img src="../../../images/posts/syscall-journey/img6.png" alt=""></p>
+<p>Yani 7 bit sağ kaydırmadan sonra elde ettiğimiz değer tamamen 0 oluyor ve edi register&rsquo;ı 0x0 değeri almış olur. Gereksiz bitleri kaldırdığımıza göre Table Identifier&rsquo;ı alalım:</p>
+<pre tabindex="0"><code>and edi,20h     ; edi = 0x20 (1000 00)
+</code></pre><p>Burada yapılan işlem tam olarak aşağıda gösterildiği gibidir:</p>
+<p><img src="../../../images/posts/syscall-journey/img7.png" alt=""></p>
+<p>Yani NtOpenProcess için alacağımız Table Identifier&rsquo;ın sonucu 0x0 olacaktır.</p>
+<p>Fakat bu durum her zaman böyle değildir. SSN numarası eğer 1000h ile 1FFFh arasındaysa Table Identifier değeri 0x20 olacaktır. Bu API&rsquo;lar Windows GUI ile ilgilidir.</p>
+<p>Eğer ki Syscall Numarası 0h ile FFFh arasındaysa, örneğimizde olduğu gibi Table Identifier değeri 0x0 olacaktır. Bu API&rsquo;lar ise ntdll.dll ile ilgilidir.</p>
+<p>Şimdi ise Systemcall numarasının alındığı kısma geldik:</p>
+<pre tabindex="0"><code>and eax,0FFFh   // eax = 0x26 (0010 0110)
+</code></pre><p>Burada yapılan işlem ise aşağıda gösterilmiştir:</p>
+<p><img src="../../../images/posts/syscall-journey/img8.png" alt=""></p>
+<p><strong>0010 0110</strong> (Hex: 0x26) sonucunu elde ediyoruz. Bu ise NtOpenProcess&rsquo;in Systemcall numarasıdır.</p>
+<p>Kafamızda daha iyi oturması için herhangi bir GUI ile alakalı bir API seçelim ve bu adımları ona da uygulayalım. <strong>win32u.dll</strong>&lsquo;den GUI ile alakalı bir API seçelim ve bu seçtiğimiz API&rsquo;in Table Identifier değerini ve SSN&rsquo;i hesaplayalım:</p>
+<p><img src="../../../images/posts/syscall-journey/img16.png" alt=""></p>
+<p><strong>NtUserCreateWindowEx</strong> GUI ile alakalı bir API&rsquo;dir ve win32u.dll&rsquo;in içinde bulunur. SSN Numarası ise <strong>106F</strong>. Bunun işlendiği varsayarsak:</p>
+<pre tabindex="0"><code>mov edi,eax ; eax = 0x106F (0001 0000 0110 1111)
+shl edi,7
+</code></pre><p>Bu işlem tam olarak şöyle:</p>
+<p><img src="../../../images/posts/syscall-journey/img17.png" alt=""></p>
+<p>7 bit sola kaydırdığımızda aldığımız sonuç <strong>20h</strong> oluyor. Daha sonra Table Identifier değerini alalım:</p>
+<pre tabindex="0"><code>and edi,20h ; edi = 0x20 (1000 00)
+</code></pre><p>Bu kodda yapılan işlem aşağdaki gibidir:</p>
+<p><img src="../../../images/posts/syscall-journey/img18.png" alt=""></p>
+<p>Yani Table Identifier değeri 0x20 (32) oluyor.</p>
+<p>Yani her zaman Table Identifier değeri 0x0 olmuyor. Önceden anlattığım gibi, eğer GUI ile alakalı bir API&rsquo;in ssn numarası işleniyorsa table Identifier değeri 0x20 olacaktır. 0x0 olması takdirde ntdll.dll&rsquo;in içerisinden bir API olduğunu anlayabiliriz.</p>
+<p>Son olarak GUI API&rsquo;in SSN numarasını çıkaralım:</p>
+<pre tabindex="0"><code>and eax,0FFFh   ; eax = 0x106F
+</code></pre><p>Bu kodda yapılan işlem aşağıdaki gibidir:</p>
+<p><img src="../../../images/posts/syscall-journey/img19.png" alt=""></p>
+<p>Sonucumuz <strong>0001000001101111</strong> yani 0x106F değerine denk gelmektedir.</p>
+<p>Böylece <strong>KiSystemServiceStart</strong> fonksiyonunun amacı, işlenilen syscall&rsquo;ı ve Table Identifier değerlerini çıkarmak. Bu kısımdan sonra artık akış <strong>KiSystemServiceRepeat</strong>&rsquo;e yöneliyor.</p>
+<h3 id="kernel-rutinin-hesaplanması-kiservicesystemrepeat">Kernel Rutinin Hesaplanması: <strong>KiServiceSystemRepeat</strong></h3>
+<p>Artık Syscall numarası belirlendikten sonra bu fonksiyonda ilk olarak SSDT&rsquo;nin adresi alınmakta:</p>
+<p><img src="../../../images/posts/syscall-journey/img9.png" alt=""></p>
+<p>Fakat ilgi çeken kısım ise SSDT&rsquo;nin adresi alındıktan sonra rbx&rsquo;in değerleri kontrol ediliyor. Hatırlayalım, rbx register&rsquo;ı hangi adresi tutuyordu?</p>
+<p><strong>KiSystemServiceUser</strong> başlığında gördüğümüz gibi rbx register&rsquo;ı, _KPRCB altında <code>+0x008 CurrentThread    : Ptr64 _KTHREAD</code> yapıyı tutmakta. Bu yapıda neyi kontrol ettiğine bir bakalım:</p>
+<pre tabindex="0"><code>&gt; dt nt!_KTHREAD
+   ...
+   +0x078 ThreadFlagsSpare : Pos 0, 2 Bits
+   +0x078 AutoAlignment    : Pos 2, 1 Bit
+   +0x078 DisableBoost     : Pos 3, 1 Bit
+   +0x078 AlertedByThreadId : Pos 4, 1 Bit
+   +0x078 QuantumDonation  : Pos 5, 1 Bit
+   +0x078 EnableStackSwap  : Pos 6, 1 Bit
+   +0x078 GuiThread        : Pos 7, 1 Bit
+</code></pre><p>Bu yapıdan <strong>GuiThread</strong> flag&rsquo;ın ayarlanıp ayarlanmadığını kontrol edilmektedir. Eğer ayarlanmamışsa direkt bu koşullardan atlanır.</p>
+<p>İşin garip kısmı da ileride de göreceğimiz gibi, thread ilk olarak bu rutini çalıştırdığında GUI ile alakalı bir API&rsquo;in işlenip işlenmediğini bilmiyor. Yani bir farklı deyişle, Kernel henüz mevcut Thread&rsquo;ın bir GUI fonksiyonu işleyip işlemediğini bilmiyor. Dolayasıyla sonuç ne olursa olsun ilk kısımda burası her zaman atlanacaktır. İlerideki  analizde göreceksiniz ki hesaplamalardan sonra akış, eğer GUI ile alakalı bir API işleniyorsa bu kısma tekrardan yönlendirilecek.</p>
+<p><img src="../../../images/posts/syscall-journey/img10.png" alt=""></p>
+<p>SSDT&rsquo;nin adresi alındıktan sonra  bir karşılaştırma yapılıyor. Açıklamadan göreceğiniz üzere Syscall numarası, <strong>r10+rdi+10h</strong> adresindeki değerle karşılaştırıyor. r10 register&rsquo;ı SSDT adresini barındırırken rdi değeri ise yukarıda gördüğümüz gibi Table Identifier sonucunu taşımaktadır. Örneğimizin yine NtOpenProcess olduğunu düşünürsek Table Identifier&rsquo;ın 0x0 olduğunu varsayabiliriz.</p>
+<p>Bu koşulun amacı alınan syscall numarasının GUI ile alakalı bir API&rsquo;a ait olup olmadığıdır. Eğer ait ise <strong>loc_14068DAC7</strong> fonksiyonuna yönlendirilir. Değilse işlemlere devam edilir.</p>
+<p>Şimdi ise büyünün gerçekleştiği kısma geliyoruz:</p>
+<p><img src="../../../images/posts/syscall-journey/img11.png" alt=""></p>
+<p>Eğer SSDT dökümanımı okuduysanız SSDT tablosunu kullanarak mutlak adrese erişmek için bazı formüller kullanıyorduk. Bu formülleri de iredteam kaynağından almıştım. Bu kısım tam olarak bununla ilgili. Detaya geçmeden önce formülleri bir hatırlayalım.</p>
+<p>İlk olarak offset&rsquo;i hesaplıyorduk:</p>
+<!-- raw HTML omitted -->
+<p>Buradaki formülün karşılığını assembly kodlarında görebiliriz:</p>
+<pre tabindex="0"><code>movsxd  r11, dword ptr [r10+rax*4] ; Offset&#39;i hesapla
+</code></pre><p>r10 register&rsquo;da SSDT adresi, rax&rsquo;ta SSN numarası bulunmakta.</p>
+<p>Yine SSDT dökümanında, elde ettiğimiz offset değeri ile ilgili kernel rutini hesaplıyorduk:</p>
+<!-- raw HTML omitted -->
+<p>Bu kısmın assembly karşılığı ise şu şekilde:</p>
+<pre tabindex="0"><code>mov     rax, r11
+sar     r11, 4          ; Elde edilen offset değerini 4 bit sağ kaydır
+add     r10, r11        ; Kaydırma sonucunu SSDT adresiyle toplayarak mutlak adresi hesapla
+</code></pre><p>Yani SSDT&rsquo;te öğrendiğimiz formüller kullanılarak asıl adres hesaplanıyor. Böylece canlı bir şekilde de formülleri görmüş olduk.</p>
+<p>Daha sonra edi register&rsquo;ın değeri <strong>0x20</strong> değeri ile karşılaştırılıyor:</p>
+<pre tabindex="0"><code>cmp edi,20h
+jnz short loc_14068D270
+</code></pre><p>Artık bunun ne anlama geldiğini biliyoruz. İşlenilen API&rsquo;in GUI API&rsquo;a ait olup olmadığı kontrol ediliyor. Bunun için de alınan Table Identifier değeri kullanılıyor. Eğer işlenilen API, GUI ile alakalı ise bu kısma yönlendiriliyor:</p>
+<p><img src="../../../images/posts/syscall-journey/img12.png" alt=""></p>
+<p>Bu başlıkta ilk olarak bahsettiğim konuya geldik. Eğer edi gerçekten 0x20 ise, bu bir GUI API&rsquo;in işlendiğini gösterir ve mevcut thread&rsquo;ı <strong>KiConvertGuiThread</strong> ile bir GUI Thread&rsquo;e dönüştürür. Sonrada akış tekrardan KiSystemServiceRepeat&rsquo;e yönlendirilir</p>
+<p>Artık işlenilen syscall&rsquo;ın GUI ile alakalı olup olmadığı belirlendiğinde ve hesaplamalar yapıldıktan sonra akış KiSystemServiceGdiTebAccess&rsquo;e yönlendirilir. Ardından hesaplanılan adrese yönlendirmek için akış <strong>KiSystemServiceCopyEnd</strong>&lsquo;den devam ediyor:</p>
+<p><img src="../../../images/posts/syscall-journey/img13.png" alt=""></p>
+<p><strong>KiSystemServiceCopyEnd</strong>&rsquo;nin adresine yönlendirmeden önce bu adresi rax&rsquo;ın değeri kadarıyla çıkartıyor yani akış, KiSystemServiceCopyStart kısmına aktarılıyor.</p>
+<h3 id="kernel-rutine-yönlendirme-kisystemservicecopyend"><strong>Kernel Rutine Yönlendirme: KiSystemServiceCopyEnd</strong></h3>
+<p><img src="../../../images/posts/syscall-journey/img14.png" alt=""></p>
+<p>Bu fonksiyonda dikkatimizi çeken kısım ise akış, hesaplanan kernel rutin adresine yönlendirilmesidir:</p>
+<p><img src="../../../images/posts/syscall-journey/img15.png" alt=""></p>
+<p>r10 register&rsquo;da hesaplanan rutin adresi bulunmaktadır. rax register&rsquo;a adres aktarılarak adres çağrılıyor.</p>
+<h3 id="statik-analiz-sonucu"><strong>Statik Analiz Sonucu</strong></h3>
+<p>Statik analizle incelediğimizde kernel alanında syscall&rsquo;ın şu şekilde işlendiğini anlayabiliriz:</p>
+<ul>
+<li><strong>Durak 1 - KiSystemServiceUser</strong>: Geçerli Thread için KPRCB yapısından CurrentThread yapı alınır, <strong>SystemCallNumber</strong> ve <strong>FirstArgument</strong> bayrakları ayarlanır.</li>
+<li><strong>Durak 2 - KiSystemServiceStart</strong>: İşlenilecek syscall&rsquo;ın numarasını ve Table Identifier değerlerini çıkarır.</li>
+<li><strong>Durak 3 - KiSystemRepeat</strong>: Syscall işlenme sürecin en önemli durağı. İşlenilen syscall&rsquo;ın GUI ile ilgili olup olmadığı belirlenir ve ilgili rutin adres hesaplanır.</li>
+<li><strong>Durak 4 - KiSystemServiceCopyEnd</strong>: Artık syscall işlenme sürecin son durağı. Akış, hesaplanılan adrese yönlendirilir ve işlemler tamamlanmış olur.</li>
+</ul>
+<h2 id="dinamik-analiz"><strong>Dinamik Analiz</strong></h2>
+<p>Sanal makinemize bağlı Windbg ile bu süreçleri yakından takip edebiliriz. Statik analizde öğrendiğimiz şeyleri dinamik olarak da görelim.</p>
+<h3 id="kisystemcall64e-breakpoint-eklemek"><strong>KiSystemCall64</strong>&rsquo;e Breakpoint Eklemek</h3>
+<p>KiSystemCall64&rsquo;ün adresini okuyarak başlayabiliriz. Bunun için aşağıdaki komut ile adresini okuyabiliriz:</p>
+<pre tabindex="0"><code>kd&gt; rdmsr c0000082
+msr[c0000082] = fffff802`5b21a1c0
+</code></pre><p>İlk olarak windbg’da KiSystemCall64’e bp koyarak başlamıştım ancak sakın direkt olarak buraya bir bp koymayın yoksa PatchGuard selam verecektir:</p>
+<p><img src="../../../images/posts/syscall-journey/img20.png" alt=""></p>
+<p>Yani BSOD veriyor. Tekrar tekrar analiz ettiğimde nedenini anladım. Ayrıca bunu anlamamda stackoverflow&rsquo;da bu sorunun üzerine <a href="https://stackoverflow.com/questions/65367333/breakpoint-setting-in-ntkisystemcall64-not-working">konu açan</a> kişi sayesinde netleştirmiş oldum.</p>
+<p>KiSystemCall64 kısmın ilk kısımlarına göz atarsanız Windows çekirdek hata ayıklama mekanizması tarafından gerekli olan kernel stack&rsquo;ın ayarlandığını göreceksiniz. Yani buradaki çözüm bu stack ayarlandıktan sonraki kısma bir bp koymak olacaktır:</p>
+<p><img src="../../../images/posts/syscall-journey/img21.png" alt=""></p>
+<p>Statik analizde buna dikkat etmemiştim ancak windbg&rsquo;da daha iyi anladım. İlk başlarda stack ayarlamanın yapıldığını görebiliriz. Aşağıda gösterilen kısma bir bp koyduğumda bir sıkıntı olmadığını gözlemledim:</p>
+<p><img src="../../../images/posts/syscall-journey/img22.png" alt=""></p>
+<p>İşte sonucu:</p>
+<p><img src="../../../images/posts/syscall-journey/img23.png" alt=""></p>
+<p>Başarılı bir şekilde tetikleniyor. Artık işlenilecek rastgele syscall&rsquo;ı analiz edebiliriz!</p>
+<h3 id="kisystemserviceuser-1"><strong>KiSystemServiceUser</strong></h3>
+<p>Analize başlamadan önce bilmediğimiz bir syscall yapıldığı için hangi API için syscall yapıldığına göz atalım:</p>
+<p><img src="../../../images/posts/syscall-journey/img24.png" alt=""></p>
+<p>Hızlı bir şekilde formülleri kullandığımızda, benim için <strong>1a3</strong> numaralı NtSetIoCompletion API&rsquo;i tetiklenmiş.</p>
+<p>Statik analizimizde ilk durağın <strong>KiSystemServiceUser</strong> olduğunu görmüştük. Buraya bir bp koyarak akışı devam ettirelim:</p>
+<pre tabindex="0"><code>kd&gt; bp ntkrnlmp!KiSystemServiceUser
+kd&gt; g
+Breakpoint 1 hit
+nt!KiSystemServiceUser:
+fffff802`5ac1264d c645ab02        mov     byte ptr [rbp-55h],2
+</code></pre><p>Bu API&rsquo;in ilk kısımlarında _KPRCB içerisinden KTHREAD yapısına işaret eden Current Thread yapının alındığını görmüştük. Windbg&rsquo;da bunu görebiliriz:</p>
+<p><img src="../../../images/posts/syscall-journey/img25.png" alt=""></p>
+<p>Yapının adresi alındıktan sonra <strong>KiSystemServiceUser</strong>&lsquo;ın son kısmında ayarlamalar yapıldığını tekrar görebiliriz:</p>
+<p><img src="../../../images/posts/syscall-journey/img26.png" alt=""></p>
+<p>Bu ayarlamarın yapıldıktan sonraki kısmına bir bp koyalım ve aktarılan değerlere göz atalım:</p>
+<p><img src="../../../images/posts/syscall-journey/img27.png" alt=""></p>
+<p>Ayarlanan Systemcall numarası ve FirstArgument bayrakların değerlerini görebiliriz. Ayrıca Teb&rsquo;in adresini de.</p>
+<h3 id="kisystemservicestart"><strong>KiSystemServiceStart</strong></h3>
+<p>Artık syscall ve Table Identifier değerlerini çıkaran <strong>KiSystemServiceStart</strong> API&rsquo;a bp koyalım:</p>
+<pre tabindex="0"><code>kd&gt; g
+Breakpoint 4 hit
+nt!KiSystemServiceStart:
+fffff802`5ac12770 4889a390000000  mov     qword ptr [rbx+90h],rsp
+</code></pre><p>Bu kısımda artık neler yapıldığını bilsek de bir kısaca göz atalım:</p>
+<p><img src="../../../images/posts/syscall-journey/img28.png" alt=""></p>
+<p>Şimdi benim debugger&rsquo;da tetiklenen syscall numarası 0x1a3 olduğu için bu değerle yapılan işlemleri tekrar edelim. Tekrardan zarar gelmez:</p>
+<pre tabindex="0"><code>mov edi eax     ; eax = 0x1a3 (0001 1010 0011)
+shr edi,7
+</code></pre><p>Bu komutlar çalıştığında şu sonucu almamız gerekecek:</p>
+<p><img src="../../../images/posts/syscall-journey/img29.png" alt=""></p>
+<p>Sonucumuz 0000 0011 (3) olacaktır. Windbg&rsquo;da bu kısmı çalıştırıp sonucu doğrulayabiliriz:</p>
+<p><img src="../../../images/posts/syscall-journey/img31.png" alt=""></p>
+<p>Çıktıdan gördüğümüz gibi kaydırma işleminden sonra <strong>3</strong> değeri alınıyor.</p>
+<p>Şimdi kaydırma işleminden sonra Table Identifier&rsquo;ı alalım:</p>
+<p><img src="../../../images/posts/syscall-journey/img30.png" alt=""></p>
+<p>Sonucumuz <strong>0</strong>. Önceden anlattığım gibi eğer Table Identifier değeri 0 ise ntdll.dll API&rsquo;a ait olduğunu anlayabiliriz. Doğrulamak için windbg&rsquo;ı kullanalım:</p>
+<p><img src="../../../images/posts/syscall-journey/img32.png" alt=""></p>
+<p>Son olarak ise Systemcall numarası alınacak:</p>
+<pre tabindex="0"><code>and eax,0FFFh   ; eax = 0x1a3 (0001 1010 0011)
+</code></pre><p>Aşağıda bu işlem gösterilmiştir:</p>
+<p><img src="../../../images/posts/syscall-journey/img33.png" alt=""></p>
+<p>İşlem sonucunda <strong>0001 1010 0011</strong> yani 0x1a3 değerini elde ediyoruz. Yine doğrulamak için Windbg&rsquo;ı kullanalım:</p>
+<p><img src="../../../images/posts/syscall-journey/img34.png" alt=""></p>
+<p>Göründüğü üzere systemcall numarası alınmakta. Artık Syscall ve Table Identifier değerleri çıkarıldıktan sonra bu fonksiyonla işimiz bitiyor ve akış, <strong>KiSystemServiceRepeat</strong>&rsquo;e yöneliyor.</p>
+<h3 id="kisystemservicerepeat"><strong>KiSystemServiceRepeat</strong></h3>
+<p>Syscall ve Table Identifier değerleride alındıktan sonra artık bu durakta adresin hesaplanacağını biliyoruz.</p>
+<p><img src="../../../images/posts/syscall-journey/img35.png" alt=""></p>
+<p>Tekrar etmekten zarar gelmez, SSDT&rsquo;nin adresi alınması ardından işlenilen syscall numaranın GUI API&rsquo;a ait olup olunmadığı karşılaştırılıyor. Ne olursa olsun thread ilk defa bu kısma gerdiğinde her zaman bu kısmı atlayacak çünkü önceden de anlattığım gibi, thread ilk defa bu kısma geldiğinde işlenilen API&rsquo;in GUI ile alakalı olup olmadığını bilmiyor. İlerideki akışta hesaplamalardan sonra işlenilen API&rsquo;in GUI ile alakalı olduğu tespit edildiğinde bu fonksiyonun başına tekrar yönlendirilecek.</p>
+<p>Bu koşullar atladığında en önemli kısım geliyor. Artık adresin hesaplanması yapılıyor:</p>
+<p><img src="../../../images/posts/syscall-journey/img36.png" alt=""></p>
+<p>r10 register&rsquo;da SSDT&rsquo;nin adresi bulunmakta. r11 register&rsquo;a SSDT tablosunda işlenilen API&rsquo;in mutlak adresine karşılık gelen Offset hesaplanıyor. Formülümüzü tekrardan hatırlayalım:</p>
+<!-- raw HTML omitted -->
+<p>Doğrulamak için offset&rsquo;in hesaplandığı kısmı çalıştırıp elde edilen değere göz atalım:</p>
+<p><img src="../../../images/posts/syscall-journey/img37.png" alt=""></p>
+<p>Elde edilen offset değerin <strong>0x637dd01</strong> olduğunu görebiliriz.</p>
+<p>Şimdi ise offset değerini kullanarak mutlak adresi hesapladığı kısmi çalıştıralım ve hesaplanan adrese bakalım:</p>
+<p><img src="../../../images/posts/syscall-journey/img38.png" alt=""></p>
+<p>Formülümüzü tekrar hatırlayalım arkadaşlar:</p>
+<!-- raw HTML omitted -->
+<p>Bu formül ile hesaplamadan sonra <strong>0xfffff8025aeffa80</strong> adresi elde ettim ve kontrol ettiğimde NtSetIoCompletion&rsquo;a ait olduğunu doğruladım.</p>
+<p>Adres hesaplamasından sonra edi&rsquo;nin değeri 0x20 ile karşılaştırdığını tekrar görüyoruz. Artık bunun ne anlama geldiğini biliyoruzdur.</p>
+<p>Eğer sizde tetiklenen Syscall numarası GUI ile alakalı bir API&rsquo;a ait ise bu koşul sağlanacaktır. Benimkinde tetiklenen API, GUI ile ilgili olmadığından burası atlanacaktır.</p>
+<p>Atlamadan sonra akışın <strong>KiSystemServiceGdiTebAccess</strong>&rsquo;e yönlendirdiğini göreceksiniz:</p>
+<p><img src="../../../images/posts/syscall-journey/img39.png" alt=""></p>
+<p>Artık bu kısımlarda yapılan işlemlere göz atmamıza gerek yok. Zira artık işlenilen syscall&rsquo;ın adresi belirlendi ve artık buraya yönlendirimeye hazırlanılacak. Ancak statik analizimizde gördüğümüz gibi bu yönlendirme <strong>KiSystemServiceCopyEnd</strong>&rsquo;e gerçekleşecek ve bu fonksiyonun sonuna göz attığınızda KiSystemServiceCopyEnd&rsquo;in gerisine yönlendirdiğini göreceksiniz:</p>
+<p><img src="../../../images/posts/syscall-journey/img40.png" alt=""></p>
+<p>jmp r11 olan kısma bir bp koyalım ve akış bu kısma geldiğinde bir ileri götürelim ve nereye yönlendirdiğine bir bakalım:</p>
+<p><img src="../../../images/posts/syscall-journey/img41.png" alt=""></p>
+<p>Bazı verilerin kopyalanması için <strong>KiSystemServiceCopyStart</strong>&lsquo;a yönlendirdiğini göreceksiniz. Artık bu kısımdan sonra ilgili adrese yönlendirilmek üzere <strong>KiSystemServiceCopyEnd</strong>&rsquo;e yönlenecek.</p>
+<h3 id="kisystemservicecopyend"><strong>KiSystemServiceCopyEnd</strong></h3>
+<p>Artık syscall işlenmesi bitti ve hesaplanan adresi yönlendirme noktasına geldik:</p>
+<p><img src="../../../images/posts/syscall-journey/img42.png" alt=""></p>
+<p>Burada dikkatimizi çeken kısım rax register&rsquo;a r10&rsquo;un değeri verilmesi. r10 register&rsquo;ı hesaplanan adresi taşımakta. Adresin çağırıldığı noktaya bp koyalım ve bir ileri götürelim:</p>
+<p><img src="../../../images/posts/syscall-journey/img43.png" alt=""></p>
+<p>Başarılı bir şekilde NtSetIoCompletion&rsquo;a yönlendirdiğini görebiliriz.</p>
+<h2 id="sonuç"><strong>Sonuç</strong></h2>
+<p>Arkadaşlar umarım bu blog size yararlı olmuştur.</p>
+<p>Ek olarak, bu analizimde zorlandığım süreçte bana cidden katkısı olan Alice&rsquo;in <a href="https://alice.climent-pommeret.red/posts/a-syscall-journey-in-the-windows-kernel/">Syscall yolcuğu</a> ile alakalı bloguna da göz atabilirsiniz. Gerçekten bu kaynak sayesinde analiz sırasında anlamadığım noktaları anlamamda çok katkısı oldu.</p>
+
+    <h4><a href="http://localhost:1313/">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2025</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://twitter.com">Twitter</a> 
+        
+        <a href="https://github.com">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: true , 
+        speedFactor: 1.5 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+</html>
