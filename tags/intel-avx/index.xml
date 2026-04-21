@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Intel-AVX on 0xbekoo</title>
+    <link>http://localhost:1313/tags/intel-avx/</link>
+    <description>Recent content in Intel-AVX on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 16 Apr 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/intel-avx/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Working with Intel AVX in Assembly Projects</title>
+      <link>http://localhost:1313/blogs/introduction-to-intel-avx/</link>
+      <pubDate>Thu, 16 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/introduction-to-intel-avx/</guid>
+      <description>Have you ever gotten tired of 64 bits registers? Well, stay tunes for the blog :&amp;gt;&#xA;Introduction to AVX/AVX2 In 2013, Intel was introducted &amp;lsquo;AVX2&amp;rsquo; for Haswell microarchitecture. AVX itself is actually SIMD extension to the x86 instruction set architecture for microprocessors. The main purpose of this extension is that it provides new features, new instructions, and a new coding scheme.&#xA;References Intel® 64 and IA-32 Architectures Software Developer’s Manual Volume 1 - Chapter 14 Chris Lomont - Introduction to Intel® Advanced Vector Extensions Wikipedia - Advanced Vector Extensions </description>
+    </item>
+  </channel>
+</rss>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=42551&amp;path=livereload" data-no-instant defer></script>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <title>0xbekoo</title>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
@@ -8,8 +8,7 @@
     <meta name="theme-color" content="#000084" />
     <link rel="icon" href="/favicon.ico">
     <link rel="canonical" href="/docs/winkernel-dev/wkd-irp/">
-    
-    
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
 </head>
 <body>
 <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -46,12 +45,80 @@
 </nav>
 <div id="content" class="container">
 
-<div class="row-fluid navmargin">
-    <div class="page-header">
-        <h1>I/O Request Packets (IRP) - Thu, Aug 22, 2024</h1>
-    </div>
-    <p class="lead"></p>
-    <p>In this documentation, we will discuss IRP.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<article class="single-shell single-shell--docs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">I/O Request Packets (IRP)</h1>
+            <p class="single-shell__meta">Thu, Aug 22, 2024</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-docs-winkernel-dev-wkd-irp-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-docs-winkernel-dev-wkd-irp-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#what-is-io-request-packet"><strong>What is I/O Request Packet</strong></a></li>
+        <li><a href="#coding"><strong>Coding</strong></a>
+          <ul>
+            <li><a href="#kernel-mode-driver"><strong>Kernel Mode Driver</strong></a></li>
+            <li><a href="#user-mode-program"><strong>User Mode Program</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#running-the-project"><strong>Running the Project</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <p>In this documentation, we will discuss IRP.</p>
 <h3 id="what-is-io-request-packet"><strong>What is I/O Request Packet</strong></h3>
 <p>An <strong>I/O Request Packet</strong> (IRP) in the Windows operating system is a structure used to facilitate communication between drivers and the operating system. You can think of it as a <em>“message carrier”</em>.</p>
 <p>In most cases, requests sent to drivers are packaged into an IRP. An operating system component or another driver sends an IRP to a driver using the IoCallDriver function. This function takes two parameters: a <strong>device object</strong> (DEVICEOBJECT) and a pointer to an IRP. The device object points to the driver object associated with that device. Therefore, when IoCallDriver is called, the IRP is sent to the corresponding device object and, by extension, to its associated driver. This process is often referred to as <em>“passing”</em> or <em>“forwarding”</em> the IRP.</p>
@@ -296,8 +363,67 @@
 <li><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/i-o-request-packets">Microsoft Docs - I/O Request Packets</a></li>
 </ul>
 
-    <h4><a href="/">Back to Home</a></h4>
-</div>
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#what-is-io-request-packet"><strong>What is I/O Request Packet</strong></a></li>
+        <li><a href="#coding"><strong>Coding</strong></a>
+          <ul>
+            <li><a href="#kernel-mode-driver"><strong>Kernel Mode Driver</strong></a></li>
+            <li><a href="#user-mode-program"><strong>User Mode Program</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#running-the-project"><strong>Running the Project</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+        </div>
+    </div>
+</article>
 
 
         </div><footer class="container">
@@ -325,9 +451,9 @@
 </body><link rel="stylesheet" href="/css/bootstrap.css">
 <link rel="stylesheet" href="/css/bootstrap-responsive.css">
 <link rel="stylesheet" href="/css/style.css">
-
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css">
 <script src="/js/jquery.js"></script>
-<script src="/js/bootstrap-386.js"></script>
+
 <script src="/js/bootstrap-transition.js"></script>
 <script src="/js/bootstrap-alert.js"></script>
 <script src="/js/bootstrap-modal.js"></script>
@@ -345,7 +471,8 @@
     _386 = { 
         fastLoad: false ,
         onePass: false , 
-        speedFactor: 1.5 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
     };
 
     
@@ -353,4 +480,7 @@
         document.getElementById('thisyear').innerHTML = new Date().getFullYear();
     };
 </script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
 </html>

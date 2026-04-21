@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=42551&amp;path=livereload" data-no-instant defer></script>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <title>0xbekoo</title>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
@@ -8,8 +8,7 @@
     <meta name="theme-color" content="#000084" />
     <link rel="icon" href="/favicon.ico">
     <link rel="canonical" href="/docs/uefi-dev/communation-between-windows-and-uefi/">
-    
-    
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
 </head>
 <body>
 <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -46,12 +45,82 @@
 </nav>
 <div id="content" class="container">
 
-<div class="row-fluid navmargin">
-    <div class="page-header">
-        <h1>UEFI to Windows Communication via NVRAM Variables - Fri, Jul 18, 2025</h1>
-    </div>
-    <p class="lead"></p>
-    <p>In this documentation, we will discuss how to establish communication between a UEFI driver and a Windows driver. Specifically, we’ll explore how to use NVRAM-based UEFI variables to exchange data between the two environments.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<article class="single-shell single-shell--docs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">UEFI to Windows Communication via NVRAM Variables</h1>
+            <p class="single-shell__meta">Fri, Jul 18, 2025</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-docs-uefi-dev-communation-between-windows-and-uefi-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-docs-uefi-dev-communation-between-windows-and-uefi-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#what-is-nvram"><strong>What is NVRAM?</strong></a></li>
+        <li><a href="#uefi-variables"><strong>UEFI Variables</strong></a></li>
+        <li><a href="#access-uefi-variables-with-services"><strong>Access UEFI Variables with Services</strong></a>
+          <ul>
+            <li><a href="#1---setvariable"><strong>1 - SetVariable()</strong></a></li>
+            <li><a href="#2---getvariable"><strong>2 - GetVariable()</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#coding-windows-driver"><strong>Coding Windows Driver</strong></a></li>
+        <li><a href="#creating-uefi-variable-from-windows-driver"><strong>Creating UEFI Variable from Windows Driver</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <p>In this documentation, we will discuss how to establish communication between a UEFI driver and a Windows driver. Specifically, we’ll explore how to use NVRAM-based UEFI variables to exchange data between the two environments.</p>
 <h3 id="what-is-nvram"><strong>What is NVRAM?</strong></h3>
 <p>NVRAM (Non-Volatile RAM) is a key component in UEFI-based systems, used to store persistent configuration and system state data. Unlike regular RAM, NVRAM retains its contents across reboots and power-offs, making it essential for managing firmware-level settings.</p>
 <p>In UEFI, NVRAM is organized into variables—structured key-value pairs that include metadata (attributes) defining how and when they can be accessed. These variables are used for critical system functions such as boot management, secure boot key storage, hardware configuration, and OEM-specific settings.</p>
@@ -348,8 +417,69 @@
 </li>
 </ol>
 
-    <h4><a href="/">Back to Home</a></h4>
-</div>
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#what-is-nvram"><strong>What is NVRAM?</strong></a></li>
+        <li><a href="#uefi-variables"><strong>UEFI Variables</strong></a></li>
+        <li><a href="#access-uefi-variables-with-services"><strong>Access UEFI Variables with Services</strong></a>
+          <ul>
+            <li><a href="#1---setvariable"><strong>1 - SetVariable()</strong></a></li>
+            <li><a href="#2---getvariable"><strong>2 - GetVariable()</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#coding-windows-driver"><strong>Coding Windows Driver</strong></a></li>
+        <li><a href="#creating-uefi-variable-from-windows-driver"><strong>Creating UEFI Variable from Windows Driver</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+        </div>
+    </div>
+</article>
 
 
         </div><footer class="container">
@@ -377,9 +507,9 @@
 </body><link rel="stylesheet" href="/css/bootstrap.css">
 <link rel="stylesheet" href="/css/bootstrap-responsive.css">
 <link rel="stylesheet" href="/css/style.css">
-
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css">
 <script src="/js/jquery.js"></script>
-<script src="/js/bootstrap-386.js"></script>
+
 <script src="/js/bootstrap-transition.js"></script>
 <script src="/js/bootstrap-alert.js"></script>
 <script src="/js/bootstrap-modal.js"></script>
@@ -397,7 +527,8 @@
     _386 = { 
         fastLoad: false ,
         onePass: false , 
-        speedFactor: 1.5 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
     };
 
     
@@ -405,4 +536,7 @@
         document.getElementById('thisyear').innerHTML = new Date().getFullYear();
     };
 </script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
 </html>

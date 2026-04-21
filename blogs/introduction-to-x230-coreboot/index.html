@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="/favicon.ico">
+    <link rel="canonical" href="/blogs/introduction-to-x230-coreboot/">
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div id="content" class="container">
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+    
+
+
+
+
+<article class="single-shell single-shell--blogs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">My Journey for X230 &#43; Coreboot</h1>
+            <p class="single-shell__meta">Tue, Apr 7, 2026</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-blogs-introduction-to-x230-coreboot-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-blogs-introduction-to-x230-coreboot-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#connecting-the-bios-chip-to-the-ch341a"><strong>Connecting the BIOS Chip to the CH341A</strong></a></li>
+        <li><a href="#my-setup"><strong>My Setup</strong></a></li>
+        <li><a href="#backup-the-chips"><strong>Backup the Chips</strong></a>
+          <ul>
+            <li><a href="#top-chip"><strong>Top Chip</strong></a></li>
+            <li><a href="#bottom-chip"><strong>Bottom Chip</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#installing-and-preparing-coreboot"><strong>Installing and Preparing Coreboot</strong></a></li>
+        <li><a href="#flashing-coreboot"><strong>Flashing Coreboot</strong></a>
+          <ul>
+            <li><a href="#flashing-top-chip"><strong>Flashing Top Chip</strong></a></li>
+            <li><a href="#flashing-bottom-chip"><strong>Flashing Bottom Chip</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <p>After finishing the SMM blog, I picked up a Lenovo X230 for the next stage of the project. Until now, most of my experiments had lived inside QEMU. In this post, we finally leave the emulator behind, move onto real silicon :&gt;</p>
+<h3 id="connecting-the-bios-chip-to-the-ch341a"><strong>Connecting the BIOS Chip to the CH341A</strong></h3>
+<p>For those who are not familiar with Coreboot, it is an open-source firmware project that can replace the vendor firmware on supported platforms. Instead of treating the machine&rsquo;s early boot process as a black box, Coreboot gives us a much clearer and more controllable path from power-on to payload execution.</p>
+<p>The moment you start touching firmware, you must assume that one bad image, one bad configuration, or one small typo can leave the machine unbootable. That is where the <strong>CH341A</strong> comes in. It is not just a convenient gadget, it is our insurance policy. By connecting an external programmer directly to the SPI flash chip, we can dump the original firmware, restore it later, and recover from mistakes without depending on the laptop to boot itself.</p>
+<h3 id="my-setup"><strong>My Setup</strong></h3>
+<div class="blog-callout blog-callout-info">
+  <div class="blog-callout__header">
+    <span class="blog-callout__badge">[i]</span>
+    <span class="blog-callout__title">X230 Layout Note</span>
+  </div>
+  <div class="blog-callout__body">Unlike the X220, the X230 uses separate chips for the Intel ME region and the main BIOS region. Make sure you identify the BIOS chip correctly before soldering or flashing so you do not end up writing to the wrong chip.</div>
+</div>
+
+<p>Unlike the clip, i used the cables for the connection. Here&rsquo;s my CH341A&rsquo;s:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/thinkpad-coreboot/photo2.jpg" width="60%"/>
+</div> <br> <br>
+<p>I soldered the chips pins because the Soic8 is really terrible; I had a hard time installing it on the chip and couldn’t get a clear result. <strong>Ponoma 5250</strong> is considered a better alternative, but since it’s not sold in my country, I couldn’t use it:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/thinkpad-coreboot/photo1.jpg" width="60%"/>
+</div> <br> <br>
+<p>In fact, this is really good solution, especially for the reading operations.</p>
+<h3 id="backup-the-chips"><strong>Backup the Chips</strong></h3>
+<p>Before the coreboot itself, we will copy the chips, so that we can save our ass when we have a problem with the chips.</p>
+<p>Unlike X220, the chips of the X230 are separated. Here&rsquo;s a photo:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/thinkpad-coreboot/photo3.jpg" width="100%"/>
+</div> <br> <br>
+<p><strong>The top chip</strong> contains BIOS codes, while <strong>the bottom chip</strong> contains Intel Management Engine codes. In our case, we will write these two chips.</p>
+<h4 id="top-chip"><strong>Top Chip</strong></h4>
+<p>Let&rsquo;s read the top chip:</p>
+<pre tabindex="0"><code>bekoo@UbuntuOS:~/x230/coreboot$ sudo flashrom -p ch341a_spi
+flashrom 1.4.0 on Linux 6.17.0-20-generic (x86_64)
+flashrom is free software, get the source code at https://flashrom.org
+
+Found Macronix flash chip &#34;MX25L3205(A)&#34; (4096 kB, SPI) on ch341a_spi.
+Found Macronix flash chip &#34;MX25L3205D/MX25L3208D&#34; (4096 kB, SPI) on ch341a_spi.
+Found Macronix flash chip &#34;MX25L3206E/MX25L3208E&#34; (4096 kB, SPI) on ch341a_spi.
+Found Macronix flash chip &#34;MX25L3273F&#34; (4096 kB, SPI) on ch341a_spi.
+Found Macronix flash chip &#34;MX25L3233F/MX25L3273E&#34; (4096 kB, SPI) on ch341a_spi.
+...
+</code></pre><p>In my case, the top chip of X230 is <strong>MX25L3206E/MX25L3208E</strong>. Find your chip and read the chip two times and check them:</p>
+<pre tabindex="0"><code>bekoo@UbuntuOS:~/x230$ sudo flashrom -p ch341a_spi -r top1-backup.bin -c &#34;MX25L3206E/MX25L3208E&#34;
+flashrom 1.4.0 on Linux 6.17.0-20-generic (x86_64)
+flashrom is free software, get the source code at https://flashrom.org
+
+Found Macronix flash chip &#34;MX25L3206E/MX25L3208E&#34; (4096 kB, SPI) on ch341a_spi.
+Reading flash... done.
+bekoo@UbuntuOS:~/x230$ sudo flashrom -p ch341a_spi -r top2-backup.bin -c &#34;MX25L3206E/MX25L3208E&#34;
+flashrom 1.4.0 on Linux 6.17.0-20-generic (x86_64)
+flashrom is free software, get the source code at https://flashrom.org
+
+Found Macronix flash chip &#34;MX25L3206E/MX25L3208E&#34; (4096 kB, SPI) on ch341a_spi.
+Reading flash... done.
+
+bekoo@UbuntuOS:~/x230$ sha512sum top*
+f77ca5cf2432b55d49d322bfe5f7f2fd796b2ddcd07dab7d11e3606c1661c1889bfb7e676698860242e7587d507eff43ee1dfc950f3bd3cc4090435bd90d00df  top1-backup.bin
+f77ca5cf2432b55d49d322bfe5f7f2fd796b2ddcd07dab7d11e3606c1661c1889bfb7e676698860242e7587d507eff43ee1dfc950f3bd3cc4090435bd90d00df  top2-backup.bin
+</code></pre><p>Everything is good! Now we can focus on the bottom chip.</p>
+<h4 id="bottom-chip"><strong>Bottom Chip</strong></h4>
+<p>The steps are same for the bottom chip:</p>
+<pre tabindex="0"><code>bekoo@UbuntuOS:~/x230/coreboot/build$ sudo flashrom -p ch341a_spi
+flashrom 1.4.0 on Linux 6.17.0-20-generic (x86_64)
+flashrom is free software, get the source code at https://flashrom.org
+
+Found Macronix flash chip &#34;MX25L6405&#34; (8192 kB, SPI) on ch341a_spi.
+Found Macronix flash chip &#34;MX25L6405D&#34; (8192 kB, SPI) on ch341a_spi.
+Found Macronix flash chip &#34;MX25L6406E/MX25L6408E&#34; (8192 kB, SPI) on ch341a_spi.
+Found Macronix flash chip &#34;MX25L6436E/MX25L6445E/MX25L6465E&#34; (8192 kB, SPI) on ch341a_spi.
+Found Macronix flash chip &#34;MX25L6473E&#34; (8192 kB, SPI) on ch341a_spi.
+Found Macronix flash chip &#34;MX25L6473F&#34; (8192 kB, SPI) on ch341a_spi.
+...
+</code></pre><p>The bottom chip is <strong>MX25L6406E/MX25L6408E</strong> in my case:</p>
+<pre tabindex="0"><code>bekoo@UbuntuOS:~/x230$ sudo flashrom -p ch341a_spi -r bottom1-backup.bin -c &#34;MX25L6406E/MX25L6408E&#34;
+flashrom 1.4.0 on Linux 6.17.0-20-generic (x86_64)
+flashrom is free software, get the source code at https://flashrom.org
+
+Found Macronix flash chip &#34;MX25L6406E/MX25L6408E&#34; (8192 kB, SPI) on ch341a_spi.
+Reading flash... done.
+
+bekoo@UbuntuOS:~/x230$ sudo flashrom -p ch341a_spi -r bottom2-backup.bin -c &#34;MX25L6406E/MX25L6408E&#34;
+flashrom 1.4.0 on Linux 6.17.0-20-generic (x86_64)
+flashrom is free software, get the source code at https://flashrom.org
+
+Found Macronix flash chip &#34;MX25L6406E/MX25L6408E&#34; (8192 kB, SPI) on ch341a_spi.
+Reading flash... done.
+
+bekoo@UbuntuOS:~/x230$ ls -la bottom*
+-rw-r--r-- 1 root root 8388608 Apr 10 02:04 bottom1-backup.bin
+-rw-r--r-- 1 root root 8388608 Apr 10 02:06 bottom2-backup.bin
+
+bekoo@UbuntuOS:~/x230/backup$ sha512sum bottom*
+4a54df60d3631369462fb3750a27ef07d75d2c7bb6bbbb4dd1a9007135dd2743c7c674fcd7f8b083cf05cb965cfcc01ac72a61a0be9eac26012882d1f186ab74  bottom1-backup.bin
+4a54df60d3631369462fb3750a27ef07d75d2c7bb6bbbb4dd1a9007135dd2743c7c674fcd7f8b083cf05cb965cfcc01ac72a61a0be9eac26012882d1f186ab74  bottom2-backup.bin
+</code></pre><p>Lastly combine them (for the coreboot):</p>
+<pre tabindex="0"><code>cat bottom1.bin top1.bin &gt; x230-bios.rom
+</code></pre><p>Now we have the copies of the chips. This stage is done and we can focus on the coreboot.</p>
+<h3 id="installing-and-preparing-coreboot"><strong>Installing and Preparing Coreboot</strong></h3>
+<p>We can install coreboot via <strong>git</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>&gt; git clone https://review.coreboot.org/coreboot <span style="color:#f92672">&amp;&amp;</span> cd coreboot
+</span></span><span style="display:flex;"><span>&gt; git submodule update --init --checkout
+</span></span><span style="display:flex;"><span>&gt; make crossgcc-i386 CPUS<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>nproc<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>&gt; make crossgcc-x64 CPUS<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>nproc<span style="color:#66d9ef">)</span>
+</span></span></code></pre></div><p>Now we need to extract the blobs from the backup&rsquo;s. Firstly, compile the ifdtool from the coreboot:</p>
+<pre tabindex="0"><code>bekoo@UbuntuOS:~/x230/coreboot$ cd util/ifdtool/
+bekoo@UbuntuOS:~/x230/coreboot/util/ifdtool$ make
+...
+cc  ../ifdtool/ifdtool.o ../ifdtool/fmap.o ../ifdtool/kv_pair.o ../ifdtool/valstr.o -o ../ifdtool/ifdtool
+
+bekoo@UbuntuOS:~/x230/coreboot/util/ifdtool$ ./ifdtool -x ../../../backup/x230-bios.rom 
+Warning: No platform specified. Output may be incomplete
+File ../../../backup/x230-bios.rom is 12582912 bytes
+  Flash Region 0 (Flash Descriptor): 00000000 - 00000fff 
+  Flash Region 1 (BIOS): 00500000 - 00bfffff 
+  Flash Region 2 (Intel ME): 00003000 - 004fffff 
+  Flash Region 3 (GbE): 00001000 - 00002fff 
+  Flash Region 4 (Platform Data): 00fff000 - 00000fff (unused)
+bekoo@UbuntuOS:~/x230/coreboot/util/ifdtool$ echo *.bin
+flashregion_0_flashdescriptor.bin flashregion_1_bios.bin flashregion_2_intel_me.bin flashregion_3_gbe.bin
+</code></pre><p>Determine the offsets and prepare the files:</p>
+<pre tabindex="0"><code>bekoo@UbuntuOS:$~/x230/coreboot/util/ifdtool$ ./ifdtool -x x230-bios.rom 
+File x230-bios.rom is 12582912 bytes
+  Flash Region 0 (Flash Descriptor): 00000000 - 00000fff 
+  Flash Region 1 (BIOS): 00500000 - 00bfffff 
+  Flash Region 2 (Intel ME): 00003000 - 004fffff 
+  Flash Region 3 (GbE): 00001000 - 00002fff 
+  Flash Region 4 (Platform Data): 00fff000 - 00000fff (unused)
+
+bekoo@UbuntuOS:$~/x230/coreboot/util/ifdtool$ echo *.bin
+flashregion_0_flashdescriptor.bin  flashregion_1_bios.bin  flashregion_2_intel_me.bin  flashregion_3_gbe.bin
+
+bekoo@UbuntuOS:$~/x230/coreboot/util/ifdtool$ mkdir -p ~/X230/coreboot/3rdparty/blobs/mainboard/lenovo/x230
+
+bekoo@UbuntuOS:$~/x230/coreboot/util/ifdtool$ mv ~/X230/coreboot/util/ifdtool/*.bin ~/X230/coreboot/3rdparty/blobs/mainboard/lenovo/x230
+
+bekoo@UbuntuOS:$~/x230/coreboot/util/ifdtool$ cd ~/X230/coreboot/3rdparty/blobs/mainboard/lenovo/x230
+
+bekoo@UbuntuOS:$~/x230/coreboot/util/ifdtool$ rename &#39;s/.{14}//&#39; *.bin
+
+bekoo@UbuntuOS:$~/x230/coreboot/util/ifdtool$ mv flashdescriptor.bin descriptor.bin
+
+bekoo@UbuntuOS:$~/x230/coreboot/util/ifdtool$ mv intel_me.bin me.bin
+
+bekoo@UbuntuOS:$~/x230/coreboot/util/ifdtool$ ls
+bios.bin descriptor.bin gbe.bin me.bin
+</code></pre><p>After these operations, run <strong>make menuconfig</strong> and select these options (for the source, check <a href="https://wiki.chucknemeth.com/laptop/lenovo-x230/flash-lenovo-x230-coreboot#configure-and-compile-coreboot">this page</a>):</p>
+<div style="text-align: center;">
+  <img src="/images/posts/thinkpad-coreboot/photo4.png" width="80%"/>
+</div> <br> <br>
+<p>Note: Give <strong>0x300000</strong> value to <strong>Size of CBFS filesystem in ROm</strong> option.</p>
+<p>And since we will focus on EDK2, select the edk2 payload:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/thinkpad-coreboot/photo5.png" width="80%"/>
+</div> <br> <br>
+<p>Save the options and exit. Now we are done!</p>
+<p>Compile the coreboot with <strong>make -j$(nproc)</strong>. After the operation, you should see this output:</p>
+<pre tabindex="0"><code>FMAP REGION: COREBOOT
+Name                           Offset     Type           Size   Comp
+cbfs_master_header             0x0        cbfs header        32 none
+cpu_microcode_blob.bin         0x80       microcode       26624 none
+fallback/romstage              0x68c0     stage           95224 none
+fallback/ramstage              0x1dd40    stage          131430 LZMA (281840 decompressed)
+config                         0x3df00    raw              3657 LZMA (11732 decompressed)
+revision                       0x3ed80    raw               774 none
+build_info                     0x3f0c0    raw               104 none
+fallback/dsdt.aml              0x3f180    raw             15058 none
+vbt.bin                        0x42c80    raw              1433 LZMA (4281 decompressed)
+cmos.default                   0x43280    cmos_default      256 none
+cmos_layout.bin                0x433c0    cmos_layout      2012 none
+fallback/postcar               0x43c00    stage           22892 none
+img/coreinfo                   0x495c0    simple elf      43811 none
+img/nvramcui                   0x54140    simple elf      51000 none
+fallback/payload               0x608c0    simple elf     769650 none
+(empty)                        0x11c780   null          1361956 none
+bootblock                      0x268fc0   bootblock       24576 none
+
+Built lenovo/x230 (ThinkPad X230)
+</code></pre><h3 id="flashing-coreboot"><strong>Flashing Coreboot</strong></h3>
+<p>Check the build file. You should see <strong>coreboot.rom</strong>:</p>
+<pre tabindex="0"><code>bekoo@UbuntuOS:~/x230/coreboot/build$ ls -la | grep &#34;coreboot.rom&#34;
+-rw-rw-r--  1 bekoo bekoo 12582912 Apr 10 05:21 coreboot.rom
+</code></pre><p>Before the flash operation, we will split the rom because of the two chips:</p>
+<pre tabindex="0"><code>&gt; dd if=coreboot.rom of=coreboot-bottom.rom bs=1M count=8
+&gt; dd if=coreboot.rom of=coreboot-top.rom bs=1M skip=8
+</code></pre><p>Now we can flash the coreboot.</p>
+<h4 id="flashing-top-chip"><strong>Flashing Top Chip</strong></h4>
+<pre tabindex="0"><code>bekoo@UbuntuOS:~/x230/coreboot/build$ sudo flashrom --chip &#34;MX25L3206E/MX25L3208E&#34; --programmer ch341a_spi --write coreboot-top.rom
+
+Found Macronix flash chip &#34;MX25L3206E/MX25L3208E&#34; (4096 kB, SPI) on ch341a_spi.
+Reading old flash chip contents... done.
+Erasing and writing flash chip... Erase/write done.
+Verifying flash... VERIFIED.
+</code></pre><h4 id="flashing-bottom-chip"><strong>Flashing Bottom Chip</strong></h4>
+<pre tabindex="0"><code>bekoo@UbuntuOS:~/x230/coreboot/build$ sudo flashrom --chip &#34;MX25L6406E/MX25L6408E&#34; --programmer ch341a_spi --write coreboot-bottom.rom
+
+Found Macronix flash chip &#34;MX25L6406E/MX25L6408E&#34; (8192 kB, SPI) on ch341a_spi.
+Reading old flash chip contents... done.
+Erasing and writing flash chip... Erase/write done.
+Verifying flash... VERIFIED.
+</code></pre><p>You can now reassemble the laptop. Start the laptop and see the results:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/thinkpad-coreboot/photo6.jpg" width="80%"/>
+</div> <br> <br>
+<p>YEHUUU!</p>
+<h3 id="references"><strong>References</strong></h3>
+<br>
+<ul>
+<li>
+<p><a href="https://wiki.chucknemeth.com/laptop/lenovo-x230/flash-lenovo-x230-coreboot">[*] Chucknemeth - Flashing Lenovo X230 with Coreboot</a></p>
+</li>
+<li>
+<p><a href="https://kiljan.org/2024/04/07/replace-a-lenovo-thinkpad-x220s-bios-with-an-open-source-uefi-capable-firmware/">[*] Kiljan.org - Replace Lenovo X220 Bios with EDK2 Uefi Payload</a></p>
+</li>
+<li>
+<p><a href="https://ounapuu.ee/posts/2021/06/28/breaking-and-fixing-thinkpad-x230/">[*] techtipsy - Breaking and Fixing Thinkpad X230</a></p>
+</li>
+</ul>
+
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#connecting-the-bios-chip-to-the-ch341a"><strong>Connecting the BIOS Chip to the CH341A</strong></a></li>
+        <li><a href="#my-setup"><strong>My Setup</strong></a></li>
+        <li><a href="#backup-the-chips"><strong>Backup the Chips</strong></a>
+          <ul>
+            <li><a href="#top-chip"><strong>Top Chip</strong></a></li>
+            <li><a href="#bottom-chip"><strong>Bottom Chip</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#installing-and-preparing-coreboot"><strong>Installing and Preparing Coreboot</strong></a></li>
+        <li><a href="#flashing-coreboot"><strong>Flashing Coreboot</strong></a>
+          <ul>
+            <li><a href="#flashing-top-chip"><strong>Flashing Top Chip</strong></a></li>
+            <li><a href="#flashing-bottom-chip"><strong>Flashing Bottom Chip</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+        </div>
+    </div>
+</article>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css">
+<script src="/js/jquery.js"></script>
+
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
+</html>

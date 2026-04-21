@@ -2,193 +2,208 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:42551/</loc>
+    <loc>http://localhost:1313/</loc>
+    <lastmod>2026-04-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blogs/</loc>
+    <lastmod>2026-04-16T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/coreboot/</loc>
+    <lastmod>2026-04-07T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/lenovo-x230/</loc>
+    <lastmod>2026-04-07T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blogs/introduction-to-x230-coreboot/</loc>
+    <lastmod>2026-04-07T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/real-silicon/</loc>
+    <lastmod>2026-04-07T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/</loc>
+    <lastmod>2026-04-07T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/uefipayloadpkg-coreboot/</loc>
+    <lastmod>2026-04-07T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blogs/diving-deep-into-smm/</loc>
     <lastmod>2026-03-26T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/diving-deep-into-smm/</loc>
+    <loc>http://localhost:1313/tags/system-management-mode/</loc>
     <lastmod>2026-03-26T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/</loc>
-    <lastmod>2026-03-26T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:42551/tags/system-management-mode/</loc>
-    <lastmod>2026-03-26T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:42551/tags/</loc>
-    <lastmod>2026-03-26T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:42551/blogs/a-journey-from-reset-vector/</loc>
+    <loc>http://localhost:1313/blogs/a-journey-from-reset-vector/</loc>
     <lastmod>2025-12-31T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/firmware-reversing/</loc>
+    <loc>http://localhost:1313/tags/firmware-reversing/</loc>
     <lastmod>2025-12-31T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/reser-vector/</loc>
+    <loc>http://localhost:1313/tags/reser-vector/</loc>
     <lastmod>2025-12-31T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/reverse-engineering/</loc>
+    <loc>http://localhost:1313/tags/reverse-engineering/</loc>
     <lastmod>2025-12-31T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/x86-reverse-engineering/</loc>
+    <loc>http://localhost:1313/tags/x86-reverse-engineering/</loc>
     <lastmod>2025-12-31T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/uefi-dev/debugging-ovmf-with-gdb/</loc>
+    <loc>http://localhost:1313/docs/uefi-dev/debugging-ovmf-with-gdb/</loc>
     <lastmod>2025-10-27T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/</loc>
+    <loc>http://localhost:1313/docs/</loc>
     <lastmod>2025-10-27T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/ssdt-hook-detector-usermode/</loc>
+    <loc>http://localhost:1313/blogs/ssdt-hook-detector-usermode/</loc>
     <lastmod>2025-09-18T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/malware-development/</loc>
+    <loc>http://localhost:1313/tags/malware-development/</loc>
     <lastmod>2025-09-18T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/ssdt-unhooking/</loc>
+    <loc>http://localhost:1313/tags/ssdt-unhooking/</loc>
     <lastmod>2025-09-18T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/unhooking/</loc>
+    <loc>http://localhost:1313/tags/unhooking/</loc>
     <lastmod>2025-09-18T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/analyzing-of-windows-kernel/</loc>
+    <loc>http://localhost:1313/tags/analyzing-of-windows-kernel/</loc>
     <lastmod>2025-08-09T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/patchguard/</loc>
+    <loc>http://localhost:1313/tags/patchguard/</loc>
     <lastmod>2025-08-09T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/patchguard-analysis-part-4/</loc>
+    <loc>http://localhost:1313/blogs/patchguard-analysis-part-4/</loc>
     <lastmod>2025-08-09T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/reversing-patchguard/</loc>
+    <loc>http://localhost:1313/tags/reversing-patchguard/</loc>
     <lastmod>2025-08-09T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/windows-internals/</loc>
+    <loc>http://localhost:1313/tags/windows-internals/</loc>
     <lastmod>2025-08-09T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/patchguard-analysis-part-3/</loc>
+    <loc>http://localhost:1313/blogs/patchguard-analysis-part-3/</loc>
     <lastmod>2025-08-08T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/patchguard-analysis-part-2/</loc>
+    <loc>http://localhost:1313/blogs/patchguard-analysis-part-2/</loc>
     <lastmod>2025-08-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/patchguard-analysis-part-1/</loc>
+    <loc>http://localhost:1313/blogs/patchguard-analysis-part-1/</loc>
     <lastmod>2025-08-06T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/uefi-dev/communation-between-windows-and-uefi/</loc>
+    <loc>http://localhost:1313/docs/uefi-dev/communation-between-windows-and-uefi/</loc>
     <lastmod>2025-07-18T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/winkernel-dev/wkd-dpc/</loc>
+    <loc>http://localhost:1313/docs/winkernel-dev/wkd-dpc/</loc>
     <lastmod>2025-05-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/ssdt-hooking/</loc>
+    <loc>http://localhost:1313/blogs/ssdt-hooking/</loc>
     <lastmod>2025-02-22T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/rootkit/</loc>
+    <loc>http://localhost:1313/tags/rootkit/</loc>
     <lastmod>2025-02-22T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/ssdt/</loc>
+    <loc>http://localhost:1313/tags/ssdt/</loc>
     <lastmod>2025-02-22T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/ssdt-hooking/</loc>
+    <loc>http://localhost:1313/tags/ssdt-hooking/</loc>
     <lastmod>2025-02-22T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/windows-kernel/</loc>
+    <loc>http://localhost:1313/tags/windows-kernel/</loc>
     <lastmod>2025-02-22T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/uefi-dev/uefi-keylogger/</loc>
+    <loc>http://localhost:1313/docs/uefi-dev/uefi-keylogger/</loc>
     <lastmod>2025-01-28T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/uefi-dev/</loc>
+    <loc>http://localhost:1313/docs/uefi-dev/</loc>
     <lastmod>2025-01-20T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/uefi-dev/uefi-introduction/</loc>
+    <loc>http://localhost:1313/docs/uefi-dev/uefi-introduction/</loc>
     <lastmod>2025-01-19T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/syscalls/</loc>
+    <loc>http://localhost:1313/blogs/syscalls/</loc>
     <lastmod>2024-12-31T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/syscall/</loc>
+    <loc>http://localhost:1313/tags/syscall/</loc>
     <lastmod>2024-12-31T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/winkernel-dev/wkd-ssdt/</loc>
+    <loc>http://localhost:1313/docs/winkernel-dev/wkd-ssdt/</loc>
     <lastmod>2024-12-26T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/bare-metal-reversing/</loc>
+    <loc>http://localhost:1313/blogs/bare-metal-reversing/</loc>
     <lastmod>2024-12-04T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/arm-firmware/</loc>
+    <loc>http://localhost:1313/tags/arm-firmware/</loc>
     <lastmod>2024-12-04T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/iot-hacking/</loc>
+    <loc>http://localhost:1313/tags/iot-hacking/</loc>
     <lastmod>2024-12-04T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/nucleo/</loc>
+    <loc>http://localhost:1313/tags/nucleo/</loc>
     <lastmod>2024-12-04T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/firmware/</loc>
+    <loc>http://localhost:1313/tags/firmware/</loc>
     <lastmod>2024-12-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/router/</loc>
+    <loc>http://localhost:1313/tags/router/</loc>
     <lastmod>2024-12-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/router-firmware-reversing/</loc>
+    <loc>http://localhost:1313/blogs/router-firmware-reversing/</loc>
     <lastmod>2024-12-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/about/index.tr/</loc>
+    <loc>http://localhost:1313/about/index.tr/</loc>
     <lastmod>2024-11-29T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/post/about/</loc>
+    <loc>http://localhost:1313/post/about/</loc>
     <lastmod>2024-11-29T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/about/</loc>
+    <loc>http://localhost:1313/about/</loc>
     <lastmod>2024-11-29T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/post/</loc>
+    <loc>http://localhost:1313/post/</loc>
     <lastmod>2024-11-29T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/malware-dev/</loc>
+    <loc>http://localhost:1313/docs/malware-dev/</loc>
     <lastmod>2024-09-12T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/malware-dev/malware-resurrection/</loc>
+    <loc>http://localhost:1313/docs/malware-dev/malware-resurrection/</loc>
     <lastmod>2024-09-12T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/winkernel-dev/wkd-virtual-memory/</loc>
+    <loc>http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/</loc>
     <lastmod>2024-08-30T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/winkernel-dev/</loc>
+    <loc>http://localhost:1313/docs/winkernel-dev/</loc>
     <lastmod>2024-08-30T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/winkernel-dev/wkd-ioctl/</loc>
+    <loc>http://localhost:1313/docs/winkernel-dev/wkd-ioctl/</loc>
     <lastmod>2024-08-26T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/winkernel-dev/wkd-irp/</loc>
+    <loc>http://localhost:1313/docs/winkernel-dev/wkd-irp/</loc>
     <lastmod>2024-08-22T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/malware-dev/file-icon-spoofing/</loc>
+    <loc>http://localhost:1313/docs/malware-dev/file-icon-spoofing/</loc>
     <lastmod>2024-07-31T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/malware-dev/api-hashing/</loc>
+    <loc>http://localhost:1313/docs/malware-dev/api-hashing/</loc>
     <lastmod>2024-07-30T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/blogs/is-valorant-spyware/</loc>
+    <loc>http://localhost:1313/blogs/is-valorant-spyware/</loc>
     <lastmod>2024-04-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/ptrace/</loc>
+    <loc>http://localhost:1313/tags/ptrace/</loc>
     <lastmod>2024-04-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/tags/radare2/</loc>
+    <loc>http://localhost:1313/tags/radare2/</loc>
     <lastmod>2024-04-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/malware-dev/direct-syscalls/</loc>
+    <loc>http://localhost:1313/docs/malware-dev/direct-syscalls/</loc>
     <lastmod>2024-03-04T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/malware-dev/ntapi-injection/</loc>
+    <loc>http://localhost:1313/docs/malware-dev/ntapi-injection/</loc>
     <lastmod>2024-02-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/malware-dev/dll-injection/</loc>
+    <loc>http://localhost:1313/docs/malware-dev/dll-injection/</loc>
     <lastmod>2024-02-04T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:42551/docs/malware-dev/shellcode-injection/</loc>
+    <loc>http://localhost:1313/docs/malware-dev/shellcode-injection/</loc>
     <lastmod>2023-08-17T00:00:00+00:00</lastmod>
   </url>
 </urlset>

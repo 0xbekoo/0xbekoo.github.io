@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Abouts on 0xbekoo</title>
-    <link>http://localhost:42551/about/</link>
+    <link>http://localhost:1313/about/</link>
     <description>Recent content in Abouts on 0xbekoo</description>
     <generator>Hugo</generator>
     <language>en</language>
     <lastBuildDate>Fri, 29 Nov 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:42551/about/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/about/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>About</title>
-      <link>http://localhost:42551/about/index.tr/</link>
+      <link>http://localhost:1313/about/index.tr/</link>
       <pubDate>Fri, 29 Nov 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:42551/about/index.tr/</guid>
+      <guid>http://localhost:1313/about/index.tr/</guid>
       <description>Merhabalar efenimm, bloguma hoş geldiniz! 👋&#xA;Ben Berkay ama genelde bekoo olarak biliniyorum. 19 yaşındayım ve son 4 yıldır kendimi siber güvenliğe adamış bir araştırmacıyım. Özellikle şu alanlarda yoğunlaşıyorum:&#xA;🔍 Reverse Engineering&#xA;🐛 Malware Analysis&#xA;⚙️ Malware Development&#xA;Bloglarımı ve dökümanlarımı hem Türkçe hem İngilizce hazırlıyorum. İngilizce içerik zaten bolca bulunuyor ama Türkçe kaynakların kısıtlı olduğunun farkındayım. Bu yüzden elimden geldiğince Türkçe içerik eklemeye, konuları net ve anlaşılır şekilde anlatmaya özen gösteriyorum.</description>
     </item>
   </channel>

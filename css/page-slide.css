@@ -1,0 +1,89 @@
+@media (min-width: 980px) {
+  body.page-workspace-ready {
+    overflow-x: hidden;
+  }
+
+  body.page-workspace-ready > .navbar-fixed-top,
+  body.page-workspace-ready > #content.container,
+  body.page-workspace-ready > footer.container {
+    will-change: transform, opacity, filter;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+  }
+
+  body.page-workspace-leave--forward > .navbar-fixed-top,
+  body.page-workspace-leave--forward > #content.container,
+  body.page-workspace-leave--forward > footer.container {
+    animation: workspace-slide-leave-forward 0.38s cubic-bezier(0.22, 0.78, 0.14, 1) forwards;
+  }
+
+  body.page-workspace-leave--backward > .navbar-fixed-top,
+  body.page-workspace-leave--backward > #content.container,
+  body.page-workspace-leave--backward > footer.container {
+    animation: workspace-slide-leave-backward 0.38s cubic-bezier(0.22, 0.78, 0.14, 1) forwards;
+  }
+
+  body.page-workspace-enter--forward > .navbar-fixed-top,
+  body.page-workspace-enter--forward > #content.container,
+  body.page-workspace-enter--forward > footer.container {
+    animation: workspace-slide-enter-forward 0.48s cubic-bezier(0.16, 0.84, 0.24, 1) both;
+  }
+
+  body.page-workspace-enter--backward > .navbar-fixed-top,
+  body.page-workspace-enter--backward > #content.container,
+  body.page-workspace-enter--backward > footer.container {
+    animation: workspace-slide-enter-backward 0.48s cubic-bezier(0.16, 0.84, 0.24, 1) both;
+  }
+}
+
+@keyframes workspace-slide-leave-forward {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: none;
+  }
+  100% {
+    opacity: 0.82;
+    transform: translate3d(-12vw, 0, 0) scale(0.985);
+    filter: blur(0.8px);
+  }
+}
+
+@keyframes workspace-slide-leave-backward {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: none;
+  }
+  100% {
+    opacity: 0.82;
+    transform: translate3d(12vw, 0, 0) scale(0.985);
+    filter: blur(0.8px);
+  }
+}
+
+@keyframes workspace-slide-enter-forward {
+  0% {
+    opacity: 0.74;
+    transform: translate3d(12vw, 0, 0) scale(0.985);
+    filter: blur(0.8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: none;
+  }
+}
+
+@keyframes workspace-slide-enter-backward {
+  0% {
+    opacity: 0.74;
+    transform: translate3d(-12vw, 0, 0) scale(0.985);
+    filter: blur(0.8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: none;
+  }
+}

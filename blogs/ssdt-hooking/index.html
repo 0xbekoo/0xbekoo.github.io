@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=42551&amp;path=livereload" data-no-instant defer></script>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <title>0xbekoo</title>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
@@ -8,8 +8,7 @@
     <meta name="theme-color" content="#000084" />
     <link rel="icon" href="/favicon.ico">
     <link rel="canonical" href="/blogs/ssdt-hooking/">
-    
-    
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
 </head>
 <body>
 <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -46,12 +45,97 @@
 </nav>
 <div id="content" class="container">
 
-<div class="row-fluid navmargin">
-    <div class="page-header">
-        <h1>Loading Driver from User-Mode Program via SSDT Hooking - Sat, Feb 22, 2025</h1>
-    </div>
-    <p class="lead"></p>
-    <p>Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.</p>
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+    
+
+
+
+
+<article class="single-shell single-shell--blogs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">Loading Driver from User-Mode Program via SSDT Hooking</h1>
+            <p class="single-shell__meta">Sat, Feb 22, 2025</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-blogs-ssdt-hooking-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-blogs-ssdt-hooking-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#what-is-ssdt">What is SSDT?</a></li>
+        <li><a href="#analyzing-ssdt-with-windbg">Analyzing SSDT with Windbg</a>
+          <ul>
+            <li><a href="#finding-address-with-the-ssn"><strong>Finding Address with the SSN</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#ssdt-hooking">SSDT Hooking</a></li>
+        <li><a href="#the-project"><strong>The Project</strong></a>
+          <ul>
+            <li><a href="#previousmode-flag">PreviousMode Flag</a></li>
+          </ul>
+        </li>
+        <li><a href="#coding"><strong>Coding</strong></a>
+          <ul>
+            <li><a href="#kernel-mode-driver"><strong>Kernel-Mode Driver</strong></a></li>
+            <li><a href="#user-mode-program"><strong>User-Mode Program</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#running-the-project"><strong>Running the Project</strong></a></li>
+        <li><a href="#conclusions"><strong>Conclusions</strong></a></li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <p>Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.</p>
 <p>In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the <strong>System Service Descriptor Table (SSDT)</strong> and its role in managing system calls within the Windows kernel.</p>
 <p>Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking. We will walk through the process of dynamically locating the SSDT, identifying a target system call (such as <code>NtLoadDriver</code>), and modifying its entry to redirect execution flow to a custom function.</p>
 <h3 id="what-is-ssdt">What is SSDT?</h3>
@@ -839,8 +923,78 @@ nt!_KPCR
 <li><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/previousmode">Microsoft Learn — Previous Mode</a></li>
 </ul>
 
-    <h4><a href="/">Back to Home</a></h4>
-</div>
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#what-is-ssdt">What is SSDT?</a></li>
+        <li><a href="#analyzing-ssdt-with-windbg">Analyzing SSDT with Windbg</a>
+          <ul>
+            <li><a href="#finding-address-with-the-ssn"><strong>Finding Address with the SSN</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#ssdt-hooking">SSDT Hooking</a></li>
+        <li><a href="#the-project"><strong>The Project</strong></a>
+          <ul>
+            <li><a href="#previousmode-flag">PreviousMode Flag</a></li>
+          </ul>
+        </li>
+        <li><a href="#coding"><strong>Coding</strong></a>
+          <ul>
+            <li><a href="#kernel-mode-driver"><strong>Kernel-Mode Driver</strong></a></li>
+            <li><a href="#user-mode-program"><strong>User-Mode Program</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#running-the-project"><strong>Running the Project</strong></a></li>
+        <li><a href="#conclusions"><strong>Conclusions</strong></a></li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+        </div>
+    </div>
+</article>
 
 
         </div><footer class="container">
@@ -868,9 +1022,9 @@ nt!_KPCR
 </body><link rel="stylesheet" href="/css/bootstrap.css">
 <link rel="stylesheet" href="/css/bootstrap-responsive.css">
 <link rel="stylesheet" href="/css/style.css">
-
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css">
 <script src="/js/jquery.js"></script>
-<script src="/js/bootstrap-386.js"></script>
+
 <script src="/js/bootstrap-transition.js"></script>
 <script src="/js/bootstrap-alert.js"></script>
 <script src="/js/bootstrap-modal.js"></script>
@@ -888,7 +1042,8 @@ nt!_KPCR
     _386 = { 
         fastLoad: false ,
         onePass: false , 
-        speedFactor: 1.5 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
     };
 
     
@@ -896,4 +1051,7 @@ nt!_KPCR
         document.getElementById('thisyear').innerHTML = new Date().getFullYear();
     };
 </script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
 </html>

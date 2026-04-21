@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=42551&amp;path=livereload" data-no-instant defer></script>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <title>0xbekoo</title>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
@@ -8,8 +8,7 @@
     <meta name="theme-color" content="#000084" />
     <link rel="icon" href="/favicon.ico">
     <link rel="canonical" href="/blogs/patchguard-analysis-part-3/">
-    
-    
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
 </head>
 <body>
 <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -46,12 +45,81 @@
 </nav>
 <div id="content" class="container">
 
-<div class="row-fluid navmargin">
-    <div class="page-header">
-        <h1>PatchGuard Analysis - Part 3 - Fri, Aug 8, 2025</h1>
-    </div>
-    <p class="lead"></p>
-    <h4 id="triggering-a-check"><strong>Triggering a check</strong></h4>
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+    
+
+
+
+
+<article class="single-shell single-shell--blogs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">PatchGuard Analysis - Part 3</h1>
+            <p class="single-shell__meta">Fri, Aug 8, 2025</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-blogs-patchguard-analysis-part-3-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-blogs-patchguard-analysis-part-3-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#triggering-a-check"><strong>Triggering a check</strong></a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <h4 id="triggering-a-check"><strong>Triggering a check</strong></h4>
 <p>As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.</p>
 <h5 id="dpc-execution"><strong>DPC Execution</strong></h5>
 <p>The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:</p>
@@ -530,8 +598,62 @@ KeDelayExecutionThread or KeWaitForSingleObject, but this time with a timeout se
 <h5 id="breadcrumbs"><strong>Breadcrumbs</strong></h5>
 <p>Breadcrumbs methods are special because <strong>they work automatically without specific code to start their checks.</strong> However, they do not run all the time. For instance, recall CcInitializeBcbProfiler. It either queues a work item using a related function or continues running on its own. The other two verification functions, PspProcessDelete and KiInitializeUserApc, only use a simple timer (just a time counter stored in a global variable, not the TIMER structure) to control when they run.</p>
 
-    <h4><a href="/">Back to Home</a></h4>
-</div>
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#triggering-a-check"><strong>Triggering a check</strong></a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+        </div>
+    </div>
+</article>
 
 
         </div><footer class="container">
@@ -559,9 +681,9 @@ KeDelayExecutionThread or KeWaitForSingleObject, but this time with a timeout se
 </body><link rel="stylesheet" href="/css/bootstrap.css">
 <link rel="stylesheet" href="/css/bootstrap-responsive.css">
 <link rel="stylesheet" href="/css/style.css">
-
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css">
 <script src="/js/jquery.js"></script>
-<script src="/js/bootstrap-386.js"></script>
+
 <script src="/js/bootstrap-transition.js"></script>
 <script src="/js/bootstrap-alert.js"></script>
 <script src="/js/bootstrap-modal.js"></script>
@@ -579,7 +701,8 @@ KeDelayExecutionThread or KeWaitForSingleObject, but this time with a timeout se
     _386 = { 
         fastLoad: false ,
         onePass: false , 
-        speedFactor: 1.5 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
     };
 
     
@@ -587,4 +710,7 @@ KeDelayExecutionThread or KeWaitForSingleObject, but this time with a timeout se
         document.getElementById('thisyear').innerHTML = new Date().getFullYear();
     };
 </script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
 </html>

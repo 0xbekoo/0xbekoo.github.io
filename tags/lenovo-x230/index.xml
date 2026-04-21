@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lenovo-X230 on 0xbekoo</title>
+    <link>http://localhost:1313/tags/lenovo-x230/</link>
+    <description>Recent content in Lenovo-X230 on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Tue, 07 Apr 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/lenovo-x230/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>My Journey for X230 &#43; Coreboot</title>
+      <link>http://localhost:1313/blogs/introduction-to-x230-coreboot/</link>
+      <pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/introduction-to-x230-coreboot/</guid>
+      <description>After finishing the SMM blog, I picked up a Lenovo X230 for the next stage of the project. Until now, most of my experiments had lived inside QEMU. In this post, we finally leave the emulator behind, move onto real silicon :&amp;gt;&#xA;Connecting the BIOS Chip to the CH341A For those who are not familiar with Coreboot, it is an open-source firmware project that can replace the vendor firmware on supported platforms.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=42551&amp;path=livereload" data-no-instant defer></script>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <title>0xbekoo</title>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
@@ -8,8 +8,7 @@
     <meta name="theme-color" content="#000084" />
     <link rel="icon" href="/favicon.ico">
     <link rel="canonical" href="/blogs/a-journey-from-reset-vector/">
-    
-    
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
 </head>
 <body>
 <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -46,12 +45,87 @@
 </nav>
 <div id="content" class="container">
 
-<div class="row-fluid navmargin">
-    <div class="page-header">
-        <h1>A Journey For X86 Reset Vector - Wed, Dec 31, 2025</h1>
-    </div>
-    <p class="lead"></p>
-    <h3 id="introduction"><strong>Introduction</strong></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+<article class="single-shell single-shell--blogs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">A Journey For X86 Reset Vector</h1>
+            <p class="single-shell__meta">Wed, Dec 31, 2025</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-blogs-a-journey-from-reset-vector-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-blogs-a-journey-from-reset-vector-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction"><strong>Introduction</strong></a></li>
+        <li><a href="#reading-the-address-from-reset-vector"><strong>Reading the Address from Reset Vector</strong></a>
+          <ul>
+            <li><a href="#real-mode-and-protected-mode"><strong>Real Mode and Protected Mode</strong></a></li>
+            <li><a href="#processor-status-and-calculation-of-reset-vector"><strong>Processor Status and Calculation of Reset Vector</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#fetching-instruction-from-the-reset-vector"><strong>Fetching Instruction from the Reset Vector</strong></a></li>
+        <li><a href="#analyzing--x86-bios"><strong>Analyzing  X86 BIOS</strong></a>
+          <ul>
+            <li><a href="#determining-whether-boot-process-is-cold-or-warm"><strong>Determining Whether Boot Process is Cold or Warm</strong></a></li>
+            <li><a href="#extracting-shutdown-byte"><strong>Extracting Shutdown Byte</strong></a></li>
+            <li><a href="#switching-to-protection-mode"><strong>Switching to Protection Mode</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <h3 id="introduction"><strong>Introduction</strong></h3>
 <p>Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&rsquo;s very first breath.</p>
 <p>Lately, I’ve been getting up close and personal with the CPU, trying to understand what happens in that split second of silence before the screen even lights up. Honestly, my obsession with this &ldquo;big bang&rdquo; moment skyrocketed while I was digging into UEFI Development. There is a whole hidden world running in the background that we usually take for granted.</p>
 <p>It’s going to get a bit dusty and complex down here, so&hellip; let&rsquo;s put on our gas masks, i guess&hellip;</p>
@@ -227,8 +301,74 @@ OUT 0x71,AL ; Pass the 0 to the Byte
 <li><a href="https://en.wikipedia.org/wiki/Reset_vector"><strong>Wikipedia - Reset Vector</strong></a></li>
 </ul>
 
-    <h4><a href="/">Back to Home</a></h4>
-</div>
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction"><strong>Introduction</strong></a></li>
+        <li><a href="#reading-the-address-from-reset-vector"><strong>Reading the Address from Reset Vector</strong></a>
+          <ul>
+            <li><a href="#real-mode-and-protected-mode"><strong>Real Mode and Protected Mode</strong></a></li>
+            <li><a href="#processor-status-and-calculation-of-reset-vector"><strong>Processor Status and Calculation of Reset Vector</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#fetching-instruction-from-the-reset-vector"><strong>Fetching Instruction from the Reset Vector</strong></a></li>
+        <li><a href="#analyzing--x86-bios"><strong>Analyzing  X86 BIOS</strong></a>
+          <ul>
+            <li><a href="#determining-whether-boot-process-is-cold-or-warm"><strong>Determining Whether Boot Process is Cold or Warm</strong></a></li>
+            <li><a href="#extracting-shutdown-byte"><strong>Extracting Shutdown Byte</strong></a></li>
+            <li><a href="#switching-to-protection-mode"><strong>Switching to Protection Mode</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+        </div>
+    </div>
+</article>
 
 
         </div><footer class="container">
@@ -256,9 +396,9 @@ OUT 0x71,AL ; Pass the 0 to the Byte
 </body><link rel="stylesheet" href="/css/bootstrap.css">
 <link rel="stylesheet" href="/css/bootstrap-responsive.css">
 <link rel="stylesheet" href="/css/style.css">
-
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css">
 <script src="/js/jquery.js"></script>
-<script src="/js/bootstrap-386.js"></script>
+
 <script src="/js/bootstrap-transition.js"></script>
 <script src="/js/bootstrap-alert.js"></script>
 <script src="/js/bootstrap-modal.js"></script>
@@ -276,7 +416,8 @@ OUT 0x71,AL ; Pass the 0 to the Byte
     _386 = { 
         fastLoad: false ,
         onePass: false , 
-        speedFactor: 1.5 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
     };
 
     
@@ -284,4 +425,7 @@ OUT 0x71,AL ; Pass the 0 to the Byte
         document.getElementById('thisyear').innerHTML = new Date().getFullYear();
     };
 </script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
 </html>

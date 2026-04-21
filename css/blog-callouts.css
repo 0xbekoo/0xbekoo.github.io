@@ -1,0 +1,140 @@
+.blog-callout {
+  position: relative;
+  margin: 24px 0;
+  border: 2px solid #ffffff;
+  background: #000000;
+  box-shadow: 6px 6px 0 #333333;
+  overflow: hidden;
+}
+
+.blog-callout::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.07) 0,
+    rgba(255, 255, 255, 0.07) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.blog-callout__header,
+.blog-callout__body {
+  position: relative;
+  z-index: 1;
+}
+
+.blog-callout__header {
+  padding: 10px 14px 8px;
+  text-transform: uppercase;
+}
+
+.blog-callout__badge {
+  display: inline-block;
+  min-width: 44px;
+  margin-right: 10px;
+  padding: 1px 5px;
+  border: 1px solid currentColor;
+  text-align: center;
+}
+
+.blog-callout__title {
+  color: inherit;
+}
+
+.blog-callout__body {
+  padding: 14px 16px 16px;
+}
+
+.blog-callout__body > :last-child {
+  margin-bottom: 0;
+}
+
+.blog-callout__body p,
+.blog-callout__body li,
+.blog-callout__body strong,
+.blog-callout__body em {
+  color: inherit;
+}
+
+.blog-callout__body a {
+  color: #fefe54;
+}
+
+.blog-callout__body a:hover,
+.blog-callout__body a:focus {
+  color: #ffffff;
+}
+
+.blog-callout__body code,
+.blog-callout__body pre {
+  color: inherit;
+  border-color: currentColor;
+  background-color: transparent;
+}
+
+.blog-callout-warning {
+  border-color: #ff0000;
+  box-shadow: 6px 6px 0 #550000;
+}
+
+.blog-callout-warning .blog-callout__header {
+  color: #ffffff;
+  background: #aa0000;
+  border-bottom: 2px solid #ff0000;
+}
+
+.blog-callout-warning .blog-callout__badge {
+  background: #550000;
+}
+
+.blog-callout-warning .blog-callout__body {
+  color: #ffd6d6;
+}
+
+.blog-callout-info {
+  border-color: #00aaaa;
+  box-shadow: 6px 6px 0 #000084;
+}
+
+.blog-callout-info .blog-callout__header {
+  color: #ffffff;
+  background: #000084;
+  border-bottom: 2px solid #00aaaa;
+}
+
+.blog-callout-info .blog-callout__badge {
+  color: #000000;
+  background: #00aaaa;
+}
+
+.blog-callout-info .blog-callout__body {
+  color: #d7ffff;
+}
+
+@media (max-width: 480px) {
+  .blog-callout {
+    margin: 20px 0;
+    box-shadow: 4px 4px 0 #333333;
+  }
+
+  .blog-callout-warning {
+    box-shadow: 4px 4px 0 #550000;
+  }
+
+  .blog-callout-info {
+    box-shadow: 4px 4px 0 #000084;
+  }
+
+  .blog-callout__header {
+    padding: 9px 12px 7px;
+  }
+
+  .blog-callout__body {
+    padding: 12px 14px 14px;
+  }
+}

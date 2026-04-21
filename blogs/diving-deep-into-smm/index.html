@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=42551&amp;path=livereload" data-no-instant defer></script>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <title>0xbekoo</title>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
@@ -8,8 +8,7 @@
     <meta name="theme-color" content="#000084" />
     <link rel="icon" href="/favicon.ico">
     <link rel="canonical" href="/blogs/diving-deep-into-smm/">
-    
-    
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
 </head>
 <body>
 <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -46,12 +45,98 @@
 </nav>
 <div id="content" class="container">
 
-<div class="row-fluid navmargin">
-    <div class="page-header">
-        <h1>An In-Depth Look at the System Management Mode of Processors - Thu, Mar 26, 2026</h1>
-    </div>
-    <p class="lead"></p>
-    <p>It&rsquo;s gonna be hard, I guess.</p>
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+    
+
+
+
+
+<article class="single-shell single-shell--blogs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">An In-Depth Look at the System Management Mode of Processors</h1>
+            <p class="single-shell__meta">Thu, Mar 26, 2026</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-blogs-diving-deep-into-smm-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-blogs-diving-deep-into-smm-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction"><strong>Introduction</strong></a></li>
+        <li><a href="#system-management-mode-smm"><strong>System Management Mode (SMM)</strong></a>
+          <ul>
+            <li><a href="#entering-smm-with-system-management-interrupt-smi"><strong>Entering SMM with System Management Interrupt (SMI)</strong></a></li>
+            <li><a href="#system-management-ram-smram"><strong>System Management RAM (SMRAM)</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#introduction-to-smm-in-edk2"><strong>Introduction to SMM in EDK2</strong></a>
+          <ul>
+            <li><a href="#initializing-of-smbase-and-the-save-state-map"><strong>Initializing of SMBASE and The Save State Map</strong></a></li>
+            <li><a href="#preparing-smi-handler-area"><strong>Preparing SMI Handler Area</strong></a></li>
+            <li><a href="#handling-a-smi"><strong>Handling a SMI</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#abyss-of-nun-project"><strong>Abyss of Nun Project</strong></a>
+          <ul>
+            <li><a href="#stage-1-windows-prepares-the-hand-off"><strong>Stage 1: Windows Prepares the Hand-off</strong></a></li>
+            <li><a href="#stage-2-dxe-bridges-the-data-into-smm"><strong>Stage 2: DXE Bridges the Data into SMM</strong></a></li>
+            <li><a href="#stage-3-the-smm-driver-receives-the-buffer"><strong>Stage 3: The SMM Driver Receives the Buffer</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <p>It&rsquo;s gonna be hard, I guess.</p>
 <h3 id="introduction"><strong>Introduction</strong></h3>
 <p>Welcome to my journey into the underworld. In this blog, we’ll take an in-depth look at the “god mode” of processors. Grab your gas mask and follow me.</p>
 <p>Recently I was really wondering what this SMM actually is, and I found myself diving into these primordial waters. What makes SMM particularly fascinating—and dangerous—is its absolute control over the system. Code running in SMM can access all memory, modify any data structure, and remain completely invisible to security software.</p>
@@ -60,14 +145,14 @@
 <h3 id="system-management-mode-smm"><strong>System Management Mode (SMM)</strong></h3>
 <p>As you can see from the introduction, this god-mode was designed to manage the entire system transparently. Unlike other rings we know, such as Ring 0 (Kernel Mode) from OS or Hypervisor, the System Management mode is the deepest ring on the processor:</p>
 <div style="text-align: center;">
-  <img src="/images/posts/smm-blog/rings.jpg" style="width: 70%" />
+  <img src="/images/posts/smm-blog/rings.jpg"/>
 </div> <br> <br>
 <p>Also you can see that there&rsquo;s &lsquo;ME&rsquo; ring, however this is another topic and this ring isn&rsquo;t on the processor. In fact, the most powerful one is ME because it is an autonomous subsystem that has been incorporated in virtually all of Intel&rsquo;s processor chipsets. So if we can talk about the processor, the SMM is the deepest level on the processor. I will write a blog for this ME ring.</p>
 <p>The SMM has special purposes to manage hardware, such as power-management, system hardware control etc, and this ring is isolated from other rings and intended for use only by system firmware. So with this isolation, it manages the entire system with full access. We cannot communicate with it from Ring 3 or even Ring 0! With this in mind, <strong>we can think of the main idea of SMM as an isolated processor environment from the OS that operates the system transparently.</strong></p>
 <p>For the processor to enter SMM, a <strong>System Management Interrupt</strong> (SMI) request needs to be invoked. With the SMI request, the processor will stop the whole process and enter SMM immediately. I know this may look strange that the processor will stop the whole process and this means that when an SMI request is received, the OS will freeze.</p>
 <p>Because the processor saves its current state when it enters SMM, then it jumps to a new space, aka SMRAM fields (We will see this in detail). In the SMM there are SMI handlers, which singular name is <strong>The system management software executive</strong> and the processor starts execution of the instructions from the SMI Handler. Each SMI Request corresponds to its SMI Handler. To better understand: here&rsquo;s an example:</p>
 <div style="text-align: center;">
-  <img src="/images/posts/smm-blog/diagram.png" style="width: 70%" />
+  <img src="/images/posts/smm-blog/diagram.png"/>
 </div> <br> <br>
 <p><strong>Physical Memory Region</strong> (SMRAM) holds the critical code and data of the SMI Handler. The processor jumps into the SMRAM space and executes the SMI request in the SMRAM. When an SMI Handler has completed its operations, the processor will execute an RSM (Resume) instruction to exit. This instruction can only be executed from SMM.</p>
 <h4 id="entering-smm-with-system-management-interrupt-smi"><strong>Entering SMM with System Management Interrupt (SMI)</strong></h4>
@@ -75,10 +160,10 @@
 <h4 id="system-management-ram-smram"><strong>System Management RAM (SMRAM)</strong></h4>
 <p>System Management RAM provides SMM address space for SMI Handler&rsquo;s code and data. The default SMRAM size is 64 KBytes beginning at a base physical address in physical memory called the SMBASE. In Intel documentations, The SMBASE default value is <strong>0x30000</strong> and the processor looks for the first instruction of the SMI Handler at <strong>[SMIBASE + 0x8000]</strong>, while it stores its context in <strong>[SMBASE + 0xFE00]</strong>. Here&rsquo;s a table from Intel:</p>
 <div style="text-align: center;">
-  <img src="/images/posts/smm-blog/photo1.png" style="width: 70%" />
+  <img src="/images/posts/smm-blog/photo1.png"/>
 </div> <br> <br>
 <div style="text-align: center;">
-  <img src="/images/posts/smm-blog/photo2.png" style="width: 70%" />
+  <img src="/images/posts/smm-blog/photo2.png" />
 </div> <br> <br>
 <p>We can see the state save map. Control Register CR4 is completely cleared to all 0s when entering SMM, while the hidden segment descriptor information stored in segment registers. Especially Debug Registers (DR0 - DR3), the X87 FPU Registers or Control Register CR2 are not saved and restored when entering and exiting SMM.</p>
 <h3 id="introduction-to-smm-in-edk2"><strong>Introduction to SMM in EDK2</strong></h3>
@@ -305,7 +390,7 @@
 <h3 id="abyss-of-nun-project"><strong>Abyss of Nun Project</strong></h3>
 <p>After digging into the internals of EDK2, I wanted a smaller project where the path from Windows to DXE and then into SMM could be observed directly. That is what <a href="https://github.com/0xbekoo/Abyss-of-Nun">Abyss of Nun</a> became: a QEMU + OVMF research project that stages a value in Windows, retrieves it again in pre-OS firmware, and finally forwards it into an SMM handler. The important point is that the project does <strong>not</strong> try to access SMRAM directly from Ring 0. Instead, it follows the interfaces that firmware actually exposes. Here&rsquo;s a diagram for the project:</p>
 <div style="text-align: center;">
-  <img src="/images/posts/smm-blog/project-diagram.png" style="width: 80%" />
+  <img src="/images/posts/smm-blog/project-diagram.png" />
 </div> <br> <br>
 <p>At a high level, the chain looks like this:</p>
 <ol>
@@ -400,7 +485,7 @@
 </span></span></code></pre></div><p>This code is exactly why I find the project useful in the context of SMM research. It proves that the buffer prepared in Windows can travel through NVRAM, through a DXE bridge, and into an SMM handler. At the same time, it also exposes an important limitation very clearly: the pool is freed before the handler returns, so the current implementation demonstrates <strong>delivery into SMM</strong>, not durable long-term persistence inside SMRAM.</p>
 <p>After these, the project will look like thiS in the beginning:</p>
 <div style="text-align: center;">
-  <img src="/images/posts/smm-blog/project-result.png" style="width: 100%" />
+  <img src="/images/posts/smm-blog/project-result.png" />
 </div> <br> <br>
 <p>And the debug.log:</p>
 <pre tabindex="0"><code>
@@ -416,8 +501,79 @@ FSOpen: Open &#39;\EFI\BOOT\TriggerSMI.efi&#39; Success
 <p>The <strong>Abyss of Nun</strong> project closes that gap between theory and practice. It shows that communication with SMM is not about directly touching SMRAM from Windows, but about staging data through the boot path, bridging it in DXE, and then delivering it through the standard SMM communication mechanism. For me, this is exactly why SMM research is so fascinating: it sits at the boundary where processor architecture, firmware internals, boot flow, and offensive or defensive research all collide.</p>
 <p>There is still much more to explore here. I only touched the entry path, the EDK2 flow, and one practical communication chain. In the future I want to go deeper into real SMI sources, SMM security boundaries, and of course the other shadow over this abyss: Intel ME. But for now, if this post helped make SMM feel a little less like black magic and a little more like a system we can actually reverse, inspect, and understand, then this journey did its job xd</p>
 
-    <h4><a href="/">Back to Home</a></h4>
-</div>
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction"><strong>Introduction</strong></a></li>
+        <li><a href="#system-management-mode-smm"><strong>System Management Mode (SMM)</strong></a>
+          <ul>
+            <li><a href="#entering-smm-with-system-management-interrupt-smi"><strong>Entering SMM with System Management Interrupt (SMI)</strong></a></li>
+            <li><a href="#system-management-ram-smram"><strong>System Management RAM (SMRAM)</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#introduction-to-smm-in-edk2"><strong>Introduction to SMM in EDK2</strong></a>
+          <ul>
+            <li><a href="#initializing-of-smbase-and-the-save-state-map"><strong>Initializing of SMBASE and The Save State Map</strong></a></li>
+            <li><a href="#preparing-smi-handler-area"><strong>Preparing SMI Handler Area</strong></a></li>
+            <li><a href="#handling-a-smi"><strong>Handling a SMI</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#abyss-of-nun-project"><strong>Abyss of Nun Project</strong></a>
+          <ul>
+            <li><a href="#stage-1-windows-prepares-the-hand-off"><strong>Stage 1: Windows Prepares the Hand-off</strong></a></li>
+            <li><a href="#stage-2-dxe-bridges-the-data-into-smm"><strong>Stage 2: DXE Bridges the Data into SMM</strong></a></li>
+            <li><a href="#stage-3-the-smm-driver-receives-the-buffer"><strong>Stage 3: The SMM Driver Receives the Buffer</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+        </div>
+    </div>
+</article>
 
 
         </div><footer class="container">
@@ -445,9 +601,9 @@ FSOpen: Open &#39;\EFI\BOOT\TriggerSMI.efi&#39; Success
 </body><link rel="stylesheet" href="/css/bootstrap.css">
 <link rel="stylesheet" href="/css/bootstrap-responsive.css">
 <link rel="stylesheet" href="/css/style.css">
-
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css">
 <script src="/js/jquery.js"></script>
-<script src="/js/bootstrap-386.js"></script>
+
 <script src="/js/bootstrap-transition.js"></script>
 <script src="/js/bootstrap-alert.js"></script>
 <script src="/js/bootstrap-modal.js"></script>
@@ -465,7 +621,8 @@ FSOpen: Open &#39;\EFI\BOOT\TriggerSMI.efi&#39; Success
     _386 = { 
         fastLoad: false ,
         onePass: false , 
-        speedFactor: 1.5 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
     };
 
     
@@ -473,4 +630,7 @@ FSOpen: Open &#39;\EFI\BOOT\TriggerSMI.efi&#39; Success
         document.getElementById('thisyear').innerHTML = new Date().getFullYear();
     };
 </script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
 </html>

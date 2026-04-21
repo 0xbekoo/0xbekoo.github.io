@@ -2,45 +2,45 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Windows Kernel Development on 0xbekoo</title>
-    <link>http://localhost:42551/docs/winkernel-dev/</link>
+    <link>http://localhost:1313/docs/winkernel-dev/</link>
     <description>Recent content in Windows Kernel Development on 0xbekoo</description>
     <generator>Hugo</generator>
     <language>en</language>
     <lastBuildDate>Thu, 15 May 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:42551/docs/winkernel-dev/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/docs/winkernel-dev/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Deferred Procedure Call</title>
-      <link>http://localhost:42551/docs/winkernel-dev/wkd-dpc/</link>
+      <link>http://localhost:1313/docs/winkernel-dev/wkd-dpc/</link>
       <pubDate>Thu, 15 May 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:42551/docs/winkernel-dev/wkd-dpc/</guid>
+      <guid>http://localhost:1313/docs/winkernel-dev/wkd-dpc/</guid>
       <description>DPC DPC (Deferred Procedure Call) is a mechanism in windows kernel. It&amp;rsquo;s used to let the schedule a function to run later at a lower IRQL. In other words, it&amp;rsquo;s a way for Windows handle important work later. DPC is useful when an interrupt happens or system must respond very quickly. So, DPC allows to execute high-priority tasks, such as interrupt handler but lower-priority tasks for later execution.&#xA;Each DPC is associated with DPC Object which created and initialized by the kernel.</description>
     </item>
     <item>
       <title>System Service Descriptor Table</title>
-      <link>http://localhost:42551/docs/winkernel-dev/wkd-ssdt/</link>
+      <link>http://localhost:1313/docs/winkernel-dev/wkd-ssdt/</link>
       <pubDate>Thu, 26 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:42551/docs/winkernel-dev/wkd-ssdt/</guid>
+      <guid>http://localhost:1313/docs/winkernel-dev/wkd-ssdt/</guid>
       <description>In this documentation we will discuss SSDT in the windows systems.&#xA;What is SSDT? So, SSDT (System Service Descriptor Table) is a list of system calls supported by the operating system. Recall the syscalls. SSDT is the first member of the Service Descriptor Table kernel memory structure:&#xA;typedef struct tagSERVICE_DESCRIPTOR_TABLE { SYSTEM_SERVICE_TABLE nt; // SSDT Tablosu kendisine etkili bir pointer SYSTEM_SERVICE_TABLE win32k; SYSTEM_SERVICE_TABLE sst3; SYSTEM_SERVICE_TABLE sst4; } SERVICE_DESCRIPTOR_TABLE; SSDT maps system calls (syscalls) to kernel API addresses.</description>
     </item>
     <item>
       <title>Virtual Memory</title>
-      <link>http://localhost:42551/docs/winkernel-dev/wkd-virtual-memory/</link>
+      <link>http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/</link>
       <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:42551/docs/winkernel-dev/wkd-virtual-memory/</guid>
+      <guid>http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/</guid>
       <description>In this documentation we will discuss Virtual Memory in Windows Kernel.&#xA;What is Virtual Memory &amp;ldquo;Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored.</description>
     </item>
     <item>
       <title>Input/Output Control (IOCTL)</title>
-      <link>http://localhost:42551/docs/winkernel-dev/wkd-ioctl/</link>
+      <link>http://localhost:1313/docs/winkernel-dev/wkd-ioctl/</link>
       <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:42551/docs/winkernel-dev/wkd-ioctl/</guid>
+      <guid>http://localhost:1313/docs/winkernel-dev/wkd-ioctl/</guid>
       <description>In this documentation, we will discuss IOCTL mechanism on Windows.&#xA;What is IOCTL? I/O Control Codes (IOCTLs) are a mechanism used for communication between user-mode applications and drivers, or between drivers within a stack. I/O control codes are sent via IRPs (I/O Request Packets), as mentioned in the previous section. If you are not familiar with IRPs, click here to learn more about them.&#xA;In Windows, user-mode programs send IOCTL codes to drivers using the DeviceIoControl API.</description>
     </item>
     <item>
       <title>I/O Request Packets (IRP)</title>
-      <link>http://localhost:42551/docs/winkernel-dev/wkd-irp/</link>
+      <link>http://localhost:1313/docs/winkernel-dev/wkd-irp/</link>
       <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:42551/docs/winkernel-dev/wkd-irp/</guid>
+      <guid>http://localhost:1313/docs/winkernel-dev/wkd-irp/</guid>
       <description>In this documentation, we will discuss IRP.&#xA;What is I/O Request Packet An I/O Request Packet (IRP) in the Windows operating system is a structure used to facilitate communication between drivers and the operating system. You can think of it as a “message carrier”.&#xA;In most cases, requests sent to drivers are packaged into an IRP. An operating system component or another driver sends an IRP to a driver using the IoCallDriver function.</description>
     </item>
   </channel>
