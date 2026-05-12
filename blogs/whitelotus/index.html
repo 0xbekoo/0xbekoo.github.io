@@ -134,12 +134,15 @@
 </div>
 
 <h3 id="introduction"><strong>Introduction</strong></h3>
+<div style="text-align: center;">
+  <img src="/images/posts/whitelotus/whitelotus-photo.jpg" width="80%"/>
+</div> <br> <br>
 <p>Do you know BlackLotus?</p>
-<p>BlackLotus is my favorite bootkit, and, <strong>in my opinion, BlackLotus was truly unique not because of the security vulnerability it exploited, but because of its chained structure.</strong>.</p>
+<p>Well, BlackLotus is my favorite bootkit, and, <strong>in my opinion, BlackLotus was truly unique not because of the security vulnerability it exploited, but because of its chain.</strong>.</p>
 <p>It was one of those projects that made people remember a very annoying truth again: the operating system is not the first thing that owns the machine. Before Windows starts breathing, there is already a whole boot world running under it.</p>
 <p>WhiteLotus got its name from there. Not because I wanted to make &ldquo;the same thing but cooler&rdquo; or something like that. The idea was more like: okay, BlackLotus showed how serious this class of attack can be, so let&rsquo;s build a research-oriented project where I can understand the boot chain with my own hands. BlackLotus was bypassing Secure Boot, while WhiteLotus, on the other hand, runs on systems without Secure Boot. Therefore, ‘WhiteLotus’ represents this.</p>
-<p>This is an honor for me (because of my love to BlackLotus xD) to explain you my WhiteLotus as a boot-chain research project. It demonstrates how the Windows boot path can be intercepted before the kernel starts. The main idea is simple to say but dangerous in practice: if we can run a DXE driver before <code>bootmgfw.efi</code>, and if we can follow the chain from <code>bootmgfw.efi</code> to <code>winload.efi</code>, then we can reach the moment where <code>ntoskrnl.exe</code> is already loaded in memory but not yet executing. But SB (Secure Boot) guards this chain.</p>
-<p>I separated the project into two parts because the firmware logic and the Windows deployment logic solve different problems. Keeping them apart makes the chain easier to reason about:</p>
+<p>This is an honor for me (because of my love to BlackLotus xD) to explain you my WhiteLotus as a boot-chain research project. Blacklotus is my favorite malware in the malware art, so working on a project similar to it was a wonderful experience for me.</p>
+<p>WhiteLotus demonstrates how the Windows boot path can be intercepted before the kernel starts, and I separated the project into two parts because the firmware logic and the Windows deployment logic solve different problems. Keeping them apart makes the chain easier to reason about:</p>
 <ul>
 <li><strong>WhiteLotusDXE</strong>: the UEFI DXE driver that hooks the boot chain and performs the actual patching logic.</li>
 <li><strong>WhiteLotusEXE</strong>: the Windows-side deployment component that places the EFI payload into the EFI System Partition and prepares the next boot.</li>

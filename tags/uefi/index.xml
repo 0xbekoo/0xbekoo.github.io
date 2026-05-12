@@ -13,7 +13,7 @@
       <link>http://localhost:1313/blogs/whitelotus/</link>
       <pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/blogs/whitelotus/</guid>
-      <description>This one is a little bit cursed, I guess.&#xA;Introduction In the previous blogs, I walked around the lower layers of the machine: the Reset Vector, the firmware path, SMM, and a bit of the strange world where the operating system has not fully taken control yet. WhiteLotus lives exactly in that foggy area. It is not a normal Windows program, and it is not a normal driver either. It runs before Windows becomes Windows.</description>
+      <description>[!] Research and Safety Notice This post is written strictly for firmware security research and defensive understanding. WhiteLotus is a boot-chain research project; it touches the EFI System Partition, modifies UEFI boot variables such as BootOrder and BootNext, uses a Windows-side loader flow that involves privilege escalation/UAC bypass behavior, and patches boot-time Windows components to affect VBS/DSE and Code Integrity paths.&#xA;Since it runs smoothly on systems without Secure Boot, please use it only in controlled environments.</description>
     </item>
   </channel>
 </rss>
