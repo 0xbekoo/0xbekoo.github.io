@@ -1,19 +1,3 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Rootkit on 0xbekoo</title>
-    <link>http://localhost:1313/tags/rootkit/</link>
-    <description>Recent content in Rootkit on 0xbekoo</description>
-    <generator>Hugo</generator>
-    <language>en</language>
-    <lastBuildDate>Sat, 22 Feb 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/rootkit/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Loading Driver from User-Mode Program via SSDT Hooking</title>
-      <link>http://localhost:1313/blogs/ssdt-hooking/</link>
-      <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blogs/ssdt-hooking/</guid>
-      <description>Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.&#xA;In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the System Service Descriptor Table (SSDT) and its role in managing system calls within the Windows kernel.&#xA;Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking.</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Rootkit on 0xbekoo</title><link>https://0xbekoo.github.io/tags/rootkit/</link><description>Recent content in Rootkit on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Sat, 22 Feb 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/rootkit/index.xml" rel="self" type="application/rss+xml"/><item><title>Loading Driver from User-Mode Program via SSDT Hooking</title><link>https://0xbekoo.github.io/blogs/ssdt-hooking/</link><pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/ssdt-hooking/</guid><description>&lt;p&gt;Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.&lt;/p&gt;
+&lt;p&gt;In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the &lt;strong&gt;System Service Descriptor Table (SSDT)&lt;/strong&gt; and its role in managing system calls within the Windows kernel.&lt;/p&gt;
+&lt;p&gt;Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking. We will walk through the process of dynamically locating the SSDT, identifying a target system call (such as &lt;code&gt;NtLoadDriver&lt;/code&gt;), and modifying its entry to redirect execution flow to a custom function.&lt;/p&gt;</description></item></channel></rss>

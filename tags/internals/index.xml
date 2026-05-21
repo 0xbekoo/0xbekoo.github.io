@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Internals on 0xbekoo</title>
+    <link>http://localhost:1313/tags/internals/</link>
+    <description>Recent content in Internals on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 01 Dec 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/internals/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>PatchGuard Internals: Initialization, Contexts and Verification</title>
+      <link>http://localhost:1313/reports/patchguard-internals/</link>
+      <pubDate>Sun, 01 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/reports/patchguard-internals/</guid>
+      <description>&lt;h2 id=&#34;summary&#34;&gt;Summary&lt;/h2&gt;&#xA;&lt;p&gt;A multi-part research series reverse engineering PatchGuard (Kernel Patch Protection) across Windows 10 and 11 builds. Covers the initialization routine, encrypted context storage, DPC-based verification scheduling, and the final &lt;code&gt;KeBugCheckEx&lt;/code&gt; call chain triggered on integrity violation.&lt;/p&gt;&#xA;&lt;h2 id=&#34;parts-covered&#34;&gt;Parts Covered&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;PatchGuard initialization and context allocation&lt;/li&gt;&#xA;&lt;li&gt;Encrypted context structures and obfuscation keys&lt;/li&gt;&#xA;&lt;li&gt;DPC timer scheduling and verification triggers&lt;/li&gt;&#xA;&lt;li&gt;Detection bypass techniques (historical) and Microsoft&amp;rsquo;s mitigations&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;read-more&#34;&gt;Read More&lt;/h2&gt;&#xA;&lt;p&gt;See the full series: &lt;a href=&#34;http://localhost:1313/blogs/patchguard-analysis-part-1/&#34;&gt;PatchGuard Analysis&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

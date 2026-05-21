@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Keylogger on 0xbekoo</title><link>https://0xbekoo.github.io/tags/keylogger/</link><description>Recent content in Keylogger on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Sat, 15 Jun 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/keylogger/index.xml" rel="self" type="application/rss+xml"/><item><title>UEFI Keylogger</title><link>https://0xbekoo.github.io/projects/uefi-keylogger/</link><pubDate>Sat, 15 Jun 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/projects/uefi-keylogger/</guid><description>&lt;h2 id="overview"&gt;Overview&lt;/h2&gt;
+&lt;p&gt;A proof-of-concept demonstrating keyboard capture at UEFI firmware level. By hooking &lt;code&gt;EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL&lt;/code&gt;, the application intercepts all keystrokes before the OS or any hypervisor initializes its input stack.&lt;/p&gt;
+&lt;h2 id="mechanism"&gt;Mechanism&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Locates &lt;code&gt;EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL&lt;/code&gt; via &lt;code&gt;LocateHandleBuffer&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Wraps the &lt;code&gt;ReadKeyStrokeEx&lt;/code&gt; function pointer with a custom handler&lt;/li&gt;
+&lt;li&gt;Stores captured keystrokes in a pre-allocated runtime buffer&lt;/li&gt;
+&lt;li&gt;Buffer survives into the OS via UEFI runtime memory services&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="research-value"&gt;Research Value&lt;/h2&gt;
+&lt;p&gt;Demonstrates that pre-OS input capture is feasible without any kernel-mode component, bypassing all OS-level security monitoring.&lt;/p&gt;</description></item></channel></rss>

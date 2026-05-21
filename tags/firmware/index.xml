@@ -1,19 +1,17 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Firmware on 0xbekoo</title>
-    <link>http://localhost:1313/tags/firmware/</link>
-    <description>Recent content in Firmware on 0xbekoo</description>
-    <generator>Hugo</generator>
-    <language>en</language>
-    <lastBuildDate>Tue, 03 Dec 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/firmware/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Router Firmware Reverse Engineering</title>
-      <link>http://localhost:1313/blogs/router-firmware-reversing/</link>
-      <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blogs/router-firmware-reversing/</guid>
-      <description>Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&amp;rsquo;s Archer AX 21 V4.6 modem. You can check TP-Link&amp;rsquo;s original page to download the firmware.&#xA;[!WARNING] The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Firmware on 0xbekoo</title><link>https://0xbekoo.github.io/tags/firmware/</link><description>Recent content in Firmware on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Tue, 03 Dec 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/firmware/index.xml" rel="self" type="application/rss+xml"/><item><title>Router Firmware Reverse Engineering</title><link>https://0xbekoo.github.io/blogs/router-firmware-reversing/</link><pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/router-firmware-reversing/</guid><description>&lt;p&gt;&lt;img src="https://0xbekoo.github.io/images/posts/reversing-router/headerphoto.jpg" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&amp;rsquo;s &lt;a href="https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/"&gt;Archer AX 21 V4.6&lt;/a&gt; modem. You can check TP-Link&amp;rsquo;s original page to &lt;a href="https://www.tp-link.com/us/support/download/archer-ax21/#Firmware"&gt;download the firmware&lt;/a&gt;.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[!WARNING]
+The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;First, let&amp;rsquo;s take a look at the information of the firmware we downloaded:&lt;/p&gt;</description></item><item><title>UEFI Keylogger</title><link>https://0xbekoo.github.io/projects/uefi-keylogger/</link><pubDate>Sat, 15 Jun 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/projects/uefi-keylogger/</guid><description>&lt;h2 id="overview"&gt;Overview&lt;/h2&gt;
+&lt;p&gt;A proof-of-concept demonstrating keyboard capture at UEFI firmware level. By hooking &lt;code&gt;EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL&lt;/code&gt;, the application intercepts all keystrokes before the OS or any hypervisor initializes its input stack.&lt;/p&gt;
+&lt;h2 id="mechanism"&gt;Mechanism&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Locates &lt;code&gt;EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL&lt;/code&gt; via &lt;code&gt;LocateHandleBuffer&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Wraps the &lt;code&gt;ReadKeyStrokeEx&lt;/code&gt; function pointer with a custom handler&lt;/li&gt;
+&lt;li&gt;Stores captured keystrokes in a pre-allocated runtime buffer&lt;/li&gt;
+&lt;li&gt;Buffer survives into the OS via UEFI runtime memory services&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="research-value"&gt;Research Value&lt;/h2&gt;
+&lt;p&gt;Demonstrates that pre-OS input capture is feasible without any kernel-mode component, bypassing all OS-level security monitoring.&lt;/p&gt;</description></item></channel></rss>

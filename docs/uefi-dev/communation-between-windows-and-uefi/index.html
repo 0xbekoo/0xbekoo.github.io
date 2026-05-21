@@ -1,542 +1,217 @@
-<!DOCTYPE html>
-<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
-    <title>0xbekoo</title>
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-    <meta content="utf-8" http-equiv="encoding">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="format-detection" content="telephone=no" />
-    <meta name="theme-color" content="#000084" />
-    <link rel="icon" href="/favicon.ico">
-    <link rel="canonical" href="/docs/uefi-dev/communation-between-windows-and-uefi/">
-    <noscript><style>body { visibility: visible !important; }</style></noscript>
-</head>
-<body>
-<nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="navbar-inner">
-        <div class="container">
-            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
-            <a class="brand" href="/">0xbekoo</a>
-            <div class="nav-collapse collapse">
-                <ul class="nav">
-                    
-                    
-                        
-                            <li>
-                                <a href="/docs/">
-                                    
-                                    <span>Documentation</span>
-                                </a>
-                            </li>
-                        
-                    
-                        
-                            <li>
-                                <a href="/blogs/">
-                                    
-                                    <span>Blogs</span>
-                                </a>
-                            </li>
-                        
-                    
-                </ul>
-            </div>
-        </div>
-    </div>
-</nav>
-<div id="content" class="container">
-
-
-
-
-
-
-
-
-
-
-
-
-
-<article class="single-shell single-shell--docs">
-    <div class="row-fluid navmargin">
-        <div class="page-header single-shell__header">
-            <h1 class="single-shell__title">UEFI to Windows Communication via NVRAM Variables</h1>
-            <p class="single-shell__meta">Fri, Jul 18, 2025</p>
-        </div>
-        <div class="single-shell__body single-shell__body--with-toc">
-            <div class="single-shell__main">
-                
-                
-                <section class="single-shell__author single-shell__author--mobile">
-                    <div class="single-shell__author-static" aria-hidden="true"></div>
-                    <div class="single-shell__author-heading">About Author</div>
-                    <div class="single-shell__author-card">
-                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
-                        <div class="single-shell__author-photo-shell">
-                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
-                        </div>
-                        </a>
-                        <div class="single-shell__author-body">
-                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
-                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
-                            </a>
-                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
-                        </div>
-                    </div>
-                </section>
-                
-                
-                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
-                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-docs-uefi-dev-communation-between-windows-and-uefi-">
-                        <span class="single-shell__toc-label">Contents</span>
-                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
-                    </button>
-                    <div id="single-toc-mobile-docs-uefi-dev-communation-between-windows-and-uefi-" class="single-shell__toc-panel">
-                        <div class="single-shell__toc-panel-inner">
-                            <div class="single-shell__toc-body">
-                                <nav id="TableOfContents-mobile">
-  <ul>
-    <li>
-      <ul>
-        <li><a href="#what-is-nvram"><strong>What is NVRAM?</strong></a></li>
-        <li><a href="#uefi-variables"><strong>UEFI Variables</strong></a></li>
-        <li><a href="#access-uefi-variables-with-services"><strong>Access UEFI Variables with Services</strong></a>
-          <ul>
-            <li><a href="#1---setvariable"><strong>1 - SetVariable()</strong></a></li>
-            <li><a href="#2---getvariable"><strong>2 - GetVariable()</strong></a></li>
-          </ul>
-        </li>
-        <li><a href="#coding-windows-driver"><strong>Coding Windows Driver</strong></a></li>
-        <li><a href="#creating-uefi-variable-from-windows-driver"><strong>Creating UEFI Variable from Windows Driver</strong></a></li>
-        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
-        <li><a href="#references"><strong>References</strong></a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <div class="single-shell__content">
-                    <p>In this documentation, we will discuss how to establish communication between a UEFI driver and a Windows driver. Specifically, we’ll explore how to use NVRAM-based UEFI variables to exchange data between the two environments.</p>
-<h3 id="what-is-nvram"><strong>What is NVRAM?</strong></h3>
-<p>NVRAM (Non-Volatile RAM) is a key component in UEFI-based systems, used to store persistent configuration and system state data. Unlike regular RAM, NVRAM retains its contents across reboots and power-offs, making it essential for managing firmware-level settings.</p>
-<p>In UEFI, NVRAM is organized into variables—structured key-value pairs that include metadata (attributes) defining how and when they can be accessed. These variables are used for critical system functions such as boot management, secure boot key storage, hardware configuration, and OEM-specific settings.</p>
-<h3 id="uefi-variables"><strong>UEFI Variables</strong></h3>
-<p>UEFI Variables <strong>is specified with a combination of a GUID and Unicode String</strong>. The GUID of a variable can prevent name collisions between different vendors.</p>
-<p><strong>The Boot Manager Chapter</strong> of UEFI Specification defines the EFIGLOBAL_VARIABLE_GUID, also known <em>gEfiGlobalVariableGuid</em> in EDK II. If we want to use a global variable, such as SecureBoot Status in our UEFI Driver, we need to benefit from the gEfiGlobalVariableGuid. Here are some global variable list from <a href="https://github.com/tianocore/edk2/blob/master/MdePkg/Include/Guid/GlobalVariable.h">EDK II Repo</a>:</p>
-<ul>
-<li><strong>EFI_PLATFORM_LANG_CODES_VARIABLE_NAME L&quot;PlatformLangCodes&quot;</strong></li>
-<li><strong>EFI_BOOT_CURRENT_VARIABLE_NAME L&quot;BootCurrent&quot;</strong></li>
-<li><strong>EFI_SIGNATURE_SUPPORT_NAME L&quot;SignatureSupport&quot;</strong></li>
-</ul>
-<p>[&hellip;]</p>
-<p>Each UEFI Variable has attributes that the describe visibility persistence. Here&rsquo;s list of the attributes:</p>
-<ul>
-<li><em>BOOTSERVICE_ACCESS</em></li>
-</ul>
-<p>The variable has permissions for write and read access at the pre-boot before <strong>ExitBootServices()</strong> called, which means that the variable is not available after called ExitBootServices() and the contents of the variable will be deleted on the next system reset.</p>
-<ul>
-<li><em>BOOTSERVICE_ACCESS | RUNTIME_ACCESS</em></li>
-</ul>
-<p>The variable has permissions for write and read access before ExitBootServices() called, but its contents will remain as <strong>read-only</strong> when ExitBootServices() called, also the contents will be deleted on the next system reboot.</p>
-<ul>
-<li><em>NON_VOLATILE | BOOTSERVICE_ACCESS</em></li>
-</ul>
-<p>The variable has permissions for write and read access before ExitBootServices() called and its contents are persistent through system reset.</p>
-<ul>
-<li><em>NON_VOLATILE | BOOTSERVICE_ACCESS | RUNTIME_ACCESS</em></li>
-</ul>
-<p>The variable has permissions for write and read in both pre-boot and OS Runtime environment. Its contents are persistent through system reset.</p>
-<h3 id="access-uefi-variables-with-services"><strong>Access UEFI Variables with Services</strong></h3>
-<p>When a UEFI Driver store configuration information via UEFI Variables, it can access them with services provided by <em>EFI_HII_CONFIG_ACCESS_PROTOCOL</em> The Services <em>SetVariable()</em> and <em>GetVariable()</em> are used to set and get configuration information. We will see these two services through the article.</p>
-<h4 id="1---setvariable"><strong>1 - SetVariable()</strong></h4>
-<p><em>SetVariable()</em> service sets the contents of the variable, also it can be used to create a new variable, modify the variable or to delete an existing variable. Here are parameters of the service:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span> <span style="color:#66d9ef">typedef</span>
-</span></span><span style="display:flex;"><span> EFI_STATUS
-</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">SetVariable</span> (
-</span></span><span style="display:flex;"><span>   IN CHAR16            <span style="color:#f92672">*</span>VariableName,
-</span></span><span style="display:flex;"><span>   IN EFI_GUID          <span style="color:#f92672">*</span>VendorGuid,
-</span></span><span style="display:flex;"><span>   IN UINT32            Attributes,
-</span></span><span style="display:flex;"><span>   IN UINTN             DataSize,
-</span></span><span style="display:flex;"><span>   IN VOID              <span style="color:#f92672">*</span>Data
-</span></span><span style="display:flex;"><span>);
-</span></span></code></pre></div><p>Let&rsquo;s create a project for <strong>SetVariable</strong>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Uefi.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/PcdLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiBootServicesTableLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiRuntimeServicesTableLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>EFI_STATUS EFIAPI <span style="color:#a6e22e">UefiMain</span>(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE <span style="color:#f92672">*</span>SystemTable) {
-</span></span><span style="display:flex;"><span>  CHAR16 <span style="color:#f92672">*</span>VariableName <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;MyUEFIVar&#34;</span>;
-</span></span><span style="display:flex;"><span>  EFI_GUID VendorGuid <span style="color:#f92672">=</span> { <span style="color:#ae81ff">0xa1b2c3d4</span>, <span style="color:#ae81ff">0x1234</span>, <span style="color:#ae81ff">0x5678</span>, {<span style="color:#ae81ff">0x9a</span>,<span style="color:#ae81ff">0xbc</span>,<span style="color:#ae81ff">0xde</span>,<span style="color:#ae81ff">0xf1</span>,<span style="color:#ae81ff">0x23</span>,<span style="color:#ae81ff">0x45</span>,<span style="color:#ae81ff">0x67</span>,<span style="color:#ae81ff">0x89</span>} };
-</span></span><span style="display:flex;"><span>  UINT8 ContentOfVariable[<span style="color:#ae81ff">4</span>] <span style="color:#f92672">=</span> { <span style="color:#ae81ff">0xDE</span>, <span style="color:#ae81ff">0xAD</span>, <span style="color:#ae81ff">0xBE</span>, <span style="color:#ae81ff">0xEF</span> };
-</span></span><span style="display:flex;"><span>  UINTN DataSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(ContentOfVariable);
-</span></span><span style="display:flex;"><span>  EFI_STATUS Status <span style="color:#f92672">=</span> EFI_SUCCESS;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  UINT32 Attributes <span style="color:#f92672">=</span> EFI_VARIABLE_NON_VOLATILE <span style="color:#f92672">|</span>
-</span></span><span style="display:flex;"><span>                      EFI_VARIABLE_BOOTSERVICE_ACCESS <span style="color:#f92672">|</span>
-</span></span><span style="display:flex;"><span>                      EFI_VARIABLE_RUNTIME_ACCESS;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  Status <span style="color:#f92672">=</span> gRT<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SetVariable</span>(
-</span></span><span style="display:flex;"><span>      VariableName,
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;</span>VendorGuid,
-</span></span><span style="display:flex;"><span>      Attributes,
-</span></span><span style="display:flex;"><span>      DataSize,
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;</span>ContentOfVariable
-</span></span><span style="display:flex;"><span>  );
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">EFI_ERROR</span>(Status)) {
-</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Write Operation Failed!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> Status;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;The content successfully written!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> EFI_SUCCESS;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>In the code, we wrote the content of ContentOfVariable. Firstly, we created a variable name, GUID and values for UEFI Variable, then we executed the SetVariable. As a result of these processes, our UEFI Variable has these information:</p>
-<ul>
-<li>UEFI Variable Name: <strong>MyUEFIVar</strong></li>
-<li>GUID: <strong>A1B2C3D4-1234-5678-9ABC-DEF123456789</strong></li>
-<li>Content: <strong>0xDEADBEEF</strong></li>
-</ul>
-<p>Here&rsquo;s result:</p>
-<div style="text-align: center;">
-  <img src="/images/posts/communication-windows-uefi/img1.png" style="width: 55%" />
-</div>
-<p>Now we can access it with these information.</p>
-<h4 id="2---getvariable"><strong>2 - GetVariable()</strong></h4>
-<p><em>GetVariable()</em> service get content of the variable. Here are parameters of the service:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span>
-</span></span><span style="display:flex;"><span>EFI_STATUS
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">GetVariable</span> (
-</span></span><span style="display:flex;"><span>  IN CHAR16           <span style="color:#f92672">*</span>VariableName,
-</span></span><span style="display:flex;"><span>  IN EFI_GUID         <span style="color:#f92672">*</span>VendorGuid,
-</span></span><span style="display:flex;"><span>  OUT UINT32          <span style="color:#f92672">*</span>Attributes OPTIONAL,
-</span></span><span style="display:flex;"><span>  IN OUT UINTN        <span style="color:#f92672">*</span>DataSize,
-</span></span><span style="display:flex;"><span>  OUT VOID            <span style="color:#f92672">*</span>Data OPTIONAL
-</span></span><span style="display:flex;"><span> );
-</span></span></code></pre></div><p>Now let&rsquo;s develop the project with GetVariable service:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Uefi.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/PcdLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiBootServicesTableLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiRuntimeServicesTableLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>EFI_STATUS EFIAPI <span style="color:#a6e22e">UefiMain</span>(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE <span style="color:#f92672">*</span>SystemTable) {
-</span></span><span style="display:flex;"><span>  CHAR16 <span style="color:#f92672">*</span>VariableName <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;MyUEFIVar&#34;</span>;
-</span></span><span style="display:flex;"><span>  EFI_GUID VendorGuid <span style="color:#f92672">=</span> { <span style="color:#ae81ff">0xa1b2c3d4</span>, <span style="color:#ae81ff">0x1234</span>, <span style="color:#ae81ff">0x5678</span>, {<span style="color:#ae81ff">0x9a</span>,<span style="color:#ae81ff">0xbc</span>,<span style="color:#ae81ff">0xde</span>,<span style="color:#ae81ff">0xf1</span>,<span style="color:#ae81ff">0x23</span>,<span style="color:#ae81ff">0x45</span>,<span style="color:#ae81ff">0x67</span>,<span style="color:#ae81ff">0x89</span>} };
-</span></span><span style="display:flex;"><span>  UINT8 ContentOfVariable[<span style="color:#ae81ff">4</span>] <span style="color:#f92672">=</span> { <span style="color:#ae81ff">0xDE</span>, <span style="color:#ae81ff">0xAD</span>, <span style="color:#ae81ff">0xBE</span>, <span style="color:#ae81ff">0xEF</span> };
-</span></span><span style="display:flex;"><span>  UINTN DataSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(ContentOfVariable);
-</span></span><span style="display:flex;"><span>  EFI_STATUS Status <span style="color:#f92672">=</span> EFI_SUCCESS;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  UINT32 Attributes <span style="color:#f92672">=</span> EFI_VARIABLE_NON_VOLATILE <span style="color:#f92672">|</span>
-</span></span><span style="display:flex;"><span>                      EFI_VARIABLE_BOOTSERVICE_ACCESS <span style="color:#f92672">|</span>
-</span></span><span style="display:flex;"><span>                      EFI_VARIABLE_RUNTIME_ACCESS;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  Status <span style="color:#f92672">=</span> gRT<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SetVariable</span>(
-</span></span><span style="display:flex;"><span>      VariableName,
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;</span>VendorGuid,
-</span></span><span style="display:flex;"><span>      Attributes,
-</span></span><span style="display:flex;"><span>      DataSize,
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;</span>ContentOfVariable
-</span></span><span style="display:flex;"><span>  );
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">EFI_ERROR</span>(Status)) {
-</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Failed to write!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> Status;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;The content successfully written!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  UINT8 Content[<span style="color:#ae81ff">4</span>] <span style="color:#f92672">=</span> { <span style="color:#ae81ff">0</span> };
-</span></span><span style="display:flex;"><span>  DataSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(Content);
-</span></span><span style="display:flex;"><span>  Status <span style="color:#f92672">=</span> gRT<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">GetVariable</span>(
-</span></span><span style="display:flex;"><span>      VariableName,
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;</span>VendorGuid,
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;</span>Attributes,
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;</span>DataSize,
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&amp;</span>Content
-</span></span><span style="display:flex;"><span>  );
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">EFI_ERROR</span>(Status)) {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Failed to read the variable!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> Status;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> x <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; x <span style="color:#f92672">&lt;</span> DataSize; x<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Content: 0x%02x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Content[x]);
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> EFI_SUCCESS;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>After <strong>SetVariable</strong> called, we called GetVariable service to get content of the our UEFI Variable, then we printed the result. Here&rsquo;s the result:</p>
-<div style="text-align: center;">
-  <img src="/images/posts/communication-windows-uefi/img2.png" style="width: 55%" />
-</div>
-<p>And now we can focus on our Windows Driver.</p>
-<h3 id="coding-windows-driver"><strong>Coding Windows Driver</strong></h3>
-<p>Essentially there&rsquo;s a routine which we can use for our purpose in ntoskrnl. <strong>ExGetFirmwareEnvironmentVariable</strong> can be used to read UEFI Variables. So coding of the windows driver will not be difficult. We can call this routine with UEFI Variable information:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;ntddk.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">DriverUnload</span>(PDRIVER_OBJECT DriverObject)
-</span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DriverObject);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrint</span>(<span style="color:#e6db74">&#34;Driver unloaded.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> STATUS_SUCCESS;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">DriverEntry</span>(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
-</span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(RegistryPath);
-</span></span><span style="display:flex;"><span>    DriverObject<span style="color:#f92672">-&gt;</span>DriverUnload <span style="color:#f92672">=</span> DriverUnload;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    UNICODE_STRING VariableName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;MyUEFIVar&#34;</span>);
-</span></span><span style="display:flex;"><span>    UINT8 Content[<span style="color:#ae81ff">4</span>] <span style="color:#f92672">=</span> { <span style="color:#ae81ff">0</span> };
-</span></span><span style="display:flex;"><span>    ULONG BufferSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(Content);
-</span></span><span style="display:flex;"><span>    GUID VendorGuid <span style="color:#f92672">=</span> {
-</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0xa1b2c3d4</span>, <span style="color:#ae81ff">0x1234</span>, <span style="color:#ae81ff">0x5678</span>, {<span style="color:#ae81ff">0x9a</span>,<span style="color:#ae81ff">0xbc</span>,<span style="color:#ae81ff">0xde</span>,<span style="color:#ae81ff">0xf1</span>,<span style="color:#ae81ff">0x23</span>,<span style="color:#ae81ff">0x45</span>,<span style="color:#ae81ff">0x67</span>,<span style="color:#ae81ff">0x89</span>}
-</span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>    NTSTATUS Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExGetFirmwareEnvironmentVariable</span>(<span style="color:#f92672">&amp;</span>VariableName, <span style="color:#f92672">&amp;</span>VendorGuid, <span style="color:#f92672">&amp;</span>Content, <span style="color:#f92672">&amp;</span>BufferSize, NULL);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to Read Data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> Status;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (ULONG x <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; x <span style="color:#f92672">&lt;</span> BufferSize; x<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;The value from UEFI Variable: 0x%02x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Content[x]);
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> STATUS_SUCCESS;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>In the project, we accessed the content of the our UEFI Variable with ExGetFirmwareEnvironmentVariable routine. Here&rsquo;s result:</p>
-<div style="text-align: center;">
-  <img src="/images/posts/communication-windows-uefi/img3.png" style="width: 75%" />
-</div>
-<p>When ExGetFirmwareEnvironmentVariable called, The following routines are called after the routine:</p>
-<div style="text-align: center;">
-  <img src="/images/posts/communication-windows-uefi/img4.png" style="width: 80%" />
-</div>
-<p>First of all it calls <strong>ExpGetFirmwareEnvironmentVariable</strong>:</p>
-<div style="text-align: center;">
-  <img src="/images/posts/communication-windows-uefi/img5.png" style="width: 100%" />
-</div>
-<p>And then the parameters of the ExGetFirmwareEnvironmentVariable are passed to IoGetEnvironmentVariableEx:</p>
-<div style="text-align: center;">
-  <img src="/images/posts/communication-windows-uefi/img6.png" style="width: 60%" />
-</div>
-<h3 id="creating-uefi-variable-from-windows-driver"><strong>Creating UEFI Variable from Windows Driver</strong></h3>
-<p>Also we can create and set UEFI Variable from Windows Driver. <strong>ExSetFirmwareEnvironmentVariable</strong> can be used for these purpose:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;ntddk.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#pragma warning(disable: 4057)
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#define EFI_VARIABLE_NON_VOLATILE        0x00000001
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define EFI_VARIABLE_BOOTSERVICE_ACCESS  0x00000002
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define EFI_VARIABLE_RUNTIME_ACCESS      0x00000004
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">DriverUnload</span>(PDRIVER_OBJECT DriverObject)
-</span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(DriverObject);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Driver unloaded.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> STATUS_SUCCESS;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>NTSTATUS <span style="color:#a6e22e">DriverEntry</span>(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
-</span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">UNREFERENCED_PARAMETER</span>(RegistryPath);
-</span></span><span style="display:flex;"><span>    DriverObject<span style="color:#f92672">-&gt;</span>DriverUnload <span style="color:#f92672">=</span> DriverUnload;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    UNICODE_STRING VariableName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;YUPIIIIIII&#34;</span>);
-</span></span><span style="display:flex;"><span>    WCHAR Buffer[] <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;HELLOOO from Windows!!&#34;</span>;
-</span></span><span style="display:flex;"><span>    ULONG BufferSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(Buffer);
-</span></span><span style="display:flex;"><span>    GUID VendorGuid <span style="color:#f92672">=</span> {
-</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0xa1b2c3d4</span>, <span style="color:#ae81ff">0x1234</span>, <span style="color:#ae81ff">0x5678</span>, {<span style="color:#ae81ff">0x9a</span>,<span style="color:#ae81ff">0xbc</span>,<span style="color:#ae81ff">0xde</span>,<span style="color:#ae81ff">0xf1</span>,<span style="color:#ae81ff">0x23</span>,<span style="color:#ae81ff">0x45</span>,<span style="color:#ae81ff">0x67</span>,<span style="color:#ae81ff">0x89</span>}
-</span></span><span style="display:flex;"><span>    };
-</span></span><span style="display:flex;"><span>    NTSTATUS Status <span style="color:#f92672">=</span> STATUS_SUCCESS;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    UINT32 Attributes <span style="color:#f92672">=</span> EFI_VARIABLE_NON_VOLATILE <span style="color:#f92672">|</span> EFI_VARIABLE_BOOTSERVICE_ACCESS <span style="color:#f92672">|</span> EFI_VARIABLE_RUNTIME_ACCESS;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExSetFirmwareEnvironmentVariable</span>(<span style="color:#f92672">&amp;</span>VariableName, <span style="color:#f92672">&amp;</span>VendorGuid, <span style="color:#f92672">&amp;</span>Buffer, BufferSize, Attributes);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) {
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Failed to write the value! Error Code: 0x%x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Status);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> Status;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">DbgPrintEx</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;Done!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> STATUS_SUCCESS;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>And UEFI Driver:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Uefi.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/PcdLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiBootServicesTableLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiRuntimeServicesTableLib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>EFI_STATUS EFIAPI <span style="color:#a6e22e">UefiMain</span>(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE <span style="color:#f92672">*</span>SystemTable) {
-</span></span><span style="display:flex;"><span>  CHAR16 <span style="color:#f92672">*</span>VariableName <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;YUPIIIIIII&#34;</span>;
-</span></span><span style="display:flex;"><span>  EFI_GUID VendorGuid <span style="color:#f92672">=</span> { <span style="color:#ae81ff">0xa1b2c3d4</span>, <span style="color:#ae81ff">0x1234</span>, <span style="color:#ae81ff">0x5678</span>, {<span style="color:#ae81ff">0x9a</span>,<span style="color:#ae81ff">0xbc</span>,<span style="color:#ae81ff">0xde</span>,<span style="color:#ae81ff">0xf1</span>,<span style="color:#ae81ff">0x23</span>,<span style="color:#ae81ff">0x45</span>,<span style="color:#ae81ff">0x67</span>,<span style="color:#ae81ff">0x89</span>} };
-</span></span><span style="display:flex;"><span>  CHAR16 Buffer[<span style="color:#ae81ff">32</span>];
-</span></span><span style="display:flex;"><span>  UINTN DataSize <span style="color:#f92672">=</span> <span style="color:#66d9ef">sizeof</span>(Buffer);
-</span></span><span style="display:flex;"><span>  EFI_STATUS Status <span style="color:#f92672">=</span> EFI_SUCCESS;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  UINT32 Attributes <span style="color:#f92672">=</span> EFI_VARIABLE_NON_VOLATILE <span style="color:#f92672">|</span>
-</span></span><span style="display:flex;"><span>                      EFI_VARIABLE_BOOTSERVICE_ACCESS <span style="color:#f92672">|</span>
-</span></span><span style="display:flex;"><span>                      EFI_VARIABLE_RUNTIME_ACCESS;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  Status <span style="color:#f92672">=</span> gRT<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">GetVariable</span>(VariableName, <span style="color:#f92672">&amp;</span>VendorGuid, <span style="color:#f92672">&amp;</span>Attributes, <span style="color:#f92672">&amp;</span>DataSize, <span style="color:#f92672">&amp;</span>Buffer);
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">EFI_ERROR</span>(Status)) {
-</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Failed to read the data!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> Status;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;The Content: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Buffer);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> EFI_SUCCESS;
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Here&rsquo;s result:</p>
-<div style="text-align: center;">
-  <img src="/images/posts/communication-windows-uefi/img7.png" style="width: 50%" />
-</div>
-<h3 id="conclusion"><strong>Conclusion</strong></h3>
-<p>In this documentation, we demonstrated how UEFI and Windows drivers can communicate with each other using NVRAM variables. By leveraging SetVariable and GetVariable in UEFI, and ExGetFirmwareEnvironmentVariable / ExSetFirmwareEnvironmentVariable in Windows, we established a persistent and reliable data channel between the two environments.</p>
-<p>This method enables developers to build seamless integrations between firmware and the OS, allowing for flexible configurations, feature toggles, or telemetry mechanisms across reboots.</p>
-<h3 id="references"><strong>References</strong></h3>
-<ol>
-<li>
-<p><a href="https://uefi.org/specs/UEFI/2.10/08_Services_Runtime_Services.html">UEFI.org - Runtime Services</a></p>
-</li>
-<li>
-<p><a href="https://tianocore-docs.github.io/edk2-UefiDriverWritersGuide/draft/5_uefi_services/52_services_that_uefi_drivers_rarely_use/525_getvariable_and_setvariable.html">TianoCore Docs - GetVariable() and SetVariable()</a></p>
-</li>
-</ol>
-
-                </div>
-                <div class="single-shell__back">
-                    <h4><a href="/">Back to Home</a></h4>
-                </div>
-                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
-                    <span aria-hidden="true">^</span>
-                </button>
-            </div>
-            
-            <aside class="single-shell__aside">
-                
-                <section class="single-shell__author single-shell__author--desktop">
-                    <div class="single-shell__author-static" aria-hidden="true"></div>
-                    <div class="single-shell__author-heading">About Author</div>
-                    <div class="single-shell__author-card">
-                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
-                        <div class="single-shell__author-photo-shell">
-                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
-                        </div>
-                        </a>
-                        <div class="single-shell__author-body">
-                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
-                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
-                            </a>
-                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
-                        </div>
-                    </div>
-                </section>
-                
-                
-                <section class="single-shell__toc single-shell__toc--desktop">
-                    <div class="single-shell__toc-heading">
-                        <span class="single-shell__toc-label">Contents</span>
-                    </div>
-                    <div class="single-shell__toc-body">
-                        <nav id="TableOfContents-desktop">
-  <ul>
-    <li>
-      <ul>
-        <li><a href="#what-is-nvram"><strong>What is NVRAM?</strong></a></li>
-        <li><a href="#uefi-variables"><strong>UEFI Variables</strong></a></li>
-        <li><a href="#access-uefi-variables-with-services"><strong>Access UEFI Variables with Services</strong></a>
-          <ul>
-            <li><a href="#1---setvariable"><strong>1 - SetVariable()</strong></a></li>
-            <li><a href="#2---getvariable"><strong>2 - GetVariable()</strong></a></li>
-          </ul>
-        </li>
-        <li><a href="#coding-windows-driver"><strong>Coding Windows Driver</strong></a></li>
-        <li><a href="#creating-uefi-variable-from-windows-driver"><strong>Creating UEFI Variable from Windows Driver</strong></a></li>
-        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
-        <li><a href="#references"><strong>References</strong></a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
-                    </div>
-                </section>
-                
-            </aside>
-            
-        </div>
-    </div>
-</article>
-
-
-        </div><footer class="container">
-    <hr class="soften">
-    <p>
-&copy; 
-
-    0xbekoo
-
-<span id="thisyear">2026</span>
-
-    | 0xbekoo.github.io
-
-
-</p>
-    <p class="text-center">
-        
-        <a href="https://x.com/0xbekooo">Twitter</a> 
-        
-        <a href="https://github.com/0xbekoo">GitHub</a> 
-        
-    </p>
-</footer>
-
-</body><link rel="stylesheet" href="/css/bootstrap.css">
-<link rel="stylesheet" href="/css/bootstrap-responsive.css">
-<link rel="stylesheet" href="/css/style.css">
-<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css">
-<script src="/js/jquery.js"></script>
-
-<script src="/js/bootstrap-transition.js"></script>
-<script src="/js/bootstrap-alert.js"></script>
-<script src="/js/bootstrap-modal.js"></script>
-<script src="/js/bootstrap-dropdown.js"></script>
-<script src="/js/bootstrap-scrollspy.js"></script>
-<script src="/js/bootstrap-tab.js"></script>
-<script src="/js/bootstrap-tooltip.js"></script>
-<script src="/js/bootstrap-popover.js"></script>
-<script src="/js/bootstrap-button.js"></script>
-<script src="/js/bootstrap-collapse.js"></script>
-<script src="/js/bootstrap-carousel.js"></script>
-<script src="/js/bootstrap-typeahead.js"></script>
-<script src="/js/bootstrap-affix.js"></script>
-<script>
-    _386 = { 
-        fastLoad: false ,
-        onePass: false , 
-        speedFactor: 1.5 ,
-        duatBootImage: "/images/blog-images/hour.jpg"
-    };
-
-    
-    function ThisYear() {
-        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
-    };
-</script>
-<script src="/js/duat-boot.js"></script>
-<script src="/js/mobile-image-lightbox.js"></script>
-<script src="/js/page-slide.js"></script>
-</html>
+<!doctype html><html lang=en><head><title>0xbekoo</title><meta charset=utf-8><meta content="utf-8" http-equiv=encoding><meta name=viewport content="width=device-width,initial-scale=1"><meta name=format-detection content="telephone=no"><meta name=theme-color content="#000084"><link rel=icon href=/favicon.ico><link rel=canonical href=/docs/uefi-dev/communation-between-windows-and-uefi/><noscript><style>body{visibility:visible!important}</style></noscript></head><body><nav class="navbar navbar-inverse navbar-fixed-top"><div class=navbar-inner><div class=container><button type=button class="btn btn-navbar" data-toggle=collapse data-target=.nav-collapse></button>
+<a class=brand href=/>0xbekoo</a><div class="nav-collapse collapse"><ul class=nav><li><a href=/docs/><span>Documentation</span></a></li><li><a href=/blogs/><span>Blogs</span></a></li><li><a href=/projects/><span>Projects</span></a></li></ul></div></div></div></nav><div id=content class=container><article class="single-shell single-shell--docs"><div class="row-fluid navmargin"><div class="page-header single-shell__header"><h1 class=single-shell__title>UEFI to Windows Communication via NVRAM Variables</h1><p class=single-shell__meta>Fri, Jul 18, 2025</p></div><div class="single-shell__body single-shell__body--with-toc"><div class=single-shell__main><section class="single-shell__author single-shell__author--mobile"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--mobile is-open" data-ui=toc><button class=single-shell__toc-toggle type=button aria-expanded=true aria-controls=single-toc-mobile-docs-uefi-dev-communation-between-windows-and-uefi->
+<span class=single-shell__toc-label>Contents</span>
+<span class=single-shell__toc-status aria-hidden=true>[-]</span></button><div id=single-toc-mobile-docs-uefi-dev-communation-between-windows-and-uefi- class=single-shell__toc-panel><div class=single-shell__toc-panel-inner><div class=single-shell__toc-body><nav id=TableOfContents-mobile><ul><li><ul><li><a href=#what-is-nvram><strong>What is NVRAM?</strong></a></li><li><a href=#uefi-variables><strong>UEFI Variables</strong></a></li><li><a href=#access-uefi-variables-with-services><strong>Access UEFI Variables with Services</strong></a><ul><li><a href=#1---setvariable><strong>1 - SetVariable()</strong></a></li><li><a href=#2---getvariable><strong>2 - GetVariable()</strong></a></li></ul></li><li><a href=#coding-windows-driver><strong>Coding Windows Driver</strong></a></li><li><a href=#creating-uefi-variable-from-windows-driver><strong>Creating UEFI Variable from Windows Driver</strong></a></li><li><a href=#conclusion><strong>Conclusion</strong></a></li><li><a href=#references><strong>References</strong></a></li></ul></li></ul></nav></div></div></div></section><div class=single-shell__content><p>In this documentation, we will discuss how to establish communication between a UEFI driver and a Windows driver. Specifically, we’ll explore how to use NVRAM-based UEFI variables to exchange data between the two environments.</p><h3 id=what-is-nvram><strong>What is NVRAM?</strong></h3><p>NVRAM (Non-Volatile RAM) is a key component in UEFI-based systems, used to store persistent configuration and system state data. Unlike regular RAM, NVRAM retains its contents across reboots and power-offs, making it essential for managing firmware-level settings.</p><p>In UEFI, NVRAM is organized into variables—structured key-value pairs that include metadata (attributes) defining how and when they can be accessed. These variables are used for critical system functions such as boot management, secure boot key storage, hardware configuration, and OEM-specific settings.</p><h3 id=uefi-variables><strong>UEFI Variables</strong></h3><p>UEFI Variables <strong>is specified with a combination of a GUID and Unicode String</strong>. The GUID of a variable can prevent name collisions between different vendors.</p><p><strong>The Boot Manager Chapter</strong> of UEFI Specification defines the EFIGLOBAL_VARIABLE_GUID, also known <em>gEfiGlobalVariableGuid</em> in EDK II. If we want to use a global variable, such as SecureBoot Status in our UEFI Driver, we need to benefit from the gEfiGlobalVariableGuid. Here are some global variable list from <a href=https://github.com/tianocore/edk2/blob/master/MdePkg/Include/Guid/GlobalVariable.h>EDK II Repo</a>:</p><ul><li><strong>EFI_PLATFORM_LANG_CODES_VARIABLE_NAME L"PlatformLangCodes"</strong></li><li><strong>EFI_BOOT_CURRENT_VARIABLE_NAME L"BootCurrent"</strong></li><li><strong>EFI_SIGNATURE_SUPPORT_NAME L"SignatureSupport"</strong></li></ul><p>[&mldr;]</p><p>Each UEFI Variable has attributes that the describe visibility persistence. Here&rsquo;s list of the attributes:</p><ul><li><em>BOOTSERVICE_ACCESS</em></li></ul><p>The variable has permissions for write and read access at the pre-boot before <strong>ExitBootServices()</strong> called, which means that the variable is not available after called ExitBootServices() and the contents of the variable will be deleted on the next system reset.</p><ul><li><em>BOOTSERVICE_ACCESS | RUNTIME_ACCESS</em></li></ul><p>The variable has permissions for write and read access before ExitBootServices() called, but its contents will remain as <strong>read-only</strong> when ExitBootServices() called, also the contents will be deleted on the next system reboot.</p><ul><li><em>NON_VOLATILE | BOOTSERVICE_ACCESS</em></li></ul><p>The variable has permissions for write and read access before ExitBootServices() called and its contents are persistent through system reset.</p><ul><li><em>NON_VOLATILE | BOOTSERVICE_ACCESS | RUNTIME_ACCESS</em></li></ul><p>The variable has permissions for write and read in both pre-boot and OS Runtime environment. Its contents are persistent through system reset.</p><h3 id=access-uefi-variables-with-services><strong>Access UEFI Variables with Services</strong></h3><p>When a UEFI Driver store configuration information via UEFI Variables, it can access them with services provided by <em>EFI_HII_CONFIG_ACCESS_PROTOCOL</em> The Services <em>SetVariable()</em> and <em>GetVariable()</em> are used to set and get configuration information. We will see these two services through the article.</p><h4 id=1---setvariable><strong>1 - SetVariable()</strong></h4><p><em>SetVariable()</em> service sets the contents of the variable, also it can be used to create a new variable, modify the variable or to delete an existing variable. Here are parameters of the service:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span> <span style=color:#66d9ef>typedef</span>
+</span></span><span style=display:flex><span> EFI_STATUS
+</span></span><span style=display:flex><span> <span style=color:#a6e22e>SetVariable</span> (
+</span></span><span style=display:flex><span>   IN CHAR16            <span style=color:#f92672>*</span>VariableName,
+</span></span><span style=display:flex><span>   IN EFI_GUID          <span style=color:#f92672>*</span>VendorGuid,
+</span></span><span style=display:flex><span>   IN UINT32            Attributes,
+</span></span><span style=display:flex><span>   IN UINTN             DataSize,
+</span></span><span style=display:flex><span>   IN VOID              <span style=color:#f92672>*</span>Data
+</span></span><span style=display:flex><span>);
+</span></span></code></pre></div><p>Let&rsquo;s create a project for <strong>SetVariable</strong>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Uefi.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/PcdLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiBootServicesTableLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiRuntimeServicesTableLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>EFI_STATUS EFIAPI <span style=color:#a6e22e>UefiMain</span>(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE <span style=color:#f92672>*</span>SystemTable) {
+</span></span><span style=display:flex><span>  CHAR16 <span style=color:#f92672>*</span>VariableName <span style=color:#f92672>=</span> <span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;MyUEFIVar&#34;</span>;
+</span></span><span style=display:flex><span>  EFI_GUID VendorGuid <span style=color:#f92672>=</span> { <span style=color:#ae81ff>0xa1b2c3d4</span>, <span style=color:#ae81ff>0x1234</span>, <span style=color:#ae81ff>0x5678</span>, {<span style=color:#ae81ff>0x9a</span>,<span style=color:#ae81ff>0xbc</span>,<span style=color:#ae81ff>0xde</span>,<span style=color:#ae81ff>0xf1</span>,<span style=color:#ae81ff>0x23</span>,<span style=color:#ae81ff>0x45</span>,<span style=color:#ae81ff>0x67</span>,<span style=color:#ae81ff>0x89</span>} };
+</span></span><span style=display:flex><span>  UINT8 ContentOfVariable[<span style=color:#ae81ff>4</span>] <span style=color:#f92672>=</span> { <span style=color:#ae81ff>0xDE</span>, <span style=color:#ae81ff>0xAD</span>, <span style=color:#ae81ff>0xBE</span>, <span style=color:#ae81ff>0xEF</span> };
+</span></span><span style=display:flex><span>  UINTN DataSize <span style=color:#f92672>=</span> <span style=color:#66d9ef>sizeof</span>(ContentOfVariable);
+</span></span><span style=display:flex><span>  EFI_STATUS Status <span style=color:#f92672>=</span> EFI_SUCCESS;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  UINT32 Attributes <span style=color:#f92672>=</span> EFI_VARIABLE_NON_VOLATILE <span style=color:#f92672>|</span>
+</span></span><span style=display:flex><span>                      EFI_VARIABLE_BOOTSERVICE_ACCESS <span style=color:#f92672>|</span>
+</span></span><span style=display:flex><span>                      EFI_VARIABLE_RUNTIME_ACCESS;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  Status <span style=color:#f92672>=</span> gRT<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>SetVariable</span>(
+</span></span><span style=display:flex><span>      VariableName,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&amp;</span>VendorGuid,
+</span></span><span style=display:flex><span>      Attributes,
+</span></span><span style=display:flex><span>      DataSize,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&amp;</span>ContentOfVariable
+</span></span><span style=display:flex><span>  );
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>EFI_ERROR</span>(Status)) {
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;Write Operation Failed!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>return</span> Status;
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;The content successfully written!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> EFI_SUCCESS;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>In the code, we wrote the content of ContentOfVariable. Firstly, we created a variable name, GUID and values for UEFI Variable, then we executed the SetVariable. As a result of these processes, our UEFI Variable has these information:</p><ul><li>UEFI Variable Name: <strong>MyUEFIVar</strong></li><li>GUID: <strong>A1B2C3D4-1234-5678-9ABC-DEF123456789</strong></li><li>Content: <strong>0xDEADBEEF</strong></li></ul><p>Here&rsquo;s result:</p><div style=text-align:center><img src=/images/posts/communication-windows-uefi/img1.png style=width:55%></div><p>Now we can access it with these information.</p><h4 id=2---getvariable><strong>2 - GetVariable()</strong></h4><p><em>GetVariable()</em> service get content of the variable. Here are parameters of the service:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>typedef</span>
+</span></span><span style=display:flex><span>EFI_STATUS
+</span></span><span style=display:flex><span><span style=color:#a6e22e>GetVariable</span> (
+</span></span><span style=display:flex><span>  IN CHAR16           <span style=color:#f92672>*</span>VariableName,
+</span></span><span style=display:flex><span>  IN EFI_GUID         <span style=color:#f92672>*</span>VendorGuid,
+</span></span><span style=display:flex><span>  OUT UINT32          <span style=color:#f92672>*</span>Attributes OPTIONAL,
+</span></span><span style=display:flex><span>  IN OUT UINTN        <span style=color:#f92672>*</span>DataSize,
+</span></span><span style=display:flex><span>  OUT VOID            <span style=color:#f92672>*</span>Data OPTIONAL
+</span></span><span style=display:flex><span> );
+</span></span></code></pre></div><p>Now let&rsquo;s develop the project with GetVariable service:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Uefi.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/PcdLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiBootServicesTableLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiRuntimeServicesTableLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>EFI_STATUS EFIAPI <span style=color:#a6e22e>UefiMain</span>(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE <span style=color:#f92672>*</span>SystemTable) {
+</span></span><span style=display:flex><span>  CHAR16 <span style=color:#f92672>*</span>VariableName <span style=color:#f92672>=</span> <span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;MyUEFIVar&#34;</span>;
+</span></span><span style=display:flex><span>  EFI_GUID VendorGuid <span style=color:#f92672>=</span> { <span style=color:#ae81ff>0xa1b2c3d4</span>, <span style=color:#ae81ff>0x1234</span>, <span style=color:#ae81ff>0x5678</span>, {<span style=color:#ae81ff>0x9a</span>,<span style=color:#ae81ff>0xbc</span>,<span style=color:#ae81ff>0xde</span>,<span style=color:#ae81ff>0xf1</span>,<span style=color:#ae81ff>0x23</span>,<span style=color:#ae81ff>0x45</span>,<span style=color:#ae81ff>0x67</span>,<span style=color:#ae81ff>0x89</span>} };
+</span></span><span style=display:flex><span>  UINT8 ContentOfVariable[<span style=color:#ae81ff>4</span>] <span style=color:#f92672>=</span> { <span style=color:#ae81ff>0xDE</span>, <span style=color:#ae81ff>0xAD</span>, <span style=color:#ae81ff>0xBE</span>, <span style=color:#ae81ff>0xEF</span> };
+</span></span><span style=display:flex><span>  UINTN DataSize <span style=color:#f92672>=</span> <span style=color:#66d9ef>sizeof</span>(ContentOfVariable);
+</span></span><span style=display:flex><span>  EFI_STATUS Status <span style=color:#f92672>=</span> EFI_SUCCESS;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  UINT32 Attributes <span style=color:#f92672>=</span> EFI_VARIABLE_NON_VOLATILE <span style=color:#f92672>|</span>
+</span></span><span style=display:flex><span>                      EFI_VARIABLE_BOOTSERVICE_ACCESS <span style=color:#f92672>|</span>
+</span></span><span style=display:flex><span>                      EFI_VARIABLE_RUNTIME_ACCESS;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  Status <span style=color:#f92672>=</span> gRT<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>SetVariable</span>(
+</span></span><span style=display:flex><span>      VariableName,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&amp;</span>VendorGuid,
+</span></span><span style=display:flex><span>      Attributes,
+</span></span><span style=display:flex><span>      DataSize,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&amp;</span>ContentOfVariable
+</span></span><span style=display:flex><span>  );
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>EFI_ERROR</span>(Status)) {
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;Failed to write!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>return</span> Status;
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;The content successfully written!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  UINT8 Content[<span style=color:#ae81ff>4</span>] <span style=color:#f92672>=</span> { <span style=color:#ae81ff>0</span> };
+</span></span><span style=display:flex><span>  DataSize <span style=color:#f92672>=</span> <span style=color:#66d9ef>sizeof</span>(Content);
+</span></span><span style=display:flex><span>  Status <span style=color:#f92672>=</span> gRT<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>GetVariable</span>(
+</span></span><span style=display:flex><span>      VariableName,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&amp;</span>VendorGuid,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&amp;</span>Attributes,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&amp;</span>DataSize,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&amp;</span>Content
+</span></span><span style=display:flex><span>  );
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>EFI_ERROR</span>(Status)) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;Failed to read the variable!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> Status;
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>int</span> x <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; x <span style=color:#f92672>&lt;</span> DataSize; x<span style=color:#f92672>++</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;Content: 0x%02x</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, Content[x]);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> EFI_SUCCESS;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>After <strong>SetVariable</strong> called, we called GetVariable service to get content of the our UEFI Variable, then we printed the result. Here&rsquo;s the result:</p><div style=text-align:center><img src=/images/posts/communication-windows-uefi/img2.png style=width:55%></div><p>And now we can focus on our Windows Driver.</p><h3 id=coding-windows-driver><strong>Coding Windows Driver</strong></h3><p>Essentially there&rsquo;s a routine which we can use for our purpose in ntoskrnl. <strong>ExGetFirmwareEnvironmentVariable</strong> can be used to read UEFI Variables. So coding of the windows driver will not be difficult. We can call this routine with UEFI Variable information:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;ntddk.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>NTSTATUS <span style=color:#a6e22e>DriverUnload</span>(PDRIVER_OBJECT DriverObject)
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>UNREFERENCED_PARAMETER</span>(DriverObject);
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>DbgPrint</span>(<span style=color:#e6db74>&#34;Driver unloaded.</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> STATUS_SUCCESS;
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>NTSTATUS <span style=color:#a6e22e>DriverEntry</span>(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>UNREFERENCED_PARAMETER</span>(RegistryPath);
+</span></span><span style=display:flex><span>    DriverObject<span style=color:#f92672>-&gt;</span>DriverUnload <span style=color:#f92672>=</span> DriverUnload;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    UNICODE_STRING VariableName <span style=color:#f92672>=</span> <span style=color:#a6e22e>RTL_CONSTANT_STRING</span>(<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;MyUEFIVar&#34;</span>);
+</span></span><span style=display:flex><span>    UINT8 Content[<span style=color:#ae81ff>4</span>] <span style=color:#f92672>=</span> { <span style=color:#ae81ff>0</span> };
+</span></span><span style=display:flex><span>    ULONG BufferSize <span style=color:#f92672>=</span> <span style=color:#66d9ef>sizeof</span>(Content);
+</span></span><span style=display:flex><span>    GUID VendorGuid <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>        <span style=color:#ae81ff>0xa1b2c3d4</span>, <span style=color:#ae81ff>0x1234</span>, <span style=color:#ae81ff>0x5678</span>, {<span style=color:#ae81ff>0x9a</span>,<span style=color:#ae81ff>0xbc</span>,<span style=color:#ae81ff>0xde</span>,<span style=color:#ae81ff>0xf1</span>,<span style=color:#ae81ff>0x23</span>,<span style=color:#ae81ff>0x45</span>,<span style=color:#ae81ff>0x67</span>,<span style=color:#ae81ff>0x89</span>}
+</span></span><span style=display:flex><span>    };
+</span></span><span style=display:flex><span>    NTSTATUS Status <span style=color:#f92672>=</span> STATUS_SUCCESS;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    Status <span style=color:#f92672>=</span> <span style=color:#a6e22e>ExGetFirmwareEnvironmentVariable</span>(<span style=color:#f92672>&amp;</span>VariableName, <span style=color:#f92672>&amp;</span>VendorGuid, <span style=color:#f92672>&amp;</span>Content, <span style=color:#f92672>&amp;</span>BufferSize, NULL);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>NT_SUCCESS</span>(Status)) {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>DbgPrintEx</span>(<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>0</span>, <span style=color:#e6db74>&#34;Failed to Read Data!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Status;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> (ULONG x <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; x <span style=color:#f92672>&lt;</span> BufferSize; x<span style=color:#f92672>++</span>) {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>DbgPrintEx</span>(<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>0</span>, <span style=color:#e6db74>&#34;The value from UEFI Variable: 0x%02x</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, Content[x]);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> STATUS_SUCCESS;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>In the project, we accessed the content of the our UEFI Variable with ExGetFirmwareEnvironmentVariable routine. Here&rsquo;s result:</p><div style=text-align:center><img src=/images/posts/communication-windows-uefi/img3.png style=width:75%></div><p>When ExGetFirmwareEnvironmentVariable called, The following routines are called after the routine:</p><div style=text-align:center><img src=/images/posts/communication-windows-uefi/img4.png style=width:80%></div><p>First of all it calls <strong>ExpGetFirmwareEnvironmentVariable</strong>:</p><div style=text-align:center><img src=/images/posts/communication-windows-uefi/img5.png style=width:100%></div><p>And then the parameters of the ExGetFirmwareEnvironmentVariable are passed to IoGetEnvironmentVariableEx:</p><div style=text-align:center><img src=/images/posts/communication-windows-uefi/img6.png style=width:60%></div><h3 id=creating-uefi-variable-from-windows-driver><strong>Creating UEFI Variable from Windows Driver</strong></h3><p>Also we can create and set UEFI Variable from Windows Driver. <strong>ExSetFirmwareEnvironmentVariable</strong> can be used for these purpose:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;ntddk.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#pragma warning(disable: 4057)
+</span></span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#define EFI_VARIABLE_NON_VOLATILE        0x00000001
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#define EFI_VARIABLE_BOOTSERVICE_ACCESS  0x00000002
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#define EFI_VARIABLE_RUNTIME_ACCESS      0x00000004
+</span></span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>NTSTATUS <span style=color:#a6e22e>DriverUnload</span>(PDRIVER_OBJECT DriverObject)
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>UNREFERENCED_PARAMETER</span>(DriverObject);
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>DbgPrintEx</span>(<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>0</span>, <span style=color:#e6db74>&#34;Driver unloaded.</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> STATUS_SUCCESS;
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>NTSTATUS <span style=color:#a6e22e>DriverEntry</span>(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>UNREFERENCED_PARAMETER</span>(RegistryPath);
+</span></span><span style=display:flex><span>    DriverObject<span style=color:#f92672>-&gt;</span>DriverUnload <span style=color:#f92672>=</span> DriverUnload;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    UNICODE_STRING VariableName <span style=color:#f92672>=</span> <span style=color:#a6e22e>RTL_CONSTANT_STRING</span>(<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;YUPIIIIIII&#34;</span>);
+</span></span><span style=display:flex><span>    WCHAR Buffer[] <span style=color:#f92672>=</span> <span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;HELLOOO from Windows!!&#34;</span>;
+</span></span><span style=display:flex><span>    ULONG BufferSize <span style=color:#f92672>=</span> <span style=color:#66d9ef>sizeof</span>(Buffer);
+</span></span><span style=display:flex><span>    GUID VendorGuid <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>        <span style=color:#ae81ff>0xa1b2c3d4</span>, <span style=color:#ae81ff>0x1234</span>, <span style=color:#ae81ff>0x5678</span>, {<span style=color:#ae81ff>0x9a</span>,<span style=color:#ae81ff>0xbc</span>,<span style=color:#ae81ff>0xde</span>,<span style=color:#ae81ff>0xf1</span>,<span style=color:#ae81ff>0x23</span>,<span style=color:#ae81ff>0x45</span>,<span style=color:#ae81ff>0x67</span>,<span style=color:#ae81ff>0x89</span>}
+</span></span><span style=display:flex><span>    };
+</span></span><span style=display:flex><span>    NTSTATUS Status <span style=color:#f92672>=</span> STATUS_SUCCESS;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    UINT32 Attributes <span style=color:#f92672>=</span> EFI_VARIABLE_NON_VOLATILE <span style=color:#f92672>|</span> EFI_VARIABLE_BOOTSERVICE_ACCESS <span style=color:#f92672>|</span> EFI_VARIABLE_RUNTIME_ACCESS;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    Status <span style=color:#f92672>=</span> <span style=color:#a6e22e>ExSetFirmwareEnvironmentVariable</span>(<span style=color:#f92672>&amp;</span>VariableName, <span style=color:#f92672>&amp;</span>VendorGuid, <span style=color:#f92672>&amp;</span>Buffer, BufferSize, Attributes);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>NT_SUCCESS</span>(Status)) {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>DbgPrintEx</span>(<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>0</span>, <span style=color:#e6db74>&#34;Failed to write the value! Error Code: 0x%x</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, Status);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Status;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>DbgPrintEx</span>(<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>0</span>, <span style=color:#e6db74>&#34;Done!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> STATUS_SUCCESS;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>And UEFI Driver:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Uefi.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/PcdLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiBootServicesTableLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiRuntimeServicesTableLib.h&gt;</span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>EFI_STATUS EFIAPI <span style=color:#a6e22e>UefiMain</span>(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE <span style=color:#f92672>*</span>SystemTable) {
+</span></span><span style=display:flex><span>  CHAR16 <span style=color:#f92672>*</span>VariableName <span style=color:#f92672>=</span> <span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;YUPIIIIIII&#34;</span>;
+</span></span><span style=display:flex><span>  EFI_GUID VendorGuid <span style=color:#f92672>=</span> { <span style=color:#ae81ff>0xa1b2c3d4</span>, <span style=color:#ae81ff>0x1234</span>, <span style=color:#ae81ff>0x5678</span>, {<span style=color:#ae81ff>0x9a</span>,<span style=color:#ae81ff>0xbc</span>,<span style=color:#ae81ff>0xde</span>,<span style=color:#ae81ff>0xf1</span>,<span style=color:#ae81ff>0x23</span>,<span style=color:#ae81ff>0x45</span>,<span style=color:#ae81ff>0x67</span>,<span style=color:#ae81ff>0x89</span>} };
+</span></span><span style=display:flex><span>  CHAR16 Buffer[<span style=color:#ae81ff>32</span>];
+</span></span><span style=display:flex><span>  UINTN DataSize <span style=color:#f92672>=</span> <span style=color:#66d9ef>sizeof</span>(Buffer);
+</span></span><span style=display:flex><span>  EFI_STATUS Status <span style=color:#f92672>=</span> EFI_SUCCESS;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  UINT32 Attributes <span style=color:#f92672>=</span> EFI_VARIABLE_NON_VOLATILE <span style=color:#f92672>|</span>
+</span></span><span style=display:flex><span>                      EFI_VARIABLE_BOOTSERVICE_ACCESS <span style=color:#f92672>|</span>
+</span></span><span style=display:flex><span>                      EFI_VARIABLE_RUNTIME_ACCESS;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  Status <span style=color:#f92672>=</span> gRT<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>GetVariable</span>(VariableName, <span style=color:#f92672>&amp;</span>VendorGuid, <span style=color:#f92672>&amp;</span>Attributes, <span style=color:#f92672>&amp;</span>DataSize, <span style=color:#f92672>&amp;</span>Buffer);
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>EFI_ERROR</span>(Status)) {
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;Failed to read the data!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>return</span> Status;
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>Print</span>(<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;The Content: %s</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, Buffer);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> EFI_SUCCESS;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Here&rsquo;s result:</p><div style=text-align:center><img src=/images/posts/communication-windows-uefi/img7.png style=width:50%></div><h3 id=conclusion><strong>Conclusion</strong></h3><p>In this documentation, we demonstrated how UEFI and Windows drivers can communicate with each other using NVRAM variables. By leveraging SetVariable and GetVariable in UEFI, and ExGetFirmwareEnvironmentVariable / ExSetFirmwareEnvironmentVariable in Windows, we established a persistent and reliable data channel between the two environments.</p><p>This method enables developers to build seamless integrations between firmware and the OS, allowing for flexible configurations, feature toggles, or telemetry mechanisms across reboots.</p><h3 id=references><strong>References</strong></h3><ol><li><p><a href=https://uefi.org/specs/UEFI/2.10/08_Services_Runtime_Services.html>UEFI.org - Runtime Services</a></p></li><li><p><a href=https://tianocore-docs.github.io/edk2-UefiDriverWritersGuide/draft/5_uefi_services/52_services_that_uefi_drivers_rarely_use/525_getvariable_and_setvariable.html>TianoCore Docs - GetVariable() and SetVariable()</a></p></li></ol></div><div class=single-shell__back><h4><a href=/>Back to Home</a></h4></div><button class=single-shell__scroll-top type=button aria-label="Scroll to top" data-ui=scroll-top>
+<span aria-hidden=true>^</span></button></div><aside class=single-shell__aside><section class="single-shell__author single-shell__author--desktop"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--desktop"><div class=single-shell__toc-heading><span class=single-shell__toc-label>Contents</span></div><div class=single-shell__toc-body><nav id=TableOfContents-desktop><ul><li><ul><li><a href=#what-is-nvram><strong>What is NVRAM?</strong></a></li><li><a href=#uefi-variables><strong>UEFI Variables</strong></a></li><li><a href=#access-uefi-variables-with-services><strong>Access UEFI Variables with Services</strong></a><ul><li><a href=#1---setvariable><strong>1 - SetVariable()</strong></a></li><li><a href=#2---getvariable><strong>2 - GetVariable()</strong></a></li></ul></li><li><a href=#coding-windows-driver><strong>Coding Windows Driver</strong></a></li><li><a href=#creating-uefi-variable-from-windows-driver><strong>Creating UEFI Variable from Windows Driver</strong></a></li><li><a href=#conclusion><strong>Conclusion</strong></a></li><li><a href=#references><strong>References</strong></a></li></ul></li></ul></nav></div></section></aside><div class=single-shell__panel aria-label="Post info"><div class=sp-sysinfo><div class=sp-sysinfo__header>// SYSINFO</div><div class=sp-sysinfo__row><span class=sp-label>DATE</span>
+<span>2025.07.18</span></div><div class=sp-sysinfo__row><span class=sp-label>READ</span>
+<span>6MIN</span></div><div class=sp-sysinfo__row><span class=sp-label>WORDS</span>
+<span>1254</span></div></div></div></div></div></article></div><footer class=container><hr class=soften><p>&copy;
+0xbekoo
+<span id=thisyear>2026</span>
+| 0xbekoo.github.io</p><p class=text-center><a href=https://x.com/0xbekooo>Twitter</a>
+<a href=https://github.com/0xbekoo>GitHub</a></p></footer></body><link rel=stylesheet href=/css/bootstrap.css><link rel=stylesheet href=/css/bootstrap-responsive.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/blog-callouts.css><link rel=stylesheet href=/css/mobile-reading.css><link rel=stylesheet href=/css/duat-gate.css><link rel=stylesheet href=/css/home-glitch.css><link rel=stylesheet href=/css/duat-boot.css><link rel=stylesheet href=/css/page-slide.css><link rel=stylesheet href=/css/projects.css><link rel=stylesheet href=/css/diagrams.css><script src=/js/jquery.js></script><script src=/js/bootstrap-transition.js></script><script src=/js/bootstrap-alert.js></script><script src=/js/bootstrap-modal.js></script><script src=/js/bootstrap-dropdown.js></script><script src=/js/bootstrap-scrollspy.js></script><script src=/js/bootstrap-tab.js></script><script src=/js/bootstrap-tooltip.js></script><script src=/js/bootstrap-popover.js></script><script src=/js/bootstrap-button.js></script><script src=/js/bootstrap-collapse.js></script><script src=/js/bootstrap-carousel.js></script><script src=/js/bootstrap-typeahead.js></script><script src=/js/bootstrap-affix.js></script><script>_386={fastLoad:!1,onePass:!1,speedFactor:1.5,duatBootImage:"/images/blog-images/hour.jpg"};function ThisYear(){document.getElementById("thisyear").innerHTML=(new Date).getFullYear()}</script><script src=/js/duat-boot.js></script><script src=/js/mobile-image-lightbox.js></script><script src=/js/page-slide.js></script></html>

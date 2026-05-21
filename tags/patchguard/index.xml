@@ -1,40 +1,81 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>PatchGuard on 0xbekoo</title>
-    <link>http://localhost:1313/tags/patchguard/</link>
-    <description>Recent content in PatchGuard on 0xbekoo</description>
-    <generator>Hugo</generator>
-    <language>en</language>
-    <lastBuildDate>Sat, 09 Aug 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/patchguard/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>PatchGuard Analysis - Part 4</title>
-      <link>http://localhost:1313/blogs/patchguard-analysis-part-4/</link>
-      <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blogs/patchguard-analysis-part-4/</guid>
-      <description>Verification Routines This phase is the heart of PatchGuard&amp;rsquo;s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a system thread, or other dispatch mechanisms—it enters the validation routine. The validation code decrypts and inspects internal PatchGuard state and memory-resident kernel structures.&#xA;There are several checking routines involved, with the main one called FsRtlMdlReadCompleteDevEx. Other routines include:&#xA;TVCallBack Routine: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext.</description>
-    </item>
-    <item>
-      <title>PatchGuard Analysis - Part 3</title>
-      <link>http://localhost:1313/blogs/patchguard-analysis-part-3/</link>
-      <pubDate>Fri, 08 Aug 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blogs/patchguard-analysis-part-3/</guid>
-      <description>Triggering a check As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.&#xA;DPC Execution The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:&#xA;0 CmpEnableLazyFlushDpcRoutine 1 ExpCenturyDpcRoutine 2 ExpTimeZoneDpcRoutine 3 ExpTimeRefreshDpcRoutine 4 CmpLazyFlushDpcRoutine 5 ExpTimerDpcRoutine 6 IopTimerDispatch 7 IopIrpStackProfilerDpcRoutine 8 KiBalanceSetManagerDeferredRoutine 9 PopThermalZoneDpc 10 KiTimerDispatch OR KiDpcDispatch 11 KiTimerDispatch OR KiDpcDispatch 12 KiTimerDispatch OR KiDpcDispatch Among index 0 to 9, functions use an exception handler to fire the check.</description>
-    </item>
-    <item>
-      <title>PatchGuard Analysis - Part 2</title>
-      <link>http://localhost:1313/blogs/patchguard-analysis-part-2/</link>
-      <pubDate>Thu, 07 Aug 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blogs/patchguard-analysis-part-2/</guid>
-      <description>Arguments of KiInitPatchGuardContext Now, we can see another Arguments of the function.&#xA;Argument 1: DPC Routine Pointer As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.&#xA;The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:</description>
-    </item>
-    <item>
-      <title>PatchGuard Analysis - Part 1</title>
-      <link>http://localhost:1313/blogs/patchguard-analysis-part-1/</link>
-      <pubDate>Wed, 06 Aug 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blogs/patchguard-analysis-part-1/</guid>
-      <description>This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.&#xA;Introduction Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>PatchGuard on 0xbekoo</title><link>https://0xbekoo.github.io/tags/patchguard/</link><description>Recent content in PatchGuard on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Sat, 09 Aug 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/patchguard/index.xml" rel="self" type="application/rss+xml"/><item><title>PatchGuard Analysis - Part 4</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-4/</link><pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-4/</guid><description>&lt;h3 id="verification-routines"&gt;&lt;strong&gt;Verification Routines&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;This phase is the heart of PatchGuard&amp;rsquo;s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a system thread, or other dispatch mechanisms—it enters the validation routine. The validation code decrypts and inspects internal PatchGuard state and memory-resident kernel structures.&lt;/p&gt;
+&lt;p&gt;There are several checking routines involved, with the main one called &lt;strong&gt;FsRtlMdlReadCompleteDevEx&lt;/strong&gt;. Other routines include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;TVCallBack Routine&lt;/strong&gt;: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;br&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;CcBcbProfiler&lt;/strong&gt; We saw that this function is used to check a randomly choosen routine from ntoskrnl.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In this section, we will focus mainly on FsRtlMdlReadCompleteDevEx. This function is really long and the function can be summed up into multiple parts:&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 3</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-3/</link><pubDate>Fri, 08 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-3/</guid><description>&lt;h4 id="triggering-a-check"&gt;&lt;strong&gt;Triggering a check&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.&lt;/p&gt;
+&lt;h5 id="dpc-execution"&gt;&lt;strong&gt;DPC Execution&lt;/strong&gt;&lt;/h5&gt;
+&lt;p&gt;The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:&lt;/p&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th style="text-align: center"&gt;&lt;strong&gt;0&lt;/strong&gt;&lt;/th&gt;
+ &lt;th style="text-align: center"&gt;CmpEnableLazyFlushDpcRoutine&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;1&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;ExpCenturyDpcRoutine&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;2&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;ExpTimeZoneDpcRoutine&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;3&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;ExpTimeRefreshDpcRoutine&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;4&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;CmpLazyFlushDpcRoutine&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;5&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;ExpTimerDpcRoutine&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;6&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;IopTimerDispatch&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;7&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;IopIrpStackProfilerDpcRoutine&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;8&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;KiBalanceSetManagerDeferredRoutine&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;9&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;PopThermalZoneDpc&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;10&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;11&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td style="text-align: center"&gt;&lt;strong&gt;12&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 2</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-2/</link><pubDate>Thu, 07 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-2/</guid><description>&lt;h6 id="arguments-of-kiinitpatchguardcontext"&gt;&lt;strong&gt;Arguments of KiInitPatchGuardContext&lt;/strong&gt;&lt;/h6&gt;
+&lt;p&gt;Now, we can see another Arguments of the function.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Argument 1: DPC Routine Pointer&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.&lt;/p&gt;
+&lt;p&gt;The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 1</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-1/</link><pubDate>Wed, 06 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-1/</guid><description>&lt;p&gt;&lt;em&gt;This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.&lt;/em&gt;&lt;/p&gt;
+&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.&lt;/p&gt;</description></item></channel></rss>

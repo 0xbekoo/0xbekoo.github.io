@@ -23,12 +23,13 @@
   background:
     linear-gradient(180deg, rgba(170, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.95) 100%),
     linear-gradient(90deg, var(--anim-black) 0%, rgba(12, 0, 0, 0.98) 100%);
-  box-shadow: 
+  box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.05),
     12px 12px 0 var(--anim-red-strong),
     inset 0 0 60px rgba(170, 0, 0, 0.15);
   overflow: hidden;
   isolation: isolate;
+  contain: layout style;
   animation: home-omen-shake var(--home-omen-speed) infinite ease-in-out;
 }
 
@@ -69,6 +70,7 @@
   inset: -4px;
   z-index: 3;
   pointer-events: none;
+  will-change: opacity, transform;
   background-image:
     repeating-linear-gradient(
       180deg,
@@ -111,7 +113,6 @@
       transparent 90% 100%
     );
   opacity: 0;
-  filter: blur(0.2px) saturate(2.4) contrast(1.85);
   background-size: 100% 10px, 170px 100%, 100% 100%;
   background-repeat: repeat-y, repeat, no-repeat;
   animation: home-omen-rupture var(--home-omen-speed) infinite steps(1, end);
@@ -179,6 +180,7 @@
   color: rgba(255, 0, 0, 0.7);
   text-shadow: 2px 0 var(--anim-red-strong);
   opacity: 0.8;
+  will-change: clip-path, transform;
   animation: home-omen-title-r 4s steps(1) infinite;
   clip-path: inset(0 0 0 0);
 }
@@ -191,6 +193,7 @@
   color: rgba(0, 255, 255, 0.7);
   text-shadow: -2px 0 rgba(0, 255, 255, 0.5);
   opacity: 0.8;
+  will-change: clip-path, transform;
   animation: home-omen-title-b 4s steps(1) infinite;
   clip-path: inset(0 0 0 0);
 }
@@ -261,28 +264,15 @@
 }
 
 @keyframes home-omen-label-glitch {
-  0%, 88%, 100% { transform: translate(0); text-shadow: none; }
-  90% { transform: translate(-2px, 0); text-shadow: 2px 0 var(--anim-red-strong); }
-  92% { transform: translate(2px, 1px); text-shadow: -2px 0 rgba(0, 255, 255, 0.5); }
+  0%, 88%, 100% { transform: translate(0); }
+  90% { transform: translate(-2px, 0); }
+  92% { transform: translate(2px, 1px); }
   94% { transform: translate(-1px, -1px); }
 }
 
 @keyframes home-omen-title-glow {
-  0%, 100% {
-    text-shadow: 
-      3px 0 var(--anim-red-strong),
-      -3px 0 rgba(0, 255, 255, 0.5),
-      0 0 20px rgba(240, 48, 48, 0.4);
-    filter: brightness(1);
-  }
-  50% {
-    text-shadow: 
-      3px 0 var(--anim-red-strong),
-      -3px 0 rgba(0, 255, 255, 0.5),
-      0 0 40px rgba(240, 48, 48, 0.6),
-      0 0 60px rgba(240, 48, 48, 0.3);
-    filter: brightness(1.1);
-  }
+  0%, 100% { opacity: 0.92; }
+  50% { opacity: 1; }
 }
 
 @keyframes home-omen-title-glitch {
@@ -293,39 +283,15 @@
 }
 
 @keyframes home-omen-title-r {
-  0%, 90%, 100% { 
-    opacity: 0; 
-    transform: translate(0);
-    clip-path: inset(0 0 0 0);
-  }
-  92% { 
-    opacity: 0.7; 
-    transform: translate(-3px, 0);
-    clip-path: inset(20% 0 40% 0);
-  }
-  94% { 
-    opacity: 0.6; 
-    transform: translate(2px, 1px);
-    clip-path: inset(60% 0 10% 0);
-  }
+  0%, 90%, 100% { opacity: 0; transform: translate(0); }
+  92% { opacity: 0.7; transform: translate(-3px, 0); }
+  94% { opacity: 0.6; transform: translate(2px, 1px); }
 }
 
 @keyframes home-omen-title-b {
-  0%, 91%, 100% { 
-    opacity: 0; 
-    transform: translate(0);
-    clip-path: inset(0 0 0 0);
-  }
-  93% { 
-    opacity: 0.7; 
-    transform: translate(3px, 0);
-    clip-path: inset(10% 0 50% 0);
-  }
-  95% { 
-    opacity: 0.6; 
-    transform: translate(-2px, -1px);
-    clip-path: inset(40% 0 30% 0);
-  }
+  0%, 91%, 100% { opacity: 0; transform: translate(0); }
+  93% { opacity: 0.7; transform: translate(3px, 0); }
+  95% { opacity: 0.6; transform: translate(-2px, -1px); }
 }
 
 @keyframes home-omen-rupture {

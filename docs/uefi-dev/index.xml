@@ -1,40 +1,45 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>UEFI Development on 0xbekoo</title>
-    <link>http://localhost:1313/docs/uefi-dev/</link>
-    <description>Recent content in UEFI Development on 0xbekoo</description>
-    <generator>Hugo</generator>
-    <language>en</language>
-    <lastBuildDate>Mon, 27 Oct 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/docs/uefi-dev/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Debugging QEMU &#43; OVMF with GDB</title>
-      <link>http://localhost:1313/docs/uefi-dev/debugging-ovmf-with-gdb/</link>
-      <pubDate>Mon, 27 Oct 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/docs/uefi-dev/debugging-ovmf-with-gdb/</guid>
-      <description>Introduction Probably you know the signifince of debugging in any low-level programming projects. In the same way, we need to debug our UEFI Driver in some cases.&#xA;For me, debugging is essential — I can’t do my work properly without it. Even though I’m still new to UEFI development, I wanted to start debugging my own UEFI drivers as early as possible. Because many existing resources are outdated, I decided to share my debugging journey and update the information for 2025.</description>
-    </item>
-    <item>
-      <title>UEFI to Windows Communication via NVRAM Variables</title>
-      <link>http://localhost:1313/docs/uefi-dev/communation-between-windows-and-uefi/</link>
-      <pubDate>Fri, 18 Jul 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/docs/uefi-dev/communation-between-windows-and-uefi/</guid>
-      <description>In this documentation, we will discuss how to establish communication between a UEFI driver and a Windows driver. Specifically, we’ll explore how to use NVRAM-based UEFI variables to exchange data between the two environments.&#xA;What is NVRAM? NVRAM (Non-Volatile RAM) is a key component in UEFI-based systems, used to store persistent configuration and system state data. Unlike regular RAM, NVRAM retains its contents across reboots and power-offs, making it essential for managing firmware-level settings.</description>
-    </item>
-    <item>
-      <title>UEFI Keylogger</title>
-      <link>http://localhost:1313/docs/uefi-dev/uefi-keylogger/</link>
-      <pubDate>Tue, 28 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/docs/uefi-dev/uefi-keylogger/</guid>
-      <description>In this documentation we will develop simple uefi keylogger.&#xA;Coding #include &amp;lt;Uefi.h&amp;gt; #include &amp;lt;Library/UefiApplicationEntryPoint.h&amp;gt; #include &amp;lt;Library/UefiLib.h&amp;gt; EFI_STATUS EFIAPI UefiMain( EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable ) { EFI_SIMPLE_TEXT_INPUT_PROTOCOL *TextInput; EFI_INPUT_KEY Key; /* Protokole erişim sağla */ TextInput = SystemTable-&amp;gt;ConIn; Print (L&amp;#34;UEFI Keylogger!\n&amp;#34;); while(1) { TextInput-&amp;gt;ReadKeyStroke ( TextInput, &amp;amp;Key ); if (Key.ScanCode == SCAN_ESC) { Print (L&amp;#34;ESC Button Detected\n&amp;#34;); break; } if (Key.UnicodeChar != 0) { Print (L&amp;#34;Pressed: %c\n&amp;#34;, Key.UnicodeChar); } } return EFI_SUCCESS; } Now let&amp;rsquo;s take a look at the codes</description>
-    </item>
-    <item>
-      <title>Introduction to UEFI</title>
-      <link>http://localhost:1313/docs/uefi-dev/uefi-introduction/</link>
-      <pubDate>Sun, 19 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/docs/uefi-dev/uefi-introduction/</guid>
-      <description>Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.&#xA;What is UEFI? UEFI (Unified Extensible Firmware Interface) is a specification for a computer&amp;rsquo;s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.&#xA;We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different.</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>UEFI Development on 0xbekoo</title><link>https://0xbekoo.github.io/docs/uefi-dev/</link><description>Recent content in UEFI Development on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Mon, 27 Oct 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/docs/uefi-dev/index.xml" rel="self" type="application/rss+xml"/><item><title>Debugging QEMU + OVMF with GDB</title><link>https://0xbekoo.github.io/docs/uefi-dev/debugging-ovmf-with-gdb/</link><pubDate>Mon, 27 Oct 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/uefi-dev/debugging-ovmf-with-gdb/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;Probably you know the signifince of debugging in any low-level programming projects. In the same way, we need to debug our UEFI Driver in some cases.&lt;/p&gt;
+&lt;p&gt;For me, debugging is essential — I can’t do my work properly without it. Even though I’m still new to UEFI development, I wanted to start debugging my own UEFI drivers as early as possible. Because many existing resources are outdated, I decided to share my debugging journey and update the information for 2025.&lt;/p&gt;</description></item><item><title>UEFI to Windows Communication via NVRAM Variables</title><link>https://0xbekoo.github.io/docs/uefi-dev/communation-between-windows-and-uefi/</link><pubDate>Fri, 18 Jul 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/uefi-dev/communation-between-windows-and-uefi/</guid><description>&lt;p&gt;In this documentation, we will discuss how to establish communication between a UEFI driver and a Windows driver. Specifically, we’ll explore how to use NVRAM-based UEFI variables to exchange data between the two environments.&lt;/p&gt;
+&lt;h3 id="what-is-nvram"&gt;&lt;strong&gt;What is NVRAM?&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;NVRAM (Non-Volatile RAM) is a key component in UEFI-based systems, used to store persistent configuration and system state data. Unlike regular RAM, NVRAM retains its contents across reboots and power-offs, making it essential for managing firmware-level settings.&lt;/p&gt;</description></item><item><title>UEFI Keylogger</title><link>https://0xbekoo.github.io/docs/uefi-dev/uefi-keylogger/</link><pubDate>Tue, 28 Jan 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/uefi-dev/uefi-keylogger/</guid><description>&lt;p&gt;In this documentation we will develop simple uefi keylogger.&lt;/p&gt;
+&lt;h3 id="coding"&gt;&lt;strong&gt;Coding&lt;/strong&gt;&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-c" data-lang="c"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;#include&lt;/span&gt; &lt;span style="color:#75715e"&gt;&amp;lt;Uefi.h&amp;gt;&lt;/span&gt;&lt;span style="color:#75715e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;#include&lt;/span&gt; &lt;span style="color:#75715e"&gt;&amp;lt;Library/UefiApplicationEntryPoint.h&amp;gt;&lt;/span&gt;&lt;span style="color:#75715e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;#include&lt;/span&gt; &lt;span style="color:#75715e"&gt;&amp;lt;Library/UefiLib.h&amp;gt;&lt;/span&gt;&lt;span style="color:#75715e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;EFI_STATUS
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;EFIAPI
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;UefiMain&lt;/span&gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; EFI_HANDLE ImageHandle,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; EFI_SYSTEM_TABLE &lt;span style="color:#f92672"&gt;*&lt;/span&gt;SystemTable
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; EFI_SIMPLE_TEXT_INPUT_PROTOCOL &lt;span style="color:#f92672"&gt;*&lt;/span&gt;TextInput;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; EFI_INPUT_KEY Key;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;/* Protokole erişim sağla */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; TextInput &lt;span style="color:#f92672"&gt;=&lt;/span&gt; SystemTable&lt;span style="color:#f92672"&gt;-&amp;gt;&lt;/span&gt;ConIn;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;Print&lt;/span&gt; (&lt;span style="color:#e6db74"&gt;L&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;UEFI Keylogger!&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;\n&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;while&lt;/span&gt;(&lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; TextInput&lt;span style="color:#f92672"&gt;-&amp;gt;&lt;/span&gt;&lt;span style="color:#a6e22e"&gt;ReadKeyStroke&lt;/span&gt; (
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; TextInput, 
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt;Key
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; );
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (Key.ScanCode &lt;span style="color:#f92672"&gt;==&lt;/span&gt; SCAN_ESC) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;Print&lt;/span&gt; (&lt;span style="color:#e6db74"&gt;L&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;ESC Button Detected&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;\n&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;break&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (Key.UnicodeChar &lt;span style="color:#f92672"&gt;!=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;Print&lt;/span&gt; (&lt;span style="color:#e6db74"&gt;L&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;Pressed: %c&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;\n&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;&lt;/span&gt;, Key.UnicodeChar);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; EFI_SUCCESS;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now let&amp;rsquo;s take a look at the codes&lt;/p&gt;</description></item><item><title>Introduction to UEFI</title><link>https://0xbekoo.github.io/docs/uefi-dev/uefi-introduction/</link><pubDate>Sun, 19 Jan 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/uefi-dev/uefi-introduction/</guid><description>&lt;p&gt;Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.&lt;/p&gt;
+&lt;h3 id="what-is-uefi"&gt;&lt;strong&gt;What is UEFI?&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;UEFI (Unified Extensible Firmware Interface) is a specification for a computer&amp;rsquo;s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.&lt;/p&gt;
+&lt;p&gt;We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different. UEFI uses GPT (Guid Partition Table). GPT is a modern standard that defines the layout of partitions on a computer&amp;rsquo;s storage device. It is the standard used in devices such as HDDs or SSDs that we are all familiar with. Just as UEFI replaced BIOS, GPT has replaced the previously used MBR (Master Boot Record) partitioning table. GPT works seamlessly with UEFI.&lt;/p&gt;</description></item></channel></rss>

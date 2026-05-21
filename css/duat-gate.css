@@ -64,6 +64,7 @@
   height: 3px;
   position: relative;
   background: transparent;
+  will-change: opacity, transform;
 }
 
 .df-pixel::before {
@@ -72,7 +73,9 @@
   bottom: 0;
   left: 0;
   right: 0;
+  height: 100%;
   background: var(--df4);
+  transform-origin: bottom center;
   animation: pixel-flame 1.8s ease-out infinite;
   animation-delay: var(--delay, 0s);
 }
@@ -146,6 +149,7 @@
   width: 4px;
   height: 4px;
   position: relative;
+  will-change: opacity, transform;
 }
 
 .df-flame::before {
@@ -426,17 +430,8 @@
 }
 
 @keyframes duat-title-glow {
-  0%, 100% { 
-    text-shadow: 
-      0 0 8px var(--df6),
-      0 0 16px var(--df5);
-  }
-  50% { 
-    text-shadow: 
-      0 0 12px var(--df7),
-      0 0 24px var(--df6),
-      0 0 32px var(--df5);
-  }
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
 }
 
 @keyframes duat-warning-blink {
@@ -445,36 +440,12 @@
 }
 
 @keyframes pixel-flame {
-  0% {
-    height: 20%;
-    opacity: 0;
-    background: var(--df4);
-  }
-  20% {
-    height: 40%;
-    opacity: 0.2;
-    background: var(--df5);
-  }
-  40% {
-    height: 60%;
-    opacity: 0.4;
-    background: var(--df6);
-  }
-  60% {
-    height: 80%;
-    opacity: 0.6;
-    background: var(--df7);
-  }
-  80% {
-    height: 100%;
-    opacity: 0.8;
-    background: var(--df8);
-  }
-  100% {
-    height: 20%;
-    opacity: 0;
-    background: var(--df9);
-  }
+  0%   { transform: scaleY(0.2); opacity: 0; }
+  20%  { transform: scaleY(0.4); opacity: 0.2; }
+  40%  { transform: scaleY(0.6); opacity: 0.4; }
+  60%  { transform: scaleY(0.8); opacity: 0.6; }
+  80%  { transform: scaleY(1.0); opacity: 0.8; }
+  100% { transform: scaleY(0.2); opacity: 0; }
 }
 
 @media (max-width: 767px) {

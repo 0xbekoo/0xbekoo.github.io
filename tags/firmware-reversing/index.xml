@@ -1,33 +1,11 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Firmware-Reversing on 0xbekoo</title>
-    <link>http://localhost:1313/tags/firmware-reversing/</link>
-    <description>Recent content in Firmware-Reversing on 0xbekoo</description>
-    <generator>Hugo</generator>
-    <language>en</language>
-    <lastBuildDate>Wed, 31 Dec 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/firmware-reversing/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>A Journey For X86 Reset Vector</title>
-      <link>http://localhost:1313/blogs/a-journey-from-reset-vector/</link>
-      <pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blogs/a-journey-from-reset-vector/</guid>
-      <description>Introduction Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&amp;rsquo;s very first breath.&#xA;Lately, I’ve been getting up close and personal with the CPU, trying to understand what happens in that split second of silence before the screen even lights up. Honestly, my obsession with this &amp;ldquo;big bang&amp;rdquo; moment skyrocketed while I was digging into UEFI Development. There is a whole hidden world running in the background that we usually take for granted.</description>
-    </item>
-    <item>
-      <title>ARM Firmware Reverse Engineering</title>
-      <link>http://localhost:1313/blogs/bare-metal-reversing/</link>
-      <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blogs/bare-metal-reversing/</guid>
-      <description>Hello everyone. In this blog we continue with Firmware Reverse Engineering. We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.&#xA;I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board.</description>
-    </item>
-    <item>
-      <title>Router Firmware Reverse Engineering</title>
-      <link>http://localhost:1313/blogs/router-firmware-reversing/</link>
-      <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blogs/router-firmware-reversing/</guid>
-      <description>Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&amp;rsquo;s Archer AX 21 V4.6 modem. You can check TP-Link&amp;rsquo;s original page to download the firmware.&#xA;[!WARNING] The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Firmware-Reversing on 0xbekoo</title><link>https://0xbekoo.github.io/tags/firmware-reversing/</link><description>Recent content in Firmware-Reversing on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Wed, 31 Dec 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/firmware-reversing/index.xml" rel="self" type="application/rss+xml"/><item><title>A Journey For X86 Reset Vector</title><link>https://0xbekoo.github.io/blogs/a-journey-from-reset-vector/</link><pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/a-journey-from-reset-vector/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&amp;rsquo;s very first breath.&lt;/p&gt;
+&lt;p&gt;Lately, I’ve been getting up close and personal with the CPU, trying to understand what happens in that split second of silence before the screen even lights up. Honestly, my obsession with this &amp;ldquo;big bang&amp;rdquo; moment skyrocketed while I was digging into UEFI Development. There is a whole hidden world running in the background that we usually take for granted.&lt;/p&gt;</description></item><item><title>ARM Firmware Reverse Engineering</title><link>https://0xbekoo.github.io/blogs/bare-metal-reversing/</link><pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/bare-metal-reversing/</guid><description>&lt;p&gt;Hello everyone. In this blog we continue with Firmware Reverse Engineering.
+We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.&lt;/p&gt;
+&lt;p&gt;I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let&amp;rsquo;s think typically like hacking an IoT board but with a simpler scenario:&lt;/p&gt;</description></item><item><title>Router Firmware Reverse Engineering</title><link>https://0xbekoo.github.io/blogs/router-firmware-reversing/</link><pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/router-firmware-reversing/</guid><description>&lt;p&gt;&lt;img src="https://0xbekoo.github.io/images/posts/reversing-router/headerphoto.jpg" alt=""&gt;&lt;/p&gt;
+&lt;p&gt;Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&amp;rsquo;s &lt;a href="https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/"&gt;Archer AX 21 V4.6&lt;/a&gt; modem. You can check TP-Link&amp;rsquo;s original page to &lt;a href="https://www.tp-link.com/us/support/download/archer-ax21/#Firmware"&gt;download the firmware&lt;/a&gt;.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[!WARNING]
+The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;First, let&amp;rsquo;s take a look at the information of the firmware we downloaded:&lt;/p&gt;</description></item></channel></rss>

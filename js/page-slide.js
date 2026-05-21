@@ -25,6 +25,9 @@
     if (normalized.indexOf("/blogs/") === 0) {
       return { name: "blogs", index: 2 };
     }
+    if (normalized.indexOf("/projects/") === 0) {
+      return { name: "projects", index: 3 };
+    }
 
     return null;
   }

@@ -1,19 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Ptrace on 0xbekoo</title>
-    <link>http://localhost:1313/tags/ptrace/</link>
-    <description>Recent content in Ptrace on 0xbekoo</description>
-    <generator>Hugo</generator>
-    <language>en</language>
-    <lastBuildDate>Wed, 17 Apr 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/ptrace/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Is Valorant Spyware?</title>
-      <link>http://localhost:1313/blogs/is-valorant-spyware/</link>
-      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blogs/is-valorant-spyware/</guid>
-      <description>Understanding How Anti-Cheat Software Works To begin our exploration, we first need to understand how anti-cheat software works. In general, anti-cheat software is developed for two main purposes: to prevent cheating within a game and to detect those who do.&#xA;We can categorize how this software operates into two main methods: server-side and client-side[1].&#xA;Server-side anti-cheat software typically monitors and analyzes the data a player sends to the game server. This data can include how the player is playing, what commands they are sending, and how quickly they react.</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Ptrace on 0xbekoo</title><link>https://0xbekoo.github.io/tags/ptrace/</link><description>Recent content in Ptrace on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Wed, 17 Apr 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/ptrace/index.xml" rel="self" type="application/rss+xml"/><item><title>Is Valorant Spyware?</title><link>https://0xbekoo.github.io/blogs/is-valorant-spyware/</link><pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/is-valorant-spyware/</guid><description>&lt;h3 id="understanding-how-anti-cheat-software-works"&gt;&lt;strong&gt;Understanding How Anti-Cheat Software Works&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;To begin our exploration, we first need to understand how anti-cheat software works. In general, anti-cheat software is developed for two main purposes: to prevent cheating within a game and to detect those who do.&lt;/p&gt;
+&lt;p&gt;We can categorize how this software operates into two main methods: &lt;strong&gt;server-side&lt;/strong&gt; and &lt;strong&gt;client-side&lt;/strong&gt;&lt;sup&gt;[1]&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Server-side&lt;/strong&gt; anti-cheat software typically monitors and analyzes the data a player sends to the game server. This data can include how the player is playing, what commands they are sending, and how quickly they react. Its goal is to detect discrepancies between normal gameplay behavior and potential cheat usage.&lt;/p&gt;</description></item></channel></rss>

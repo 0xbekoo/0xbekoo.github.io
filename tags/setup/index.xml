@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Setup on 0xbekoo</title>
+    <link>http://localhost:1313/tags/setup/</link>
+    <description>Recent content in Setup on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 01 May 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/setup/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>MSRC: Setup.exe Security Bypass (CVE-2024-38202 / CVE-2024-21302)</title>
+      <link>http://localhost:1313/reports/msrc-setup-exe-2024/</link>
+      <pubDate>Thu, 01 May 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/reports/msrc-setup-exe-2024/</guid>
+      <description>&lt;h2 id=&#34;summary&#34;&gt;Summary&lt;/h2&gt;&#xA;&lt;p&gt;Two chained vulnerabilities in the Windows 11 installation stack allow an attacker with local access to bypass hardware enforcement checks enforced by &lt;code&gt;setup.exe&lt;/code&gt; and &lt;code&gt;winload.efi&lt;/code&gt;. By manipulating LabConfig registry keys, the setup process silently skips TPM 2.0, Secure Boot, and CPU generation requirements — and more critically, can silently downgrade VBS/HVCI policy protections.&lt;/p&gt;&#xA;&lt;h2 id=&#34;impact&#34;&gt;Impact&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Silently disables Virtualization Based Security on upgraded systems&lt;/li&gt;&#xA;&lt;li&gt;Bypasses TPM 2.0 and Secure Boot requirements without user notification&lt;/li&gt;&#xA;&lt;li&gt;Allows installing a non-compliant Windows 11 build that reports hardware compliance to management tools&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;read-more&#34;&gt;Read More&lt;/h2&gt;&#xA;&lt;p&gt;See the full blog post: &lt;a href=&#34;http://localhost:1313/blogs/setup-exe-journey/&#34;&gt;The Unsupported Path&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

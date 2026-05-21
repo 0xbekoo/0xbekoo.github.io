@@ -2,17 +2,7 @@ body.duat-boot-lock {
   overflow: hidden;
 }
 
-:root {
-  --anim-black: #000000;
-  --anim-red: #aa0000;
-  --anim-red-strong: #cc0000;
-  --anim-white: #ffffff;
-  --anim-speed-factor: 1.2;
-}
-
 .duat-boot {
-  --duat-boot-speed: 1;
-  --duat-boot-art: none;
   position: fixed;
   inset: 0;
   z-index: 2147483646;
@@ -20,310 +10,75 @@ body.duat-boot-lock {
   align-items: flex-start;
   justify-content: flex-start;
   padding: 28px 24px 24px;
-  background:
-    radial-gradient(circle at 50% -12%, rgba(170, 0, 0, 0.18), transparent 28%),
-    radial-gradient(circle at 62% 108%, rgba(170, 0, 0, 0.14), transparent 34%),
-    radial-gradient(circle at 50% 118%, rgba(136, 10, 10, 0.28), transparent 46%),
-    linear-gradient(180deg, var(--anim-black) 0%, #050000 34%, #120000 100%);
-  color: #ffe3d4;
+  background: linear-gradient(180deg, #040000 0%, #080000 60%, #0c0000 100%);
+  color: #ff3300;
   font-family: "Fixedsys500c", monospace;
   opacity: 1;
-  clip-path: inset(0 0 0 0);
+  will-change: transform, opacity;
 }
 
-.duat-boot::before,
-.duat-boot::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.duat-boot::before {
-  background:
-    radial-gradient(circle at 54% 10%, rgba(170, 0, 0, 0.18), transparent 20%),
-    radial-gradient(circle at 72% 68%, rgba(136, 0, 0, 0.12), transparent 26%),
-    radial-gradient(circle at 18% 88%, rgba(120, 8, 8, 0.12), transparent 30%),
-    radial-gradient(circle at 82% 86%, rgba(96, 0, 0, 0.12), transparent 26%),
-    linear-gradient(180deg, rgba(170, 0, 0, 0.04) 0, rgba(0, 0, 0, 0) 18%, rgba(136, 10, 10, 0.12) 74%, rgba(0, 0, 0, 0.54) 100%),
-    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.92) 72%);
-  z-index: 0;
-  animation: duat-boot-vignette 6.2s ease-in-out infinite;
-}
-
-.duat-boot::after {
-  background:
-    repeating-linear-gradient(
-      180deg,
-      rgba(244, 44, 44, 0.05) 0 1px,
-      transparent 1px 4px,
-      rgba(0, 0, 0, 0.22) 4px 6px
-    ),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0, rgba(228, 34, 34, 0.08) 34%, rgba(0, 0, 0, 0.34) 100%),
-    radial-gradient(circle at 50% 50%, transparent 0, transparent 66%, rgba(0, 0, 0, 0.88) 100%);
-  z-index: 1;
-}
-
-.duat-boot__art {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  overflow: hidden;
-  transform-origin: center center;
-  background-image:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.88) 22%, rgba(0, 0, 0, 0.34) 48%, rgba(0, 0, 0, 0.6) 76%, rgba(0, 0, 0, 0.82) 100%),
-    radial-gradient(circle at 74% 58%, rgba(170, 0, 0, 0.28), transparent 18%),
-    var(--duat-boot-art),
-    linear-gradient(180deg, rgba(136, 10, 10, 0.12) 0%, rgba(96, 8, 8, 0.12) 40%, rgba(40, 0, 0, 0.22) 100%),
-    radial-gradient(circle at 72% 22%, rgba(170, 34, 34, 0.12), transparent 13%);
-  background-position: center center, 74% 58%, 76% 50%, center center, 72% 22%;
-  background-size: 100% 100%, 36% 40%, min(58vw, 820px) auto, 100% 100%, 28% 24%;
-  background-repeat: no-repeat;
-  background-blend-mode: normal, screen, multiply, screen, screen;
-  opacity: 0.56;
-  filter: sepia(0.6) saturate(1.4) brightness(0.86) contrast(1.06);
-  transform: scale(1.01);
-  animation: duat-boot-art-breathe calc(8.6s * var(--anim-speed-factor)) ease-in-out infinite;
-}
-
-.duat-boot__art-noise {
-  position: absolute;
-  inset: -4% -6%;
-  pointer-events: none;
-  opacity: 0;
-  background-image:
-    repeating-linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.98) 0 1px,
-      rgba(255, 255, 255, 0.92) 1px 2px,
-      rgba(0, 0, 0, 0.98) 2px 5px,
-      rgba(244, 44, 44, 0.76) 5px 6px,
-      rgba(0, 0, 0, 0.98) 6px 10px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.92) 0 1%,
-      rgba(0, 0, 0, 0) 1% 5%,
-      rgba(244, 44, 44, 0.78) 5% 9%,
-      rgba(0, 0, 0, 0) 9% 14%,
-      rgba(174, 11, 11, 0.72) 14% 21%,
-      rgba(0, 0, 0, 0) 21% 29%,
-      rgba(255, 255, 255, 0.88) 29% 30%,
-      rgba(0, 0, 0, 0) 30% 40%,
-      rgba(210, 19, 19, 0.74) 40% 48%,
-      rgba(0, 0, 0, 0) 48% 56%,
-      rgba(158, 7, 7, 0.72) 56% 66%,
-      rgba(0, 0, 0, 0) 66% 75%,
-      rgba(255, 255, 255, 0.88) 75% 76%,
-      rgba(0, 0, 0, 0) 76% 85%,
-      rgba(242, 48, 48, 0.78) 85% 91%,
-      rgba(0, 0, 0, 0) 91% 99%,
-      rgba(255, 255, 255, 0.92) 99% 100%
-    ),
-    linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0) 0 5%,
-      rgba(255, 255, 255, 0.88) 5% 6%,
-      rgba(0, 0, 0, 0) 6% 16%,
-      rgba(236, 39, 39, 0.72) 16% 22%,
-      rgba(0, 0, 0, 0) 22% 34%,
-      rgba(168, 9, 9, 0.68) 34% 42%,
-      rgba(0, 0, 0, 0) 42% 54%,
-      rgba(255, 255, 255, 0.88) 54% 55%,
-      rgba(0, 0, 0, 0) 55% 68%,
-      rgba(224, 29, 29, 0.7) 68% 76%,
-      rgba(0, 0, 0, 0) 76% 90%,
-      rgba(150, 6, 6, 0.66) 90% 96%,
-      rgba(0, 0, 0, 0) 96% 100%
-    );
-  background-size: 100% 10px, 132px 100%, 84px 100%;
-  background-repeat: repeat-y, repeat, repeat;
-  mix-blend-mode: screen;
-  filter: blur(0.2px) saturate(2.6) contrast(1.95);
-}
-
-.duat-boot__art::before,
-.duat-boot__art::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.duat-boot__art::before {
-  background:
-    radial-gradient(circle at 74% 22%, rgba(255, 142, 142, 0.16), transparent 8%),
-    radial-gradient(circle at 78% 30%, rgba(242, 48, 48, 0.22), transparent 14%),
-    radial-gradient(circle at 68% 48%, rgba(214, 22, 22, 0.18), transparent 18%),
-    radial-gradient(circle at 62% 76%, rgba(170, 9, 9, 0.16), transparent 14%),
-    radial-gradient(circle at 74% 86%, rgba(255, 64, 64, 0.24), transparent 20%);
-  opacity: 0.94;
-  animation: duat-boot-art-flares 6.8s ease-in-out infinite;
-}
-
-.duat-boot__art::after {
-  background:
-    repeating-linear-gradient(
-      180deg,
-      rgba(236, 42, 42, 0.04) 0 2px,
-      transparent 2px 8px,
-      rgba(0, 0, 0, 0.14) 8px 10px
-    ),
-    linear-gradient(180deg, rgba(236, 36, 36, 0.08) 0%, rgba(0, 0, 0, 0) 34%, rgba(170, 9, 9, 0.1) 100%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.34), transparent 28%, transparent 70%, rgba(0, 0, 0, 0.42));
-  mix-blend-mode: screen;
-  opacity: 0.66;
-}
-
-.duat-boot__scan,
-.duat-boot__rupture,
-.duat-boot__flash {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
+/* Static CRT scan lines — no animation, just texture */
 .duat-boot__scan {
-  z-index: 3;
-  background:
-    repeating-linear-gradient(
-      180deg,
-      rgba(236, 42, 42, 0.1) 0 1px,
-      transparent 1px 3px,
-      rgba(0, 0, 0, 0.28) 3px 4px
-    ),
-    linear-gradient(180deg, transparent 0 31%, rgba(214, 26, 26, 0.18) 31% 34%, transparent 34% 100%);
-  opacity: 0.48;
-  animation: duat-boot-scan calc(5.4s * var(--anim-speed-factor)) ease-in-out infinite;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(255, 51, 0, 0.06) 0 1px,
+    transparent 1px 3px,
+    rgba(0, 0, 0, 0.18) 3px 4px
+  );
+  opacity: 0.5;
 }
 
-.duat-boot__flash {
-  z-index: 6;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(204, 34, 34, 0.72), rgba(170, 34, 34, 0.28) 22%, rgba(255, 255, 255, 0) 56%),
-    linear-gradient(180deg, rgba(170, 34, 34, 0.22), rgba(255, 255, 255, 0));
-  opacity: 0;
-}
-
+/* Rupture noise overlay (only active during transition) */
 .duat-boot__rupture {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   z-index: 5;
   opacity: 0;
+  will-change: opacity, transform;
   background-image:
     repeating-linear-gradient(
       180deg,
       rgba(0, 0, 0, 0.98) 0 1px,
-      rgba(255, 255, 255, 0.92) 1px 2px,
+      rgba(255, 255, 255, 0.88) 1px 2px,
       rgba(0, 0, 0, 0.98) 2px 5px,
-      rgba(244, 36, 36, 0.72) 5px 6px,
+      rgba(255, 51, 0, 0.7) 5px 6px,
       rgba(0, 0, 0, 0.98) 6px 10px
     ),
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.92) 0 1%,
-      rgba(0, 0, 0, 0) 1% 5%,
-      rgba(244, 54, 54, 0.78) 5% 9%,
-      rgba(0, 0, 0, 0) 9% 14%,
-      rgba(207, 21, 21, 0.72) 14% 21%,
-      rgba(0, 0, 0, 0) 21% 28%,
-      rgba(255, 255, 255, 0.88) 28% 29%,
-      rgba(0, 0, 0, 0) 29% 36%,
-      rgba(162, 8, 8, 0.72) 36% 43%,
-      rgba(0, 0, 0, 0) 43% 50%,
-      rgba(241, 46, 46, 0.74) 50% 56%,
-      rgba(0, 0, 0, 0) 56% 64%,
-      rgba(255, 255, 255, 0.9) 64% 65%,
-      rgba(0, 0, 0, 0) 65% 74%,
-      rgba(188, 14, 14, 0.72) 74% 82%,
-      rgba(0, 0, 0, 0) 82% 91%,
-      rgba(255, 255, 255, 0.92) 91% 100%
-    ),
-    linear-gradient(
-      180deg,
-      transparent 0 11%,
-      rgba(255, 255, 255, 0.88) 11% 13%,
-      transparent 13% 42%,
-      rgba(244, 50, 50, 0.78) 42% 46%,
-      transparent 46% 69%,
-      rgba(172, 9, 9, 0.7) 69% 73%,
-      transparent 73% 88%,
-      rgba(255, 255, 255, 0.82) 88% 90%,
-      transparent 90% 100%
-    );
-  background-size: 100% 10px, 170px 100%, 100% 100%;
-  background-repeat: repeat-y, repeat, no-repeat;
-  filter: blur(0.2px) saturate(2.4) contrast(1.85);
-}
-
-.duat-boot__rupture::before,
-.duat-boot__rupture::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.duat-boot__rupture::before {
-  background-image:
     linear-gradient(
       90deg,
       rgba(255, 255, 255, 0.88) 0 1%,
-      rgba(0, 0, 0, 0) 1% 6%,
-      rgba(245, 47, 47, 0.76) 6% 11%,
-      rgba(0, 0, 0, 0) 11% 18%,
-      rgba(174, 11, 11, 0.72) 18% 26%,
-      rgba(0, 0, 0, 0) 26% 33%,
-      rgba(255, 255, 255, 0.86) 33% 34%,
-      rgba(0, 0, 0, 0) 34% 43%,
-      rgba(215, 24, 24, 0.74) 43% 52%,
-      rgba(0, 0, 0, 0) 52% 60%,
-      rgba(163, 8, 8, 0.7) 60% 70%,
-      rgba(0, 0, 0, 0) 70% 79%,
-      rgba(255, 255, 255, 0.88) 79% 80%,
-      rgba(0, 0, 0, 0) 80% 100%
-    ),
-    linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0) 0 5%,
-      rgba(255, 255, 255, 0.86) 5% 6%,
-      rgba(0, 0, 0, 0) 6% 15%,
-      rgba(238, 39, 39, 0.7) 15% 21%,
-      rgba(0, 0, 0, 0) 21% 31%,
-      rgba(177, 12, 12, 0.68) 31% 38%,
-      rgba(0, 0, 0, 0) 38% 49%,
-      rgba(255, 255, 255, 0.86) 49% 50%,
-      rgba(0, 0, 0, 0) 50% 62%,
-      rgba(223, 28, 28, 0.7) 62% 70%,
-      rgba(0, 0, 0, 0) 70% 83%,
-      rgba(168, 10, 10, 0.66) 83% 90%,
-      rgba(0, 0, 0, 0) 90% 100%
-    ),
-    repeating-linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.98) 0 1px,
-      rgba(255, 255, 255, 0.9) 1px 2px,
-      rgba(0, 0, 0, 0.98) 2px 4px,
-      rgba(0, 0, 0, 0.98) 4px 6px,
-      rgba(255, 255, 255, 0.82) 6px 7px,
-      rgba(0, 0, 0, 0.98) 7px 10px
+      rgba(0, 0, 0, 0) 1% 5%,
+      rgba(255, 51, 0, 0.76) 5% 9%,
+      rgba(0, 0, 0, 0) 9% 14%,
+      rgba(204, 34, 0, 0.7) 14% 21%,
+      rgba(0, 0, 0, 0) 21% 28%,
+      rgba(255, 255, 255, 0.84) 28% 29%,
+      rgba(0, 0, 0, 0) 29% 36%,
+      rgba(136, 34, 0, 0.7) 36% 43%,
+      rgba(0, 0, 0, 0) 43% 100%
     );
-  background-size: 142px 100%, 86px 100%, 100% 8px;
-  background-repeat: repeat, repeat, repeat-y;
-  mix-blend-mode: screen;
-  opacity: 0;
-  filter: blur(0.4px) saturate(2.8) contrast(2);
+  background-size: 100% 10px, 160px 100%;
+  background-repeat: repeat-y, repeat;
 }
 
-.duat-boot__rupture::after {
-  background:
-    linear-gradient(180deg, transparent 0 14%, rgba(255, 255, 255, 0.9) 14% 18%, transparent 18% 100%),
-    linear-gradient(180deg, transparent 0 31%, rgba(235, 40, 40, 0.84) 31% 36%, transparent 36% 100%),
-    linear-gradient(180deg, transparent 0 48%, rgba(180, 12, 12, 0.78) 48% 54%, transparent 54% 100%),
-    linear-gradient(180deg, transparent 0 66%, rgba(255, 108, 108, 0.78) 66% 72%, transparent 72% 100%),
-    linear-gradient(180deg, transparent 0 82%, rgba(148, 0, 0, 0.76) 82% 88%, transparent 88% 100%);
+.duat-boot__flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 51, 0, 0.7),
+    rgba(255, 51, 0, 0.2) 22%,
+    transparent 56%
+  );
   opacity: 0;
-  filter: blur(0.95px) brightness(1.3) saturate(3.4);
-  mix-blend-mode: screen;
+  will-change: opacity;
 }
 
 .duat-boot__panel {
@@ -331,44 +86,26 @@ body.duat-boot-lock {
   z-index: 4;
   width: min(780px, calc(100vw - 48px));
   padding: 18px 18px 16px;
-  border: 2px solid #ffffff;
+  border: 2px solid #ff3300;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(204, 26, 0, 0.26) 0, rgba(84, 14, 0, 0.12) 34%, rgba(0, 0, 0, 0) 72%),
-    linear-gradient(135deg, rgba(92, 10, 0, 0.56) 0, rgba(0, 0, 0, 0.18) 42%, rgba(76, 8, 0, 0.46) 100%),
-    rgba(8, 0, 0, 0.84);
-  box-shadow:
-    12px 12px 0 #160000,
-    0 0 40px rgba(224, 38, 38, 0.22);
-}
-
-.duat-boot__panel::before,
-.duat-boot__panel::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
+    linear-gradient(180deg, rgba(255, 51, 0, 0.12) 0, rgba(0, 0, 0, 0) 50%),
+    rgba(6, 0, 0, 0.94);
+  box-shadow: 10px 10px 0 #1a0000;
 }
 
 .duat-boot__panel::before {
+  content: "";
+  position: absolute;
   inset: 0;
+  pointer-events: none;
   z-index: 0;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 20px,
-      rgba(236, 46, 46, 0.06) 20px 21px,
-      transparent 21px 44px
-    ),
-    repeating-linear-gradient(
-      180deg,
-      transparent 0 16px,
-      rgba(188, 16, 16, 0.06) 16px 17px,
-      transparent 17px 34px
-    ),
-    radial-gradient(circle at 12% 18%, rgba(188, 26, 0, 0.22), transparent 18%),
-    radial-gradient(circle at 88% 76%, rgba(154, 0, 0, 0.18), transparent 22%);
-  opacity: 0.92;
-  animation: duat-boot-embers 5.6s ease-in-out infinite;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0 16px,
+    rgba(255, 51, 0, 0.04) 16px 17px,
+    transparent 17px 34px
+  );
 }
 
 .duat-boot__panel > * {
@@ -379,35 +116,16 @@ body.duat-boot-lock {
 .duat-boot__badge {
   display: inline-block;
   padding: 3px 8px;
-  border: 1px solid #ffffff;
-  background: #140000;
-  color: #ffe5e5;
+  border: 1px solid #ff3300;
+  background: #080000;
+  color: #ff3300;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow:
-    inset 0 0 0 1px rgba(240, 52, 52, 0.2),
-    0 0 18px rgba(186, 22, 0, 0.18);
-}
-
-.duat-boot__mythband {
-  display: block;
-  margin-top: 12px;
-  padding: 6px 10px 5px;
-  border: 1px solid rgba(255, 128, 128, 0.5);
-  background:
-    linear-gradient(90deg, rgba(112, 10, 0, 0.76), rgba(18, 0, 0, 0.34) 42%, rgba(112, 10, 0, 0.76));
-  color: #ffd4d4;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  line-height: 1.45;
-  text-shadow: 0 0 8px rgba(255, 74, 74, 0.2);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.03),
-    0 0 22px rgba(176, 24, 0, 0.18);
+  font-size: 0.9em;
 }
 
 .duat-boot__terminal {
-  min-height: 292px;
+  min-height: 220px;
   margin-top: 16px;
 }
 
@@ -415,49 +133,30 @@ body.duat-boot-lock {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin: 0 0 8px;
+  margin: 0 0 7px;
   opacity: 0;
-  transform: translateY(2px);
-  animation: duat-boot-line-in 0.12s steps(1, end) forwards;
+  transform: translateY(6px);
+  animation: duat-boot-line-in 0.18s ease-out forwards;
+  will-change: opacity, transform;
 }
 
 .duat-boot__line-prefix {
   flex: 0 0 auto;
-  color: #ffd3d3;
+  color: #882200;
 }
 
-.duat-boot__line--system {
-  color: #f5e2d4;
-}
-
-.duat-boot__line--ok {
-  color: #ffd0d0;
-}
-
-.duat-boot__line--warn {
-  color: #ff9a9a;
-}
-
-.duat-boot__line--fault {
-  color: #ff5f5f;
-}
-
-.duat-boot__line--omen {
-  color: #ff8f8f;
-}
+.duat-boot__line--system { color: #ff3300; }
+.duat-boot__line--ok     { color: #ff6600; }
+.duat-boot__line--warn   { color: #cc2200; }
+.duat-boot__line--fault  { color: #ff0000; }
+.duat-boot__line--omen   { color: #ffffff; }
 
 .duat-boot__meter {
   position: relative;
-  height: 16px;
-  margin-top: 10px;
-  border: 1px solid #ffffff;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(235, 38, 38, 0.08) 0 8px,
-      rgba(0, 0, 0, 0.12) 8px 16px
-    ),
-    #040404;
+  height: 14px;
+  margin-top: 12px;
+  border: 1px solid #882200;
+  background: #040000;
   overflow: hidden;
 }
 
@@ -465,20 +164,16 @@ body.duat-boot-lock {
   display: block;
   width: 0;
   height: 100%;
-  background:
-    linear-gradient(90deg, #2d0000 0, #a51212 34%, #ff3b3b 72%, #ffd6d6 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
-    0 0 22px rgba(204, 52, 0, 0.24);
+  background: linear-gradient(90deg, #2d0000 0, #882200 40%, #ff3300 80%, #ff6600 100%);
   transition: width 0.1s linear;
+  will-change: width;
 }
 
 .duat-boot__status {
   margin-top: 10px;
-  color: #ffd8d8;
+  color: #882200;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  text-shadow: 0 0 14px rgba(214, 34, 0, 0.28);
 }
 
 .duat-boot__status::after {
@@ -488,474 +183,82 @@ body.duat-boot-lock {
   animation: duat-boot-caret 0.42s steps(1, end) infinite;
 }
 
+/* --- State: all lines loaded --- */
 .duat-boot--protected .duat-boot__panel {
-  box-shadow:
-    16px 16px 0 #280000,
-    0 0 44px rgba(255, 84, 18, 0.24);
+  border-color: #ff0000;
+  box-shadow: 12px 12px 0 #280000;
 }
 
-.duat-boot--protected .duat-boot__badge {
-  background: #250000;
-  border-color: #ff8d8d;
-}
-
-.duat-boot--protected .duat-boot__mythband {
-  border-color: rgba(255, 116, 116, 0.62);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 0 28px rgba(208, 46, 0, 0.22);
-}
-
-.duat-boot--protected .duat-boot__art {
-  opacity: 0.82;
-  filter: sepia(0.96) saturate(2.4) hue-rotate(-18deg) brightness(0.84) contrast(1.2);
-}
-
-.duat-boot--has-art .duat-boot__art {
-  opacity: 0.74;
-}
-
-.duat-boot--art-echo .duat-boot__art {
-  animation:
-    duat-boot-art-breathe 8.6s ease-in-out infinite,
-    duat-boot-art-echo 0.38s steps(1, end) 3;
-}
-
-.duat-boot--art-echo .duat-boot__art::before {
-  animation:
-    duat-boot-art-flares 6.8s ease-in-out infinite,
-    duat-boot-art-flares-burst 0.38s steps(1, end) 3;
-}
-
-.duat-boot--art-echo .duat-boot__art::after,
-.duat-boot--art-echo .duat-boot__art-noise {
-  animation: duat-boot-art-static 0.38s steps(1, end) 3;
-}
-
+/* --- State: rupturing (transform + opacity only, no filter) --- */
 .duat-boot--rupturing {
-  animation: duat-boot-shell-rupture 0.92s steps(1, end) forwards;
+  animation: duat-boot-shell-exit 0.6s ease-in forwards;
 }
 
 .duat-boot--rupturing .duat-boot__panel {
-  animation: duat-boot-panel-rupture 0.92s steps(1, end) forwards;
-}
-
-.duat-boot--rupturing .duat-boot__scan {
-  animation: duat-boot-scan-rupture 0.92s steps(1, end) forwards;
+  animation: duat-boot-panel-exit 0.6s ease-in forwards;
 }
 
 .duat-boot--rupturing .duat-boot__rupture {
-  animation: duat-boot-rupture 0.92s steps(1, end) forwards;
-}
-
-.duat-boot--rupturing .duat-boot__rupture::before {
-  animation: duat-boot-rupture-noise 0.92s steps(1, end) forwards;
-}
-
-.duat-boot--rupturing .duat-boot__rupture::after {
-  animation: duat-boot-rupture-bars 0.92s steps(1, end) forwards;
+  animation: duat-boot-rupture-flash 0.6s steps(1, end) forwards;
 }
 
 .duat-boot--rupturing .duat-boot__flash {
-  animation: duat-boot-flash 0.92s steps(1, end) forwards;
+  animation: duat-boot-flash-in 0.6s steps(1, end) forwards;
 }
 
-.duat-boot--rupturing .duat-boot__terminal,
-.duat-boot--rupturing .duat-boot__meter,
-.duat-boot--rupturing .duat-boot__status,
-.duat-boot--rupturing .duat-boot__badge {
-  animation: duat-boot-terminal-collapse 0.92s steps(1, end) forwards;
-}
-
+/* --- State: revealing (opacity + translateY only) --- */
 .duat-boot--revealing {
-  animation: duat-boot-reveal 0.92s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: duat-boot-reveal 0.72s ease-in forwards;
 }
 
-.duat-boot--revealing .duat-boot__panel {
-  animation: duat-boot-panel-fade 0.42s ease forwards;
-}
-
-@keyframes duat-boot-scan {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(12px);
-  }
-}
-
-@keyframes duat-boot-vignette {
-  0%,
-  100% {
-    opacity: 0.94;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.01);
-  }
-}
-
-@keyframes duat-boot-embers {
-  0%,
-  100% {
-    opacity: 0.8;
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: translate(1px, -0.5px) scale(1.01);
-  }
-}
-
-@keyframes duat-boot-art-breathe {
-  0%,
-  100% {
-    opacity: 0.56;
-    transform: scale(1.01) translate3d(0, 0, 0);
-  }
-  50% {
-    opacity: 0.68;
-    transform: scale(1.02) translate3d(-2px, 1px, 0);
-  }
-}
-
-@keyframes duat-boot-art-flares {
-  0%,
-  100% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes duat-boot-art-echo {
-  0%,
-  100% {
-    opacity: 0.56;
-    transform: scale(1.01) translate3d(0, 0, 0);
-    filter: sepia(0.7) saturate(1.4) brightness(0.9) contrast(1.08);
-  }
-  16% {
-    opacity: 0.82;
-    transform: scale(1.02) translate3d(6px, -1px, 0) skewX(2deg);
-    filter: sepia(0.85) saturate(1.6) brightness(0.95) contrast(1.14);
-  }
-  26% {
-    opacity: 0.74;
-    transform: scale(1.02) translate3d(-5px, 2px, 0) skewX(-2.5deg);
-    filter: sepia(0.85) saturate(1.6) brightness(0.92) contrast(1.18);
-  }
-  34% {
-    opacity: 0.9;
-    transform: scale(1.03) translate3d(6px, -2px, 0);
-    filter: sepia(0.9) saturate(1.8) brightness(0.98) contrast(1.22);
-  }
-  46% {
-    opacity: 0.62;
-    transform: scale(1.01) translate3d(-4px, 1.5px, 0);
-    filter: sepia(0.8) saturate(1.5) brightness(0.9) contrast(1.12);
-  }
-}
-
-@keyframes duat-boot-art-flares-burst {
-  0%,
-  100% {
-    opacity: 0.94;
-    transform: translateX(0);
-  }
-  20% {
-    opacity: 1;
-    transform: translateX(-6px);
-  }
-  30% {
-    opacity: 0.86;
-    transform: translateX(6px);
-  }
-  40% {
-    opacity: 0.98;
-    transform: translateX(-4px);
-  }
-}
-
-@keyframes duat-boot-art-static {
-  0%,
-  100% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) scaleY(1);
-  }
-  14% {
-    opacity: 0.74;
-    transform: translate3d(-6px, 0, 0) scaleY(0.96);
-  }
-  24% {
-    opacity: 1;
-    transform: translate3d(6px, -1px, 0) scaleY(1.04);
-  }
-  34% {
-    opacity: 0.86;
-    transform: translate3d(-4px, 1px, 0) scaleY(0.96);
-  }
-  44% {
-    opacity: 0.22;
-    transform: translate3d(2px, 0, 0) scaleY(1.01);
-  }
-}
+/* --- Keyframes --- */
 
 @keyframes duat-boot-line-in {
-  from {
-    opacity: 0;
-    transform: translateY(2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes duat-boot-caret {
-  0%,
-  50% {
-    opacity: 1;
-  }
-  51%,
-  100% {
-    opacity: 0;
-  }
+  0%,  50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
-@keyframes duat-boot-shell-rupture {
-  0%,
-  100% {
-    filter: none;
-    transform: translate(0, 0);
-  }
-  32% {
-    filter: saturate(1.3) contrast(1.2);
-    transform: translate(3px, -1px);
-  }
-  48% {
-    filter: blur(0.8px) saturate(1.6) contrast(1.4) brightness(1.06);
-    transform: translate(-4px, 1px);
-  }
-  58% {
-    filter: blur(1px) saturate(1.8) contrast(1.6) brightness(1.08);
-    transform: translate(5px, -2px);
-  }
-  68% {
-    filter: blur(0.8px) saturate(1.6) contrast(1.4);
-    transform: translate(-4px, 2px);
-  }
-  84% {
-    filter: saturate(1.2) contrast(1.08);
-    transform: translate(2px, -1px);
-  }
+@keyframes duat-boot-shell-exit {
+  0%   { transform: translate(0, 0); }
+  30%  { transform: translate(-3px, 1px); }
+  50%  { transform: translate(4px, -2px); }
+  70%  { transform: translate(-3px, 2px); }
+  100% { transform: translate(0, 0); }
 }
 
-@keyframes duat-boot-panel-rupture {
-  0%,
-  100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  40% {
-    transform: translate(-4px, 0);
-    opacity: 0.58;
-  }
-  52% {
-    transform: translate(6px, -1px) skewX(4deg);
-    opacity: 0.14;
-  }
-  62% {
-    transform: translate(-6px, 2px) skewX(-4deg);
-    opacity: 0.08;
-  }
-  76% {
-    transform: translate(3px, -1px);
-    opacity: 0.64;
-  }
+@keyframes duat-boot-panel-exit {
+  0%   { transform: translate(0, 0); opacity: 1; }
+  40%  { transform: translate(-4px, 0); opacity: 0.5; }
+  55%  { transform: translate(6px, -1px); opacity: 0.1; }
+  70%  { transform: translate(-5px, 2px); opacity: 0.05; }
+  100% { transform: translate(0, 0); opacity: 0; }
 }
 
-@keyframes duat-boot-terminal-collapse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  40% {
-    opacity: 0.62;
-  }
-  52%,
-  62% {
-    opacity: 0.04;
-  }
-  78% {
-    opacity: 0.46;
-  }
+@keyframes duat-boot-rupture-flash {
+  0%   { opacity: 0; transform: translateX(0); }
+  30%  { opacity: 0.5; transform: translateX(-4px); }
+  50%  { opacity: 0.8; transform: translateX(5px); }
+  70%  { opacity: 0.6; transform: translateX(-3px); }
+  100% { opacity: 0; transform: translateX(0); }
 }
 
-@keyframes duat-boot-scan-rupture {
-  0%,
-  100% {
-    opacity: 0.34;
-    transform: translateY(0);
-  }
-  36% {
-    opacity: 0.62;
-    transform: translateY(-4px);
-  }
-  52% {
-    opacity: 0.86;
-    transform: translateY(6px);
-  }
-  66% {
-    opacity: 0.8;
-    transform: translateY(-3px);
-  }
-  82% {
-    opacity: 0.42;
-    transform: translateY(2px);
-  }
-}
-
-@keyframes duat-boot-rupture {
-  0%,
-  100% {
-    opacity: 0;
-    transform: translate(0, 0) scale(1, 1);
-    background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
-  }
-  34% {
-    opacity: 0.7;
-    transform: translate(-4px, 0) scale(1.02, 0.97);
-    background-position: 0 -3px, -12px 0, 8px 0, -18px 0, 0 -4px;
-  }
-  50% {
-    opacity: 0.88;
-    transform: translate(5px, -2px) scale(1.04, 0.9);
-    background-position: 0 4px, 18px 0, -10px 0, 8px 0, 0 6px;
-  }
-  62% {
-    opacity: 0.86;
-    transform: translate(-6px, 3px) scale(1.03, 1.04);
-    background-position: 0 -5px, -20px 0, 12px 0, -14px 0, 0 -6px;
-  }
-  74% {
-    opacity: 0.7;
-    transform: translate(3px, -1px) scale(1.01, 0.96);
-    background-position: 0 2px, 12px 0, -8px 0, 6px 0, 0 3px;
-  }
-  90% {
-    opacity: 0;
-    transform: translate(0, 0) scale(1, 1);
-    background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
-  }
-}
-
-@keyframes duat-boot-rupture-noise {
-  0%,
-  100% {
-    opacity: 0;
-    transform: translateX(0);
-    background-position: 0 0, 0 0, 0 0;
-  }
-  38% {
-    opacity: 0.72;
-    transform: translateX(-6px);
-    background-position: -12px 0, 10px 0, 0 -3px;
-  }
-  50% {
-    opacity: 0.9;
-    transform: translateX(6px);
-    background-position: 16px 0, -8px 0, 0 4px;
-  }
-  62% {
-    opacity: 0.82;
-    transform: translateX(-5px);
-    background-position: -10px 0, 14px 0, 0 -4px;
-  }
-  76% {
-    opacity: 0.68;
-    transform: translateX(4px);
-    background-position: 8px 0, -6px 0, 0 2px;
-  }
-  90% {
-    opacity: 0;
-    transform: translateX(0);
-    background-position: 0 0, 0 0, 0 0;
-  }
-}
-
-@keyframes duat-boot-rupture-bars {
-  0%,
-  100% {
-    opacity: 0;
-    transform: translateY(0);
-  }
-  42% {
-    opacity: 0.78;
-    transform: translateY(-3px);
-  }
-  54% {
-    opacity: 0.9;
-    transform: translateY(4px);
-  }
-  68% {
-    opacity: 0.82;
-    transform: translateY(-2px);
-  }
-  84% {
-    opacity: 0.6;
-    transform: translateY(1px);
-  }
-  90% {
-    opacity: 0;
-  }
-}
-
-@keyframes duat-boot-flash {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  48% {
-    opacity: 0.06;
-  }
-  56% {
-    opacity: 0.5;
-  }
-  60% {
-    opacity: 0.78;
-  }
-  66% {
-    opacity: 0.18;
-  }
+@keyframes duat-boot-flash-in {
+  0%   { opacity: 0; }
+  50%  { opacity: 0.4; }
+  65%  { opacity: 0.8; }
+  80%  { opacity: 0.2; }
+  100% { opacity: 0; }
 }
 
 @keyframes duat-boot-reveal {
-  0% {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-  }
-  48% {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-  }
-  100% {
-    opacity: 0;
-    clip-path: inset(100% 0 0 0);
-  }
-}
-
-@keyframes duat-boot-panel-fade {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-16px);
-  }
+  0%   { opacity: 1; transform: translateY(0); }
+  50%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-12px); }
 }
 
 @media (max-width: 767px) {
@@ -966,30 +269,17 @@ body.duat-boot-lock {
   .duat-boot__panel {
     width: calc(100vw - 28px);
     padding: 14px 12px 12px;
-    box-shadow: 8px 8px 0 #160000;
-  }
-
-  .duat-boot__mythband {
-    margin-top: 10px;
-    padding: 5px 8px 4px;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-  }
-
-  .duat-boot__art {
-    background-position: center center, 74% 56%, 70% center, center center, 74% 18%;
-    background-size: 100% 100%, 42% 32%, min(108vw, 620px) auto, 100% 100%, 34% 22%;
-    opacity: 0.62;
+    box-shadow: 7px 7px 0 #1a0000;
   }
 
   .duat-boot__terminal {
-    min-height: 248px;
+    min-height: 180px;
     margin-top: 12px;
   }
 
   .duat-boot__line {
     gap: 8px;
-    margin-bottom: 7px;
+    margin-bottom: 6px;
     font-size: 14px;
     line-height: 1.45;
   }

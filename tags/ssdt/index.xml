@@ -1,19 +1,17 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>SSDT on 0xbekoo</title>
-    <link>http://localhost:1313/tags/ssdt/</link>
-    <description>Recent content in SSDT on 0xbekoo</description>
-    <generator>Hugo</generator>
-    <language>en</language>
-    <lastBuildDate>Sat, 22 Feb 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/ssdt/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Loading Driver from User-Mode Program via SSDT Hooking</title>
-      <link>http://localhost:1313/blogs/ssdt-hooking/</link>
-      <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blogs/ssdt-hooking/</guid>
-      <description>Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.&#xA;In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the System Service Descriptor Table (SSDT) and its role in managing system calls within the Windows kernel.&#xA;Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking.</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>SSDT on 0xbekoo</title><link>https://0xbekoo.github.io/tags/ssdt/</link><description>Recent content in SSDT on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Sat, 22 Feb 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/ssdt/index.xml" rel="self" type="application/rss+xml"/><item><title>Loading Driver from User-Mode Program via SSDT Hooking</title><link>https://0xbekoo.github.io/blogs/ssdt-hooking/</link><pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/ssdt-hooking/</guid><description>&lt;p&gt;Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.&lt;/p&gt;
+&lt;p&gt;In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the &lt;strong&gt;System Service Descriptor Table (SSDT)&lt;/strong&gt; and its role in managing system calls within the Windows kernel.&lt;/p&gt;
+&lt;p&gt;Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking. We will walk through the process of dynamically locating the SSDT, identifying a target system call (such as &lt;code&gt;NtLoadDriver&lt;/code&gt;), and modifying its entry to redirect execution flow to a custom function.&lt;/p&gt;</description></item><item><title>SSDT Hook Detector</title><link>https://0xbekoo.github.io/projects/ssdt-hook-detector/</link><pubDate>Sun, 10 Nov 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/projects/ssdt-hook-detector/</guid><description>&lt;h2 id="overview"&gt;Overview&lt;/h2&gt;
+&lt;p&gt;A user-mode utility that detects SSDT hooks installed by rootkits or anti-cheat software. It reads the System Service Descriptor Table from kernel memory via a custom driver and compares each entry against the expected address range of &lt;code&gt;ntoskrnl.exe&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id="how-it-works"&gt;How It Works&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;Loads a signed kernel driver that exposes an IOCTL interface&lt;/li&gt;
+&lt;li&gt;Reads &lt;code&gt;KeServiceDescriptorTable&lt;/code&gt; pointer from driver context&lt;/li&gt;
+&lt;li&gt;Iterates all syscall entries and checks if the address falls within ntoskrnl&amp;rsquo;s &lt;code&gt;.text&lt;/code&gt; section&lt;/li&gt;
+&lt;li&gt;Reports hooked entries with the hook address and closest known symbol&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="detection-scope"&gt;Detection Scope&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Direct SSDT inline hooks&lt;/li&gt;
+&lt;li&gt;SSDT pointer replacement (table swap)&lt;/li&gt;
+&lt;li&gt;Partial hooked ranges in third-party modules&lt;/li&gt;
+&lt;/ul&gt;</description></item></channel></rss>

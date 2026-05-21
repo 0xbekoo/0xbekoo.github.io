@@ -1,0 +1,312 @@
+/* ── Diagram System ───────────────────────────────────────────────────────── */
+
+.dia-wrap {
+  margin: 2rem 0;
+  border-top: 2px solid #3a0000;
+  padding-top: 16px;
+}
+
+.dia-title {
+  display: block;
+  width: fit-content;
+  margin-bottom: 16px;
+  padding: 3px 10px 3px 8px;
+  background: #110000;
+  border: 1px solid #5a0000;
+  border-left: 3px solid #cc2200;
+  color: #cc4444;
+  font-family: "Fixedsys500c", monospace;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ── Chain (vertical flow) ────────────────────────────────────────────────── */
+
+.dia-chain {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+/* Vertical spine behind chain nodes */
+.dia-chain::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    #220000 8%,
+    #220000 92%,
+    transparent 100%
+  );
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.dia-chain--h {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dia-chain--h::before {
+  display: none;
+}
+
+/* ── Node ─────────────────────────────────────────────────────────────────── */
+
+.dia-node {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+  max-width: 500px;
+  box-sizing: border-box;
+  padding: 11px 18px 11px 22px;
+  background: #060000;
+  border: 1px solid #5a0000;
+  border-left: 4px solid #5a0000;
+  box-shadow: 4px 4px 0 #1c0000;
+  text-align: left;
+  /* Static scanline texture — not animated */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(255, 255, 255, 0.008) 3px,
+    rgba(255, 255, 255, 0.008) 4px
+  );
+}
+
+.dia-node__label {
+  display: block;
+  color: #ff9090;
+  font-family: "Fixedsys500c", monospace;
+  font-size: 0.83rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.dia-node__sub {
+  display: block;
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid #1a0000;
+  color: #664444;
+  font-family: "Fixedsys500c", monospace;
+  font-size: 0.65rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ── Node Variants — left border accent ────────────────────────────────────── */
+
+.dia-node--fw {
+  border-left-color: #cc9900;
+  box-shadow: 4px 4px 0 #1a1400;
+  background-color: #050200;
+}
+.dia-node--fw .dia-node__label { color: #cc9900; }
+.dia-node--fw .dia-node__sub   { color: #665500; border-top-color: #1a1000; }
+
+.dia-node--win {
+  border-left-color: #cc2200;
+  box-shadow: 4px 4px 0 #2a0000;
+}
+.dia-node--win .dia-node__label { color: #ff6060; }
+
+.dia-node--kernel {
+  border-left-color: #ff3300;
+  border-color: #880000;
+  border-left-color: #ff3300;
+  box-shadow: 4px 4px 0 #3a0000;
+  background-color: #080000;
+}
+.dia-node--kernel .dia-node__label { color: #ff3300; }
+
+.dia-node--dim {
+  border-color: #262626;
+  border-left-color: #404040;
+  box-shadow: 4px 4px 0 #111111;
+  opacity: 0.5;
+}
+.dia-node--dim .dia-node__label { color: #606060; }
+.dia-node--dim .dia-node__sub   { color: #3a3a3a; border-top-color: #1c1c1c; }
+
+/* Hook node — glowing outer ring via ::after (opacity only — compositor-safe) */
+.dia-node--hook {
+  border-color: #882200;
+  border-left-color: #ff4400;
+  box-shadow: 4px 4px 0 #3a0000;
+  background-color: #070000;
+}
+.dia-node--hook .dia-node__label { color: #ff5500; }
+
+.dia-node--hook::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 1px solid #ff3300;
+  opacity: 0;
+  pointer-events: none;
+  animation: dia-hook-glow 1.8s ease-in-out infinite;
+}
+
+/* ── Arrow Connector ──────────────────────────────────────────────────────── */
+
+.dia-arrow {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  gap: 0;
+}
+
+.dia-arrow__line {
+  width: 2px;
+  height: 22px;
+  background: linear-gradient(180deg, #3a0000 0%, #5a0000 100%);
+}
+
+.dia-arrow__head {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid #5a0000;
+}
+
+.dia-arrow__label {
+  margin-top: 4px;
+  padding: 2px 8px;
+  background: #0a0000;
+  border: 1px solid #2a0000;
+  color: #664444;
+  font-family: "Fixedsys500c", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: center;
+  max-width: 280px;
+}
+
+/* ── Memory / Table Layout ────────────────────────────────────────────────── */
+
+.dia-mem {
+  display: block;
+  width: 100%;
+  max-width: 600px;
+  border: 1px solid #5a0000;
+  border-left: 3px solid #880000;
+  box-shadow: 4px 4px 0 #1c0000;
+  background: #040000;
+  font-family: "Fixedsys500c", monospace;
+}
+
+.dia-mem__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  border-bottom: 1px solid #1a0000;
+}
+
+.dia-mem__row:last-child {
+  border-bottom: none;
+}
+
+/* Zebra striping on data rows */
+.dia-mem__row:nth-child(even):not(.dia-mem__row--header) {
+  background: #060000;
+}
+
+.dia-mem__row--header {
+  background: linear-gradient(90deg, #1c0000 0%, #0c0000 100%);
+  border-bottom: 2px solid #4a0000;
+}
+
+.dia-mem__row--header .dia-mem__addr,
+.dia-mem__row--header .dia-mem__name,
+.dia-mem__row--header .dia-mem__val {
+  color: #cc4444;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 7px 10px;
+}
+
+.dia-mem__row--highlight .dia-mem__name {
+  color: #ccaa00;
+}
+
+.dia-mem__row--highlight .dia-mem__addr {
+  color: #886600;
+}
+
+.dia-mem__addr {
+  padding: 6px 10px 6px 12px;
+  color: #664444;
+  font-size: 0.64rem;
+  border-right: 1px solid #200000;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.dia-mem__name {
+  padding: 6px 10px;
+  color: #ff8080;
+  font-size: 0.71rem;
+  border-right: 1px solid #1a0000;
+  line-height: 1.4;
+}
+
+.dia-mem__val {
+  padding: 6px 10px;
+  color: #884444;
+  font-size: 0.67rem;
+  line-height: 1.4;
+}
+
+/* ── Keyframes ────────────────────────────────────────────────────────────── */
+
+@keyframes dia-hook-glow {
+  0%, 100% { opacity: 0; }
+  50%       { opacity: 0.65; }
+}
+
+/* ── Mobile ───────────────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .dia-node {
+    min-width: 200px;
+    max-width: 100%;
+    padding: 10px 14px 10px 18px;
+  }
+
+  .dia-mem {
+    max-width: 100%;
+  }
+
+  .dia-mem__row {
+    grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  }
+
+  .dia-mem__val {
+    display: none;
+  }
+}
