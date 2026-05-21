@@ -1,1 +1,292 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tags on 0xbekoo</title><link>https://0xbekoo.github.io/tags/</link><description>Recent content in Tags on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Thu, 21 May 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/index.xml" rel="self" type="application/rss+xml"/><item><title>LabConfig</title><link>https://0xbekoo.github.io/tags/labconfig/</link><pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/labconfig/</guid><description/></item><item><title>Reverse-Engineering</title><link>https://0xbekoo.github.io/tags/reverse-engineering/</link><pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/reverse-engineering/</guid><description/></item><item><title>Security-Research</title><link>https://0xbekoo.github.io/tags/security-research/</link><pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/security-research/</guid><description/></item><item><title>UEFI</title><link>https://0xbekoo.github.io/tags/uefi/</link><pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/uefi/</guid><description/></item><item><title>Windows-11</title><link>https://0xbekoo.github.io/tags/windows-11/</link><pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/windows-11/</guid><description/></item><item><title>Windows-Internals</title><link>https://0xbekoo.github.io/tags/windows-internals/</link><pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/windows-internals/</guid><description/></item><item><title>Bootkit</title><link>https://0xbekoo.github.io/tags/bootkit/</link><pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/bootkit/</guid><description/></item><item><title>Whitelotus</title><link>https://0xbekoo.github.io/tags/whitelotus/</link><pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/whitelotus/</guid><description/></item><item><title>Coreboot</title><link>https://0xbekoo.github.io/tags/coreboot/</link><pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/coreboot/</guid><description/></item><item><title>Lenovo-X230</title><link>https://0xbekoo.github.io/tags/lenovo-x230/</link><pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/lenovo-x230/</guid><description/></item><item><title>Real-Silicon</title><link>https://0xbekoo.github.io/tags/real-silicon/</link><pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/real-silicon/</guid><description/></item><item><title>Uefipayloadpkg-Coreboot</title><link>https://0xbekoo.github.io/tags/uefipayloadpkg-coreboot/</link><pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/uefipayloadpkg-coreboot/</guid><description/></item><item><title>System-Management-Mode</title><link>https://0xbekoo.github.io/tags/system-management-mode/</link><pubDate>Thu, 26 Mar 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/system-management-mode/</guid><description/></item><item><title>Firmware-Reversing</title><link>https://0xbekoo.github.io/tags/firmware-reversing/</link><pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/firmware-reversing/</guid><description/></item><item><title>Reser-Vector</title><link>https://0xbekoo.github.io/tags/reser-vector/</link><pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/reser-vector/</guid><description/></item><item><title>X86-Reverse-Engineering</title><link>https://0xbekoo.github.io/tags/x86-reverse-engineering/</link><pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/x86-reverse-engineering/</guid><description/></item><item><title>Malware-Development</title><link>https://0xbekoo.github.io/tags/malware-development/</link><pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/malware-development/</guid><description/></item><item><title>SSDT-Unhooking</title><link>https://0xbekoo.github.io/tags/ssdt-unhooking/</link><pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/ssdt-unhooking/</guid><description/></item><item><title>Unhooking</title><link>https://0xbekoo.github.io/tags/unhooking/</link><pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/unhooking/</guid><description/></item><item><title>Analyzing-of-Windows-Kernel</title><link>https://0xbekoo.github.io/tags/analyzing-of-windows-kernel/</link><pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/analyzing-of-windows-kernel/</guid><description/></item><item><title>PatchGuard</title><link>https://0xbekoo.github.io/tags/patchguard/</link><pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/patchguard/</guid><description/></item><item><title>Reversing-PatchGuard</title><link>https://0xbekoo.github.io/tags/reversing-patchguard/</link><pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/reversing-patchguard/</guid><description/></item><item><title>Windows</title><link>https://0xbekoo.github.io/tags/windows/</link><pubDate>Sat, 01 Mar 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/windows/</guid><description/></item><item><title>X64</title><link>https://0xbekoo.github.io/tags/x64/</link><pubDate>Sat, 01 Mar 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/x64/</guid><description/></item><item><title>Rootkit</title><link>https://0xbekoo.github.io/tags/rootkit/</link><pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/rootkit/</guid><description/></item><item><title>SSDT</title><link>https://0xbekoo.github.io/tags/ssdt/</link><pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/ssdt/</guid><description/></item><item><title>SSDT-Hooking</title><link>https://0xbekoo.github.io/tags/ssdt-hooking/</link><pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/ssdt-hooking/</guid><description/></item><item><title>Windows-Kernel</title><link>https://0xbekoo.github.io/tags/windows-kernel/</link><pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/windows-kernel/</guid><description/></item><item><title>Syscall</title><link>https://0xbekoo.github.io/tags/syscall/</link><pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/syscall/</guid><description/></item><item><title>ARM-Firmware</title><link>https://0xbekoo.github.io/tags/arm-firmware/</link><pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/arm-firmware/</guid><description/></item><item><title>IOT-Hacking</title><link>https://0xbekoo.github.io/tags/iot-hacking/</link><pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/iot-hacking/</guid><description/></item><item><title>Nucleo</title><link>https://0xbekoo.github.io/tags/nucleo/</link><pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/nucleo/</guid><description/></item><item><title>Firmware</title><link>https://0xbekoo.github.io/tags/firmware/</link><pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/firmware/</guid><description/></item><item><title>Router</title><link>https://0xbekoo.github.io/tags/router/</link><pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/router/</guid><description/></item><item><title>Kernel</title><link>https://0xbekoo.github.io/tags/kernel/</link><pubDate>Sun, 10 Nov 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/kernel/</guid><description/></item><item><title>Rootkit Detection</title><link>https://0xbekoo.github.io/tags/rootkit-detection/</link><pubDate>Sun, 10 Nov 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/rootkit-detection/</guid><description/></item><item><title>Keylogger</title><link>https://0xbekoo.github.io/tags/keylogger/</link><pubDate>Sat, 15 Jun 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/keylogger/</guid><description/></item><item><title>PoC</title><link>https://0xbekoo.github.io/tags/poc/</link><pubDate>Sat, 15 Jun 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/poc/</guid><description/></item><item><title>Ptrace</title><link>https://0xbekoo.github.io/tags/ptrace/</link><pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/ptrace/</guid><description/></item><item><title>Radare2</title><link>https://0xbekoo.github.io/tags/radare2/</link><pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/tags/radare2/</guid><description/></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on 0xbekoo</title>
+    <link>http://localhost:1313/tags/</link>
+    <description>Recent content in Tags on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 21 May 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>LabConfig</title>
+      <link>http://localhost:1313/tags/labconfig/</link>
+      <pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/labconfig/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Reverse-Engineering</title>
+      <link>http://localhost:1313/tags/reverse-engineering/</link>
+      <pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/reverse-engineering/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Security-Research</title>
+      <link>http://localhost:1313/tags/security-research/</link>
+      <pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/security-research/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>UEFI</title>
+      <link>http://localhost:1313/tags/uefi/</link>
+      <pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/uefi/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Windows-11</title>
+      <link>http://localhost:1313/tags/windows-11/</link>
+      <pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/windows-11/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Windows-Internals</title>
+      <link>http://localhost:1313/tags/windows-internals/</link>
+      <pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/windows-internals/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Bootkit</title>
+      <link>http://localhost:1313/tags/bootkit/</link>
+      <pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/bootkit/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Whitelotus</title>
+      <link>http://localhost:1313/tags/whitelotus/</link>
+      <pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/whitelotus/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Coreboot</title>
+      <link>http://localhost:1313/tags/coreboot/</link>
+      <pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/coreboot/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Lenovo-X230</title>
+      <link>http://localhost:1313/tags/lenovo-x230/</link>
+      <pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/lenovo-x230/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Real-Silicon</title>
+      <link>http://localhost:1313/tags/real-silicon/</link>
+      <pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/real-silicon/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Uefipayloadpkg-Coreboot</title>
+      <link>http://localhost:1313/tags/uefipayloadpkg-coreboot/</link>
+      <pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/uefipayloadpkg-coreboot/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>System-Management-Mode</title>
+      <link>http://localhost:1313/tags/system-management-mode/</link>
+      <pubDate>Thu, 26 Mar 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/system-management-mode/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Firmware-Reversing</title>
+      <link>http://localhost:1313/tags/firmware-reversing/</link>
+      <pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/firmware-reversing/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Reser-Vector</title>
+      <link>http://localhost:1313/tags/reser-vector/</link>
+      <pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/reser-vector/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>X86-Reverse-Engineering</title>
+      <link>http://localhost:1313/tags/x86-reverse-engineering/</link>
+      <pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/x86-reverse-engineering/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Malware-Development</title>
+      <link>http://localhost:1313/tags/malware-development/</link>
+      <pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/malware-development/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>SSDT-Unhooking</title>
+      <link>http://localhost:1313/tags/ssdt-unhooking/</link>
+      <pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/ssdt-unhooking/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Unhooking</title>
+      <link>http://localhost:1313/tags/unhooking/</link>
+      <pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/unhooking/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Analyzing-of-Windows-Kernel</title>
+      <link>http://localhost:1313/tags/analyzing-of-windows-kernel/</link>
+      <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/analyzing-of-windows-kernel/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>PatchGuard</title>
+      <link>http://localhost:1313/tags/patchguard/</link>
+      <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/patchguard/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Reversing-PatchGuard</title>
+      <link>http://localhost:1313/tags/reversing-patchguard/</link>
+      <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/reversing-patchguard/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Windows</title>
+      <link>http://localhost:1313/tags/windows/</link>
+      <pubDate>Sat, 01 Mar 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/windows/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>X64</title>
+      <link>http://localhost:1313/tags/x64/</link>
+      <pubDate>Sat, 01 Mar 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/x64/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Rootkit</title>
+      <link>http://localhost:1313/tags/rootkit/</link>
+      <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/rootkit/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>SSDT</title>
+      <link>http://localhost:1313/tags/ssdt/</link>
+      <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/ssdt/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>SSDT-Hooking</title>
+      <link>http://localhost:1313/tags/ssdt-hooking/</link>
+      <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/ssdt-hooking/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Windows-Kernel</title>
+      <link>http://localhost:1313/tags/windows-kernel/</link>
+      <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/windows-kernel/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Syscall</title>
+      <link>http://localhost:1313/tags/syscall/</link>
+      <pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/syscall/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>ARM-Firmware</title>
+      <link>http://localhost:1313/tags/arm-firmware/</link>
+      <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/arm-firmware/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>IOT-Hacking</title>
+      <link>http://localhost:1313/tags/iot-hacking/</link>
+      <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/iot-hacking/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Nucleo</title>
+      <link>http://localhost:1313/tags/nucleo/</link>
+      <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/nucleo/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Firmware</title>
+      <link>http://localhost:1313/tags/firmware/</link>
+      <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/firmware/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Router</title>
+      <link>http://localhost:1313/tags/router/</link>
+      <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/router/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Kernel</title>
+      <link>http://localhost:1313/tags/kernel/</link>
+      <pubDate>Sun, 10 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/kernel/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Rootkit Detection</title>
+      <link>http://localhost:1313/tags/rootkit-detection/</link>
+      <pubDate>Sun, 10 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/rootkit-detection/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ptrace</title>
+      <link>http://localhost:1313/tags/ptrace/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/ptrace/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Radare2</title>
+      <link>http://localhost:1313/tags/radare2/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/radare2/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Keylogger</title>
+      <link>http://localhost:1313/tags/keylogger/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/keylogger/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>PoC</title>
+      <link>http://localhost:1313/tags/poc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/poc/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

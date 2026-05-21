@@ -1,3 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Security-Research on 0xbekoo</title><link>https://0xbekoo.github.io/tags/security-research/</link><description>Recent content in Security-Research on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Thu, 21 May 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/security-research/index.xml" rel="self" type="application/rss+xml"/><item><title>A Journey Into setup.exe — LabConfig and Windows 11 Security</title><link>https://0xbekoo.github.io/blogs/setup-exe-journey/</link><pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/setup-exe-journey/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Earlier this year I submitted a security finding to MSRC. No CVE came out of it, no bounty — just something I thought someone at Microsoft should read. This blog is basically that report, rewritten in a way that makes sense to read outside of a submission form.&lt;/p&gt;
-&lt;p&gt;The short version: Windows 11 publicly guarantees that Secure Boot and TPM 2.0 protect your system out-of-the-box. The binaries that enforce those guarantees haven&amp;rsquo;t meaningfully changed since Windows 10. And there&amp;rsquo;s a registry path — one that millions of people have used to install Windows 11 on unsupported hardware — that makes those guarantees completely optional without ever telling the user.&lt;/p&gt;</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Security-Research on 0xbekoo</title>
+    <link>http://localhost:1313/tags/security-research/</link>
+    <description>Recent content in Security-Research on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 21 May 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/security-research/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>A Journey Into setup.exe — LabConfig and Windows 11 Security</title>
+      <link>http://localhost:1313/blogs/setup-exe-journey/</link>
+      <pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/setup-exe-journey/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Earlier this year I submitted a security finding to MSRC. No CVE came out of it, no bounty — just something I thought someone at Microsoft should read. This blog is basically that report, rewritten in a way that makes sense to read outside of a submission form.&lt;/p&gt;&#xA;&lt;p&gt;The short version: Windows 11 publicly guarantees that Secure Boot and TPM 2.0 protect your system out-of-the-box. The binaries that enforce those guarantees haven&amp;rsquo;t meaningfully changed since Windows 10. And there&amp;rsquo;s a registry path — one that millions of people have used to install Windows 11 on unsupported hardware — that makes those guarantees completely optional without ever telling the user.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

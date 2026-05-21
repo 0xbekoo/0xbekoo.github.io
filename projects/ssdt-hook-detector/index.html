@@ -1,9 +1,199 @@
-<!doctype html><html lang=en><head><title>0xbekoo</title><meta charset=utf-8><meta content="utf-8" http-equiv=encoding><meta name=viewport content="width=device-width,initial-scale=1"><meta name=format-detection content="telephone=no"><meta name=theme-color content="#000084"><link rel=icon href=/favicon.ico><link rel=canonical href=/projects/ssdt-hook-detector/><noscript><style>body{visibility:visible!important}</style></noscript></head><body><nav class="navbar navbar-inverse navbar-fixed-top"><div class=navbar-inner><div class=container><button type=button class="btn btn-navbar" data-toggle=collapse data-target=.nav-collapse></button>
-<a class=brand href=/>0xbekoo</a><div class="nav-collapse collapse"><ul class=nav><li><a href=/docs/><span>Documentation</span></a></li><li><a href=/blogs/><span>Blogs</span></a></li><li><a href=/projects/><span>Projects</span></a></li></ul></div></div></div></nav><div id=content class=container><article class="single-shell single-shell--projects"><div class="row-fluid navmargin"><div class="page-header single-shell__header"><h1 class=single-shell__title>SSDT Hook Detector</h1><p class=single-shell__meta>> C</p></div><div class="single-shell__body single-shell__body--with-toc"><div class=single-shell__main><p class="lead single-shell__lead">User-mode tool that reads the SSDT from kernel memory and detects hooked syscalls by comparing function pointers against ntoskrnl.exe's expected base range.</p><section class="single-shell__toc single-shell__toc--mobile is-open" data-ui=toc><button class=single-shell__toc-toggle type=button aria-expanded=true aria-controls=single-toc-mobile-projects-ssdt-hook-detector->
-<span class=single-shell__toc-label>Contents</span>
-<span class=single-shell__toc-status aria-hidden=true>[-]</span></button><div id=single-toc-mobile-projects-ssdt-hook-detector- class=single-shell__toc-panel><div class=single-shell__toc-panel-inner><div class=single-shell__toc-body><nav id=TableOfContents-mobile><ul><li><a href=#overview>Overview</a></li><li><a href=#how-it-works>How It Works</a></li><li><a href=#detection-scope>Detection Scope</a></li></ul></nav></div></div></div></section><div class=single-shell__content><h2 id=overview>Overview</h2><p>A user-mode utility that detects SSDT hooks installed by rootkits or anti-cheat software. It reads the System Service Descriptor Table from kernel memory via a custom driver and compares each entry against the expected address range of <code>ntoskrnl.exe</code>.</p><h2 id=how-it-works>How It Works</h2><ol><li>Loads a signed kernel driver that exposes an IOCTL interface</li><li>Reads <code>KeServiceDescriptorTable</code> pointer from driver context</li><li>Iterates all syscall entries and checks if the address falls within ntoskrnl&rsquo;s <code>.text</code> section</li><li>Reports hooked entries with the hook address and closest known symbol</li></ol><h2 id=detection-scope>Detection Scope</h2><ul><li>Direct SSDT inline hooks</li><li>SSDT pointer replacement (table swap)</li><li>Partial hooked ranges in third-party modules</li></ul></div><div class=single-shell__back><h4><a href=/projects/>&lt; Back to Projects</a></h4></div><button class=single-shell__scroll-top type=button aria-label="Scroll to top" data-ui=scroll-top>
-<span aria-hidden=true>^</span></button></div><aside class=single-shell__aside><section class="single-shell__toc single-shell__toc--desktop"><div class=single-shell__toc-heading><span class=single-shell__toc-label>Contents</span></div><div class=single-shell__toc-body><nav id=TableOfContents-desktop><ul><li><a href=#overview>Overview</a></li><li><a href=#how-it-works>How It Works</a></li><li><a href=#detection-scope>Detection Scope</a></li></ul></nav></div></section><a href=https://github.com/0xbekoo class=project-card__btn target=_blank rel="noopener noreferrer" style=display:block;margin-top:8px>> GITHUB</a></aside></div></div></article></div><footer class=container><hr class=soften><p>&copy;
-0xbekoo
-<span id=thisyear>2026</span>
-| 0xbekoo.github.io</p><p class=text-center><a href=https://x.com/0xbekooo>Twitter</a>
-<a href=https://github.com/0xbekoo>GitHub</a></p></footer></body><link rel=stylesheet href=/css/bootstrap.css><link rel=stylesheet href=/css/bootstrap-responsive.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/blog-callouts.css><link rel=stylesheet href=/css/mobile-reading.css><link rel=stylesheet href=/css/duat-gate.css><link rel=stylesheet href=/css/home-glitch.css><link rel=stylesheet href=/css/duat-boot.css><link rel=stylesheet href=/css/page-slide.css><link rel=stylesheet href=/css/projects.css><link rel=stylesheet href=/css/diagrams.css><script src=/js/jquery.js></script><script src=/js/bootstrap-transition.js></script><script src=/js/bootstrap-alert.js></script><script src=/js/bootstrap-modal.js></script><script src=/js/bootstrap-dropdown.js></script><script src=/js/bootstrap-scrollspy.js></script><script src=/js/bootstrap-tab.js></script><script src=/js/bootstrap-tooltip.js></script><script src=/js/bootstrap-popover.js></script><script src=/js/bootstrap-button.js></script><script src=/js/bootstrap-collapse.js></script><script src=/js/bootstrap-carousel.js></script><script src=/js/bootstrap-typeahead.js></script><script src=/js/bootstrap-affix.js></script><script>_386={fastLoad:!1,onePass:!1,speedFactor:1.5,duatBootImage:"/images/blog-images/hour.jpg"};function ThisYear(){document.getElementById("thisyear").innerHTML=(new Date).getFullYear()}</script><script src=/js/duat-boot.js></script><script src=/js/mobile-image-lightbox.js></script><script src=/js/page-slide.js></script></html>
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="/favicon.ico">
+    <link rel="canonical" href="/projects/ssdt-hook-detector/">
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/projects/">
+                                    
+                                    <span>Projects</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div id="content" class="container">
+
+
+
+
+
+
+<article class="single-shell single-shell--projects">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">SSDT Hook Detector</h1>
+            <p class="single-shell__meta">&gt; C</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                <p class="lead single-shell__lead">User-mode tool that reads the SSDT from kernel memory and detects hooked syscalls by comparing function pointers against ntoskrnl.exe&#39;s expected base range.</p>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-projects-ssdt-hook-detector-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-projects-ssdt-hook-detector-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body"><nav id="TableOfContents-mobile">
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#detection-scope">Detection Scope</a></li>
+  </ul>
+</nav></div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <h2 id="overview">Overview</h2>
+<p>A user-mode utility that detects SSDT hooks installed by rootkits or anti-cheat software. It reads the System Service Descriptor Table from kernel memory via a custom driver and compares each entry against the expected address range of <code>ntoskrnl.exe</code>.</p>
+<h2 id="how-it-works">How It Works</h2>
+<ol>
+<li>Loads a signed kernel driver that exposes an IOCTL interface</li>
+<li>Reads <code>KeServiceDescriptorTable</code> pointer from driver context</li>
+<li>Iterates all syscall entries and checks if the address falls within ntoskrnl&rsquo;s <code>.text</code> section</li>
+<li>Reports hooked entries with the hook address and closest known symbol</li>
+</ol>
+<h2 id="detection-scope">Detection Scope</h2>
+<ul>
+<li>Direct SSDT inline hooks</li>
+<li>SSDT pointer replacement (table swap)</li>
+<li>Partial hooked ranges in third-party modules</li>
+</ul>
+
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/projects/">&lt; Back to Projects</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#detection-scope">Detection Scope</a></li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+                <a href="https://github.com/0xbekoo/SSDT-Hook-Detector" class="project-card__btn" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:8px;">&gt; GITHUB</a>
+                
+            </aside>
+            
+        </div>
+    </div>
+</article>
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css"><link rel="stylesheet" href="/css/projects.css"><link rel="stylesheet" href="/css/diagrams.css">
+<script src="/js/jquery.js"></script>
+
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
+</html>

@@ -1,257 +1,257 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>0xbekoo</title><link>https://0xbekoo.github.io/</link><description>Recent content on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Thu, 21 May 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>A Journey Into setup.exe — LabConfig and Windows 11 Security</title><link>https://0xbekoo.github.io/blogs/setup-exe-journey/</link><pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/setup-exe-journey/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Earlier this year I submitted a security finding to MSRC. No CVE came out of it, no bounty — just something I thought someone at Microsoft should read. This blog is basically that report, rewritten in a way that makes sense to read outside of a submission form.&lt;/p&gt;
-&lt;p&gt;The short version: Windows 11 publicly guarantees that Secure Boot and TPM 2.0 protect your system out-of-the-box. The binaries that enforce those guarantees haven&amp;rsquo;t meaningfully changed since Windows 10. And there&amp;rsquo;s a registry path — one that millions of people have used to install Windows 11 on unsupported hardware — that makes those guarantees completely optional without ever telling the user.&lt;/p&gt;</description></item><item><title>WhiteLotus: Walking Through a UEFI Bootkit</title><link>https://0xbekoo.github.io/blogs/whitelotus/</link><pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/whitelotus/</guid><description>&lt;div class="blog-callout blog-callout-warning"&gt;
- &lt;div class="blog-callout__header"&gt;
- &lt;span class="blog-callout__badge"&gt;[!]&lt;/span&gt;
- &lt;span class="blog-callout__title"&gt;Research and Safety Notice&lt;/span&gt;
- &lt;/div&gt;
- &lt;div class="blog-callout__body"&gt;&lt;p&gt;WhiteLotus was built as a proof-of-concept directly tied to the LabConfig analysis published in &lt;a href="https://0xbekoo.github.io/blogs/setup-exe-journey"&gt;A Journey Into setup.exe — LabConfig and Windows 11 Security&lt;/a&gt;. It demonstrates the practical attack surface that exists on systems installed through the LabConfig bypass: once Secure Boot is absent and the boot chain offers no resistance, the capabilities shown here become available to any attacker who can write to the EFI System Partition.&lt;/p&gt;</description></item><item><title>My Journey for X230 + Coreboot</title><link>https://0xbekoo.github.io/blogs/introduction-to-x230-coreboot/</link><pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/introduction-to-x230-coreboot/</guid><description>&lt;p&gt;After finishing the SMM blog, I picked up a Lenovo X230 for the next stage of the project. Until now, most of my experiments had lived inside QEMU. In this post, we finally leave the emulator behind, move onto real silicon :&amp;gt;&lt;/p&gt;
-&lt;h3 id="connecting-the-bios-chip-to-the-ch341a"&gt;&lt;strong&gt;Connecting the BIOS Chip to the CH341A&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;For those who are not familiar with Coreboot, it is an open-source firmware project that can replace the vendor firmware on supported platforms. Instead of treating the machine&amp;rsquo;s early boot process as a black box, Coreboot gives us a much clearer and more controllable path from power-on to payload execution.&lt;/p&gt;</description></item><item><title>An In-Depth Look at the System Management Mode of Processors</title><link>https://0xbekoo.github.io/blogs/diving-deep-into-smm/</link><pubDate>Thu, 26 Mar 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/diving-deep-into-smm/</guid><description>&lt;p&gt;It&amp;rsquo;s gonna be hard, I guess.&lt;/p&gt;
-&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Welcome to my journey into the underworld. In this blog, we’ll take an in-depth look at the “god mode” of processors. Grab your gas mask and follow me.&lt;/p&gt;
-&lt;p&gt;Recently I was really wondering what this SMM actually is, and I found myself diving into these primordial waters. What makes SMM particularly fascinating—and dangerous—is its absolute control over the system. Code running in SMM can access all memory, modify any data structure, and remain completely invisible to security software.&lt;/p&gt;</description></item><item><title>A Journey For X86 Reset Vector</title><link>https://0xbekoo.github.io/blogs/a-journey-from-reset-vector/</link><pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/a-journey-from-reset-vector/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&amp;rsquo;s very first breath.&lt;/p&gt;
-&lt;p&gt;Lately, I’ve been getting up close and personal with the CPU, trying to understand what happens in that split second of silence before the screen even lights up. Honestly, my obsession with this &amp;ldquo;big bang&amp;rdquo; moment skyrocketed while I was digging into UEFI Development. There is a whole hidden world running in the background that we usually take for granted.&lt;/p&gt;</description></item><item><title>Debugging QEMU + OVMF with GDB</title><link>https://0xbekoo.github.io/docs/uefi-dev/debugging-ovmf-with-gdb/</link><pubDate>Mon, 27 Oct 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/uefi-dev/debugging-ovmf-with-gdb/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Probably you know the signifince of debugging in any low-level programming projects. In the same way, we need to debug our UEFI Driver in some cases.&lt;/p&gt;
-&lt;p&gt;For me, debugging is essential — I can’t do my work properly without it. Even though I’m still new to UEFI development, I wanted to start debugging my own UEFI drivers as early as possible. Because many existing resources are outdated, I decided to share my debugging journey and update the information for 2025.&lt;/p&gt;</description></item><item><title>Detecting SSDT Hook with User Mode Program via BYOVD</title><link>https://0xbekoo.github.io/blogs/ssdt-hook-detector-usermode/</link><pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/ssdt-hook-detector-usermode/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Github Link: &lt;a href="https://github.com/0xbekoo/SSDT-Hook-Detector"&gt;github.com/0xbekoo/SSDT-Hook-Detector&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Welcome to my blog! Today we will dive into a little adventure&amp;hellip;&lt;/p&gt;
-&lt;p&gt;Recently, I developed malware related to SSDT Hooking, but it&amp;rsquo;s not the kind of software that causes damage. The main goal of the malware is detecting the Hooked routines. However, my real goal was to develop malware that performs SSDT Unhooking in the first place. But after a few problems, i developed this project.&lt;/p&gt;
-&lt;p&gt;In this project i used a vulnerable driver to perform detection, which means that this malware can be used in the real scenarios. I am not encouraging illegal activity in any way.&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 4</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-4/</link><pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-4/</guid><description>&lt;h3 id="verification-routines"&gt;&lt;strong&gt;Verification Routines&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;This phase is the heart of PatchGuard&amp;rsquo;s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a system thread, or other dispatch mechanisms—it enters the validation routine. The validation code decrypts and inspects internal PatchGuard state and memory-resident kernel structures.&lt;/p&gt;
-&lt;p&gt;There are several checking routines involved, with the main one called &lt;strong&gt;FsRtlMdlReadCompleteDevEx&lt;/strong&gt;. Other routines include:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;TVCallBack Routine&lt;/strong&gt;: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;br&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;CcBcbProfiler&lt;/strong&gt; We saw that this function is used to check a randomly choosen routine from ntoskrnl.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;In this section, we will focus mainly on FsRtlMdlReadCompleteDevEx. This function is really long and the function can be summed up into multiple parts:&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 3</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-3/</link><pubDate>Fri, 08 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-3/</guid><description>&lt;h4 id="triggering-a-check"&gt;&lt;strong&gt;Triggering a check&lt;/strong&gt;&lt;/h4&gt;
-&lt;p&gt;As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.&lt;/p&gt;
-&lt;h5 id="dpc-execution"&gt;&lt;strong&gt;DPC Execution&lt;/strong&gt;&lt;/h5&gt;
-&lt;p&gt;The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:&lt;/p&gt;
-&lt;table&gt;
- &lt;thead&gt;
- &lt;tr&gt;
- &lt;th style="text-align: center"&gt;&lt;strong&gt;0&lt;/strong&gt;&lt;/th&gt;
- &lt;th style="text-align: center"&gt;CmpEnableLazyFlushDpcRoutine&lt;/th&gt;
- &lt;/tr&gt;
- &lt;/thead&gt;
- &lt;tbody&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;1&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpCenturyDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;2&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpTimeZoneDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;3&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpTimeRefreshDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;4&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;CmpLazyFlushDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;5&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpTimerDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;6&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;IopTimerDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;7&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;IopIrpStackProfilerDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;8&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiBalanceSetManagerDeferredRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;9&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;PopThermalZoneDpc&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;10&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;11&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;12&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 2</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-2/</link><pubDate>Thu, 07 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-2/</guid><description>&lt;h6 id="arguments-of-kiinitpatchguardcontext"&gt;&lt;strong&gt;Arguments of KiInitPatchGuardContext&lt;/strong&gt;&lt;/h6&gt;
-&lt;p&gt;Now, we can see another Arguments of the function.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Argument 1: DPC Routine Pointer&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.&lt;/p&gt;
-&lt;p&gt;The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 1</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-1/</link><pubDate>Wed, 06 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-1/</guid><description>&lt;p&gt;&lt;em&gt;This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.&lt;/em&gt;&lt;/p&gt;
-&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.&lt;/p&gt;</description></item><item><title>UEFI to Windows Communication via NVRAM Variables</title><link>https://0xbekoo.github.io/docs/uefi-dev/communation-between-windows-and-uefi/</link><pubDate>Fri, 18 Jul 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/uefi-dev/communation-between-windows-and-uefi/</guid><description>&lt;p&gt;In this documentation, we will discuss how to establish communication between a UEFI driver and a Windows driver. Specifically, we’ll explore how to use NVRAM-based UEFI variables to exchange data between the two environments.&lt;/p&gt;
-&lt;h3 id="what-is-nvram"&gt;&lt;strong&gt;What is NVRAM?&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;NVRAM (Non-Volatile RAM) is a key component in UEFI-based systems, used to store persistent configuration and system state data. Unlike regular RAM, NVRAM retains its contents across reboots and power-offs, making it essential for managing firmware-level settings.&lt;/p&gt;</description></item><item><title>Deferred Procedure Call</title><link>https://0xbekoo.github.io/docs/winkernel-dev/wkd-dpc/</link><pubDate>Thu, 15 May 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/winkernel-dev/wkd-dpc/</guid><description>&lt;div style="text-align: center;"&gt;
- &lt;img src="https://0xbekoo.github.io/images/posts/dpc/Banner.png" style="width: 80%" /&gt;
-&lt;/div&gt;
-&lt;h3 id="dpc"&gt;&lt;strong&gt;DPC&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;DPC (Deferred Procedure Call) is a mechanism in windows kernel. It&amp;rsquo;s used to let the schedule a function to run later at a lower IRQL. In other words, it&amp;rsquo;s a way for Windows handle important work later. DPC is useful when an interrupt happens or system must respond very quickly. So, DPC allows to execute high-priority tasks, such as &lt;strong&gt;interrupt handler&lt;/strong&gt; but lower-priority tasks for later execution.&lt;/p&gt;</description></item><item><title>WhiteLotus</title><link>https://0xbekoo.github.io/projects/whitelotus/</link><pubDate>Sat, 01 Mar 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/projects/whitelotus/</guid><description>&lt;h2 id="overview"&gt;Overview&lt;/h2&gt;
-&lt;p&gt;WhiteLotus is a UEFI-based bootkit that installs a malicious DXE driver into the EFI System Partition. It hooks Windows boot manager functions to inject a kernel driver before the OS loads, bypassing Secure Boot on misconfigured systems.&lt;/p&gt;
-&lt;h2 id="components"&gt;Components&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Dropper&lt;/strong&gt; — Windows EXE that extracts and installs the UEFI payload via a UAC bypass (ICMLuaUtil + PEB masquerade)&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;LoadEfi&lt;/strong&gt; — Elevated loader that mounts the ESP and writes the DXE driver&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;DXE Driver&lt;/strong&gt; — UEFI firmware driver that hooks &lt;code&gt;ExitBootServices&lt;/code&gt; and injects shellcode into the Windows kernel&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="techniques"&gt;Techniques&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;PEB masquerade (&lt;code&gt;ImagePathName&lt;/code&gt; + LDR enumeration) to impersonate &lt;code&gt;explorer.exe&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;COM elevation via &lt;code&gt;CLSID_CMSTPLUA&lt;/code&gt; elevation moniker&lt;/li&gt;
-&lt;li&gt;UEFI DXE runtime driver persistence&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;winload.efi&lt;/code&gt; hook via &lt;code&gt;ExitBootServices&lt;/code&gt; callback&lt;/li&gt;
-&lt;/ul&gt;</description></item><item><title>Loading Driver from User-Mode Program via SSDT Hooking</title><link>https://0xbekoo.github.io/blogs/ssdt-hooking/</link><pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/ssdt-hooking/</guid><description>&lt;p&gt;Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.&lt;/p&gt;
-&lt;p&gt;In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the &lt;strong&gt;System Service Descriptor Table (SSDT)&lt;/strong&gt; and its role in managing system calls within the Windows kernel.&lt;/p&gt;
-&lt;p&gt;Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking. We will walk through the process of dynamically locating the SSDT, identifying a target system call (such as &lt;code&gt;NtLoadDriver&lt;/code&gt;), and modifying its entry to redirect execution flow to a custom function.&lt;/p&gt;</description></item><item><title>UEFI Keylogger</title><link>https://0xbekoo.github.io/docs/uefi-dev/uefi-keylogger/</link><pubDate>Tue, 28 Jan 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/uefi-dev/uefi-keylogger/</guid><description>&lt;p&gt;In this documentation we will develop simple uefi keylogger.&lt;/p&gt;
-&lt;h3 id="coding"&gt;&lt;strong&gt;Coding&lt;/strong&gt;&lt;/h3&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-c" data-lang="c"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;#include&lt;/span&gt; &lt;span style="color:#75715e"&gt;&amp;lt;Uefi.h&amp;gt;&lt;/span&gt;&lt;span style="color:#75715e"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;#include&lt;/span&gt; &lt;span style="color:#75715e"&gt;&amp;lt;Library/UefiApplicationEntryPoint.h&amp;gt;&lt;/span&gt;&lt;span style="color:#75715e"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;#include&lt;/span&gt; &lt;span style="color:#75715e"&gt;&amp;lt;Library/UefiLib.h&amp;gt;&lt;/span&gt;&lt;span style="color:#75715e"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;EFI_STATUS
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;EFIAPI
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;UefiMain&lt;/span&gt;(
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; EFI_HANDLE ImageHandle,
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; EFI_SYSTEM_TABLE &lt;span style="color:#f92672"&gt;*&lt;/span&gt;SystemTable
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;) {
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; EFI_SIMPLE_TEXT_INPUT_PROTOCOL &lt;span style="color:#f92672"&gt;*&lt;/span&gt;TextInput;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; EFI_INPUT_KEY Key;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;/* Protokole erişim sağla */&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; TextInput &lt;span style="color:#f92672"&gt;=&lt;/span&gt; SystemTable&lt;span style="color:#f92672"&gt;-&amp;gt;&lt;/span&gt;ConIn;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;Print&lt;/span&gt; (&lt;span style="color:#e6db74"&gt;L&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;UEFI Keylogger!&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;\n&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;&lt;/span&gt;);
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;while&lt;/span&gt;(&lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;) {
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; TextInput&lt;span style="color:#f92672"&gt;-&amp;gt;&lt;/span&gt;&lt;span style="color:#a6e22e"&gt;ReadKeyStroke&lt;/span&gt; (
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; TextInput, 
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#f92672"&gt;&amp;amp;&lt;/span&gt;Key
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; );
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (Key.ScanCode &lt;span style="color:#f92672"&gt;==&lt;/span&gt; SCAN_ESC) {
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;Print&lt;/span&gt; (&lt;span style="color:#e6db74"&gt;L&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;ESC Button Detected&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;\n&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;&lt;/span&gt;);
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;break&lt;/span&gt;;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (Key.UnicodeChar &lt;span style="color:#f92672"&gt;!=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;) {
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;Print&lt;/span&gt; (&lt;span style="color:#e6db74"&gt;L&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;Pressed: %c&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;\n&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;&lt;/span&gt;, Key.UnicodeChar);
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; EFI_SUCCESS;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now let&amp;rsquo;s take a look at the codes&lt;/p&gt;</description></item><item><title>Introduction to UEFI</title><link>https://0xbekoo.github.io/docs/uefi-dev/uefi-introduction/</link><pubDate>Sun, 19 Jan 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/uefi-dev/uefi-introduction/</guid><description>&lt;p&gt;Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.&lt;/p&gt;
-&lt;h3 id="what-is-uefi"&gt;&lt;strong&gt;What is UEFI?&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;UEFI (Unified Extensible Firmware Interface) is a specification for a computer&amp;rsquo;s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.&lt;/p&gt;
-&lt;p&gt;We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different. UEFI uses GPT (Guid Partition Table). GPT is a modern standard that defines the layout of partitions on a computer&amp;rsquo;s storage device. It is the standard used in devices such as HDDs or SSDs that we are all familiar with. Just as UEFI replaced BIOS, GPT has replaced the previously used MBR (Master Boot Record) partitioning table. GPT works seamlessly with UEFI.&lt;/p&gt;</description></item><item><title>Reversing System Call Mechanism in Windows Kernel</title><link>https://0xbekoo.github.io/blogs/syscalls/</link><pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/syscalls/</guid><description>&lt;p&gt;Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel.&lt;/p&gt;
-&lt;p&gt;In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what&amp;rsquo;s &lt;a href="https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/"&gt;NTAPI&lt;/a&gt;, &lt;a href="https://0xbekoo.github.io/docs/malware-dev/direct-syscalls/"&gt;Syscall&lt;/a&gt; or &lt;a href="https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/"&gt;SSDT&lt;/a&gt; etc. in this blog because i wrote many documents for these topics and if you&amp;rsquo;re beginner in the topics, you can start with the documents mentioned.&lt;/p&gt;</description></item><item><title>System Service Descriptor Table</title><link>https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/</link><pubDate>Thu, 26 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/</guid><description>&lt;p&gt;In this documentation we will discuss SSDT in the windows systems.&lt;/p&gt;
-&lt;h3 id="what-is-ssdt"&gt;&lt;strong&gt;What is SSDT?&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;So, SSDT (System Service Descriptor Table) is a list of system calls supported by the operating system. Recall the syscalls. SSDT is the first member of the Service Descriptor Table kernel memory structure:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-c" data-lang="c"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;typedef&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;struct&lt;/span&gt; tagSERVICE_DESCRIPTOR_TABLE {
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; SYSTEM_SERVICE_TABLE nt; &lt;span style="color:#75715e"&gt;// SSDT Tablosu kendisine etkili bir pointer
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; SYSTEM_SERVICE_TABLE win32k;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; SYSTEM_SERVICE_TABLE sst3; 
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; SYSTEM_SERVICE_TABLE sst4;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;} SERVICE_DESCRIPTOR_TABLE;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;SSDT maps system calls (syscalls) to kernel API addresses. When a syscall is made by a user-mode program, it contains a service index. This index specifies which syscall to use. The operating system uses this index to parse the address of the corresponding function from the System Service Descriptor Table (SSDT) and redirects to the correct kernel function in ntoskrnl.exe. In case it sounds confusing, let me explain it in a diagram:&lt;/p&gt;</description></item><item><title>ARM Firmware Reverse Engineering</title><link>https://0xbekoo.github.io/blogs/bare-metal-reversing/</link><pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/bare-metal-reversing/</guid><description>&lt;p&gt;Hello everyone. In this blog we continue with Firmware Reverse Engineering.
-We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.&lt;/p&gt;
-&lt;p&gt;I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let&amp;rsquo;s think typically like hacking an IoT board but with a simpler scenario:&lt;/p&gt;</description></item><item><title>Router Firmware Reverse Engineering</title><link>https://0xbekoo.github.io/blogs/router-firmware-reversing/</link><pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/router-firmware-reversing/</guid><description>&lt;p&gt;&lt;img src="https://0xbekoo.github.io/images/posts/reversing-router/headerphoto.jpg" alt=""&gt;&lt;/p&gt;
-&lt;p&gt;Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&amp;rsquo;s &lt;a href="https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/"&gt;Archer AX 21 V4.6&lt;/a&gt; modem. You can check TP-Link&amp;rsquo;s original page to &lt;a href="https://www.tp-link.com/us/support/download/archer-ax21/#Firmware"&gt;download the firmware&lt;/a&gt;.&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;[!WARNING]
-The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;First, let&amp;rsquo;s take a look at the information of the firmware we downloaded:&lt;/p&gt;</description></item><item><title>About</title><link>https://0xbekoo.github.io/about/index.tr/</link><pubDate>Fri, 29 Nov 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/about/index.tr/</guid><description>&lt;p&gt;&lt;img src="../../../images/about/video.gif" alt=""&gt;&lt;/p&gt;
-&lt;p&gt;Merhabalar efenimm, bloguma hoş geldiniz! 👋&lt;/p&gt;
-&lt;p&gt;Ben Berkay ama genelde bekoo olarak biliniyorum. 19 yaşındayım ve son 4 yıldır kendimi siber güvenliğe adamış bir araştırmacıyım. Özellikle şu alanlarda yoğunlaşıyorum:&lt;/p&gt;
-&lt;p&gt;🔍 Reverse Engineering&lt;/p&gt;
-&lt;p&gt;🐛 Malware Analysis&lt;/p&gt;
-&lt;p&gt;⚙️ Malware Development&lt;/p&gt;
-&lt;p&gt;Bloglarımı ve dökümanlarımı hem Türkçe hem İngilizce hazırlıyorum. İngilizce içerik zaten bolca bulunuyor ama Türkçe kaynakların kısıtlı olduğunun farkındayım. Bu yüzden elimden geldiğince Türkçe içerik eklemeye, konuları net ve anlaşılır şekilde anlatmaya özen gösteriyorum.&lt;/p&gt;</description></item><item><title>About</title><link>https://0xbekoo.github.io/post/about/</link><pubDate>Fri, 29 Nov 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/post/about/</guid><description>&lt;p&gt;I’m Berkay, also known as bekoo. I am a 19-year-old researcher dedicated to understanding systems at the lowest level.&lt;/p&gt;
-&lt;p&gt;Over the past 4 years, I have focused on Reverse Engineering, Malware Analysis, and Malware Development. Recently, I have expanded my research into Firmware Engineering and UEFI Development to explore computer architecture beyond the operating system. Recently, i moved on the waters of Windows.&lt;/p&gt;
-&lt;p&gt;Important: All content is strictly for educational purposes. I assume no liability for misuse. If you are here to learn and build, welcome.&lt;/p&gt;</description></item><item><title>SSDT Hook Detector</title><link>https://0xbekoo.github.io/projects/ssdt-hook-detector/</link><pubDate>Sun, 10 Nov 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/projects/ssdt-hook-detector/</guid><description>&lt;h2 id="overview"&gt;Overview&lt;/h2&gt;
-&lt;p&gt;A user-mode utility that detects SSDT hooks installed by rootkits or anti-cheat software. It reads the System Service Descriptor Table from kernel memory via a custom driver and compares each entry against the expected address range of &lt;code&gt;ntoskrnl.exe&lt;/code&gt;.&lt;/p&gt;
-&lt;h2 id="how-it-works"&gt;How It Works&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;Loads a signed kernel driver that exposes an IOCTL interface&lt;/li&gt;
-&lt;li&gt;Reads &lt;code&gt;KeServiceDescriptorTable&lt;/code&gt; pointer from driver context&lt;/li&gt;
-&lt;li&gt;Iterates all syscall entries and checks if the address falls within ntoskrnl&amp;rsquo;s &lt;code&gt;.text&lt;/code&gt; section&lt;/li&gt;
-&lt;li&gt;Reports hooked entries with the hook address and closest known symbol&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id="detection-scope"&gt;Detection Scope&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Direct SSDT inline hooks&lt;/li&gt;
-&lt;li&gt;SSDT pointer replacement (table swap)&lt;/li&gt;
-&lt;li&gt;Partial hooked ranges in third-party modules&lt;/li&gt;
-&lt;/ul&gt;</description></item><item><title>Malware Resurrection</title><link>https://0xbekoo.github.io/docs/malware-dev/malware-resurrection/</link><pubDate>Thu, 12 Sep 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/malware-dev/malware-resurrection/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;In this blog, we will discuss of the malware resurrection technique.&lt;/p&gt;
-&lt;h3 id="what-is-malware-resurrection"&gt;&lt;strong&gt;What is Malware Resurrection&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;&lt;strong&gt;Malware Resurrection&lt;/strong&gt; is a persistence and self-recovery technique used by certain malicious programs to ensure they remain active on an infected system, even after being terminated. This technique allows the malware to &lt;strong&gt;automatically relaunch or reinfect the host&lt;/strong&gt; if it is closed by the user, killed by security software, or crashes due to an error.&lt;/p&gt;</description></item><item><title>Virtual Memory</title><link>https://0xbekoo.github.io/docs/winkernel-dev/wkd-virtual-memory/</link><pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/winkernel-dev/wkd-virtual-memory/</guid><description>&lt;p&gt;In this documentation we will discuss Virtual Memory in Windows Kernel.&lt;/p&gt;
-&lt;h3 id="what-is-virtual-memory"&gt;&lt;strong&gt;What is Virtual Memory&lt;/strong&gt;&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;em&gt;&amp;ldquo;Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.&amp;rdquo;&lt;/em&gt;
--&lt;strong&gt;Windows Internals Part 1 - Chapter 1, Page 39&lt;/strong&gt;&lt;/p&gt;</description></item><item><title>Input/Output Control (IOCTL)</title><link>https://0xbekoo.github.io/docs/winkernel-dev/wkd-ioctl/</link><pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/winkernel-dev/wkd-ioctl/</guid><description>&lt;p&gt;In this documentation, we will discuss IOCTL mechanism on Windows.&lt;/p&gt;
-&lt;h3 id="what-is-ioctl"&gt;&lt;strong&gt;What is IOCTL?&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;&lt;strong&gt;I/O Control Codes (IOCTLs)&lt;/strong&gt; are a mechanism used for communication between user-mode applications and drivers, or between drivers within a stack. I/O control codes are sent via IRPs (I/O Request Packets), as mentioned in the previous section. If you are not familiar with IRPs, click here to learn more about them.&lt;/p&gt;
-&lt;p&gt;In Windows, user-mode programs send IOCTL codes to drivers using the DeviceIoControl API. This API delivers the received IOCTL code to the driver through the IRP_MJ_DEVICE_CONTROL request. It’s important to note that this is not the only way the IOCTL mechanism is used. Advanced drivers can also generate requests using IRP_MJ_DEVICE_CONTROL or IRP_MJ_INTERNAL_DEVICE_CONTROL to send IOCTL requests to lower-level drivers in the stack.&lt;/p&gt;</description></item><item><title>I/O Request Packets (IRP)</title><link>https://0xbekoo.github.io/docs/winkernel-dev/wkd-irp/</link><pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/winkernel-dev/wkd-irp/</guid><description>&lt;p&gt;In this documentation, we will discuss IRP.&lt;/p&gt;
-&lt;h3 id="what-is-io-request-packet"&gt;&lt;strong&gt;What is I/O Request Packet&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;An &lt;strong&gt;I/O Request Packet&lt;/strong&gt; (IRP) in the Windows operating system is a structure used to facilitate communication between drivers and the operating system. You can think of it as a &lt;em&gt;“message carrier”&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;In most cases, requests sent to drivers are packaged into an IRP. An operating system component or another driver sends an IRP to a driver using the IoCallDriver function. This function takes two parameters: a &lt;strong&gt;device object&lt;/strong&gt; (DEVICEOBJECT) and a pointer to an IRP. The device object points to the driver object associated with that device. Therefore, when IoCallDriver is called, the IRP is sent to the corresponding device object and, by extension, to its associated driver. This process is often referred to as &lt;em&gt;“passing”&lt;/em&gt; or &lt;em&gt;“forwarding”&lt;/em&gt; the IRP.&lt;/p&gt;</description></item><item><title>PDF Icon File Spoofing</title><link>https://0xbekoo.github.io/docs/malware-dev/file-icon-spoofing/</link><pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/malware-dev/file-icon-spoofing/</guid><description>&lt;p&gt;In this documentation, we will see Icon File Spoofing technique.&lt;/p&gt;
-&lt;h3 id="what-is-icon-file-spoofing"&gt;&lt;strong&gt;What is Icon File Spoofing?&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;To summarize the technique briefly, it involves changing the icon of the program to deceive the user. This allows the user to view the malware as a harmless file. The icon you choose for the malware can be a PDF, as shown in the example, or any other icon.&lt;/p&gt;
-&lt;p&gt;To better understand the topic, let&amp;rsquo;s proceed with an example scenario: imagine you are a pentester tasked with testing the security of a company&amp;rsquo;s internal network. You need to test how careful company employees are about opening malicious files. In this context, you can send your malicious software disguised as a harmless PDF file via a phishing email or by placing it in a shared folder. If an employee opens the file, it actually runs the malicious software and gains access to their systems.&lt;/p&gt;</description></item><item><title>API Hashing</title><link>https://0xbekoo.github.io/docs/malware-dev/api-hashing/</link><pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/malware-dev/api-hashing/</guid><description>&lt;p&gt;In this documentation, we will discuss API Hashing technique.&lt;/p&gt;
-&lt;h3 id="what-is-portable-executable"&gt;&lt;strong&gt;What is Portable Executable?&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;First of all, I think it is necessary to understand the PE (Portable Executable) structure because this technique is all about this structure.&lt;/p&gt;
-&lt;p&gt;PE is a file format for executable files, object codes, DLLs and others used in 32 and 64 bit versions of Windows operating systems and UEFI environments. PE contains the data structures needed for the Windows OS loader to manage the code to be executed.&lt;/p&gt;</description></item><item><title>UEFI Keylogger</title><link>https://0xbekoo.github.io/projects/uefi-keylogger/</link><pubDate>Sat, 15 Jun 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/projects/uefi-keylogger/</guid><description>&lt;h2 id="overview"&gt;Overview&lt;/h2&gt;
-&lt;p&gt;A proof-of-concept demonstrating keyboard capture at UEFI firmware level. By hooking &lt;code&gt;EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL&lt;/code&gt;, the application intercepts all keystrokes before the OS or any hypervisor initializes its input stack.&lt;/p&gt;
-&lt;h2 id="mechanism"&gt;Mechanism&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Locates &lt;code&gt;EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL&lt;/code&gt; via &lt;code&gt;LocateHandleBuffer&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;Wraps the &lt;code&gt;ReadKeyStrokeEx&lt;/code&gt; function pointer with a custom handler&lt;/li&gt;
-&lt;li&gt;Stores captured keystrokes in a pre-allocated runtime buffer&lt;/li&gt;
-&lt;li&gt;Buffer survives into the OS via UEFI runtime memory services&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="research-value"&gt;Research Value&lt;/h2&gt;
-&lt;p&gt;Demonstrates that pre-OS input capture is feasible without any kernel-mode component, bypassing all OS-level security monitoring.&lt;/p&gt;</description></item><item><title>Is Valorant Spyware?</title><link>https://0xbekoo.github.io/blogs/is-valorant-spyware/</link><pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/is-valorant-spyware/</guid><description>&lt;h3 id="understanding-how-anti-cheat-software-works"&gt;&lt;strong&gt;Understanding How Anti-Cheat Software Works&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;To begin our exploration, we first need to understand how anti-cheat software works. In general, anti-cheat software is developed for two main purposes: to prevent cheating within a game and to detect those who do.&lt;/p&gt;
-&lt;p&gt;We can categorize how this software operates into two main methods: &lt;strong&gt;server-side&lt;/strong&gt; and &lt;strong&gt;client-side&lt;/strong&gt;&lt;sup&gt;[1]&lt;/sup&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Server-side&lt;/strong&gt; anti-cheat software typically monitors and analyzes the data a player sends to the game server. This data can include how the player is playing, what commands they are sending, and how quickly they react. Its goal is to detect discrepancies between normal gameplay behavior and potential cheat usage.&lt;/p&gt;</description></item><item><title>Direct Syscalls</title><link>https://0xbekoo.github.io/docs/malware-dev/direct-syscalls/</link><pubDate>Mon, 04 Mar 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/malware-dev/direct-syscalls/</guid><description>&lt;p&gt;In this documentation we will see Direct Systemcalls technique.&lt;/p&gt;
-&lt;h3 id="what-is-system-call"&gt;&lt;strong&gt;What is System Call?&lt;/strong&gt;&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;[!WARNING]
-It is assumed that the reader is familiar with the NTAPI mechanism described in the &lt;a href="https://0xbekoo.github.io/docs/malware-dev/ntapi-injection"&gt;NTAPI Injection documentation&lt;/a&gt; and the basic differences between user-mode and kernel-mode.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;A system call is a programmatic way for a program to request a service from the operating system. More simply, it is a command that allows a program running in user mode to switch to kernel mode. In operating systems such as Windows, a program running in user mode accesses the kernel-mode services of the operating system by making a system call. This transition occurs when the CPU switches to kernel mode, which is managed by the operating system.&lt;/p&gt;</description></item><item><title>NTAPI Injection</title><link>https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/</link><pubDate>Wed, 07 Feb 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/</guid><description>&lt;p&gt;In this documentation, we will explore NTAPI Injection.&lt;/p&gt;
-&lt;h3 id="user-mode-and-kernel-mode"&gt;&lt;strong&gt;User Mode and Kernel Mode&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Before we get into the technique, we need to understand some basic things and let&amp;rsquo;s take a look at what are User-Mode and Kernel-Mode.&lt;/p&gt;
-&lt;div style="text-align: center;"&gt;
- &lt;img src="https://0xbekoo.github.io/images/posts/ntapi-injection/rings.png" style="width: 100%" /&gt;
-&lt;/div&gt;
-&lt;p&gt;The Windows operating system basically offers two different rings: user mode and kernel mode. This distinction is based on the security of the operating system, the organization of its operation and the efficient use of resources. Both fields play different roles and complement each other.&lt;/p&gt;</description></item><item><title>DLL Injection</title><link>https://0xbekoo.github.io/docs/malware-dev/dll-injection/</link><pubDate>Sun, 04 Feb 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/malware-dev/dll-injection/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;In this documentation, we will discuss how to execute any shellcode via DLL Injection technique. The technique is a variation of the shellcode injection. It also can be used for debugging purpose rather than malware.&lt;/p&gt;
-&lt;h3 id="what-is-dll"&gt;&lt;strong&gt;What is DLL?&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Before the technique, we need to understand what&amp;rsquo;s a DLL actually.&lt;/p&gt;
-&lt;p&gt;DLLs (Dynamic Link Library) are libraries containing code and data that are used by multiple programs at the same time. When you run a program on the Windows operating system or when the Windows operating system wants to perform a function, it uses DLLs.&lt;/p&gt;</description></item><item><title>Shellcode Injection</title><link>https://0xbekoo.github.io/docs/malware-dev/shellcode-injection/</link><pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/docs/malware-dev/shellcode-injection/</guid><description>&lt;div style="text-align: center;"&gt;
- &lt;img src="https://0xbekoo.github.io/images/posts/process-injection/main-photo.png" style="width: 100%" /&gt;
-&lt;/div&gt;
-&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;In this documentation, we will discuss Shellcode Injection Technique.&lt;/p&gt;
-&lt;h3 id="what-is-a-process"&gt;&lt;strong&gt;What is a Process?&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;In simple terms, a process is a unit of work created by the operating system to run a program. If a program is started—either by a user or by the operating system—it is first loaded into memory. Then, the operating system creates a process to execute it. The memory space for the loaded program is managed by this process, and the program’s instructions start running.&lt;/p&gt;</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>0xbekoo</title>
+    <link>http://localhost:1313/</link>
+    <description>Recent content on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 21 May 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>A Journey Into setup.exe — LabConfig and Windows 11 Security</title>
+      <link>http://localhost:1313/blogs/setup-exe-journey/</link>
+      <pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/setup-exe-journey/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;I recently submitted a security finding to MSRC. No CVE came out of it, no bounty — just something I thought someone at Microsoft should read. This blog is basically that report, rewritten in a way that makes sense to read outside of a submission form.&lt;/p&gt;&#xA;&lt;p&gt;LabConfig has always caught my attention in Windows security research. Not as something to use, but as a question worth sitting with: how ethical is it, really, and what does it actually mean for security? That curiosity is what eventually led me to this research — and to building WhiteLotus. In this post, we&amp;rsquo;ll look at how bypass methods like LabConfig, now commonplace in everyday Windows 11 installs, quietly hollow out the security guarantees Microsoft built the operating system around.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>WhiteLotus: Walking Through a UEFI Bootkit</title>
+      <link>http://localhost:1313/blogs/whitelotus/</link>
+      <pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/whitelotus/</guid>
+      <description>&lt;div class=&#34;blog-callout blog-callout-warning&#34;&gt;&#xA;  &lt;div class=&#34;blog-callout__header&#34;&gt;&#xA;    &lt;span class=&#34;blog-callout__badge&#34;&gt;[!]&lt;/span&gt;&#xA;    &lt;span class=&#34;blog-callout__title&#34;&gt;Research and Safety Notice&lt;/span&gt;&#xA;  &lt;/div&gt;&#xA;  &lt;div class=&#34;blog-callout__body&#34;&gt;&lt;p&gt;WhiteLotus was built as a proof-of-concept directly tied to the LabConfig analysis published in &lt;a href=&#34;http://localhost:1313/blogs/setup-exe-journey&#34;&gt;A Journey Into setup.exe — LabConfig and Windows 11 Security&lt;/a&gt;. It demonstrates the practical attack surface that exists on systems installed through the LabConfig bypass: once Secure Boot is absent and the boot chain offers no resistance, the capabilities shown here become available to any attacker who can write to the EFI System Partition.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>My Journey for X230 &#43; Coreboot</title>
+      <link>http://localhost:1313/blogs/introduction-to-x230-coreboot/</link>
+      <pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/introduction-to-x230-coreboot/</guid>
+      <description>&lt;p&gt;After finishing the SMM blog, I picked up a Lenovo X230 for the next stage of the project. Until now, most of my experiments had lived inside QEMU. In this post, we finally leave the emulator behind, move onto real silicon :&amp;gt;&lt;/p&gt;&#xA;&lt;h3 id=&#34;connecting-the-bios-chip-to-the-ch341a&#34;&gt;&lt;strong&gt;Connecting the BIOS Chip to the CH341A&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;For those who are not familiar with Coreboot, it is an open-source firmware project that can replace the vendor firmware on supported platforms. Instead of treating the machine&amp;rsquo;s early boot process as a black box, Coreboot gives us a much clearer and more controllable path from power-on to payload execution.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>An In-Depth Look at the System Management Mode of Processors</title>
+      <link>http://localhost:1313/blogs/diving-deep-into-smm/</link>
+      <pubDate>Thu, 26 Mar 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/diving-deep-into-smm/</guid>
+      <description>&lt;p&gt;It&amp;rsquo;s gonna be hard, I guess.&lt;/p&gt;&#xA;&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Welcome to my journey into the underworld. In this blog, we’ll take an in-depth look at the “god mode” of processors. Grab your gas mask and follow me.&lt;/p&gt;&#xA;&lt;p&gt;Recently I was really wondering what this SMM actually is, and I found myself diving into these primordial waters. What makes SMM particularly fascinating—and dangerous—is its absolute control over the system. Code running in SMM can access all memory, modify any data structure, and remain completely invisible to security software.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>A Journey For X86 Reset Vector</title>
+      <link>http://localhost:1313/blogs/a-journey-from-reset-vector/</link>
+      <pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/a-journey-from-reset-vector/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&amp;rsquo;s very first breath.&lt;/p&gt;&#xA;&lt;p&gt;Lately, I’ve been getting up close and personal with the CPU, trying to understand what happens in that split second of silence before the screen even lights up. Honestly, my obsession with this &amp;ldquo;big bang&amp;rdquo; moment skyrocketed while I was digging into UEFI Development. There is a whole hidden world running in the background that we usually take for granted.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Debugging QEMU &#43; OVMF with GDB</title>
+      <link>http://localhost:1313/docs/uefi-dev/debugging-ovmf-with-gdb/</link>
+      <pubDate>Mon, 27 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/uefi-dev/debugging-ovmf-with-gdb/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Probably you know the signifince of debugging in any low-level programming projects. In the same way, we need to debug our UEFI Driver in some cases.&lt;/p&gt;&#xA;&lt;p&gt;For me, debugging is essential — I can’t do my work properly without it. Even though I’m still new to UEFI development, I wanted to start debugging my own UEFI drivers as early as possible. Because many existing resources are outdated, I decided to share my debugging journey and update the information for 2025.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Detecting SSDT Hook with User Mode Program via BYOVD</title>
+      <link>http://localhost:1313/blogs/ssdt-hook-detector-usermode/</link>
+      <pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/ssdt-hook-detector-usermode/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Github Link: &lt;a href=&#34;https://github.com/0xbekoo/SSDT-Hook-Detector&#34;&gt;github.com/0xbekoo/SSDT-Hook-Detector&lt;/a&gt;&lt;/p&gt;&#xA;&lt;p&gt;Welcome to my blog! Today we will dive into a little adventure&amp;hellip;&lt;/p&gt;&#xA;&lt;p&gt;Recently, I developed malware related to SSDT Hooking, but it&amp;rsquo;s not the kind of software that causes damage. The main goal of the malware is detecting the Hooked routines. However, my real goal was to develop malware that performs SSDT Unhooking in the first place. But after a few problems, i developed this project.&lt;/p&gt;&#xA;&lt;p&gt;In this project i used a vulnerable driver to perform detection, which means that this malware can be used in the real scenarios. I am not encouraging illegal activity in any way.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 4</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-4/</link>
+      <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-4/</guid>
+      <description>&lt;h3 id=&#34;verification-routines&#34;&gt;&lt;strong&gt;Verification Routines&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;This phase is the heart of PatchGuard&amp;rsquo;s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a system thread, or other dispatch mechanisms—it enters the validation routine. The validation code decrypts and inspects internal PatchGuard state and memory-resident kernel structures.&lt;/p&gt;&#xA;&lt;p&gt;There are several checking routines involved, with the main one called &lt;strong&gt;FsRtlMdlReadCompleteDevEx&lt;/strong&gt;. Other routines include:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;TVCallBack Routine&lt;/strong&gt;: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;br&gt;&#xD;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;CcBcbProfiler&lt;/strong&gt; We saw that this function is used to check a randomly choosen routine from ntoskrnl.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;In this section, we will focus mainly on FsRtlMdlReadCompleteDevEx. This function is really long and the function can be summed up into multiple parts:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 3</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-3/</link>
+      <pubDate>Fri, 08 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-3/</guid>
+      <description>&lt;h4 id=&#34;triggering-a-check&#34;&gt;&lt;strong&gt;Triggering a check&lt;/strong&gt;&lt;/h4&gt;&#xA;&lt;p&gt;As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.&lt;/p&gt;&#xA;&lt;h5 id=&#34;dpc-execution&#34;&gt;&lt;strong&gt;DPC Execution&lt;/strong&gt;&lt;/h5&gt;&#xA;&lt;p&gt;The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:&lt;/p&gt;&#xA;&lt;table&gt;&#xA;  &lt;thead&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;th style=&#34;text-align: center&#34;&gt;&lt;strong&gt;0&lt;/strong&gt;&lt;/th&gt;&#xA;          &lt;th style=&#34;text-align: center&#34;&gt;CmpEnableLazyFlushDpcRoutine&lt;/th&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/thead&gt;&#xA;  &lt;tbody&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;1&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpCenturyDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;2&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpTimeZoneDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;3&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpTimeRefreshDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;4&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;CmpLazyFlushDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;5&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpTimerDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;6&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;IopTimerDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;7&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;IopIrpStackProfilerDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;8&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiBalanceSetManagerDeferredRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;9&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;PopThermalZoneDpc&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;10&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;11&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;12&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/tbody&gt;&#xA;&lt;/table&gt;&#xA;&lt;p&gt;Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 2</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-2/</link>
+      <pubDate>Thu, 07 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-2/</guid>
+      <description>&lt;h6 id=&#34;arguments-of-kiinitpatchguardcontext&#34;&gt;&lt;strong&gt;Arguments of KiInitPatchGuardContext&lt;/strong&gt;&lt;/h6&gt;&#xA;&lt;p&gt;Now, we can see another Arguments of the function.&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;Argument 1: DPC Routine Pointer&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.&lt;/p&gt;&#xA;&lt;p&gt;The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 1</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-1/</link>
+      <pubDate>Wed, 06 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-1/</guid>
+      <description>&lt;p&gt;&lt;em&gt;This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.&lt;/em&gt;&lt;/p&gt;&#xA;&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>UEFI to Windows Communication via NVRAM Variables</title>
+      <link>http://localhost:1313/docs/uefi-dev/communation-between-windows-and-uefi/</link>
+      <pubDate>Fri, 18 Jul 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/uefi-dev/communation-between-windows-and-uefi/</guid>
+      <description>&lt;p&gt;In this documentation, we will discuss how to establish communication between a UEFI driver and a Windows driver. Specifically, we’ll explore how to use NVRAM-based UEFI variables to exchange data between the two environments.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-nvram&#34;&gt;&lt;strong&gt;What is NVRAM?&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;NVRAM (Non-Volatile RAM) is a key component in UEFI-based systems, used to store persistent configuration and system state data. Unlike regular RAM, NVRAM retains its contents across reboots and power-offs, making it essential for managing firmware-level settings.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Deferred Procedure Call</title>
+      <link>http://localhost:1313/docs/winkernel-dev/wkd-dpc/</link>
+      <pubDate>Thu, 15 May 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/winkernel-dev/wkd-dpc/</guid>
+      <description>&lt;div style=&#34;text-align: center;&#34;&gt;&#xA;  &lt;img src=&#34;http://localhost:1313/images/posts/dpc/Banner.png&#34; style=&#34;width: 80%&#34; /&gt;&#xA;&lt;/div&gt;&#xA;&lt;h3 id=&#34;dpc&#34;&gt;&lt;strong&gt;DPC&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;DPC (Deferred Procedure Call) is a mechanism in windows kernel. It&amp;rsquo;s used to let the schedule a function to run later at a lower IRQL. In other words, it&amp;rsquo;s a way for Windows handle important work later. DPC is useful when an interrupt happens or system must respond very quickly. So, DPC allows to execute high-priority tasks, such as &lt;strong&gt;interrupt handler&lt;/strong&gt; but lower-priority tasks for later execution.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>WhiteLotus</title>
+      <link>http://localhost:1313/projects/whitelotus/</link>
+      <pubDate>Sat, 01 Mar 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/projects/whitelotus/</guid>
+      <description>&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;&#xA;&lt;p&gt;WhiteLotus is a UEFI-based bootkit that installs a malicious DXE driver into the EFI System Partition. It hooks Windows boot manager functions to inject a kernel driver before the OS loads, bypassing Secure Boot on misconfigured systems.&lt;/p&gt;&#xA;&lt;h2 id=&#34;components&#34;&gt;Components&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;Dropper&lt;/strong&gt; — Windows EXE that extracts and installs the UEFI payload via a UAC bypass (ICMLuaUtil + PEB masquerade)&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;LoadEfi&lt;/strong&gt; — Elevated loader that mounts the ESP and writes the DXE driver&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;DXE Driver&lt;/strong&gt; — UEFI firmware driver that hooks &lt;code&gt;ExitBootServices&lt;/code&gt; and injects shellcode into the Windows kernel&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;techniques&#34;&gt;Techniques&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;PEB masquerade (&lt;code&gt;ImagePathName&lt;/code&gt; + LDR enumeration) to impersonate &lt;code&gt;explorer.exe&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;COM elevation via &lt;code&gt;CLSID_CMSTPLUA&lt;/code&gt; elevation moniker&lt;/li&gt;&#xA;&lt;li&gt;UEFI DXE runtime driver persistence&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;winload.efi&lt;/code&gt; hook via &lt;code&gt;ExitBootServices&lt;/code&gt; callback&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
+    </item>
+    <item>
+      <title>Loading Driver from User-Mode Program via SSDT Hooking</title>
+      <link>http://localhost:1313/blogs/ssdt-hooking/</link>
+      <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/ssdt-hooking/</guid>
+      <description>&lt;p&gt;Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.&lt;/p&gt;&#xA;&lt;p&gt;In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the &lt;strong&gt;System Service Descriptor Table (SSDT)&lt;/strong&gt; and its role in managing system calls within the Windows kernel.&lt;/p&gt;&#xA;&lt;p&gt;Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking. We will walk through the process of dynamically locating the SSDT, identifying a target system call (such as &lt;code&gt;NtLoadDriver&lt;/code&gt;), and modifying its entry to redirect execution flow to a custom function.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>UEFI Keylogger</title>
+      <link>http://localhost:1313/docs/uefi-dev/uefi-keylogger/</link>
+      <pubDate>Tue, 28 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/uefi-dev/uefi-keylogger/</guid>
+      <description>&lt;p&gt;In this documentation we will develop simple uefi keylogger.&lt;/p&gt;&#xA;&lt;h3 id=&#34;coding&#34;&gt;&lt;strong&gt;Coding&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;Uefi.h&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;Library/UefiApplicationEntryPoint.h&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#include&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;Library/UefiLib.h&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;EFI_STATUS&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;EFIAPI&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;UefiMain&lt;/span&gt;(&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    EFI_HANDLE        ImageHandle,&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    EFI_SYSTEM_TABLE  &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;SystemTable&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;) {&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  EFI_SIMPLE_TEXT_INPUT_PROTOCOL &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;TextInput;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  EFI_INPUT_KEY Key;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#75715e&#34;&gt;/* Protokole erişim sağla */&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  TextInput &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; SystemTable&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;ConIn;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#a6e22e&#34;&gt;Print&lt;/span&gt; (&lt;span style=&#34;color:#e6db74&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;UEFI Keylogger!&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;);&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) {&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    TextInput&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;ReadKeyStroke&lt;/span&gt; (&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        TextInput, &#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;Key&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    );&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (Key.ScanCode &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; SCAN_ESC) {&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#a6e22e&#34;&gt;Print&lt;/span&gt; (&lt;span style=&#34;color:#e6db74&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ESC Button Detected&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;);&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#66d9ef&#34;&gt;break&lt;/span&gt;;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (Key.UnicodeChar &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#a6e22e&#34;&gt;Print&lt;/span&gt; (&lt;span style=&#34;color:#e6db74&#34;&gt;L&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Pressed: %c&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;, Key.UnicodeChar);&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  }&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; EFI_SUCCESS;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now let&amp;rsquo;s take a look at the codes&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Introduction to UEFI</title>
+      <link>http://localhost:1313/docs/uefi-dev/uefi-introduction/</link>
+      <pubDate>Sun, 19 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/uefi-dev/uefi-introduction/</guid>
+      <description>&lt;p&gt;Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-uefi&#34;&gt;&lt;strong&gt;What is UEFI?&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;UEFI (Unified Extensible Firmware Interface) is a specification for a computer&amp;rsquo;s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.&lt;/p&gt;&#xA;&lt;p&gt;We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different. UEFI uses GPT (Guid Partition Table). GPT is a modern standard that defines the layout of partitions on a computer&amp;rsquo;s storage device. It is the standard used in devices such as HDDs or SSDs that we are all familiar with. Just as UEFI replaced BIOS, GPT has replaced the previously used MBR (Master Boot Record) partitioning table. GPT works seamlessly with UEFI.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Reversing System Call Mechanism in Windows Kernel</title>
+      <link>http://localhost:1313/blogs/syscalls/</link>
+      <pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/syscalls/</guid>
+      <description>&lt;p&gt;Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel.&lt;/p&gt;&#xA;&lt;p&gt;In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what&amp;rsquo;s &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/&#34;&gt;NTAPI&lt;/a&gt;, &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/direct-syscalls/&#34;&gt;Syscall&lt;/a&gt; or &lt;a href=&#34;https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/&#34;&gt;SSDT&lt;/a&gt; etc. in this blog because i wrote many documents for these topics and if you&amp;rsquo;re beginner in the topics, you can start with the documents mentioned.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>System Service Descriptor Table</title>
+      <link>http://localhost:1313/docs/winkernel-dev/wkd-ssdt/</link>
+      <pubDate>Thu, 26 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/winkernel-dev/wkd-ssdt/</guid>
+      <description>&lt;p&gt;In this documentation we will discuss SSDT in the windows systems.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-ssdt&#34;&gt;&lt;strong&gt;What is SSDT?&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;So, SSDT (System Service Descriptor Table) is a list of system calls supported by the operating system.  Recall the syscalls. SSDT is the first member of the Service Descriptor Table kernel memory structure:&lt;/p&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; tagSERVICE_DESCRIPTOR_TABLE {&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    SYSTEM_SERVICE_TABLE nt;    &lt;span style=&#34;color:#75715e&#34;&gt;// SSDT Tablosu kendisine etkili bir pointer&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    SYSTEM_SERVICE_TABLE win32k;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    SYSTEM_SERVICE_TABLE sst3; &#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    SYSTEM_SERVICE_TABLE sst4;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;} SERVICE_DESCRIPTOR_TABLE;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;SSDT maps system calls (syscalls) to kernel API addresses. When a syscall is made by a user-mode program, it contains a service index. This index specifies which syscall to use. The operating system uses this index to parse the address of the corresponding function from the System Service Descriptor Table (SSDT) and redirects to the correct kernel function in ntoskrnl.exe. In case it sounds confusing, let me explain it in a diagram:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>ARM Firmware Reverse Engineering</title>
+      <link>http://localhost:1313/blogs/bare-metal-reversing/</link>
+      <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/bare-metal-reversing/</guid>
+      <description>&lt;p&gt;Hello everyone. In this blog we continue with Firmware Reverse Engineering.&#xA;We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.&lt;/p&gt;&#xA;&lt;p&gt;I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let&amp;rsquo;s think typically like hacking an IoT board but with a simpler scenario:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Router Firmware Reverse Engineering</title>
+      <link>http://localhost:1313/blogs/router-firmware-reversing/</link>
+      <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/router-firmware-reversing/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/headerphoto.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&amp;rsquo;s &lt;a href=&#34;https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/&#34;&gt;Archer AX 21 V4.6&lt;/a&gt; modem. You can check TP-Link&amp;rsquo;s original page to &lt;a href=&#34;https://www.tp-link.com/us/support/download/archer-ax21/#Firmware&#34;&gt;download the firmware&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;[!WARNING]&#xA;The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;p&gt;First, let&amp;rsquo;s take a look at the information of the firmware we downloaded:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>About</title>
+      <link>http://localhost:1313/about/index.tr/</link>
+      <pubDate>Fri, 29 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/about/index.tr/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;../../../images/about/video.gif&#34; alt=&#34;&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;Merhabalar efenimm, bloguma hoş geldiniz! 👋&lt;/p&gt;&#xA;&lt;p&gt;Ben Berkay ama genelde bekoo olarak biliniyorum. 19 yaşındayım ve son 4 yıldır kendimi siber güvenliğe adamış bir araştırmacıyım. Özellikle şu alanlarda yoğunlaşıyorum:&lt;/p&gt;&#xA;&lt;p&gt;🔍 Reverse Engineering&lt;/p&gt;&#xA;&lt;p&gt;🐛 Malware Analysis&lt;/p&gt;&#xA;&lt;p&gt;⚙️ Malware Development&lt;/p&gt;&#xA;&lt;p&gt;Bloglarımı ve dökümanlarımı hem Türkçe hem İngilizce hazırlıyorum. İngilizce içerik zaten bolca bulunuyor ama Türkçe kaynakların kısıtlı olduğunun farkındayım. Bu yüzden elimden geldiğince Türkçe içerik eklemeye, konuları net ve anlaşılır şekilde anlatmaya özen gösteriyorum.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>About</title>
+      <link>http://localhost:1313/post/about/</link>
+      <pubDate>Fri, 29 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/post/about/</guid>
+      <description>&lt;p&gt;I’m Berkay, also known as bekoo. I am a 20-year-old researcher dedicated to understanding systems at the lowest level.&lt;/p&gt;&#xA;&lt;p&gt;Over the past 4 years, I have focused on Reverse Engineering, Malware Analysis, and Malware Development. Recently, I have expanded my research into Firmware Engineering and UEFI Development to explore computer architecture beyond the operating system. Recently, i moved on the waters of Windows.&lt;/p&gt;&#xA;&lt;p&gt;Important: All content is strictly for educational purposes. I assume no liability for misuse. If you are here to learn and build, welcome.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>SSDT Hook Detector</title>
+      <link>http://localhost:1313/projects/ssdt-hook-detector/</link>
+      <pubDate>Sun, 10 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/projects/ssdt-hook-detector/</guid>
+      <description>&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;&#xA;&lt;p&gt;A user-mode utility that detects SSDT hooks installed by rootkits or anti-cheat software. It reads the System Service Descriptor Table from kernel memory via a custom driver and compares each entry against the expected address range of &lt;code&gt;ntoskrnl.exe&lt;/code&gt;.&lt;/p&gt;&#xA;&lt;h2 id=&#34;how-it-works&#34;&gt;How It Works&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Loads a signed kernel driver that exposes an IOCTL interface&lt;/li&gt;&#xA;&lt;li&gt;Reads &lt;code&gt;KeServiceDescriptorTable&lt;/code&gt; pointer from driver context&lt;/li&gt;&#xA;&lt;li&gt;Iterates all syscall entries and checks if the address falls within ntoskrnl&amp;rsquo;s &lt;code&gt;.text&lt;/code&gt; section&lt;/li&gt;&#xA;&lt;li&gt;Reports hooked entries with the hook address and closest known symbol&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;detection-scope&#34;&gt;Detection Scope&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Direct SSDT inline hooks&lt;/li&gt;&#xA;&lt;li&gt;SSDT pointer replacement (table swap)&lt;/li&gt;&#xA;&lt;li&gt;Partial hooked ranges in third-party modules&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
+    </item>
+    <item>
+      <title>Malware Resurrection</title>
+      <link>http://localhost:1313/docs/malware-dev/malware-resurrection/</link>
+      <pubDate>Thu, 12 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/malware-dev/malware-resurrection/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;In this blog, we will discuss of the malware resurrection technique.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-malware-resurrection&#34;&gt;&lt;strong&gt;What is Malware Resurrection&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;&lt;strong&gt;Malware Resurrection&lt;/strong&gt; is a persistence and self-recovery technique used by certain malicious programs to ensure they remain active on an infected system, even after being terminated. This technique allows the malware to &lt;strong&gt;automatically relaunch or reinfect the host&lt;/strong&gt; if it is closed by the user, killed by security software, or crashes due to an error.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Virtual Memory</title>
+      <link>http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/</link>
+      <pubDate>Fri, 30 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/winkernel-dev/wkd-virtual-memory/</guid>
+      <description>&lt;p&gt;In this documentation we will discuss Virtual Memory in Windows Kernel.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-virtual-memory&#34;&gt;&lt;strong&gt;What is Virtual Memory&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;&lt;em&gt;&amp;ldquo;Windows uses a virtual memory system that makes it appear as if each process has a large, dedicated address space. Virtual memory provides a more abstract view of memory, independent of the actual layout of physical memory. During execution, the memory manager — with hardware support — translates virtual addresses into the physical addresses where the data is actually stored. This allows the operating system to prevent any process from interfering with another process’s memory or overwriting the operating system’s critical data.&amp;rdquo;&lt;/em&gt;&#xA;-&lt;strong&gt;Windows Internals Part 1 - Chapter 1, Page 39&lt;/strong&gt;&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Input/Output Control (IOCTL)</title>
+      <link>http://localhost:1313/docs/winkernel-dev/wkd-ioctl/</link>
+      <pubDate>Mon, 26 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/winkernel-dev/wkd-ioctl/</guid>
+      <description>&lt;p&gt;In this documentation, we will discuss IOCTL mechanism on Windows.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-ioctl&#34;&gt;&lt;strong&gt;What is IOCTL?&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;&lt;strong&gt;I/O Control Codes (IOCTLs)&lt;/strong&gt; are a mechanism used for communication between user-mode applications and drivers, or between drivers within a stack. I/O control codes are sent via IRPs (I/O Request Packets), as mentioned in the previous section. If you are not familiar with IRPs, click here to learn more about them.&lt;/p&gt;&#xA;&lt;p&gt;In Windows, user-mode programs send IOCTL codes to drivers using the DeviceIoControl API. This API delivers the received IOCTL code to the driver through the IRP_MJ_DEVICE_CONTROL request. It’s important to note that this is not the only way the IOCTL mechanism is used. Advanced drivers can also generate requests using IRP_MJ_DEVICE_CONTROL or IRP_MJ_INTERNAL_DEVICE_CONTROL to send IOCTL requests to lower-level drivers in the stack.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>I/O Request Packets (IRP)</title>
+      <link>http://localhost:1313/docs/winkernel-dev/wkd-irp/</link>
+      <pubDate>Thu, 22 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/winkernel-dev/wkd-irp/</guid>
+      <description>&lt;p&gt;In this documentation, we will discuss IRP.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-io-request-packet&#34;&gt;&lt;strong&gt;What is I/O Request Packet&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;An &lt;strong&gt;I/O Request Packet&lt;/strong&gt; (IRP) in the Windows operating system is a structure used to facilitate communication between drivers and the operating system. You can think of it as a &lt;em&gt;“message carrier”&lt;/em&gt;.&lt;/p&gt;&#xA;&lt;p&gt;In most cases, requests sent to drivers are packaged into an IRP. An operating system component or another driver sends an IRP to a driver using the IoCallDriver function. This function takes two parameters: a &lt;strong&gt;device object&lt;/strong&gt; (DEVICEOBJECT) and a pointer to an IRP. The device object points to the driver object associated with that device. Therefore, when IoCallDriver is called, the IRP is sent to the corresponding device object and, by extension, to its associated driver. This process is often referred to as &lt;em&gt;“passing”&lt;/em&gt; or &lt;em&gt;“forwarding”&lt;/em&gt; the IRP.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PDF Icon File Spoofing</title>
+      <link>http://localhost:1313/docs/malware-dev/file-icon-spoofing/</link>
+      <pubDate>Wed, 31 Jul 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/malware-dev/file-icon-spoofing/</guid>
+      <description>&lt;p&gt;In this documentation, we will see Icon File Spoofing technique.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-icon-file-spoofing&#34;&gt;&lt;strong&gt;What is Icon File Spoofing?&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;To summarize the technique briefly, it involves changing the icon of the program to deceive the user. This allows the user to view the malware as a harmless file. The icon you choose for the malware can be a PDF, as shown in the example, or any other icon.&lt;/p&gt;&#xA;&lt;p&gt;To better understand the topic, let&amp;rsquo;s proceed with an example scenario: imagine you are a pentester tasked with testing the security of a company&amp;rsquo;s internal network. You need to test how careful company employees are about opening malicious files. In this context, you can send your malicious software disguised as a harmless PDF file via a phishing email or by placing it in a shared folder. If an employee opens the file, it actually runs the malicious software and gains access to their systems.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>API Hashing</title>
+      <link>http://localhost:1313/docs/malware-dev/api-hashing/</link>
+      <pubDate>Tue, 30 Jul 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/malware-dev/api-hashing/</guid>
+      <description>&lt;p&gt;In this documentation, we will discuss API Hashing technique.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-portable-executable&#34;&gt;&lt;strong&gt;What is Portable Executable?&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;First of all, I think it is necessary to understand the PE (Portable Executable) structure because this technique is all about this structure.&lt;/p&gt;&#xA;&lt;p&gt;PE is a file format for executable files, object codes, DLLs and others used in 32 and 64 bit versions of Windows operating systems and UEFI environments. PE contains the data structures needed for the Windows OS loader to manage the code to be executed.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Is Valorant Spyware?</title>
+      <link>http://localhost:1313/blogs/is-valorant-spyware/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/is-valorant-spyware/</guid>
+      <description>&lt;h3 id=&#34;understanding-how-anti-cheat-software-works&#34;&gt;&lt;strong&gt;Understanding How Anti-Cheat Software Works&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;To begin our exploration, we first need to understand how anti-cheat software works. In general, anti-cheat software is developed for two main purposes: to prevent cheating within a game and to detect those who do.&lt;/p&gt;&#xA;&lt;p&gt;We can categorize how this software operates into two main methods: &lt;strong&gt;server-side&lt;/strong&gt; and &lt;strong&gt;client-side&lt;/strong&gt;&lt;sup&gt;[1]&lt;/sup&gt;.&lt;/p&gt;&#xA;&lt;p&gt;&lt;strong&gt;Server-side&lt;/strong&gt; anti-cheat software typically monitors and analyzes the data a player sends to the game server. This data can include how the player is playing, what commands they are sending, and how quickly they react. Its goal is to detect discrepancies between normal gameplay behavior and potential cheat usage.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Direct Syscalls</title>
+      <link>http://localhost:1313/docs/malware-dev/direct-syscalls/</link>
+      <pubDate>Mon, 04 Mar 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/malware-dev/direct-syscalls/</guid>
+      <description>&lt;p&gt;In this documentation we will see Direct Systemcalls technique.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-system-call&#34;&gt;&lt;strong&gt;What is System Call?&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;[!WARNING]&#xA;It is assumed that the reader is familiar with the NTAPI mechanism described in the &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/ntapi-injection&#34;&gt;NTAPI Injection documentation&lt;/a&gt; and the basic differences between user-mode and kernel-mode.&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;p&gt;A system call is a programmatic way for a program to request a service from the operating system. More simply, it is a command that allows a program running in user mode to switch to kernel mode. In operating systems such as Windows, a program running in user mode accesses the kernel-mode services of the operating system by making a system call. This transition occurs when the CPU switches to kernel mode, which is managed by the operating system.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>NTAPI Injection</title>
+      <link>http://localhost:1313/docs/malware-dev/ntapi-injection/</link>
+      <pubDate>Wed, 07 Feb 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/malware-dev/ntapi-injection/</guid>
+      <description>&lt;p&gt;In this documentation, we will explore NTAPI Injection.&lt;/p&gt;&#xA;&lt;h3 id=&#34;user-mode-and-kernel-mode&#34;&gt;&lt;strong&gt;User Mode and Kernel Mode&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Before we get into the technique, we need to understand some basic things and let&amp;rsquo;s take a look at what are User-Mode and Kernel-Mode.&lt;/p&gt;&#xA;&lt;div style=&#34;text-align: center;&#34;&gt;&#xA;  &lt;img src=&#34;http://localhost:1313/images/posts/ntapi-injection/rings.png&#34; style=&#34;width: 100%&#34; /&gt;&#xA;&lt;/div&gt;&#xA;&lt;p&gt;The Windows operating system basically offers two different rings: user mode and kernel mode. This distinction is based on the security of the operating system, the organization of its operation and the efficient use of resources. Both fields play different roles and complement each other.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>DLL Injection</title>
+      <link>http://localhost:1313/docs/malware-dev/dll-injection/</link>
+      <pubDate>Sun, 04 Feb 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/malware-dev/dll-injection/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;In this documentation, we will discuss how to execute any shellcode via DLL Injection technique. The technique is a variation of the shellcode injection. It also can be used for debugging purpose rather than malware.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-dll&#34;&gt;&lt;strong&gt;What is DLL?&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Before the technique, we need to understand what&amp;rsquo;s a DLL actually.&lt;/p&gt;&#xA;&lt;p&gt;DLLs (Dynamic Link Library) are libraries containing code and data that are used by multiple programs at the same time. When you run a program on the Windows operating system or when the Windows operating system wants to perform a function, it uses DLLs.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Shellcode Injection</title>
+      <link>http://localhost:1313/docs/malware-dev/shellcode-injection/</link>
+      <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/docs/malware-dev/shellcode-injection/</guid>
+      <description>&lt;div style=&#34;text-align: center;&#34;&gt;&#xA;  &lt;img src=&#34;http://localhost:1313/images/posts/process-injection/main-photo.png&#34; style=&#34;width: 100%&#34; /&gt;&#xA;&lt;/div&gt;&#xA;&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;In this documentation, we will discuss Shellcode Injection Technique.&lt;/p&gt;&#xA;&lt;h3 id=&#34;what-is-a-process&#34;&gt;&lt;strong&gt;What is a Process?&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;In simple terms, a process is a unit of work created by the operating system to run a program. If a program is started—either by a user or by the operating system—it is first loaded into memory. Then, the operating system creates a process to execute it. The memory space for the loaded program is managed by this process, and the program’s instructions start running.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

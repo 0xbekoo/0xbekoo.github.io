@@ -1,83 +1,345 @@
-<!doctype html><html lang=en><head><title>0xbekoo</title><meta charset=utf-8><meta content="utf-8" http-equiv=encoding><meta name=viewport content="width=device-width,initial-scale=1"><meta name=format-detection content="telephone=no"><meta name=theme-color content="#000084"><link rel=icon href=/favicon.ico><link rel=canonical href=/docs/uefi-dev/uefi-keylogger/><noscript><style>body{visibility:visible!important}</style></noscript></head><body><nav class="navbar navbar-inverse navbar-fixed-top"><div class=navbar-inner><div class=container><button type=button class="btn btn-navbar" data-toggle=collapse data-target=.nav-collapse></button>
-<a class=brand href=/>0xbekoo</a><div class="nav-collapse collapse"><ul class=nav><li><a href=/docs/><span>Documentation</span></a></li><li><a href=/blogs/><span>Blogs</span></a></li><li><a href=/projects/><span>Projects</span></a></li></ul></div></div></div></nav><div id=content class=container><article class="single-shell single-shell--docs"><div class="row-fluid navmargin"><div class="page-header single-shell__header"><h1 class=single-shell__title>UEFI Keylogger</h1><p class=single-shell__meta>Tue, Jan 28, 2025</p></div><div class="single-shell__body single-shell__body--with-toc"><div class=single-shell__main><section class="single-shell__author single-shell__author--mobile"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--mobile is-open" data-ui=toc><button class=single-shell__toc-toggle type=button aria-expanded=true aria-controls=single-toc-mobile-docs-uefi-dev-uefi-keylogger->
-<span class=single-shell__toc-label>Contents</span>
-<span class=single-shell__toc-status aria-hidden=true>[-]</span></button><div id=single-toc-mobile-docs-uefi-dev-uefi-keylogger- class=single-shell__toc-panel><div class=single-shell__toc-panel-inner><div class=single-shell__toc-body><nav id=TableOfContents-mobile><ul><li><ul><li><a href=#coding><strong>Coding</strong></a></li><li><a href=#running-the-driver><strong>Running the Driver</strong></a></li><li><a href=#conclusion><strong>Conclusion</strong></a></li></ul></li></ul></nav></div></div></div></section><div class=single-shell__content><p>In this documentation we will develop simple uefi keylogger.</p><h3 id=coding><strong>Coding</strong></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Uefi.h&gt;</span><span style=color:#75715e>
-</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style=color:#75715e>
-</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiLib.h&gt;</span><span style=color:#75715e>
-</span></span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>EFI_STATUS
-</span></span><span style=display:flex><span>EFIAPI
-</span></span><span style=display:flex><span><span style=color:#a6e22e>UefiMain</span>(
-</span></span><span style=display:flex><span>    EFI_HANDLE        ImageHandle,
-</span></span><span style=display:flex><span>    EFI_SYSTEM_TABLE  <span style=color:#f92672>*</span>SystemTable
-</span></span><span style=display:flex><span>) {
-</span></span><span style=display:flex><span>  EFI_SIMPLE_TEXT_INPUT_PROTOCOL <span style=color:#f92672>*</span>TextInput;
-</span></span><span style=display:flex><span>  EFI_INPUT_KEY Key;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#75715e>/* Protokole erişim sağla */</span>
-</span></span><span style=display:flex><span>  TextInput <span style=color:#f92672>=</span> SystemTable<span style=color:#f92672>-&gt;</span>ConIn;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>Print</span> (<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;UEFI Keylogger!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#66d9ef>while</span>(<span style=color:#ae81ff>1</span>) {
-</span></span><span style=display:flex><span>    TextInput<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>ReadKeyStroke</span> (
-</span></span><span style=display:flex><span>        TextInput, 
-</span></span><span style=display:flex><span>        <span style=color:#f92672>&amp;</span>Key
-</span></span><span style=display:flex><span>    );
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (Key.ScanCode <span style=color:#f92672>==</span> SCAN_ESC) {
-</span></span><span style=display:flex><span>      <span style=color:#a6e22e>Print</span> (<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;ESC Button Detected</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
-</span></span><span style=display:flex><span>      <span style=color:#66d9ef>break</span>;
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (Key.UnicodeChar <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span>) {
-</span></span><span style=display:flex><span>      <span style=color:#a6e22e>Print</span> (<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;Pressed: %c</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, Key.UnicodeChar);
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>  }
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> EFI_SUCCESS;
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>Now let&rsquo;s take a look at the codes</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>EFI_SIMPLE_TEXT_INPUT_PROTOCOL <span style=color:#f92672>*</span>TextInput;
-</span></span><span style=display:flex><span>EFI_INPUT_KEY Key;
-</span></span></code></pre></div><p>We start by creating a pointer in our driver with the EFI_SIMPLE_TEXT_INPUT_PROTOCOL protocol. We will use this pointer to capture input from the keyboard. The EFI_SIMPLE_TEXT_INPUT_PROTOCOL protocol is a basic protocol that reads keyboard input.</p><p>We then create a variable of type EFI_INPUT_KEY to store the keys pressed from the keyboard in a variable.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>TextInput <span style=color:#f92672>=</span> SystemTable<span style=color:#f92672>-&gt;</span>ConIn;
-</span></span></code></pre></div><p>In this section, we access EFI_SIMPLE_TEXT_INPUT_PROTOCOL. ConIn is a member variable for Console Input Protocol.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>while</span>(<span style=color:#ae81ff>1</span>) {
-</span></span><span style=display:flex><span>    TextInput<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>ReadKeyStroke</span> ( 
-</span></span><span style=display:flex><span>        TextInput, 
-</span></span><span style=display:flex><span>        <span style=color:#f92672>&amp;</span>Key
-</span></span><span style=display:flex><span>    );
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (Key.ScanCode <span style=color:#f92672>==</span> SCAN_ESC) {
-</span></span><span style=display:flex><span>      <span style=color:#a6e22e>Print</span> (<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;ESC Button Detected</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
-</span></span><span style=display:flex><span>      <span style=color:#66d9ef>break</span>;
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (Key.UnicodeChar <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span>) {
-</span></span><span style=display:flex><span>      <span style=color:#a6e22e>Print</span> (<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;Pressed: %c</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, Key.UnicodeChar);
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>Now we start printing the pressed keys on the screen with a loop. With ReadKeyStroke we pass the pressed keys to the Key variable.</p><p>If the key pressed is the ESC (SCAN_ESC) key, the driver exits the loop. If it is not, then we print the pressed key on the screen.</p><h3 id=running-the-driver><strong>Running the Driver</strong></h3><p>Create the KeyLogger.inf file and paste the following codes:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-inf data-lang=inf><span style=display:flex><span><span style=color:#66d9ef>[Defines]</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>INF_VERSION</span>                    <span style=color:#f92672>=</span> <span style=color:#e6db74>0x00010006
-</span></span></span><span style=display:flex><span><span style=color:#e6db74>  BASE_NAME                      = KeyLogger
-</span></span></span><span style=display:flex><span><span style=color:#e6db74>  MODULE_TYPE                    = UEFI_APPLICATION
-</span></span></span><span style=display:flex><span><span style=color:#e6db74>  VERSION_STRING                 = 1.0
-</span></span></span><span style=display:flex><span><span style=color:#e6db74>  ENTRY_POINT                    = UefiMain</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>[Sources]</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>KeyLogger.c</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>[Packages]</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>MdePkg/MdePkg.dec</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>ShellPkg/ShellPkg.dec</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>MdeModulePkg/MdeModulePkg.dec</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>[LibraryClasses]</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>UefiApplicationEntryPoint</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>UefiLib</span>
-</span></span></code></pre></div><p>Now build the project via this code:</p><pre tabindex=0><code>Build -m ShellPkg\Application\KeyLogger\KeyLogger.inf
-</code></pre><p>Here&rsquo;s the result:</p><div style=text-align:center><img src=/images/posts/uefi-keylogger/result.png style=width:35%></div><h3 id=conclusion><strong>Conclusion</strong></h3><p>In this documentation we have learned how to develop a simple Keylogger with a UEFI driver. I realize that the documentation is simple, but since we are new to UEFI projects, I think it would be nice to move forward with simple projects like this.</p></div><div class=single-shell__back><h4><a href=/>Back to Home</a></h4></div><button class=single-shell__scroll-top type=button aria-label="Scroll to top" data-ui=scroll-top>
-<span aria-hidden=true>^</span></button></div><aside class=single-shell__aside><section class="single-shell__author single-shell__author--desktop"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--desktop"><div class=single-shell__toc-heading><span class=single-shell__toc-label>Contents</span></div><div class=single-shell__toc-body><nav id=TableOfContents-desktop><ul><li><ul><li><a href=#coding><strong>Coding</strong></a></li><li><a href=#running-the-driver><strong>Running the Driver</strong></a></li><li><a href=#conclusion><strong>Conclusion</strong></a></li></ul></li></ul></nav></div></section></aside><div class=single-shell__panel aria-label="Post info"><div class=sp-sysinfo><div class=sp-sysinfo__header>// SYSINFO</div><div class=sp-sysinfo__row><span class=sp-label>DATE</span>
-<span>2025.01.28</span></div><div class=sp-sysinfo__row><span class=sp-label>READ</span>
-<span>2MIN</span></div><div class=sp-sysinfo__row><span class=sp-label>WORDS</span>
-<span>332</span></div></div></div></div></div></article></div><footer class=container><hr class=soften><p>&copy;
-0xbekoo
-<span id=thisyear>2026</span>
-| 0xbekoo.github.io</p><p class=text-center><a href=https://x.com/0xbekooo>Twitter</a>
-<a href=https://github.com/0xbekoo>GitHub</a></p></footer></body><link rel=stylesheet href=/css/bootstrap.css><link rel=stylesheet href=/css/bootstrap-responsive.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/blog-callouts.css><link rel=stylesheet href=/css/mobile-reading.css><link rel=stylesheet href=/css/duat-gate.css><link rel=stylesheet href=/css/home-glitch.css><link rel=stylesheet href=/css/duat-boot.css><link rel=stylesheet href=/css/page-slide.css><link rel=stylesheet href=/css/projects.css><link rel=stylesheet href=/css/diagrams.css><script src=/js/jquery.js></script><script src=/js/bootstrap-transition.js></script><script src=/js/bootstrap-alert.js></script><script src=/js/bootstrap-modal.js></script><script src=/js/bootstrap-dropdown.js></script><script src=/js/bootstrap-scrollspy.js></script><script src=/js/bootstrap-tab.js></script><script src=/js/bootstrap-tooltip.js></script><script src=/js/bootstrap-popover.js></script><script src=/js/bootstrap-button.js></script><script src=/js/bootstrap-collapse.js></script><script src=/js/bootstrap-carousel.js></script><script src=/js/bootstrap-typeahead.js></script><script src=/js/bootstrap-affix.js></script><script>_386={fastLoad:!1,onePass:!1,speedFactor:1.5,duatBootImage:"/images/blog-images/hour.jpg"};function ThisYear(){document.getElementById("thisyear").innerHTML=(new Date).getFullYear()}</script><script src=/js/duat-boot.js></script><script src=/js/mobile-image-lightbox.js></script><script src=/js/page-slide.js></script></html>
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="/favicon.ico">
+    <link rel="canonical" href="/docs/uefi-dev/uefi-keylogger/">
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/projects/">
+                                    
+                                    <span>Projects</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div id="content" class="container">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<article class="single-shell single-shell--docs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">UEFI Keylogger</h1>
+            <p class="single-shell__meta">Tue, Jan 28, 2025</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-docs-uefi-dev-uefi-keylogger-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-docs-uefi-dev-uefi-keylogger-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#coding"><strong>Coding</strong></a></li>
+        <li><a href="#running-the-driver"><strong>Running the Driver</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <p>In this documentation we will develop simple uefi keylogger.</p>
+<h3 id="coding"><strong>Coding</strong></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Uefi.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiLib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>EFI_STATUS
+</span></span><span style="display:flex;"><span>EFIAPI
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">UefiMain</span>(
+</span></span><span style="display:flex;"><span>    EFI_HANDLE        ImageHandle,
+</span></span><span style="display:flex;"><span>    EFI_SYSTEM_TABLE  <span style="color:#f92672">*</span>SystemTable
+</span></span><span style="display:flex;"><span>) {
+</span></span><span style="display:flex;"><span>  EFI_SIMPLE_TEXT_INPUT_PROTOCOL <span style="color:#f92672">*</span>TextInput;
+</span></span><span style="display:flex;"><span>  EFI_INPUT_KEY Key;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">/* Protokole erişim sağla */</span>
+</span></span><span style="display:flex;"><span>  TextInput <span style="color:#f92672">=</span> SystemTable<span style="color:#f92672">-&gt;</span>ConIn;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;UEFI Keylogger!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>    TextInput<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">ReadKeyStroke</span> (
+</span></span><span style="display:flex;"><span>        TextInput, 
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>Key
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (Key.ScanCode <span style="color:#f92672">==</span> SCAN_ESC) {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;ESC Button Detected</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (Key.UnicodeChar <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Pressed: %c</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Key.UnicodeChar);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> EFI_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now let&rsquo;s take a look at the codes</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>EFI_SIMPLE_TEXT_INPUT_PROTOCOL <span style="color:#f92672">*</span>TextInput;
+</span></span><span style="display:flex;"><span>EFI_INPUT_KEY Key;
+</span></span></code></pre></div><p>We start by creating a pointer in our driver with the EFI_SIMPLE_TEXT_INPUT_PROTOCOL protocol. We will use this pointer to capture input from the keyboard. The EFI_SIMPLE_TEXT_INPUT_PROTOCOL protocol is a basic protocol that reads keyboard input.</p>
+<p>We then create a variable of type EFI_INPUT_KEY to store the keys pressed from the keyboard in a variable.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>TextInput <span style="color:#f92672">=</span> SystemTable<span style="color:#f92672">-&gt;</span>ConIn;
+</span></span></code></pre></div><p>In this section, we access EFI_SIMPLE_TEXT_INPUT_PROTOCOL. ConIn is a member variable for Console Input Protocol.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>    TextInput<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">ReadKeyStroke</span> ( 
+</span></span><span style="display:flex;"><span>        TextInput, 
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&amp;</span>Key
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (Key.ScanCode <span style="color:#f92672">==</span> SCAN_ESC) {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;ESC Button Detected</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (Key.UnicodeChar <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Pressed: %c</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Key.UnicodeChar);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now we start printing the pressed keys on the screen with a loop. With ReadKeyStroke we pass the pressed keys to the Key variable.</p>
+<p>If the key pressed is the ESC (SCAN_ESC) key, the driver exits the loop. If it is not, then we print the pressed key on the screen.</p>
+<h3 id="running-the-driver"><strong>Running the Driver</strong></h3>
+<p>Create the KeyLogger.inf file and paste the following codes:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-inf" data-lang="inf"><span style="display:flex;"><span><span style="color:#66d9ef">[Defines]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">INF_VERSION</span>                    <span style="color:#f92672">=</span> <span style="color:#e6db74">0x00010006
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  BASE_NAME                      = KeyLogger
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  MODULE_TYPE                    = UEFI_APPLICATION
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  VERSION_STRING                 = 1.0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  ENTRY_POINT                    = UefiMain</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Sources]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">KeyLogger.c</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Packages]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">MdePkg/MdePkg.dec</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ShellPkg/ShellPkg.dec</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">MdeModulePkg/MdeModulePkg.dec</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[LibraryClasses]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">UefiApplicationEntryPoint</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">UefiLib</span>
+</span></span></code></pre></div><p>Now build the project via this code:</p>
+<pre tabindex="0"><code>Build -m ShellPkg\Application\KeyLogger\KeyLogger.inf
+</code></pre><p>Here&rsquo;s the result:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/uefi-keylogger/result.png" style="width: 35%" />
+</div>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>In this documentation we have learned how to develop a simple Keylogger with a UEFI driver. I realize that the documentation is simple, but since we are new to UEFI projects, I think it would be nice to move forward with simple projects like this.</p>
+
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#coding"><strong>Coding</strong></a></li>
+        <li><a href="#running-the-driver"><strong>Running the Driver</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+            <div class="single-shell__panel" aria-label="Post info">
+                <div class="sp-sysinfo">
+                    <div class="sp-sysinfo__header">// SYSINFO</div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">DATE</span>
+                        <span>2025.01.28</span>
+                    </div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">READ</span>
+                        <span>2MIN</span>
+                    </div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">WORDS</span>
+                        <span>332</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            
+        </div>
+    </div>
+</article>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css"><link rel="stylesheet" href="/css/projects.css"><link rel="stylesheet" href="/css/diagrams.css">
+<script src="/js/jquery.js"></script>
+
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
+</html>

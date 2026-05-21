@@ -1,5 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Unhooking on 0xbekoo</title><link>https://0xbekoo.github.io/tags/unhooking/</link><description>Recent content in Unhooking on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Thu, 18 Sep 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/unhooking/index.xml" rel="self" type="application/rss+xml"/><item><title>Detecting SSDT Hook with User Mode Program via BYOVD</title><link>https://0xbekoo.github.io/blogs/ssdt-hook-detector-usermode/</link><pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/ssdt-hook-detector-usermode/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Github Link: &lt;a href="https://github.com/0xbekoo/SSDT-Hook-Detector"&gt;github.com/0xbekoo/SSDT-Hook-Detector&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Welcome to my blog! Today we will dive into a little adventure&amp;hellip;&lt;/p&gt;
-&lt;p&gt;Recently, I developed malware related to SSDT Hooking, but it&amp;rsquo;s not the kind of software that causes damage. The main goal of the malware is detecting the Hooked routines. However, my real goal was to develop malware that performs SSDT Unhooking in the first place. But after a few problems, i developed this project.&lt;/p&gt;
-&lt;p&gt;In this project i used a vulnerable driver to perform detection, which means that this malware can be used in the real scenarios. I am not encouraging illegal activity in any way.&lt;/p&gt;</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Unhooking on 0xbekoo</title>
+    <link>http://localhost:1313/tags/unhooking/</link>
+    <description>Recent content in Unhooking on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 18 Sep 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/unhooking/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Detecting SSDT Hook with User Mode Program via BYOVD</title>
+      <link>http://localhost:1313/blogs/ssdt-hook-detector-usermode/</link>
+      <pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/ssdt-hook-detector-usermode/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Github Link: &lt;a href=&#34;https://github.com/0xbekoo/SSDT-Hook-Detector&#34;&gt;github.com/0xbekoo/SSDT-Hook-Detector&lt;/a&gt;&lt;/p&gt;&#xA;&lt;p&gt;Welcome to my blog! Today we will dive into a little adventure&amp;hellip;&lt;/p&gt;&#xA;&lt;p&gt;Recently, I developed malware related to SSDT Hooking, but it&amp;rsquo;s not the kind of software that causes damage. The main goal of the malware is detecting the Hooked routines. However, my real goal was to develop malware that performs SSDT Unhooking in the first place. But after a few problems, i developed this project.&lt;/p&gt;&#xA;&lt;p&gt;In this project i used a vulnerable driver to perform detection, which means that this malware can be used in the real scenarios. I am not encouraging illegal activity in any way.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

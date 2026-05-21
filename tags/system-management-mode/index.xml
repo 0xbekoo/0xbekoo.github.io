@@ -1,4 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>System-Management-Mode on 0xbekoo</title><link>https://0xbekoo.github.io/tags/system-management-mode/</link><description>Recent content in System-Management-Mode on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Thu, 26 Mar 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/system-management-mode/index.xml" rel="self" type="application/rss+xml"/><item><title>An In-Depth Look at the System Management Mode of Processors</title><link>https://0xbekoo.github.io/blogs/diving-deep-into-smm/</link><pubDate>Thu, 26 Mar 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/diving-deep-into-smm/</guid><description>&lt;p&gt;It&amp;rsquo;s gonna be hard, I guess.&lt;/p&gt;
-&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Welcome to my journey into the underworld. In this blog, we’ll take an in-depth look at the “god mode” of processors. Grab your gas mask and follow me.&lt;/p&gt;
-&lt;p&gt;Recently I was really wondering what this SMM actually is, and I found myself diving into these primordial waters. What makes SMM particularly fascinating—and dangerous—is its absolute control over the system. Code running in SMM can access all memory, modify any data structure, and remain completely invisible to security software.&lt;/p&gt;</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>System-Management-Mode on 0xbekoo</title>
+    <link>http://localhost:1313/tags/system-management-mode/</link>
+    <description>Recent content in System-Management-Mode on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 26 Mar 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/system-management-mode/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>An In-Depth Look at the System Management Mode of Processors</title>
+      <link>http://localhost:1313/blogs/diving-deep-into-smm/</link>
+      <pubDate>Thu, 26 Mar 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/diving-deep-into-smm/</guid>
+      <description>&lt;p&gt;It&amp;rsquo;s gonna be hard, I guess.&lt;/p&gt;&#xA;&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Welcome to my journey into the underworld. In this blog, we’ll take an in-depth look at the “god mode” of processors. Grab your gas mask and follow me.&lt;/p&gt;&#xA;&lt;p&gt;Recently I was really wondering what this SMM actually is, and I found myself diving into these primordial waters. What makes SMM particularly fascinating—and dangerous—is its absolute control over the system. Code running in SMM can access all memory, modify any data structure, and remain completely invisible to security software.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

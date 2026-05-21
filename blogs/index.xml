@@ -1,113 +1,117 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Blogs on 0xbekoo</title><link>https://0xbekoo.github.io/blogs/</link><description>Recent content in Blogs on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Thu, 21 May 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/blogs/index.xml" rel="self" type="application/rss+xml"/><item><title>A Journey Into setup.exe — LabConfig and Windows 11 Security</title><link>https://0xbekoo.github.io/blogs/setup-exe-journey/</link><pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/setup-exe-journey/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Earlier this year I submitted a security finding to MSRC. No CVE came out of it, no bounty — just something I thought someone at Microsoft should read. This blog is basically that report, rewritten in a way that makes sense to read outside of a submission form.&lt;/p&gt;
-&lt;p&gt;The short version: Windows 11 publicly guarantees that Secure Boot and TPM 2.0 protect your system out-of-the-box. The binaries that enforce those guarantees haven&amp;rsquo;t meaningfully changed since Windows 10. And there&amp;rsquo;s a registry path — one that millions of people have used to install Windows 11 on unsupported hardware — that makes those guarantees completely optional without ever telling the user.&lt;/p&gt;</description></item><item><title>WhiteLotus: Walking Through a UEFI Bootkit</title><link>https://0xbekoo.github.io/blogs/whitelotus/</link><pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/whitelotus/</guid><description>&lt;div class="blog-callout blog-callout-warning"&gt;
- &lt;div class="blog-callout__header"&gt;
- &lt;span class="blog-callout__badge"&gt;[!]&lt;/span&gt;
- &lt;span class="blog-callout__title"&gt;Research and Safety Notice&lt;/span&gt;
- &lt;/div&gt;
- &lt;div class="blog-callout__body"&gt;&lt;p&gt;WhiteLotus was built as a proof-of-concept directly tied to the LabConfig analysis published in &lt;a href="https://0xbekoo.github.io/blogs/setup-exe-journey"&gt;A Journey Into setup.exe — LabConfig and Windows 11 Security&lt;/a&gt;. It demonstrates the practical attack surface that exists on systems installed through the LabConfig bypass: once Secure Boot is absent and the boot chain offers no resistance, the capabilities shown here become available to any attacker who can write to the EFI System Partition.&lt;/p&gt;</description></item><item><title>My Journey for X230 + Coreboot</title><link>https://0xbekoo.github.io/blogs/introduction-to-x230-coreboot/</link><pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/introduction-to-x230-coreboot/</guid><description>&lt;p&gt;After finishing the SMM blog, I picked up a Lenovo X230 for the next stage of the project. Until now, most of my experiments had lived inside QEMU. In this post, we finally leave the emulator behind, move onto real silicon :&amp;gt;&lt;/p&gt;
-&lt;h3 id="connecting-the-bios-chip-to-the-ch341a"&gt;&lt;strong&gt;Connecting the BIOS Chip to the CH341A&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;For those who are not familiar with Coreboot, it is an open-source firmware project that can replace the vendor firmware on supported platforms. Instead of treating the machine&amp;rsquo;s early boot process as a black box, Coreboot gives us a much clearer and more controllable path from power-on to payload execution.&lt;/p&gt;</description></item><item><title>An In-Depth Look at the System Management Mode of Processors</title><link>https://0xbekoo.github.io/blogs/diving-deep-into-smm/</link><pubDate>Thu, 26 Mar 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/diving-deep-into-smm/</guid><description>&lt;p&gt;It&amp;rsquo;s gonna be hard, I guess.&lt;/p&gt;
-&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Welcome to my journey into the underworld. In this blog, we’ll take an in-depth look at the “god mode” of processors. Grab your gas mask and follow me.&lt;/p&gt;
-&lt;p&gt;Recently I was really wondering what this SMM actually is, and I found myself diving into these primordial waters. What makes SMM particularly fascinating—and dangerous—is its absolute control over the system. Code running in SMM can access all memory, modify any data structure, and remain completely invisible to security software.&lt;/p&gt;</description></item><item><title>A Journey For X86 Reset Vector</title><link>https://0xbekoo.github.io/blogs/a-journey-from-reset-vector/</link><pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/a-journey-from-reset-vector/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&amp;rsquo;s very first breath.&lt;/p&gt;
-&lt;p&gt;Lately, I’ve been getting up close and personal with the CPU, trying to understand what happens in that split second of silence before the screen even lights up. Honestly, my obsession with this &amp;ldquo;big bang&amp;rdquo; moment skyrocketed while I was digging into UEFI Development. There is a whole hidden world running in the background that we usually take for granted.&lt;/p&gt;</description></item><item><title>Detecting SSDT Hook with User Mode Program via BYOVD</title><link>https://0xbekoo.github.io/blogs/ssdt-hook-detector-usermode/</link><pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/ssdt-hook-detector-usermode/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Github Link: &lt;a href="https://github.com/0xbekoo/SSDT-Hook-Detector"&gt;github.com/0xbekoo/SSDT-Hook-Detector&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Welcome to my blog! Today we will dive into a little adventure&amp;hellip;&lt;/p&gt;
-&lt;p&gt;Recently, I developed malware related to SSDT Hooking, but it&amp;rsquo;s not the kind of software that causes damage. The main goal of the malware is detecting the Hooked routines. However, my real goal was to develop malware that performs SSDT Unhooking in the first place. But after a few problems, i developed this project.&lt;/p&gt;
-&lt;p&gt;In this project i used a vulnerable driver to perform detection, which means that this malware can be used in the real scenarios. I am not encouraging illegal activity in any way.&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 4</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-4/</link><pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-4/</guid><description>&lt;h3 id="verification-routines"&gt;&lt;strong&gt;Verification Routines&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;This phase is the heart of PatchGuard&amp;rsquo;s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a system thread, or other dispatch mechanisms—it enters the validation routine. The validation code decrypts and inspects internal PatchGuard state and memory-resident kernel structures.&lt;/p&gt;
-&lt;p&gt;There are several checking routines involved, with the main one called &lt;strong&gt;FsRtlMdlReadCompleteDevEx&lt;/strong&gt;. Other routines include:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;TVCallBack Routine&lt;/strong&gt;: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;br&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;CcBcbProfiler&lt;/strong&gt; We saw that this function is used to check a randomly choosen routine from ntoskrnl.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;In this section, we will focus mainly on FsRtlMdlReadCompleteDevEx. This function is really long and the function can be summed up into multiple parts:&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 3</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-3/</link><pubDate>Fri, 08 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-3/</guid><description>&lt;h4 id="triggering-a-check"&gt;&lt;strong&gt;Triggering a check&lt;/strong&gt;&lt;/h4&gt;
-&lt;p&gt;As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.&lt;/p&gt;
-&lt;h5 id="dpc-execution"&gt;&lt;strong&gt;DPC Execution&lt;/strong&gt;&lt;/h5&gt;
-&lt;p&gt;The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:&lt;/p&gt;
-&lt;table&gt;
- &lt;thead&gt;
- &lt;tr&gt;
- &lt;th style="text-align: center"&gt;&lt;strong&gt;0&lt;/strong&gt;&lt;/th&gt;
- &lt;th style="text-align: center"&gt;CmpEnableLazyFlushDpcRoutine&lt;/th&gt;
- &lt;/tr&gt;
- &lt;/thead&gt;
- &lt;tbody&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;1&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpCenturyDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;2&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpTimeZoneDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;3&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpTimeRefreshDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;4&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;CmpLazyFlushDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;5&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpTimerDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;6&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;IopTimerDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;7&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;IopIrpStackProfilerDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;8&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiBalanceSetManagerDeferredRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;9&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;PopThermalZoneDpc&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;10&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;11&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;12&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 2</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-2/</link><pubDate>Thu, 07 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-2/</guid><description>&lt;h6 id="arguments-of-kiinitpatchguardcontext"&gt;&lt;strong&gt;Arguments of KiInitPatchGuardContext&lt;/strong&gt;&lt;/h6&gt;
-&lt;p&gt;Now, we can see another Arguments of the function.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Argument 1: DPC Routine Pointer&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.&lt;/p&gt;
-&lt;p&gt;The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 1</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-1/</link><pubDate>Wed, 06 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-1/</guid><description>&lt;p&gt;&lt;em&gt;This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.&lt;/em&gt;&lt;/p&gt;
-&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.&lt;/p&gt;</description></item><item><title>Loading Driver from User-Mode Program via SSDT Hooking</title><link>https://0xbekoo.github.io/blogs/ssdt-hooking/</link><pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/ssdt-hooking/</guid><description>&lt;p&gt;Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.&lt;/p&gt;
-&lt;p&gt;In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the &lt;strong&gt;System Service Descriptor Table (SSDT)&lt;/strong&gt; and its role in managing system calls within the Windows kernel.&lt;/p&gt;
-&lt;p&gt;Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking. We will walk through the process of dynamically locating the SSDT, identifying a target system call (such as &lt;code&gt;NtLoadDriver&lt;/code&gt;), and modifying its entry to redirect execution flow to a custom function.&lt;/p&gt;</description></item><item><title>Reversing System Call Mechanism in Windows Kernel</title><link>https://0xbekoo.github.io/blogs/syscalls/</link><pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/syscalls/</guid><description>&lt;p&gt;Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel.&lt;/p&gt;
-&lt;p&gt;In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what&amp;rsquo;s &lt;a href="https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/"&gt;NTAPI&lt;/a&gt;, &lt;a href="https://0xbekoo.github.io/docs/malware-dev/direct-syscalls/"&gt;Syscall&lt;/a&gt; or &lt;a href="https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/"&gt;SSDT&lt;/a&gt; etc. in this blog because i wrote many documents for these topics and if you&amp;rsquo;re beginner in the topics, you can start with the documents mentioned.&lt;/p&gt;</description></item><item><title>ARM Firmware Reverse Engineering</title><link>https://0xbekoo.github.io/blogs/bare-metal-reversing/</link><pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/bare-metal-reversing/</guid><description>&lt;p&gt;Hello everyone. In this blog we continue with Firmware Reverse Engineering.
-We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.&lt;/p&gt;
-&lt;p&gt;I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let&amp;rsquo;s think typically like hacking an IoT board but with a simpler scenario:&lt;/p&gt;</description></item><item><title>Router Firmware Reverse Engineering</title><link>https://0xbekoo.github.io/blogs/router-firmware-reversing/</link><pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/router-firmware-reversing/</guid><description>&lt;p&gt;&lt;img src="https://0xbekoo.github.io/images/posts/reversing-router/headerphoto.jpg" alt=""&gt;&lt;/p&gt;
-&lt;p&gt;Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&amp;rsquo;s &lt;a href="https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/"&gt;Archer AX 21 V4.6&lt;/a&gt; modem. You can check TP-Link&amp;rsquo;s original page to &lt;a href="https://www.tp-link.com/us/support/download/archer-ax21/#Firmware"&gt;download the firmware&lt;/a&gt;.&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;[!WARNING]
-The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;First, let&amp;rsquo;s take a look at the information of the firmware we downloaded:&lt;/p&gt;</description></item><item><title>Is Valorant Spyware?</title><link>https://0xbekoo.github.io/blogs/is-valorant-spyware/</link><pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/is-valorant-spyware/</guid><description>&lt;h3 id="understanding-how-anti-cheat-software-works"&gt;&lt;strong&gt;Understanding How Anti-Cheat Software Works&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;To begin our exploration, we first need to understand how anti-cheat software works. In general, anti-cheat software is developed for two main purposes: to prevent cheating within a game and to detect those who do.&lt;/p&gt;
-&lt;p&gt;We can categorize how this software operates into two main methods: &lt;strong&gt;server-side&lt;/strong&gt; and &lt;strong&gt;client-side&lt;/strong&gt;&lt;sup&gt;[1]&lt;/sup&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Server-side&lt;/strong&gt; anti-cheat software typically monitors and analyzes the data a player sends to the game server. This data can include how the player is playing, what commands they are sending, and how quickly they react. Its goal is to detect discrepancies between normal gameplay behavior and potential cheat usage.&lt;/p&gt;</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blogs on 0xbekoo</title>
+    <link>http://localhost:1313/blogs/</link>
+    <description>Recent content in Blogs on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 21 May 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/blogs/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>A Journey Into setup.exe — LabConfig and Windows 11 Security</title>
+      <link>http://localhost:1313/blogs/setup-exe-journey/</link>
+      <pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/setup-exe-journey/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;I recently submitted a security finding to MSRC. No CVE came out of it, no bounty — just something I thought someone at Microsoft should read. This blog is basically that report, rewritten in a way that makes sense to read outside of a submission form.&lt;/p&gt;&#xA;&lt;p&gt;LabConfig has always caught my attention in Windows security research. Not as something to use, but as a question worth sitting with: how ethical is it, really, and what does it actually mean for security? That curiosity is what eventually led me to this research — and to building WhiteLotus. In this post, we&amp;rsquo;ll look at how bypass methods like LabConfig, now commonplace in everyday Windows 11 installs, quietly hollow out the security guarantees Microsoft built the operating system around.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>WhiteLotus: Walking Through a UEFI Bootkit</title>
+      <link>http://localhost:1313/blogs/whitelotus/</link>
+      <pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/whitelotus/</guid>
+      <description>&lt;div class=&#34;blog-callout blog-callout-warning&#34;&gt;&#xA;  &lt;div class=&#34;blog-callout__header&#34;&gt;&#xA;    &lt;span class=&#34;blog-callout__badge&#34;&gt;[!]&lt;/span&gt;&#xA;    &lt;span class=&#34;blog-callout__title&#34;&gt;Research and Safety Notice&lt;/span&gt;&#xA;  &lt;/div&gt;&#xA;  &lt;div class=&#34;blog-callout__body&#34;&gt;&lt;p&gt;WhiteLotus was built as a proof-of-concept directly tied to the LabConfig analysis published in &lt;a href=&#34;http://localhost:1313/blogs/setup-exe-journey&#34;&gt;A Journey Into setup.exe — LabConfig and Windows 11 Security&lt;/a&gt;. It demonstrates the practical attack surface that exists on systems installed through the LabConfig bypass: once Secure Boot is absent and the boot chain offers no resistance, the capabilities shown here become available to any attacker who can write to the EFI System Partition.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>My Journey for X230 &#43; Coreboot</title>
+      <link>http://localhost:1313/blogs/introduction-to-x230-coreboot/</link>
+      <pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/introduction-to-x230-coreboot/</guid>
+      <description>&lt;p&gt;After finishing the SMM blog, I picked up a Lenovo X230 for the next stage of the project. Until now, most of my experiments had lived inside QEMU. In this post, we finally leave the emulator behind, move onto real silicon :&amp;gt;&lt;/p&gt;&#xA;&lt;h3 id=&#34;connecting-the-bios-chip-to-the-ch341a&#34;&gt;&lt;strong&gt;Connecting the BIOS Chip to the CH341A&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;For those who are not familiar with Coreboot, it is an open-source firmware project that can replace the vendor firmware on supported platforms. Instead of treating the machine&amp;rsquo;s early boot process as a black box, Coreboot gives us a much clearer and more controllable path from power-on to payload execution.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>An In-Depth Look at the System Management Mode of Processors</title>
+      <link>http://localhost:1313/blogs/diving-deep-into-smm/</link>
+      <pubDate>Thu, 26 Mar 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/diving-deep-into-smm/</guid>
+      <description>&lt;p&gt;It&amp;rsquo;s gonna be hard, I guess.&lt;/p&gt;&#xA;&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Welcome to my journey into the underworld. In this blog, we’ll take an in-depth look at the “god mode” of processors. Grab your gas mask and follow me.&lt;/p&gt;&#xA;&lt;p&gt;Recently I was really wondering what this SMM actually is, and I found myself diving into these primordial waters. What makes SMM particularly fascinating—and dangerous—is its absolute control over the system. Code running in SMM can access all memory, modify any data structure, and remain completely invisible to security software.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>A Journey For X86 Reset Vector</title>
+      <link>http://localhost:1313/blogs/a-journey-from-reset-vector/</link>
+      <pubDate>Wed, 31 Dec 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/a-journey-from-reset-vector/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&amp;rsquo;s very first breath.&lt;/p&gt;&#xA;&lt;p&gt;Lately, I’ve been getting up close and personal with the CPU, trying to understand what happens in that split second of silence before the screen even lights up. Honestly, my obsession with this &amp;ldquo;big bang&amp;rdquo; moment skyrocketed while I was digging into UEFI Development. There is a whole hidden world running in the background that we usually take for granted.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Detecting SSDT Hook with User Mode Program via BYOVD</title>
+      <link>http://localhost:1313/blogs/ssdt-hook-detector-usermode/</link>
+      <pubDate>Thu, 18 Sep 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/ssdt-hook-detector-usermode/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Github Link: &lt;a href=&#34;https://github.com/0xbekoo/SSDT-Hook-Detector&#34;&gt;github.com/0xbekoo/SSDT-Hook-Detector&lt;/a&gt;&lt;/p&gt;&#xA;&lt;p&gt;Welcome to my blog! Today we will dive into a little adventure&amp;hellip;&lt;/p&gt;&#xA;&lt;p&gt;Recently, I developed malware related to SSDT Hooking, but it&amp;rsquo;s not the kind of software that causes damage. The main goal of the malware is detecting the Hooked routines. However, my real goal was to develop malware that performs SSDT Unhooking in the first place. But after a few problems, i developed this project.&lt;/p&gt;&#xA;&lt;p&gt;In this project i used a vulnerable driver to perform detection, which means that this malware can be used in the real scenarios. I am not encouraging illegal activity in any way.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 4</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-4/</link>
+      <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-4/</guid>
+      <description>&lt;h3 id=&#34;verification-routines&#34;&gt;&lt;strong&gt;Verification Routines&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;This phase is the heart of PatchGuard&amp;rsquo;s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a system thread, or other dispatch mechanisms—it enters the validation routine. The validation code decrypts and inspects internal PatchGuard state and memory-resident kernel structures.&lt;/p&gt;&#xA;&lt;p&gt;There are several checking routines involved, with the main one called &lt;strong&gt;FsRtlMdlReadCompleteDevEx&lt;/strong&gt;. Other routines include:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;TVCallBack Routine&lt;/strong&gt;: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;br&gt;&#xD;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;CcBcbProfiler&lt;/strong&gt; We saw that this function is used to check a randomly choosen routine from ntoskrnl.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;In this section, we will focus mainly on FsRtlMdlReadCompleteDevEx. This function is really long and the function can be summed up into multiple parts:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 3</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-3/</link>
+      <pubDate>Fri, 08 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-3/</guid>
+      <description>&lt;h4 id=&#34;triggering-a-check&#34;&gt;&lt;strong&gt;Triggering a check&lt;/strong&gt;&lt;/h4&gt;&#xA;&lt;p&gt;As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.&lt;/p&gt;&#xA;&lt;h5 id=&#34;dpc-execution&#34;&gt;&lt;strong&gt;DPC Execution&lt;/strong&gt;&lt;/h5&gt;&#xA;&lt;p&gt;The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:&lt;/p&gt;&#xA;&lt;table&gt;&#xA;  &lt;thead&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;th style=&#34;text-align: center&#34;&gt;&lt;strong&gt;0&lt;/strong&gt;&lt;/th&gt;&#xA;          &lt;th style=&#34;text-align: center&#34;&gt;CmpEnableLazyFlushDpcRoutine&lt;/th&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/thead&gt;&#xA;  &lt;tbody&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;1&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpCenturyDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;2&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpTimeZoneDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;3&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpTimeRefreshDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;4&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;CmpLazyFlushDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;5&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpTimerDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;6&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;IopTimerDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;7&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;IopIrpStackProfilerDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;8&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiBalanceSetManagerDeferredRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;9&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;PopThermalZoneDpc&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;10&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;11&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;12&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/tbody&gt;&#xA;&lt;/table&gt;&#xA;&lt;p&gt;Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 2</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-2/</link>
+      <pubDate>Thu, 07 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-2/</guid>
+      <description>&lt;h6 id=&#34;arguments-of-kiinitpatchguardcontext&#34;&gt;&lt;strong&gt;Arguments of KiInitPatchGuardContext&lt;/strong&gt;&lt;/h6&gt;&#xA;&lt;p&gt;Now, we can see another Arguments of the function.&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;Argument 1: DPC Routine Pointer&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.&lt;/p&gt;&#xA;&lt;p&gt;The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 1</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-1/</link>
+      <pubDate>Wed, 06 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-1/</guid>
+      <description>&lt;p&gt;&lt;em&gt;This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.&lt;/em&gt;&lt;/p&gt;&#xA;&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Loading Driver from User-Mode Program via SSDT Hooking</title>
+      <link>http://localhost:1313/blogs/ssdt-hooking/</link>
+      <pubDate>Sat, 22 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/ssdt-hooking/</guid>
+      <description>&lt;p&gt;Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.&lt;/p&gt;&#xA;&lt;p&gt;In this article, we will examine how SSDT Hooking works, why it is used, and how it can be implemented. We will begin by understanding the &lt;strong&gt;System Service Descriptor Table (SSDT)&lt;/strong&gt; and its role in managing system calls within the Windows kernel.&lt;/p&gt;&#xA;&lt;p&gt;Next, we will take a closer look at this technique through a project I have prepared for SSDT Hooking. We will walk through the process of dynamically locating the SSDT, identifying a target system call (such as &lt;code&gt;NtLoadDriver&lt;/code&gt;), and modifying its entry to redirect execution flow to a custom function.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Reversing System Call Mechanism in Windows Kernel</title>
+      <link>http://localhost:1313/blogs/syscalls/</link>
+      <pubDate>Tue, 31 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/syscalls/</guid>
+      <description>&lt;p&gt;Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. Then i decided to dive in the windows kernel.&lt;/p&gt;&#xA;&lt;p&gt;In this blog, we will examine that how windows kernel it works a syscall. So, i will not include what&amp;rsquo;s &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/ntapi-injection/&#34;&gt;NTAPI&lt;/a&gt;, &lt;a href=&#34;https://0xbekoo.github.io/docs/malware-dev/direct-syscalls/&#34;&gt;Syscall&lt;/a&gt; or &lt;a href=&#34;https://0xbekoo.github.io/docs/winkernel-dev/wkd-ssdt/&#34;&gt;SSDT&lt;/a&gt; etc. in this blog because i wrote many documents for these topics and if you&amp;rsquo;re beginner in the topics, you can start with the documents mentioned.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>ARM Firmware Reverse Engineering</title>
+      <link>http://localhost:1313/blogs/bare-metal-reversing/</link>
+      <pubDate>Wed, 04 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/bare-metal-reversing/</guid>
+      <description>&lt;p&gt;Hello everyone. In this blog we continue with Firmware Reverse Engineering.&#xA;We will dive into Bare Metal Reversing. If you remember, in our previous topic, we analyzed the firmware of TP-LINK Archer AX 21 V4.6 in 2024. Here, we will take things a little further.&lt;/p&gt;&#xA;&lt;p&gt;I have a Nucleo F030R8 board (with ARM Cortex M0 processor) and I wanted to use it for Firmware Reverse Engineering. What we will do in this blog is to simply program the board and then reverse the firmware and reinstall it on the board. Let&amp;rsquo;s think typically like hacking an IoT board but with a simpler scenario:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Router Firmware Reverse Engineering</title>
+      <link>http://localhost:1313/blogs/router-firmware-reversing/</link>
+      <pubDate>Tue, 03 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/router-firmware-reversing/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;http://localhost:1313/images/posts/reversing-router/headerphoto.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&amp;rsquo;s &lt;a href=&#34;https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/&#34;&gt;Archer AX 21 V4.6&lt;/a&gt; modem. You can check TP-Link&amp;rsquo;s original page to &lt;a href=&#34;https://www.tp-link.com/us/support/download/archer-ax21/#Firmware&#34;&gt;download the firmware&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;[!WARNING]&#xA;The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;p&gt;First, let&amp;rsquo;s take a look at the information of the firmware we downloaded:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Is Valorant Spyware?</title>
+      <link>http://localhost:1313/blogs/is-valorant-spyware/</link>
+      <pubDate>Wed, 17 Apr 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/is-valorant-spyware/</guid>
+      <description>&lt;h3 id=&#34;understanding-how-anti-cheat-software-works&#34;&gt;&lt;strong&gt;Understanding How Anti-Cheat Software Works&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;To begin our exploration, we first need to understand how anti-cheat software works. In general, anti-cheat software is developed for two main purposes: to prevent cheating within a game and to detect those who do.&lt;/p&gt;&#xA;&lt;p&gt;We can categorize how this software operates into two main methods: &lt;strong&gt;server-side&lt;/strong&gt; and &lt;strong&gt;client-side&lt;/strong&gt;&lt;sup&gt;[1]&lt;/sup&gt;.&lt;/p&gt;&#xA;&lt;p&gt;&lt;strong&gt;Server-side&lt;/strong&gt; anti-cheat software typically monitors and analyzes the data a player sends to the game server. This data can include how the player is playing, what commands they are sending, and how quickly they react. Its goal is to detect discrepancies between normal gameplay behavior and potential cheat usage.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

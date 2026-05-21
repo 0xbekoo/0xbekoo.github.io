@@ -1,160 +1,531 @@
-<!doctype html><html lang=en><head><title>0xbekoo</title><meta charset=utf-8><meta content="utf-8" http-equiv=encoding><meta name=viewport content="width=device-width,initial-scale=1"><meta name=format-detection content="telephone=no"><meta name=theme-color content="#000084"><link rel=icon href=/favicon.ico><link rel=canonical href=/blogs/patchguard-analysis-part-3/><noscript><style>body{visibility:visible!important}</style></noscript></head><body><nav class="navbar navbar-inverse navbar-fixed-top"><div class=navbar-inner><div class=container><button type=button class="btn btn-navbar" data-toggle=collapse data-target=.nav-collapse></button>
-<a class=brand href=/>0xbekoo</a><div class="nav-collapse collapse"><ul class=nav><li><a href=/docs/><span>Documentation</span></a></li><li><a href=/blogs/><span>Blogs</span></a></li><li><a href=/projects/><span>Projects</span></a></li></ul></div></div></div></nav><div id=content class=container><article class="single-shell single-shell--blogs"><div class="row-fluid navmargin"><div class="page-header single-shell__header"><h1 class=single-shell__title>PatchGuard Analysis - Part 3</h1><p class=single-shell__meta>Fri, Aug 8, 2025</p></div><div class="single-shell__body single-shell__body--with-toc"><div class=single-shell__main><section class="single-shell__author single-shell__author--mobile"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--mobile is-open" data-ui=toc><button class=single-shell__toc-toggle type=button aria-expanded=true aria-controls=single-toc-mobile-blogs-patchguard-analysis-part-3->
-<span class=single-shell__toc-label>Contents</span>
-<span class=single-shell__toc-status aria-hidden=true>[-]</span></button><div id=single-toc-mobile-blogs-patchguard-analysis-part-3- class=single-shell__toc-panel><div class=single-shell__toc-panel-inner><div class=single-shell__toc-body><nav id=TableOfContents-mobile><ul><li><ul><li><ul><li><a href=#triggering-a-check><strong>Triggering a check</strong></a><ul><li><a href=#dpc-execution><strong>DPC Execution</strong></a><ul><li><a href=#non-canonical-deferredcontext-pointer><strong>Non-Canonical DeferredContext Pointer</strong></a></li><li><a href=#triggering-the-exception-handler><strong>Triggering the Exception Handler</strong></a></li><li><a href=#patchguard-context-decryption><strong>PatchGuard Context Decryption</strong></a></li><li><a href=#passing-control-to-verification-routine><strong>Passing Control to Verification Routine</strong></a></li></ul></li><li><a href=#system-thread-method><strong>System Thread Method</strong></a><ul><li><a href=#triggering-the-exception-handler-1><strong>Triggering the Exception Handler</strong></a></li><li><a href=#creating-new-thread><strong>Creating New Thread</strong></a></li><li><a href=#the-decryption-process><strong>The Decryption Process</strong></a></li><li><a href=#post-verification-for-this-case-only><strong>Post verification for this case only</strong></a></li></ul></li><li><a href=#apc-insertion><strong>APC insertion</strong></a></li><li><a href=#kiswinterruptdispatch-method><strong>KiSwInterruptDispatch Method</strong></a></li><li><a href=#breadcrumbs><strong>Breadcrumbs</strong></a></li></ul></li></ul></li></ul></li></ul></nav></div></div></div></section><div class=single-shell__content><h4 id=triggering-a-check><strong>Triggering a check</strong></h4><p>As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.</p><h5 id=dpc-execution><strong>DPC Execution</strong></h5><p>The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:</p><table><thead><tr><th style=text-align:center><strong>0</strong></th><th style=text-align:center>CmpEnableLazyFlushDpcRoutine</th></tr></thead><tbody><tr><td style=text-align:center><strong>1</strong></td><td style=text-align:center>ExpCenturyDpcRoutine</td></tr><tr><td style=text-align:center><strong>2</strong></td><td style=text-align:center>ExpTimeZoneDpcRoutine</td></tr><tr><td style=text-align:center><strong>3</strong></td><td style=text-align:center>ExpTimeRefreshDpcRoutine</td></tr><tr><td style=text-align:center><strong>4</strong></td><td style=text-align:center>CmpLazyFlushDpcRoutine</td></tr><tr><td style=text-align:center><strong>5</strong></td><td style=text-align:center>ExpTimerDpcRoutine</td></tr><tr><td style=text-align:center><strong>6</strong></td><td style=text-align:center>IopTimerDispatch</td></tr><tr><td style=text-align:center><strong>7</strong></td><td style=text-align:center>IopIrpStackProfilerDpcRoutine</td></tr><tr><td style=text-align:center><strong>8</strong></td><td style=text-align:center>KiBalanceSetManagerDeferredRoutine</td></tr><tr><td style=text-align:center><strong>9</strong></td><td style=text-align:center>PopThermalZoneDpc</td></tr><tr><td style=text-align:center><strong>10</strong></td><td style=text-align:center>KiTimerDispatch OR KiDpcDispatch</td></tr><tr><td style=text-align:center><strong>11</strong></td><td style=text-align:center>KiTimerDispatch OR KiDpcDispatch</td></tr><tr><td style=text-align:center><strong>12</strong></td><td style=text-align:center>KiTimerDispatch OR KiDpcDispatch</td></tr></tbody></table><p>Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.</p><h6 id=non-canonical-deferredcontext-pointer><strong>Non-Canonical DeferredContext Pointer</strong></h6><p>The first objective is to determine whether or not the DPC stacked is a PatchGuard DPC or a usual DPC when one of these pointers is called. All of these function take a DPC structure pointer as parameter and it will be used to determine if the DPC comes from PatchGuard or not.</p><p>Also there is cunning. In x64 systems, the memory managements must obey certain rules, in PatchGuard case, it itself is breaking the rule. In the normal case, the addresses are seen like below:</p><ul><li><strong>Canonical (Normal)</strong>: 0xFFFF803C98DABD1 (With 0xFFF)</li><li><strong>Non-Canonical (Anormal)</strong>: 0x803C98DABD1 (Without 0xFFF)</li></ul><p>With breaking the rule, PatchGuard uses exactly Non-Canonical address. So, the checks for the PatchGuard DPC are occurs with this non-canonical address.</p><p>The check is done regarding the argument <strong>KDPC.DeferredContext</strong>, whether it has a canonical address or not. The check is really simple. Here&rsquo;s an example simple snippet from <strong>ExpCenturyDpcRoutine</strong> at <strong>0x1403556C5</strong>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>rax</span>, <span style=color:#66d9ef>rbx</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>sar</span> <span style=color:#66d9ef>rax</span>, <span style=color:#ae81ff>2</span><span style=color:#66d9ef>Fh</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>inc</span> <span style=color:#66d9ef>rax</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>cmp</span> <span style=color:#66d9ef>rax</span>, <span style=color:#ae81ff>1</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>jbe</span> <span style=color:#66d9ef>ContextIsNotPatchGuard</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>eax</span>,<span style=color:#ae81ff>1</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>jmp</span> <span style=color:#66d9ef>Exit</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>ContextIsNotPatchGuard:
-</span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span> <span style=color:#66d9ef>eax</span>,<span style=color:#66d9ef>eax</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Exit:
-</span></span><span style=display:flex><span><span style=color:#a6e22e>ret</span>
-</span></span></code></pre></div><p>If the DeferredContext paramater, which mentioned above has <strong>non-canoncial address</strong>, KiCustomAccessRoutineX is called. An example from <strong>ExpCenturyDpcRoutine</strong>:</p><p><img src=/images/PatchGuard/img87.png alt></p><p>There are KiCustomAccessRoutine functions between 0 to 9. Each function calls KiCustomRecurseRoutineX (Again between 0 to 9) which corresponds to KiCustomAccessRoutine function. Now we will see these function in next header.</p><br><h6 id=triggering-the-exception-handler><strong>Triggering the Exception Handler</strong></h6><p>Like i said, a KiCustomAccessRoutineX function calls KiCustomRecurseRoutineX function with two parameters: <strong>a counter</strong> and <strong>the non-canonical DeferredContex</strong>. The counter is obtained from the last two bits from the deferred context and plus one.</p><p>These KiCustomRecurseRoutineX functions doing simple task in a circle: Decrementing counter and call the next function until the counter is zero. Here&rsquo;s a diagram:</p><p><img src=/images/PatchGuard/checkdiagram.png alt></p><p>The counter, which given to KiCustomAccessRoutineX decreases in KiCustomRecurseRoutineX function. An example from <strong>KiCustomRecurseRoutine0</strong>:</p><p><img src=/images/PatchGuard/img88.png alt></p><p>Or A Pseudocode:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>int</span> counter <span style=color:#f92672>=</span> (DeferredContext <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0x3</span>) <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>;  
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>KiCustomRecurseRoutine0</span>(<span style=color:#66d9ef>int</span> count) { 
-</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (<span style=color:#f92672>--</span>count <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>) { 
-</span></span><span style=display:flex><span>	<span style=color:#75715e>// BOOM! 
-</span></span></span><span style=display:flex><span>	<span style=color:#f92672>*</span>(<span style=color:#66d9ef>int</span><span style=color:#f92672>*</span>)<span style=color:#ae81ff>0xDEADBEEF</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; 
-</span></span><span style=display:flex><span>} <span style=color:#66d9ef>else</span> { 
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>KiCustomRecurseRoutine1</span>(count); 
-</span></span><span style=display:flex><span>}
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>KiCustomRecurseRoutine1</span>(<span style=color:#66d9ef>int</span> count) { 
-</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (<span style=color:#f92672>--</span>count <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>) { 
-</span></span><span style=display:flex><span>	<span style=color:#75715e>// BOOM! 
-</span></span></span><span style=display:flex><span>	<span style=color:#f92672>*</span>(<span style=color:#66d9ef>int</span><span style=color:#f92672>*</span>)<span style=color:#ae81ff>0xDEADBEEF</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; 
-</span></span><span style=display:flex><span>} <span style=color:#66d9ef>else</span> { 
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>KiCustomRecurseRoutine2</span>(count); 
-</span></span><span style=display:flex><span>}
-</span></span><span style=display:flex><span>...
-</span></span></code></pre></div><p>Until the counter is zero, another KiCustomRecurseRoutineX is called. The idea is that PatchGuard will keep decrementing it and eventually, an invalid pointer will be dereferenced. Depending of each original function, a combination of try/except/finally handler will eventually lead to the decryption of the PatchGuard Context Structure.</p><br><h6 id=patchguard-context-decryption><strong>PatchGuard Context Decryption</strong></h6><p>The Exception handler is responsible for decrypting the first layer of the PatchGuard Context Structure. Essentially there are two roughly two layer of decryption:</p><ul><li><strong>First Layer</strong></li></ul><p>The first layer of decryption focuses on the whole context structure. There are multiple different code to do so which is summarized in the following list:</p><table><thead><tr><th style=text-align:left><strong>Index</strong></th><th style=text-align:left><strong>Routine</strong></th><th style=text-align:left><strong>Layer Encryption</strong></th></tr></thead><tbody><tr><td style=text-align:left><strong>0</strong></td><td style=text-align:left>CmpEnableLazyFlushDpcRoutine</td><td style=text-align:left>Method 1</td></tr><tr><td style=text-align:left><strong>1</strong></td><td style=text-align:left>ExpCenturyDpcRoutine</td><td style=text-align:left>Method 1</td></tr><tr><td style=text-align:left><strong>2</strong></td><td style=text-align:left>ExpTimeZoneDpcRoutine</td><td style=text-align:left>Method 1</td></tr><tr><td style=text-align:left><strong>3</strong></td><td style=text-align:left>ExpTimeRefreshDpcRoutine</td><td style=text-align:left>Method 2</td></tr><tr><td style=text-align:left><strong>4</strong></td><td style=text-align:left>CmpEnableLazyFlushDpcRoutine</td><td style=text-align:left>Method 1</td></tr><tr><td style=text-align:left><strong>5</strong></td><td style=text-align:left>ExpTimerDpcRoutine</td><td style=text-align:left>Method 2</td></tr><tr><td style=text-align:left><strong>6</strong></td><td style=text-align:left>IopTimerDispatch</td><td style=text-align:left>Method 2</td></tr><tr><td style=text-align:left><strong>7</strong></td><td style=text-align:left>IopIrpStackProfilerDpcRoutine</td><td style=text-align:left>Method 1</td></tr><tr><td style=text-align:left><strong>8</strong></td><td style=text-align:left>KiBalanceSetManagerDeferredRoutine</td><td style=text-align:left>Method 1</td></tr><tr><td style=text-align:left><strong>9</strong></td><td style=text-align:left>PopThermalZoneDpc</td><td style=text-align:left>Method 2</td></tr><tr><td style=text-align:left><strong>10-12</strong></td><td style=text-align:left>KiTimerDispatch</td><td style=text-align:left>Method 1 + hardcoded key</td></tr><tr><td style=text-align:left><strong>10-12</strong></td><td style=text-align:left>KiDpcDispatch</td><td style=text-align:left>No 1st layer encryption</td></tr></tbody></table><p>These encryption/decryption routines use random values from KiWaitNever and KiWaitAlways. These global variables holding random values, generated at boot time and used by KiInitPatchGuardContext to encrypt the PatchGuard Context Structure. You can check an example at <strong>0x1406C8E10</strong> address of PopThermalZoneDpc function. Also, don&rsquo;t remember that an attacker which want to interact with the structure can also use these global variables.</p><br><ul><li><strong>Before Second Layer: First Layer (With a Half)</strong></li></ul><p>Before applying the second layer of decryption, PatchGuard rewrites four bytes at beginning of the context structure. Ironically, these bytes represent the code that will decrypt the context structure. For instance, we can see it at <strong>0x1406C587C</strong> of ExpCenturyDpcRoutine:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>byte</span> <span style=color:#66d9ef>ptr</span> [<span style=color:#66d9ef>r11</span>], <span style=color:#ae81ff>2</span><span style=color:#66d9ef>Eh</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>byte</span> <span style=color:#66d9ef>ptr</span> [<span style=color:#66d9ef>r11</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>1</span>], <span style=color:#ae81ff>48</span><span style=color:#66d9ef>h</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>byte</span> <span style=color:#66d9ef>ptr</span> [<span style=color:#66d9ef>r11</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>2</span>], <span style=color:#ae81ff>31</span><span style=color:#66d9ef>h</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>byte</span> <span style=color:#66d9ef>ptr</span> [<span style=color:#66d9ef>r11</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>3</span>], <span style=color:#ae81ff>11</span><span style=color:#66d9ef>h</span>
-</span></span></code></pre></div><p>Also at <strong>0x1406C9064</strong> (PopThermalZoneDpc), it uses xor with two hardcoded values:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#f92672>*</span>PatchGuardCtx <span style=color:#f92672>=</span> <span style=color:#ae81ff>0xAD1B6FF5</span> <span style=color:#f92672>^</span> <span style=color:#ae81ff>0xBC2A27DB</span>; ; Result <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x1131482E</span>
-</span></span></code></pre></div><p>In ExpTimeZoneDpcRoutine, it rewrites directly a DWORD32 and rotate it (0x1406C9508):</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>qword</span> <span style=color:#66d9ef>ptr</span> [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>38</span><span style=color:#66d9ef>h</span>], <span style=color:#ae81ff>31482</span><span style=color:#66d9ef>E11h</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rdx</span>, [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>38</span><span style=color:#66d9ef>h</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>shl</span>     <span style=color:#66d9ef>edx</span>, <span style=color:#ae81ff>18</span><span style=color:#66d9ef>h</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rcx</span>, [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>38</span><span style=color:#66d9ef>h</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>shr</span>     <span style=color:#66d9ef>rcx</span>, <span style=color:#ae81ff>8</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>or</span>      <span style=color:#66d9ef>rcx</span>, <span style=color:#66d9ef>rdx</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>38</span><span style=color:#66d9ef>h</span>], <span style=color:#66d9ef>rcx</span> <span style=color:#75715e>; 0x1131482E
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rax</span>, [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>38</span><span style=color:#66d9ef>h</span>] 
-</span></span><span style=display:flex><span><span style=color:#66d9ef>mov</span>     [<span style=color:#66d9ef>r11</span>], <span style=color:#66d9ef>eax</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#75715e>; Call 0x1131482E
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span>     <span style=color:#66d9ef>r9d</span>, <span style=color:#66d9ef>r9d</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span>     <span style=color:#66d9ef>r8d</span>, <span style=color:#66d9ef>r8d</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rdx</span>, [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>40</span><span style=color:#66d9ef>h</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rcx</span>, <span style=color:#66d9ef>r11</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rax</span>, <span style=color:#66d9ef>r11</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>call</span>    <span style=color:#66d9ef>_guard_dispatch_icall_no_overrides</span>
-</span></span></code></pre></div><p>At this point, the usage of XOR is typical of Just-In-Time code, and since the code around is not very clear this is a possibility. Otherwise, these &ldquo;tricks&rdquo; were introduced volontarely to prevent some magic values to be searchable in the code, but it doesn&rsquo;t sound like something difficult to overcome.</p><br><ul><li><strong>Second Layer</strong></li></ul><p>This layer is relevant to CmpAppendDllSection. Remember this function from <strong>First Section of PatchGuard Context Structure</strong>. The First section of the structure holds the codes of CmpAppendDllSection. The function is called directly at the end of the previous decryption layer called.</p><p>Essentially this function has two parts. One of them is that it rewrites its own instruction and decrypt the very next instruction:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>CmpAppendDllSection</span> <span style=color:#66d9ef>proc</span> <span style=color:#66d9ef>near</span>
-</span></span><span style=display:flex><span><span style=color:#75715e>; Rcx points to address which is current instruction
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span> [<span style=color:#66d9ef>rcx</span>], <span style=color:#66d9ef>rdx</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span> [<span style=color:#66d9ef>rcx</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>8</span>], <span style=color:#66d9ef>rdx</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span> [<span style=color:#66d9ef>rcx</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>10</span><span style=color:#66d9ef>h</span>], <span style=color:#66d9ef>rdx</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span> [<span style=color:#66d9ef>rcx</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>18</span><span style=color:#66d9ef>h</span>], <span style=color:#66d9ef>rdx</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span> [<span style=color:#66d9ef>rcx</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>20</span><span style=color:#66d9ef>h</span>], <span style=color:#66d9ef>rdx</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span> [<span style=color:#66d9ef>rcx</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>28</span><span style=color:#66d9ef>h</span>], <span style=color:#66d9ef>rdx</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span> [<span style=color:#66d9ef>rcx</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>30</span><span style=color:#66d9ef>h</span>], <span style=color:#66d9ef>rdx</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span> [<span style=color:#66d9ef>rcx</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>38</span><span style=color:#66d9ef>h</span>], <span style=color:#66d9ef>rdx</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>...</span>
-</span></span></code></pre></div><p>And last part is relevant to decryption loop for the whole context structure:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span>loc_140BFC65F:
-</span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span> [<span style=color:#66d9ef>rdx</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>rcx</span>*<span style=color:#ae81ff>8</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>0</span><span style=color:#66d9ef>C0h</span>], <span style=color:#66d9ef>rax</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>ror</span> <span style=color:#66d9ef>rax</span>, <span style=color:#66d9ef>cl</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>btc</span> <span style=color:#66d9ef>rax</span>, <span style=color:#66d9ef>rax</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>loop</span> <span style=color:#66d9ef>loc_140BFC65F</span>
-</span></span></code></pre></div><p>And then, the context structure will be ready to use.<br></p><h6 id=passing-control-to-verification-routine><strong>Passing Control to Verification Routine</strong></h6><p>After the decryption, two functions are called after that. The first function is called directly from the structure. Thıs function is a copy of <strong>sub_140BCADF0</strong> function. This function does two things:</p><ul><li><strong>Verify the integrity of the PatchGuard Context structure and 47 Routines</strong></li></ul><p>Its mainly job is that verify the integrity of the structure and 47 routines. For instance, the first code to be checked is the epilogue of ExpWorkerThread calling KeBugCheckEx at <strong>0x1402C375B</strong>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span>loc_1402C375B:
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>r9</span>, <span style=color:#66d9ef>rsi</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     [<span style=color:#66d9ef>rsp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>78</span><span style=color:#66d9ef>h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>BugCheckParameter4</span>], <span style=color:#ae81ff>0</span><span style=color:#66d9ef>FFFFFFFFFFFFFFFFh</span> <span style=color:#75715e>; BugCheckParameter4
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>r8</span>, <span style=color:#66d9ef>r15</span>         <span style=color:#75715e>; BugCheckParameter2
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>edx</span>, <span style=color:#ae81ff>5</span>          <span style=color:#75715e>; BugCheckParameter1
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>ecx</span>, <span style=color:#ae81ff>0</span><span style=color:#66d9ef>E4h</span>       <span style=color:#75715e>; BugCheckCode
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>call</span>    <span style=color:#66d9ef>KeBugCheckEx</span>
-</span></span></code></pre></div><p>The second check is exception handler of <strong>ExpWorkerThread</strong> and the last check is <strong>KeIpiGenericCall</strong>.</p><br><ul><li><strong>Initialize WORK_QUEUE_ITEM Structure</strong></li></ul><p>As we can see at <strong>0x140BCBB8C</strong>, it initialize a WORK_QUEUE_ITEM structure:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>StubIndex <span style=color:#f92672>=</span> Ctx <span style=color:#f92672>+</span> <span style=color:#f92672>*</span>(Ctx <span style=color:#f92672>+</span> <span style=color:#ae81ff>2064</span>);
-</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> ( (<span style=color:#f92672>*</span>(Ctx <span style=color:#f92672>+</span> <span style=color:#ae81ff>2520</span>) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0x8000000</span>) <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span> ) {
-</span></span><span style=display:flex><span>	GetRandomValue <span style=color:#f92672>=</span> <span style=color:#a6e22e>__rdtsc</span>();
-</span></span><span style=display:flex><span>    RotatedValue <span style=color:#f92672>=</span> <span style=color:#a6e22e>__ROR8__</span>(GetRandomValue, <span style=color:#ae81ff>3</span>); <span style=color:#75715e>// Shift random value 3 bits right
-</span></span></span><span style=display:flex><span>    HashMix <span style=color:#f92672>=</span> ((RotatedValue <span style=color:#f92672>^</span> GetRandomValue) <span style=color:#f92672>*</span> <span style=color:#ae81ff>0x7010008004002001uLL</span>) <span style=color:#f92672>&gt;&gt;</span> <span style=color:#ae81ff>64</span>;
-</span></span><span style=display:flex><span>    StubIndex <span style=color:#f92672>=</span> KiMachineCheckControl <span style=color:#f92672>+</span> <span style=color:#ae81ff>16</span> <span style=color:#f92672>*</span> (((RotatedValue <span style=color:#f92672>^</span> GetRandomValue) <span style=color:#f92672>^</span> HashMix) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xF</span>);
-</span></span><span style=display:flex><span>  }
-</span></span><span style=display:flex><span>...
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#f92672>*</span>(Ctx <span style=color:#f92672>+</span> <span style=color:#ae81ff>1992</span>) <span style=color:#f92672>=</span> StubIndex; <span style=color:#75715e>/* 0x140BCBB8C */</span>
-</span></span><span style=display:flex><span><span style=color:#f92672>*</span>(Ctx <span style=color:#f92672>+</span> <span style=color:#ae81ff>2000</span>) <span style=color:#f92672>=</span> v137;
-</span></span><span style=display:flex><span><span style=color:#f92672>*</span>(Ctx <span style=color:#f92672>+</span> <span style=color:#ae81ff>1976</span>) <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
-</span></span></code></pre></div><p>The WorkerRoutine is picked out of three stub that will call a verification routine as a WorkItem. The three stubs are:</p><br><ol><li>As we see previously (check the method 7), a random stub picked from <strong>KiMachineCheckControl</strong> array if the method 7 selected. In this case the field Parameter points to the PatchGuard context.<br></li><li>The copy of FsRtlUninitializeSmallMcb in the PatchGuard context structure. In this case the Parameter is also the PatchGuard context sub_1401812E0, which is only a stub to call the deferred routine from a DPC passed as a parameter.<br></li></ol><p>The second call is relevant to <strong>ExQueueWorkItem</strong>. The WORK_QUEUE_ITEM structure which initialized is passed as parameter. We can see it at <strong>0x140520E05</strong> from RtlpComputeEpilogueOffset:</p><p><img src=/images/PatchGuard/img89.png alt></p><p>RtlpComputeEpilogueOffset is called by these functions which relevant to DPC Execution method:</p><p><img src=/images/PatchGuard/img90.png alt></p><p>Notice that it&rsquo;s also called by <strong>FsRtlTruncateSmallMcb</strong> function. In FsRtlTruncateSmallMcb, it is called twice after KiCustomAccessRoutine0 routine (Check <strong>0x1406C9B20</strong> and <strong>0x14068FC7E</strong>).</p><h5 id=system-thread-method><strong>System Thread Method</strong></h5><p>As we discussed before, PatchGuard creates a system thread in method 3. Pg_InitMethod3SystemThread is called directly in KiInitPatchGuardContext.</p><h6 id=triggering-the-exception-handler-1><strong>Triggering the Exception Handler</strong></h6><p>In this method, PsCreateSystemThread is called via exception handler. Actually, the codes of triggering the exception handler is strange.</p><p>We can start our journey with <strong>0x140BD7F02</strong> address. Here, cpuid instruction is executed by KiInitPatchGuardContext:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span>loc_140BD7F02:
-</span></span><span style=display:flex><span><span style=color:#a6e22e>sti</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>xor</span>     <span style=color:#66d9ef>ecx</span>, <span style=color:#66d9ef>ecx</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>eax</span>, <span style=color:#ae81ff>80000008</span><span style=color:#66d9ef>h</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>cpuid</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>edi</span>, <span style=color:#66d9ef>eax</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>shr</span>     <span style=color:#66d9ef>edi</span>, <span style=color:#ae81ff>8</span>          <span style=color:#75715e>; Shift 8 bytes
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     [<span style=color:#66d9ef>r14</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>940</span><span style=color:#66d9ef>h</span>], <span style=color:#66d9ef>dil</span> <span style=color:#75715e>; Pass the result to the structure. 
-</span></span></span></code></pre></div><p>Firstly, the eax gets <strong>0x80000008</strong> value, then cpuid is executed. After the execution, the result is shifted 8 bytes to the right and the result is passed to 0x940 offset of the structure.</p><p>This value 0x80000008 corresponds to <strong>linear/physical address size data</strong>. From Felix Clouiter<sup>[5]</sup>:</p><blockquote><p><em>&ldquo;Two types of information are returned: basic and extended function information. If a value entered for CPUID.EAX is higher than the maximum input value for basic or extended function for that processor then the data for the highest basic information leaf is returned. For example, using some Intel processors, the following is true:
-&mldr;
-CPUID.EAX = 80000008H (</em> Returns linear/physical address size data. <em>)&rdquo;</em></p></blockquote><p>Then i wanna see the result and i created a driver with MASM Assembly:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>extern</span> <span style=color:#66d9ef>DbgPrintEx</span>:<span style=color:#66d9ef>PROC</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>.data</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>UnloadedMsg</span> <span style=color:#66d9ef>db</span> <span style=color:#960050;background-color:#1e0010>&#34;</span><span style=color:#66d9ef>Driver</span> <span style=color:#66d9ef>Unloaded</span>!<span style=color:#960050;background-color:#1e0010>&#34;</span>,<span style=color:#ae81ff>0</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>.code</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>UnloadDriver</span> <span style=color:#66d9ef>PROC</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>sub</span> <span style=color:#66d9ef>rsp</span>,<span style=color:#ae81ff>28</span><span style=color:#66d9ef>h</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>lea</span> <span style=color:#66d9ef>r8</span>,[<span style=color:#66d9ef>UnloadedMsg</span>]
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>xor</span> <span style=color:#66d9ef>rdx</span>,<span style=color:#66d9ef>rdx</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>xor</span> <span style=color:#66d9ef>rcx</span>,<span style=color:#66d9ef>rcx</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>call</span> <span style=color:#66d9ef>DbgPrintEx</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>add</span> <span style=color:#66d9ef>rsp</span>,<span style=color:#ae81ff>28</span><span style=color:#66d9ef>h</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>xor</span> <span style=color:#66d9ef>rax</span>,<span style=color:#66d9ef>rax</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>ret</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>UnloadDriver</span> <span style=color:#66d9ef>ENDP</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>DriverEntry</span> <span style=color:#66d9ef>PROC</span>
-</span></span><span style=display:flex><span>	<span style=color:#75715e>; /* Prepare UnloadDriver */
-</span></span></span><span style=display:flex><span>	<span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>rax</span>,<span style=color:#66d9ef>rcx</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>lea</span> <span style=color:#66d9ef>rcx</span>,[<span style=color:#66d9ef>UnloadDriver</span>]
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>qword</span> <span style=color:#66d9ef>ptr</span> [<span style=color:#66d9ef>rax</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>68</span><span style=color:#66d9ef>h</span>],<span style=color:#66d9ef>rcx</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>eax</span>,<span style=color:#ae81ff>80000008</span><span style=color:#66d9ef>h</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>cpuid</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>edi</span>,<span style=color:#66d9ef>eax</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>shr</span> <span style=color:#66d9ef>edi</span>,<span style=color:#ae81ff>8</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>xor</span> <span style=color:#66d9ef>rax</span>,<span style=color:#66d9ef>rax</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>ret</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>DriverEntry</span> <span style=color:#66d9ef>ENDP</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>END</span>
-</span></span></code></pre></div><p>Here&rsquo;s result:</p><p><img src=/images/PatchGuard/img91.png alt></p><p>the size result is <strong>0x302d</strong>. After the shift process, edi register is taken 0x30 value:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span><span style=color:#a6e22e>kd</span><span style=color:#960050;background-color:#1e0010>&gt;</span> <span style=color:#66d9ef>t</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>cpuid</span>!<span style=color:#66d9ef>DriverEntry</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>0x17</span>:
-</span></span><span style=display:flex><span><span style=color:#a6e22e>fffff800</span><span style=color:#960050;background-color:#1e0010>`</span><span style=color:#ae81ff>76591035</span> <span style=color:#66d9ef>c1ef08</span>          <span style=color:#66d9ef>shr</span>     <span style=color:#66d9ef>edi</span>,<span style=color:#ae81ff>8</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>kd</span><span style=color:#960050;background-color:#1e0010>&gt;</span> <span style=color:#66d9ef>r</span> <span style=color:#66d9ef>edi</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>edi</span><span style=color:#960050;background-color:#1e0010>=</span><span style=color:#ae81ff>302</span><span style=color:#66d9ef>d</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>kd</span><span style=color:#960050;background-color:#1e0010>&gt;</span> <span style=color:#66d9ef>t</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>cpuid</span>!<span style=color:#66d9ef>DriverEntry</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>0x1a</span>:
-</span></span><span style=display:flex><span><span style=color:#a6e22e>fffff800</span><span style=color:#960050;background-color:#1e0010>`</span><span style=color:#ae81ff>76591038</span> <span style=color:#ae81ff>33</span><span style=color:#66d9ef>c0</span>            <span style=color:#66d9ef>xor</span>     <span style=color:#66d9ef>eax</span>,<span style=color:#66d9ef>eax</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>kd</span><span style=color:#960050;background-color:#1e0010>&gt;</span> <span style=color:#66d9ef>r</span> <span style=color:#66d9ef>edi</span> 
-</span></span><span style=display:flex><span><span style=color:#66d9ef>edi</span><span style=color:#960050;background-color:#1e0010>=</span><span style=color:#ae81ff>30</span>
-</span></span></code></pre></div><p>So, we can see that <strong>0x940</strong> offset contains 0x30 value.</p><p>This value is used at <strong>0x140BFAEAD</strong> to trigger the exception in Pg_InitMethod3SystemThread:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span>loc_140BFAE88:
-</span></span><span style=display:flex><span><span style=color:#a6e22e>...</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>al</span>, [<span style=color:#66d9ef>rsi</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>940</span><span style=color:#66d9ef>h</span>]  <span style=color:#75715e>; Get 0x30
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>dec</span>     <span style=color:#66d9ef>al</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>movzx</span>   <span style=color:#66d9ef>r10d</span>, <span style=color:#66d9ef>al</span>        <span style=color:#75715e>; r10d -&gt; 0x2F
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>r11d</span>, <span style=color:#ae81ff>3</span><span style=color:#66d9ef>Fh</span> <span style=color:#75715e>; &#39;?&#39;
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>sub</span>     <span style=color:#66d9ef>r11d</span>, <span style=color:#66d9ef>r10d</span>      <span style=color:#75715e>; Result: 0x10
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>...</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>div</span>     <span style=color:#66d9ef>r11</span>
-</span></span></code></pre></div><p>The value is subtracted with <strong>0x3F</strong> value, so that if the maximum virtual address size is 0x3F, then rbx is 0 and the exception will be triggered:</p><pre tabindex=0><code>Breakpoint 0 hit
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="/favicon.ico">
+    <link rel="canonical" href="/blogs/patchguard-analysis-part-3/">
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/projects/">
+                                    
+                                    <span>Projects</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div id="content" class="container">
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+    
+
+
+
+
+<article class="single-shell single-shell--blogs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">PatchGuard Analysis - Part 3</h1>
+            <p class="single-shell__meta">Fri, Aug 8, 2025</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-blogs-patchguard-analysis-part-3-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-blogs-patchguard-analysis-part-3-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#triggering-a-check"><strong>Triggering a check</strong></a>
+              <ul>
+                <li><a href="#dpc-execution"><strong>DPC Execution</strong></a>
+                  <ul>
+                    <li><a href="#non-canonical-deferredcontext-pointer"><strong>Non-Canonical DeferredContext Pointer</strong></a></li>
+                    <li><a href="#triggering-the-exception-handler"><strong>Triggering the Exception Handler</strong></a></li>
+                    <li><a href="#patchguard-context-decryption"><strong>PatchGuard Context Decryption</strong></a></li>
+                    <li><a href="#passing-control-to-verification-routine"><strong>Passing Control to Verification Routine</strong></a></li>
+                  </ul>
+                </li>
+                <li><a href="#system-thread-method"><strong>System Thread Method</strong></a>
+                  <ul>
+                    <li><a href="#triggering-the-exception-handler-1"><strong>Triggering the Exception Handler</strong></a></li>
+                    <li><a href="#creating-new-thread"><strong>Creating New Thread</strong></a></li>
+                    <li><a href="#the-decryption-process"><strong>The Decryption Process</strong></a></li>
+                    <li><a href="#post-verification-for-this-case-only"><strong>Post verification for this case only</strong></a></li>
+                  </ul>
+                </li>
+                <li><a href="#apc-insertion"><strong>APC insertion</strong></a></li>
+                <li><a href="#kiswinterruptdispatch-method"><strong>KiSwInterruptDispatch Method</strong></a></li>
+                <li><a href="#breadcrumbs"><strong>Breadcrumbs</strong></a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <h4 id="triggering-a-check"><strong>Triggering a check</strong></h4>
+<p>As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.</p>
+<h5 id="dpc-execution"><strong>DPC Execution</strong></h5>
+<p>The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: center"><strong>0</strong></th>
+          <th style="text-align: center">CmpEnableLazyFlushDpcRoutine</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center"><strong>1</strong></td>
+          <td style="text-align: center">ExpCenturyDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>2</strong></td>
+          <td style="text-align: center">ExpTimeZoneDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>3</strong></td>
+          <td style="text-align: center">ExpTimeRefreshDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>4</strong></td>
+          <td style="text-align: center">CmpLazyFlushDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>5</strong></td>
+          <td style="text-align: center">ExpTimerDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>6</strong></td>
+          <td style="text-align: center">IopTimerDispatch</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>7</strong></td>
+          <td style="text-align: center">IopIrpStackProfilerDpcRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>8</strong></td>
+          <td style="text-align: center">KiBalanceSetManagerDeferredRoutine</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>9</strong></td>
+          <td style="text-align: center">PopThermalZoneDpc</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>10</strong></td>
+          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>11</strong></td>
+          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>12</strong></td>
+          <td style="text-align: center">KiTimerDispatch OR KiDpcDispatch</td>
+      </tr>
+  </tbody>
+</table>
+<p>Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.</p>
+<h6 id="non-canonical-deferredcontext-pointer"><strong>Non-Canonical DeferredContext Pointer</strong></h6>
+<p>The first objective is to determine whether or not the DPC stacked is a PatchGuard DPC or a usual DPC when one of these pointers is called. All of these function take a DPC structure pointer as parameter and it will be used to determine if the DPC comes from PatchGuard or not.</p>
+<p>Also there is cunning. In x64 systems, the memory managements must obey certain rules, in PatchGuard case, it itself is breaking the rule. In the normal case, the addresses are seen like below:</p>
+<ul>
+<li><strong>Canonical (Normal)</strong>: 0xFFFF803C98DABD1 (With 0xFFF)</li>
+<li><strong>Non-Canonical (Anormal)</strong>: 0x803C98DABD1 (Without 0xFFF)</li>
+</ul>
+<p>With breaking the rule, PatchGuard uses exactly Non-Canonical address. So, the checks for the PatchGuard DPC are occurs with this non-canonical address.</p>
+<p>The check is done regarding the argument <strong>KDPC.DeferredContext</strong>, whether it has a canonical address or not. The check is really simple. Here&rsquo;s an example simple snippet from <strong>ExpCenturyDpcRoutine</strong> at <strong>0x1403556C5</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">rbx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sar</span> <span style="color:#66d9ef">rax</span>, <span style="color:#ae81ff">2</span><span style="color:#66d9ef">Fh</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">inc</span> <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cmp</span> <span style="color:#66d9ef">rax</span>, <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jbe</span> <span style="color:#66d9ef">ContextIsNotPatchGuard</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>,<span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jmp</span> <span style="color:#66d9ef">Exit</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ContextIsNotPatchGuard:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">eax</span>,<span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Exit:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ret</span>
+</span></span></code></pre></div><p>If the DeferredContext paramater, which mentioned above has <strong>non-canoncial address</strong>, KiCustomAccessRoutineX is called. An example from <strong>ExpCenturyDpcRoutine</strong>:</p>
+<p><img src="/images/PatchGuard/img87.png" alt=""></p>
+<p>There are KiCustomAccessRoutine functions between 0 to 9. Each function calls KiCustomRecurseRoutineX (Again between 0 to 9) which corresponds to  KiCustomAccessRoutine function. Now we will see these function in next header.</p>
+<br>
+<h6 id="triggering-the-exception-handler"><strong>Triggering the Exception Handler</strong></h6>
+<p>Like i said, a KiCustomAccessRoutineX function calls KiCustomRecurseRoutineX function with two parameters: <strong>a counter</strong> and <strong>the non-canonical DeferredContex</strong>. The counter is obtained from the last two bits from the deferred context and plus one.</p>
+<p>These KiCustomRecurseRoutineX functions doing simple task in a circle: Decrementing counter and call the next function until the counter is zero.  Here&rsquo;s a diagram:</p>
+<p><img src="/images/PatchGuard/checkdiagram.png" alt=""></p>
+<p>The counter, which given to KiCustomAccessRoutineX decreases in KiCustomRecurseRoutineX function. An example from <strong>KiCustomRecurseRoutine0</strong>:</p>
+<p><img src="/images/PatchGuard/img88.png" alt=""></p>
+<p>Or A Pseudocode:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> counter <span style="color:#f92672">=</span> (DeferredContext <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0x3</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>;  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">KiCustomRecurseRoutine0</span>(<span style="color:#66d9ef">int</span> count) { 
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">--</span>count <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) { 
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// BOOM! 
+</span></span></span><span style="display:flex;"><span>	<span style="color:#f92672">*</span>(<span style="color:#66d9ef">int</span><span style="color:#f92672">*</span>)<span style="color:#ae81ff">0xDEADBEEF</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; 
+</span></span><span style="display:flex;"><span>} <span style="color:#66d9ef">else</span> { 
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">KiCustomRecurseRoutine1</span>(count); 
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">KiCustomRecurseRoutine1</span>(<span style="color:#66d9ef">int</span> count) { 
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">--</span>count <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) { 
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// BOOM! 
+</span></span></span><span style="display:flex;"><span>	<span style="color:#f92672">*</span>(<span style="color:#66d9ef">int</span><span style="color:#f92672">*</span>)<span style="color:#ae81ff">0xDEADBEEF</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; 
+</span></span><span style="display:flex;"><span>} <span style="color:#66d9ef">else</span> { 
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">KiCustomRecurseRoutine2</span>(count); 
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>Until the counter is zero, another KiCustomRecurseRoutineX is called. The idea is that PatchGuard will keep decrementing it and eventually, an invalid pointer will be dereferenced. Depending of each original function, a combination of try/except/finally handler will eventually lead to the decryption of the PatchGuard Context Structure.</p>
+<br>
+<h6 id="patchguard-context-decryption"><strong>PatchGuard Context Decryption</strong></h6>
+<p>The Exception handler is responsible for decrypting the first layer of the PatchGuard Context Structure. Essentially there are two roughly two layer of decryption:</p>
+<ul>
+<li><strong>First Layer</strong></li>
+</ul>
+<p>The first layer of decryption focuses on the whole context structure. There are multiple different code to do so which is summarized in the following list:</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left"><strong>Index</strong></th>
+          <th style="text-align: left"><strong>Routine</strong></th>
+          <th style="text-align: left"><strong>Layer Encryption</strong></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><strong>0</strong></td>
+          <td style="text-align: left">CmpEnableLazyFlushDpcRoutine</td>
+          <td style="text-align: left">Method 1</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>1</strong></td>
+          <td style="text-align: left">ExpCenturyDpcRoutine</td>
+          <td style="text-align: left">Method 1</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>2</strong></td>
+          <td style="text-align: left">ExpTimeZoneDpcRoutine</td>
+          <td style="text-align: left">Method 1</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>3</strong></td>
+          <td style="text-align: left">ExpTimeRefreshDpcRoutine</td>
+          <td style="text-align: left">Method 2</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>4</strong></td>
+          <td style="text-align: left">CmpEnableLazyFlushDpcRoutine</td>
+          <td style="text-align: left">Method 1</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>5</strong></td>
+          <td style="text-align: left">ExpTimerDpcRoutine</td>
+          <td style="text-align: left">Method 2</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>6</strong></td>
+          <td style="text-align: left">IopTimerDispatch</td>
+          <td style="text-align: left">Method 2</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>7</strong></td>
+          <td style="text-align: left">IopIrpStackProfilerDpcRoutine</td>
+          <td style="text-align: left">Method 1</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>8</strong></td>
+          <td style="text-align: left">KiBalanceSetManagerDeferredRoutine</td>
+          <td style="text-align: left">Method 1</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>9</strong></td>
+          <td style="text-align: left">PopThermalZoneDpc</td>
+          <td style="text-align: left">Method 2</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>10-12</strong></td>
+          <td style="text-align: left">KiTimerDispatch</td>
+          <td style="text-align: left">Method 1 + hardcoded key</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>10-12</strong></td>
+          <td style="text-align: left">KiDpcDispatch</td>
+          <td style="text-align: left">No 1st layer encryption</td>
+      </tr>
+  </tbody>
+</table>
+<p>These encryption/decryption routines use random values from KiWaitNever and KiWaitAlways. These global variables holding random values, generated at boot time and used by KiInitPatchGuardContext to encrypt the PatchGuard Context Structure. You can check an example at <strong>0x1406C8E10</strong> address of PopThermalZoneDpc function. Also, don&rsquo;t remember that an attacker which want to interact with the structure can also use these global variables.</p>
+<br>
+<ul>
+<li><strong>Before Second Layer: First Layer (With a Half)</strong></li>
+</ul>
+<p>Before applying the second layer of decryption, PatchGuard rewrites four bytes at beginning of the context structure.  Ironically, these bytes represent the code that will decrypt the context structure. For instance, we can see it at <strong>0x1406C587C</strong> of ExpCenturyDpcRoutine:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">byte</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">r11</span>], <span style="color:#ae81ff">2</span><span style="color:#66d9ef">Eh</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">byte</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">r11</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">1</span>], <span style="color:#ae81ff">48</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">byte</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">r11</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">2</span>], <span style="color:#ae81ff">31</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">byte</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">r11</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">3</span>], <span style="color:#ae81ff">11</span><span style="color:#66d9ef">h</span>
+</span></span></code></pre></div><p>Also at <strong>0x1406C9064</strong> (PopThermalZoneDpc), it uses xor with two hardcoded values:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#f92672">*</span>PatchGuardCtx <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xAD1B6FF5</span> <span style="color:#f92672">^</span> <span style="color:#ae81ff">0xBC2A27DB</span>; ; Result <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x1131482E</span>
+</span></span></code></pre></div><p>In ExpTimeZoneDpcRoutine, it rewrites directly a DWORD32 and rotate it (0x1406C9508):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">qword</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">38</span><span style="color:#66d9ef">h</span>], <span style="color:#ae81ff">31482</span><span style="color:#66d9ef">E11h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rdx</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">38</span><span style="color:#66d9ef">h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">shl</span>     <span style="color:#66d9ef">edx</span>, <span style="color:#ae81ff">18</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rcx</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">38</span><span style="color:#66d9ef">h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">shr</span>     <span style="color:#66d9ef">rcx</span>, <span style="color:#ae81ff">8</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">or</span>      <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">rdx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">38</span><span style="color:#66d9ef">h</span>], <span style="color:#66d9ef">rcx</span> <span style="color:#75715e">; 0x1131482E
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">38</span><span style="color:#66d9ef">h</span>] 
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">mov</span>     [<span style="color:#66d9ef">r11</span>], <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">; Call 0x1131482E
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span>     <span style="color:#66d9ef">r9d</span>, <span style="color:#66d9ef">r9d</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span>     <span style="color:#66d9ef">r8d</span>, <span style="color:#66d9ef">r8d</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rdx</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">40</span><span style="color:#66d9ef">h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">r11</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">r11</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">_guard_dispatch_icall_no_overrides</span>
+</span></span></code></pre></div><p>At this point, the usage of XOR is typical of Just-In-Time code, and since the code around is not very clear this is a possibility. Otherwise, these &ldquo;tricks&rdquo; were introduced volontarely to prevent some magic values to be searchable in the code, but it doesn&rsquo;t sound like something difficult to overcome.</p>
+<br>
+<ul>
+<li><strong>Second Layer</strong></li>
+</ul>
+<p>This layer is relevant to CmpAppendDllSection. Remember this function from <strong>First Section of PatchGuard Context Structure</strong>. The First section of the structure holds the codes of CmpAppendDllSection. The function is called directly at the end of the previous decryption layer called.</p>
+<p>Essentially this function has two parts. One of them is that it rewrites its own instruction and decrypt the very next instruction:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">CmpAppendDllSection</span> <span style="color:#66d9ef">proc</span> <span style="color:#66d9ef">near</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">; Rcx points to address which is current instruction
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> [<span style="color:#66d9ef">rcx</span>], <span style="color:#66d9ef">rdx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> [<span style="color:#66d9ef">rcx</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span>], <span style="color:#66d9ef">rdx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> [<span style="color:#66d9ef">rcx</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">10</span><span style="color:#66d9ef">h</span>], <span style="color:#66d9ef">rdx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> [<span style="color:#66d9ef">rcx</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">18</span><span style="color:#66d9ef">h</span>], <span style="color:#66d9ef">rdx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> [<span style="color:#66d9ef">rcx</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">20</span><span style="color:#66d9ef">h</span>], <span style="color:#66d9ef">rdx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> [<span style="color:#66d9ef">rcx</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">28</span><span style="color:#66d9ef">h</span>], <span style="color:#66d9ef">rdx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> [<span style="color:#66d9ef">rcx</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">30</span><span style="color:#66d9ef">h</span>], <span style="color:#66d9ef">rdx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> [<span style="color:#66d9ef">rcx</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">38</span><span style="color:#66d9ef">h</span>], <span style="color:#66d9ef">rdx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span></code></pre></div><p>And last part is relevant to decryption loop for the whole context structure:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BFC65F:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span> [<span style="color:#66d9ef">rdx</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">rcx</span>*<span style="color:#ae81ff">8</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">C0h</span>], <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ror</span> <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">cl</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">btc</span> <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">loop</span> <span style="color:#66d9ef">loc_140BFC65F</span>
+</span></span></code></pre></div><p>And then, the context structure will be ready to use.
+<br></p>
+<h6 id="passing-control-to-verification-routine"><strong>Passing Control to Verification Routine</strong></h6>
+<p>After the decryption, two functions are called after that. The first function is called directly from the structure. Thıs function is a copy of <strong>sub_140BCADF0</strong> function. This function does two things:</p>
+<ul>
+<li><strong>Verify the integrity of the PatchGuard Context structure and 47 Routines</strong></li>
+</ul>
+<p>Its mainly job is that verify the integrity of the structure and 47 routines. For instance, the first code to be checked is the epilogue of ExpWorkerThread calling KeBugCheckEx at <strong>0x1402C375B</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_1402C375B:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">r9</span>, <span style="color:#66d9ef">rsi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">rsp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">78</span><span style="color:#66d9ef">h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">BugCheckParameter4</span>], <span style="color:#ae81ff">0</span><span style="color:#66d9ef">FFFFFFFFFFFFFFFFh</span> <span style="color:#75715e">; BugCheckParameter4
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">r8</span>, <span style="color:#66d9ef">r15</span>         <span style="color:#75715e">; BugCheckParameter2
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">edx</span>, <span style="color:#ae81ff">5</span>          <span style="color:#75715e">; BugCheckParameter1
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">ecx</span>, <span style="color:#ae81ff">0</span><span style="color:#66d9ef">E4h</span>       <span style="color:#75715e">; BugCheckCode
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">KeBugCheckEx</span>
+</span></span></code></pre></div><p>The second check is exception handler of <strong>ExpWorkerThread</strong> and the last check is <strong>KeIpiGenericCall</strong>.</p>
+<br>
+<ul>
+<li><strong>Initialize WORK_QUEUE_ITEM Structure</strong></li>
+</ul>
+<p>As we can see at <strong>0x140BCBB8C</strong>, it initialize a WORK_QUEUE_ITEM structure:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>StubIndex <span style="color:#f92672">=</span> Ctx <span style="color:#f92672">+</span> <span style="color:#f92672">*</span>(Ctx <span style="color:#f92672">+</span> <span style="color:#ae81ff">2064</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ( (<span style="color:#f92672">*</span>(Ctx <span style="color:#f92672">+</span> <span style="color:#ae81ff">2520</span>) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0x8000000</span>) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span> ) {
+</span></span><span style="display:flex;"><span>	GetRandomValue <span style="color:#f92672">=</span> <span style="color:#a6e22e">__rdtsc</span>();
+</span></span><span style="display:flex;"><span>    RotatedValue <span style="color:#f92672">=</span> <span style="color:#a6e22e">__ROR8__</span>(GetRandomValue, <span style="color:#ae81ff">3</span>); <span style="color:#75715e">// Shift random value 3 bits right
+</span></span></span><span style="display:flex;"><span>    HashMix <span style="color:#f92672">=</span> ((RotatedValue <span style="color:#f92672">^</span> GetRandomValue) <span style="color:#f92672">*</span> <span style="color:#ae81ff">0x7010008004002001uLL</span>) <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">64</span>;
+</span></span><span style="display:flex;"><span>    StubIndex <span style="color:#f92672">=</span> KiMachineCheckControl <span style="color:#f92672">+</span> <span style="color:#ae81ff">16</span> <span style="color:#f92672">*</span> (((RotatedValue <span style="color:#f92672">^</span> GetRandomValue) <span style="color:#f92672">^</span> HashMix) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xF</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">*</span>(Ctx <span style="color:#f92672">+</span> <span style="color:#ae81ff">1992</span>) <span style="color:#f92672">=</span> StubIndex; <span style="color:#75715e">/* 0x140BCBB8C */</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">*</span>(Ctx <span style="color:#f92672">+</span> <span style="color:#ae81ff">2000</span>) <span style="color:#f92672">=</span> v137;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">*</span>(Ctx <span style="color:#f92672">+</span> <span style="color:#ae81ff">1976</span>) <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span></code></pre></div><p>The WorkerRoutine is picked out of three stub that will call a verification routine as a WorkItem. The three stubs are:</p>
+<br>
+<ol>
+<li>As we see previously (check the method 7), a random stub picked from <strong>KiMachineCheckControl</strong> array if the method 7 selected. In this case the field Parameter points to the PatchGuard context.
+<br></li>
+<li>The copy of FsRtlUninitializeSmallMcb in the PatchGuard context structure. In this case the Parameter is also the PatchGuard context sub_1401812E0, which is only a stub to call the deferred routine from a DPC passed as a parameter.
+<br></li>
+</ol>
+<p>The second call is relevant to <strong>ExQueueWorkItem</strong>. The WORK_QUEUE_ITEM structure which initialized is passed as parameter. We can see it at <strong>0x140520E05</strong> from RtlpComputeEpilogueOffset:</p>
+<p><img src="/images/PatchGuard/img89.png" alt=""></p>
+<p>RtlpComputeEpilogueOffset is called by these functions which relevant to DPC Execution method:</p>
+<p><img src="/images/PatchGuard/img90.png" alt=""></p>
+<p>Notice that it&rsquo;s also called by <strong>FsRtlTruncateSmallMcb</strong> function. In FsRtlTruncateSmallMcb, it is called twice after KiCustomAccessRoutine0 routine (Check <strong>0x1406C9B20</strong> and <strong>0x14068FC7E</strong>).</p>
+<h5 id="system-thread-method"><strong>System Thread Method</strong></h5>
+<p>As we discussed before, PatchGuard creates a system thread in method 3. Pg_InitMethod3SystemThread is called directly in KiInitPatchGuardContext.</p>
+<h6 id="triggering-the-exception-handler-1"><strong>Triggering the Exception Handler</strong></h6>
+<p>In this  method, PsCreateSystemThread is called via exception handler. Actually, the codes of triggering the exception handler is strange.</p>
+<p>We can start our journey with <strong>0x140BD7F02</strong> address. Here, cpuid instruction is executed by KiInitPatchGuardContext:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BD7F02:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sti</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span>     <span style="color:#66d9ef">ecx</span>, <span style="color:#66d9ef">ecx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">80000008</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cpuid</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">edi</span>, <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">shr</span>     <span style="color:#66d9ef">edi</span>, <span style="color:#ae81ff">8</span>          <span style="color:#75715e">; Shift 8 bytes
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">r14</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">940</span><span style="color:#66d9ef">h</span>], <span style="color:#66d9ef">dil</span> <span style="color:#75715e">; Pass the result to the structure. 
+</span></span></span></code></pre></div><p>Firstly, the eax gets <strong>0x80000008</strong> value, then cpuid is executed. After the execution, the result is shifted 8 bytes to the right and the result is passed to 0x940 offset of the structure.</p>
+<p>This value 0x80000008 corresponds to <strong>linear/physical address size data</strong>. From Felix Clouiter<sup>[5]</sup>:</p>
+<blockquote>
+<p><em>&ldquo;Two types of information are returned: basic and extended function information. If a value entered for CPUID.EAX is higher than the maximum input value for basic or extended function for that processor then the data for the highest basic information leaf is returned. For example, using some Intel processors, the following is true:
+&hellip;
+CPUID.EAX = 80000008H (</em> Returns linear/physical address size data. <em>)&rdquo;</em></p>
+</blockquote>
+<p>Then i wanna see the result and i created a driver with MASM Assembly:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">extern</span> <span style="color:#66d9ef">DbgPrintEx</span>:<span style="color:#66d9ef">PROC</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">.data</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">UnloadedMsg</span> <span style="color:#66d9ef">db</span> <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">Driver</span> <span style="color:#66d9ef">Unloaded</span>!<span style="color:#960050;background-color:#1e0010">&#34;</span>,<span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">.code</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">UnloadDriver</span> <span style="color:#66d9ef">PROC</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">sub</span> <span style="color:#66d9ef">rsp</span>,<span style="color:#ae81ff">28</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">r8</span>,[<span style="color:#66d9ef">UnloadedMsg</span>]
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">rdx</span>,<span style="color:#66d9ef">rdx</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">rcx</span>,<span style="color:#66d9ef">rcx</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">call</span> <span style="color:#66d9ef">DbgPrintEx</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">add</span> <span style="color:#66d9ef">rsp</span>,<span style="color:#ae81ff">28</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">rax</span>,<span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ret</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">UnloadDriver</span> <span style="color:#66d9ef">ENDP</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DriverEntry</span> <span style="color:#66d9ef">PROC</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">; /* Prepare UnloadDriver */
+</span></span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>,<span style="color:#66d9ef">rcx</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">rcx</span>,[<span style="color:#66d9ef">UnloadDriver</span>]
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">qword</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rax</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">68</span><span style="color:#66d9ef">h</span>],<span style="color:#66d9ef">rcx</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>,<span style="color:#ae81ff">80000008</span><span style="color:#66d9ef">h</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">cpuid</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">edi</span>,<span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">shr</span> <span style="color:#66d9ef">edi</span>,<span style="color:#ae81ff">8</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">rax</span>,<span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ret</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DriverEntry</span> <span style="color:#66d9ef">ENDP</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">END</span>
+</span></span></code></pre></div><p>Here&rsquo;s result:</p>
+<p><img src="/images/PatchGuard/img91.png" alt=""></p>
+<p>the size result is <strong>0x302d</strong>. After the shift process, edi register is taken 0x30 value:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">kd</span><span style="color:#960050;background-color:#1e0010">&gt;</span> <span style="color:#66d9ef">t</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cpuid</span>!<span style="color:#66d9ef">DriverEntry</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0x17</span>:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">fffff800</span><span style="color:#960050;background-color:#1e0010">`</span><span style="color:#ae81ff">76591035</span> <span style="color:#66d9ef">c1ef08</span>          <span style="color:#66d9ef">shr</span>     <span style="color:#66d9ef">edi</span>,<span style="color:#ae81ff">8</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">kd</span><span style="color:#960050;background-color:#1e0010">&gt;</span> <span style="color:#66d9ef">r</span> <span style="color:#66d9ef">edi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">edi</span><span style="color:#960050;background-color:#1e0010">=</span><span style="color:#ae81ff">302</span><span style="color:#66d9ef">d</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">kd</span><span style="color:#960050;background-color:#1e0010">&gt;</span> <span style="color:#66d9ef">t</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cpuid</span>!<span style="color:#66d9ef">DriverEntry</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0x1a</span>:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">fffff800</span><span style="color:#960050;background-color:#1e0010">`</span><span style="color:#ae81ff">76591038</span> <span style="color:#ae81ff">33</span><span style="color:#66d9ef">c0</span>            <span style="color:#66d9ef">xor</span>     <span style="color:#66d9ef">eax</span>,<span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">kd</span><span style="color:#960050;background-color:#1e0010">&gt;</span> <span style="color:#66d9ef">r</span> <span style="color:#66d9ef">edi</span> 
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">edi</span><span style="color:#960050;background-color:#1e0010">=</span><span style="color:#ae81ff">30</span>
+</span></span></code></pre></div><p>So, we can see that <strong>0x940</strong> offset contains 0x30 value.</p>
+<p>This value is used at <strong>0x140BFAEAD</strong> to trigger the exception in Pg_InitMethod3SystemThread:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BFAE88:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">al</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">940</span><span style="color:#66d9ef">h</span>]  <span style="color:#75715e">; Get 0x30
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">dec</span>     <span style="color:#66d9ef">al</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">movzx</span>   <span style="color:#66d9ef">r10d</span>, <span style="color:#66d9ef">al</span>        <span style="color:#75715e">; r10d -&gt; 0x2F
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">r11d</span>, <span style="color:#ae81ff">3</span><span style="color:#66d9ef">Fh</span> <span style="color:#75715e">; &#39;?&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">sub</span>     <span style="color:#66d9ef">r11d</span>, <span style="color:#66d9ef">r10d</span>      <span style="color:#75715e">; Result: 0x10
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">div</span>     <span style="color:#66d9ef">r11</span>
+</span></span></code></pre></div><p>The value is subtracted with <strong>0x3F</strong> value, so that if the maximum virtual address size is 0x3F, then rbx is 0 and the exception will be triggered:</p>
+<pre tabindex="0"><code>Breakpoint 0 hit
 nt!KiFilterFiberContext+0x29443:
 fffff804`a6f5e973 49f7f3          div     rax,r11
 
@@ -166,78 +537,268 @@ kd&gt; g
 Breakpoint 1 hit
 nt!KiFilterFiberContext+0x2949b:
 fffff804`a6f5e9cb 803dbf70370000  cmp     byte ptr [nt!KdDebuggerNotPresent (fffff804`a72d5a91)],0
-</code></pre><p>The div operation triggers the <strong>loc_140BFAF3A</strong> function, then PsCreateSystemThread is called.</p><p>Also the value which held in the 0x940 offset is used by <strong>FsRtlMdlReadCompleteDevEx</strong>. I didn&rsquo;t tell about the function through this article but this function is PatchGuard routine and contains really long codes. Seems like this value is used with the same purpose at <strong>0x140BC462C</strong>:</p><p><img src=/images/PatchGuard/img92.png alt></p><p>These registers which used for the math is prepared at <strong>0x140BC45B8</strong>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span>loc_140BC45B8:
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>r13d</span>, <span style=color:#ae81ff>28</span><span style=color:#66d9ef>h</span> <span style=color:#75715e>; &#39;(&#39;
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>lea</span>     <span style=color:#66d9ef>rcx</span>, [<span style=color:#66d9ef>r12</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>918</span><span style=color:#66d9ef>h</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>r8d</span>, <span style=color:#66d9ef>r13d</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>lea</span>     <span style=color:#66d9ef>rdx</span>, [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>8</span><span style=color:#66d9ef>D0h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>var_668</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>lea</span>     <span style=color:#66d9ef>r9d</span>, [<span style=color:#66d9ef>r13-23h</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>lea</span>     <span style=color:#66d9ef>r10d</span>, [<span style=color:#66d9ef>r13-27h</span>] <span style=color:#75715e>; R10D: 0x1
-</span></span></span></code></pre></div><p>But i wasn&rsquo;t sure where it was directed.</p><h6 id=creating-new-thread><strong>Creating New Thread</strong></h6><p>The System Thread is created at <strong>0x140BFAF46</strong> address:</p><p><img src=/images/PatchGuard/img94.png alt></p><p>Recall that the structure KI_FILTER_FIBER_PARAM contains the pointer of PsCreateSystemThread and used by PatchGuard. The StartContext parameter given to PsCreateSystemThread is a pointer to a new type of structure which can be defined as follow:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> pg_StartContext
-</span></span><span style=display:flex><span>{
-</span></span><span style=display:flex><span>	ULONG64 Event; Just a pointer to the event in the very
-</span></span><span style=display:flex><span>	; ... same structure
-</span></span><span style=display:flex><span>	ULONG64 Random_ShouldRunKeRundownApcQueues; set at <span style=color:#ae81ff>0x140BFAE17</span>
-</span></span><span style=display:flex><span>	ULONG64 unknown_0x10;
-</span></span><span style=display:flex><span>	KEVENT_ Event;
-</span></span><span style=display:flex><span>};
-</span></span></code></pre></div><p><strong>The Even Object</strong> is initialized before the exception handler, and in <strong>sub_14068F650</strong> function, KeWaitForSingleObject is waiting on this object to be signaled at <strong>0x14068F6F3</strong>:</p><p><img src=/images/PatchGuard/img93.png alt></p><p>This event is notified at the end of the KiInitPatchGuardContext. Also note that there is no timeout (set to 0) for the first time this method is used. Function Pg_InitMethodSystemThread returns a pointer to the structure and the event is notified at the end of KiInitPatchGuardContext at <strong>0x140BF9E3F</strong>:</p><p><img src=/images/PatchGuard/img95.png alt></p><p>Then the decryption process will be started.</p><h6 id=the-decryption-process><strong>The Decryption Process</strong></h6><p>The decryption process is basically the same as the one used by DPCs: a two stages decryption with an additional hard-coded prologue. The first stage uses KiWaitNever and KiWaitAlways and the second stage is performed by CmpAppendDllSection&rsquo;s copy, just like in the DPC case, which eventually calls the verification routine.</p><h6 id=post-verification-for-this-case-only><strong>Post verification for this case only</strong></h6><p>Once the verification routine ended, the context is restored to a waiting state with either
-KeDelayExecutionThread or KeWaitForSingleObject, but this time with a timeout set between 2&rsquo; and 2'10". From FsRtlMdlReadCompleteDevEx:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span>loc_140BC26F1:
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>...</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>r10</span>, [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>8</span><span style=color:#66d9ef>D0h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>arg_8</span>] <span style=color:#75715e>; Get Timeout
-</span></span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>[</span><span style=color:#a6e22e>...</span>]
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>loc_140BC274A:
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>r9</span>, [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>8</span><span style=color:#66d9ef>D0h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>var_950</span>] <span style=color:#75715e>; Get the address of KeDelayExecutionThread
-</span></span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>loc_140BC274E:
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>test</span> <span style=color:#66d9ef>r10</span>, <span style=color:#66d9ef>r10</span> <span style=color:#75715e>; If the timeout is 0, then execute KeDelayExecutionThread
-</span></span></span><span style=display:flex><span>	<span style=color:#a6e22e>jz</span> <span style=color:#66d9ef>short</span> <span style=color:#66d9ef>loc_140BC2770</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>	<span style=color:#75715e>; Call KeWaitForSingleObject
-</span></span></span><span style=display:flex><span>	<span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>rax</span>, [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>8</span><span style=color:#66d9ef>D0h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>var_8F0</span>] <span style=color:#75715e>; Get the address of the function
-</span></span></span><span style=display:flex><span>	<span style=color:#a6e22e>lea</span> <span style=color:#66d9ef>r8</span>, [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>8</span><span style=color:#66d9ef>D0h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>var_850</span>]
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>edx</span>, <span style=color:#66d9ef>r14d</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mov</span> [<span style=color:#66d9ef>rsp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>9</span><span style=color:#66d9ef>D0h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>BugCheckParameter4</span>], <span style=color:#66d9ef>r10</span> <span style=color:#75715e>; Pass the timeout
-</span></span></span><span style=display:flex><span>	<span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>rcx</span>, <span style=color:#66d9ef>rsi</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>call</span> <span style=color:#66d9ef>KeGuardDispatchICall</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>loc_140BC2770:
-</span></span><span style=display:flex><span>	<span style=color:#75715e>; Call KeDelayExecutionThread
-</span></span></span><span style=display:flex><span>	<span style=color:#a6e22e>xor</span> <span style=color:#66d9ef>edx</span>, <span style=color:#66d9ef>edx</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>test</span> <span style=color:#66d9ef>r11</span>, <span style=color:#66d9ef>r11</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>jnz</span> <span style=color:#66d9ef>short</span> <span style=color:#66d9ef>loc_140BC278A</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>lea</span> <span style=color:#66d9ef>r8</span>, [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>8</span><span style=color:#66d9ef>D0h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>var_850</span>]
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>xor</span> <span style=color:#66d9ef>ecx</span>, <span style=color:#66d9ef>ecx</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>rax</span>, <span style=color:#66d9ef>r9</span> <span style=color:#75715e>; Pass the address KeDelayExecutionThread to rax
-</span></span></span><span style=display:flex><span>	<span style=color:#a6e22e>call</span> <span style=color:#66d9ef>KeGuardDispatchICall</span>
-</span></span></code></pre></div><p>The timeout is initialized at <strong>0x140BC24E1</strong>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span>loc_140BC24E1:
-</span></span><span style=display:flex><span><span style=color:#a6e22e>...</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>r10</span>, [<span style=color:#66d9ef>rsi</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>0</span><span style=color:#66d9ef>AB8h</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>ecx</span>, <span style=color:#ae81ff>2</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>eax</span>, [<span style=color:#66d9ef>rsi</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>9</span><span style=color:#66d9ef>DCh</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>r14d</span>, [<span style=color:#66d9ef>rsi</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>804</span><span style=color:#66d9ef>h</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>r11</span>, [<span style=color:#66d9ef>rsi</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>0</span><span style=color:#66d9ef>A40h</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>r12d</span>, [<span style=color:#66d9ef>rsi</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>828</span><span style=color:#66d9ef>h</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>8</span><span style=color:#66d9ef>D0h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>arg_8</span>], <span style=color:#66d9ef>r10</span>
-</span></span></code></pre></div><p>Also these functions address are initialized at <strong>0x140BC252F</strong>, and the variables which used for the functions are prepared randomly at the same address:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span>loc_140BC252F:
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>rax</span>, [<span style=color:#66d9ef>rsi</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>2</span><span style=color:#66d9ef>C8h</span>] <span style=color:#75715e>; Get the Address of KeWaitForSingleObject
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>r9</span>, [<span style=color:#66d9ef>rsi</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>170</span><span style=color:#66d9ef>h</span>]  <span style=color:#75715e>; Get the address of KeDelayExecutionThread
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>8</span><span style=color:#66d9ef>D0h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>var_8D8</span>], <span style=color:#66d9ef>rax</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> <span style=color:#66d9ef>rax</span>, [<span style=color:#66d9ef>rsi</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>340</span><span style=color:#66d9ef>h</span>]
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>8</span><span style=color:#66d9ef>D0h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>var_8F0</span>], <span style=color:#66d9ef>rax</span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>mov</span> [<span style=color:#66d9ef>rbp</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#ae81ff>8</span><span style=color:#66d9ef>D0h</span><span style=color:#960050;background-color:#1e0010>+</span><span style=color:#66d9ef>var_950</span>], <span style=color:#66d9ef>r9</span>
-</span></span></code></pre></div><h5 id=apc-insertion><strong>APC insertion</strong></h5><p>As we saw previously, the fourth method insert an APC in system thread queue. The system thread must have the pointer of <strong>PopIrpWorkerControl</strong> as a StartAddress Parameter. From <strong>0x140BFB2AF</strong>:</p><p><img src=/images/PatchGuard/img96.png alt></p><p>Also recall that The KernelRoutine parameter which given to KiInsertQueueApc is <strong>KiDispatchCallout</strong>.</p><p>Similar to the DPC and system thread methods, this method uses a two-stage decryption process and rewrites the beginning of the context with a fixed XOR value. This approach is quite fast because APCs are delivered quickly. However, unlike the previous methods, it waits during verification to make sure a minimum time has passed—between 2 minutes and 2 minutes 10 seconds—before continuing.</p><h5 id=kiswinterruptdispatch-method><strong>KiSwInterruptDispatch Method</strong></h5><p>This method uses the Global PatchGuard Context Structure, which is in cleartext. This means that there is no decryption process and the verification routine is called directly at some point in KiSwInterrupt.</p><h5 id=breadcrumbs><strong>Breadcrumbs</strong></h5><p>Breadcrumbs methods are special because <strong>they work automatically without specific code to start their checks.</strong> However, they do not run all the time. For instance, recall CcInitializeBcbProfiler. It either queues a work item using a related function or continues running on its own. The other two verification functions, PspProcessDelete and KiInitializeUserApc, only use a simple timer (just a time counter stored in a global variable, not the TIMER structure) to control when they run.</p></div><div class=single-shell__back><h4><a href=/>Back to Home</a></h4></div><button class=single-shell__scroll-top type=button aria-label="Scroll to top" data-ui=scroll-top>
-<span aria-hidden=true>^</span></button></div><aside class=single-shell__aside><section class="single-shell__author single-shell__author--desktop"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--desktop"><div class=single-shell__toc-heading><span class=single-shell__toc-label>Contents</span></div><div class=single-shell__toc-body><nav id=TableOfContents-desktop><ul><li><ul><li><ul><li><a href=#triggering-a-check><strong>Triggering a check</strong></a><ul><li><a href=#dpc-execution><strong>DPC Execution</strong></a><ul><li><a href=#non-canonical-deferredcontext-pointer><strong>Non-Canonical DeferredContext Pointer</strong></a></li><li><a href=#triggering-the-exception-handler><strong>Triggering the Exception Handler</strong></a></li><li><a href=#patchguard-context-decryption><strong>PatchGuard Context Decryption</strong></a></li><li><a href=#passing-control-to-verification-routine><strong>Passing Control to Verification Routine</strong></a></li></ul></li><li><a href=#system-thread-method><strong>System Thread Method</strong></a><ul><li><a href=#triggering-the-exception-handler-1><strong>Triggering the Exception Handler</strong></a></li><li><a href=#creating-new-thread><strong>Creating New Thread</strong></a></li><li><a href=#the-decryption-process><strong>The Decryption Process</strong></a></li><li><a href=#post-verification-for-this-case-only><strong>Post verification for this case only</strong></a></li></ul></li><li><a href=#apc-insertion><strong>APC insertion</strong></a></li><li><a href=#kiswinterruptdispatch-method><strong>KiSwInterruptDispatch Method</strong></a></li><li><a href=#breadcrumbs><strong>Breadcrumbs</strong></a></li></ul></li></ul></li></ul></li></ul></nav></div></section></aside><div class=single-shell__panel aria-label="Post info"><div class=sp-sysinfo><div class=sp-sysinfo__header>// SYSINFO</div><div class=sp-sysinfo__row><span class=sp-label>DATE</span>
-<span>2025.08.08</span></div><div class=sp-sysinfo__row><span class=sp-label>READ</span>
-<span>12MIN</span></div><div class=sp-sysinfo__row><span class=sp-label>WORDS</span>
-<span>2531</span></div></div><div class=sp-tags><div class=sp-tags__header>// TAGS</div><a href=/tags/reverse-engineering class=sp-tag>Reverse-Engineering</a>
-<a href=/tags/patchguard class=sp-tag>PatchGuard</a>
-<a href=/tags/reversing-patchguard class=sp-tag>Reversing-PatchGuard</a>
-<a href=/tags/windows-internals class=sp-tag>Windows-Internals</a>
-<a href=/tags/analyzing-of-windows-kernel class=sp-tag>Analyzing-of-Windows-Kernel</a></div></div></div></div></article></div><footer class=container><hr class=soften><p>&copy;
-0xbekoo
-<span id=thisyear>2026</span>
-| 0xbekoo.github.io</p><p class=text-center><a href=https://x.com/0xbekooo>Twitter</a>
-<a href=https://github.com/0xbekoo>GitHub</a></p></footer></body><link rel=stylesheet href=/css/bootstrap.css><link rel=stylesheet href=/css/bootstrap-responsive.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/blog-callouts.css><link rel=stylesheet href=/css/mobile-reading.css><link rel=stylesheet href=/css/duat-gate.css><link rel=stylesheet href=/css/home-glitch.css><link rel=stylesheet href=/css/duat-boot.css><link rel=stylesheet href=/css/page-slide.css><link rel=stylesheet href=/css/projects.css><link rel=stylesheet href=/css/diagrams.css><script src=/js/jquery.js></script><script src=/js/bootstrap-transition.js></script><script src=/js/bootstrap-alert.js></script><script src=/js/bootstrap-modal.js></script><script src=/js/bootstrap-dropdown.js></script><script src=/js/bootstrap-scrollspy.js></script><script src=/js/bootstrap-tab.js></script><script src=/js/bootstrap-tooltip.js></script><script src=/js/bootstrap-popover.js></script><script src=/js/bootstrap-button.js></script><script src=/js/bootstrap-collapse.js></script><script src=/js/bootstrap-carousel.js></script><script src=/js/bootstrap-typeahead.js></script><script src=/js/bootstrap-affix.js></script><script>_386={fastLoad:!1,onePass:!1,speedFactor:1.5,duatBootImage:"/images/blog-images/hour.jpg"};function ThisYear(){document.getElementById("thisyear").innerHTML=(new Date).getFullYear()}</script><script src=/js/duat-boot.js></script><script src=/js/mobile-image-lightbox.js></script><script src=/js/page-slide.js></script></html>
+</code></pre><p>The div operation triggers the <strong>loc_140BFAF3A</strong> function, then PsCreateSystemThread is called.</p>
+<p>Also the value which held in the 0x940 offset is used by <strong>FsRtlMdlReadCompleteDevEx</strong>. I didn&rsquo;t tell about the function through this article but this function is PatchGuard routine and contains really long codes. Seems like this value is used with the same purpose at <strong>0x140BC462C</strong>:</p>
+<p><img src="/images/PatchGuard/img92.png" alt=""></p>
+<p>These registers which used for the math is prepared at <strong>0x140BC45B8</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BC45B8:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">r13d</span>, <span style="color:#ae81ff">28</span><span style="color:#66d9ef">h</span> <span style="color:#75715e">; &#39;(&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">rcx</span>, [<span style="color:#66d9ef">r12</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">918</span><span style="color:#66d9ef">h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">r8d</span>, <span style="color:#66d9ef">r13d</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">rdx</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_668</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">r9d</span>, [<span style="color:#66d9ef">r13-23h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">r10d</span>, [<span style="color:#66d9ef">r13-27h</span>] <span style="color:#75715e">; R10D: 0x1
+</span></span></span></code></pre></div><p>But i wasn&rsquo;t sure where it was directed.</p>
+<h6 id="creating-new-thread"><strong>Creating New Thread</strong></h6>
+<p>The System Thread is created at <strong>0x140BFAF46</strong> address:</p>
+<p><img src="/images/PatchGuard/img94.png" alt=""></p>
+<p>Recall that the structure KI_FILTER_FIBER_PARAM contains the pointer of PsCreateSystemThread and used by PatchGuard. The StartContext parameter given to PsCreateSystemThread is a pointer to a new type of structure which can be defined as follow:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> pg_StartContext
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	ULONG64 Event; Just a pointer to the event in the very
+</span></span><span style="display:flex;"><span>	; ... same structure
+</span></span><span style="display:flex;"><span>	ULONG64 Random_ShouldRunKeRundownApcQueues; set at <span style="color:#ae81ff">0x140BFAE17</span>
+</span></span><span style="display:flex;"><span>	ULONG64 unknown_0x10;
+</span></span><span style="display:flex;"><span>	KEVENT_ Event;
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p><strong>The Even Object</strong> is initialized before the exception handler, and in <strong>sub_14068F650</strong> function, KeWaitForSingleObject is waiting on this object to be signaled at <strong>0x14068F6F3</strong>:</p>
+<p><img src="/images/PatchGuard/img93.png" alt=""></p>
+<p>This event is notified at the end of the KiInitPatchGuardContext. Also note that there is no timeout (set to 0) for the first time this method is used. Function Pg_InitMethodSystemThread returns a pointer to the structure and the event is notified at the end of KiInitPatchGuardContext at <strong>0x140BF9E3F</strong>:</p>
+<p><img src="/images/PatchGuard/img95.png" alt=""></p>
+<p>Then the decryption process will be started.</p>
+<h6 id="the-decryption-process"><strong>The Decryption Process</strong></h6>
+<p>The decryption process is basically the same as the one used by DPCs: a two stages decryption with an additional hard-coded prologue. The first stage uses KiWaitNever and KiWaitAlways and the second stage is performed by CmpAppendDllSection&rsquo;s copy, just like in the DPC case, which eventually calls the verification routine.</p>
+<h6 id="post-verification-for-this-case-only"><strong>Post verification for this case only</strong></h6>
+<p>Once the verification routine ended, the context is restored to a waiting state with either
+KeDelayExecutionThread or KeWaitForSingleObject, but this time with a timeout set between 2&rsquo; and 2'10&quot;. From FsRtlMdlReadCompleteDevEx:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BC26F1:
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r10</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">arg_8</span>] <span style="color:#75715e">; Get Timeout
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">[</span><span style="color:#a6e22e">...</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>loc_140BC274A:
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r9</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_950</span>] <span style="color:#75715e">; Get the address of KeDelayExecutionThread
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>loc_140BC274E:
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">test</span> <span style="color:#66d9ef">r10</span>, <span style="color:#66d9ef">r10</span> <span style="color:#75715e">; If the timeout is 0, then execute KeDelayExecutionThread
+</span></span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">jz</span> <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140BC2770</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">; Call KeWaitForSingleObject
+</span></span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_8F0</span>] <span style="color:#75715e">; Get the address of the function
+</span></span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">r8</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_850</span>]
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">edx</span>, <span style="color:#66d9ef">r14d</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rsp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">9</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">BugCheckParameter4</span>], <span style="color:#66d9ef">r10</span> <span style="color:#75715e">; Pass the timeout
+</span></span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">rsi</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">call</span> <span style="color:#66d9ef">KeGuardDispatchICall</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>loc_140BC2770:
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">; Call KeDelayExecutionThread
+</span></span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">edx</span>, <span style="color:#66d9ef">edx</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">test</span> <span style="color:#66d9ef">r11</span>, <span style="color:#66d9ef">r11</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">jnz</span> <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_140BC278A</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">lea</span> <span style="color:#66d9ef">r8</span>, [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_850</span>]
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">ecx</span>, <span style="color:#66d9ef">ecx</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">r9</span> <span style="color:#75715e">; Pass the address KeDelayExecutionThread to rax
+</span></span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">call</span> <span style="color:#66d9ef">KeGuardDispatchICall</span>
+</span></span></code></pre></div><p>The timeout is initialized at <strong>0x140BC24E1</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BC24E1:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r10</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">AB8h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ecx</span>, <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">eax</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">9</span><span style="color:#66d9ef">DCh</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r14d</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">804</span><span style="color:#66d9ef">h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r11</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">A40h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r12d</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">828</span><span style="color:#66d9ef">h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">arg_8</span>], <span style="color:#66d9ef">r10</span>
+</span></span></code></pre></div><p>Also these functions address are initialized at <strong>0x140BC252F</strong>, and the variables which used for the functions are prepared randomly at the same address:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>loc_140BC252F:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">2</span><span style="color:#66d9ef">C8h</span>] <span style="color:#75715e">; Get the Address of KeWaitForSingleObject
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r9</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">170</span><span style="color:#66d9ef">h</span>]  <span style="color:#75715e">; Get the address of KeDelayExecutionThread
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_8D8</span>], <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rax</span>, [<span style="color:#66d9ef">rsi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">340</span><span style="color:#66d9ef">h</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_8F0</span>], <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span> [<span style="color:#66d9ef">rbp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">8</span><span style="color:#66d9ef">D0h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_950</span>], <span style="color:#66d9ef">r9</span>
+</span></span></code></pre></div><h5 id="apc-insertion"><strong>APC insertion</strong></h5>
+<p>As we saw previously, the fourth method insert an APC in system thread queue. The system thread must have the pointer of <strong>PopIrpWorkerControl</strong> as a StartAddress Parameter. From <strong>0x140BFB2AF</strong>:</p>
+<p><img src="/images/PatchGuard/img96.png" alt=""></p>
+<p>Also recall that The KernelRoutine parameter which given to KiInsertQueueApc is <strong>KiDispatchCallout</strong>.</p>
+<p>Similar to the DPC and system thread methods, this method uses a two-stage decryption process and rewrites the beginning of the context with a fixed XOR value. This approach is quite fast because APCs are delivered quickly. However, unlike the previous methods, it waits during verification to make sure a minimum time has passed—between 2 minutes and 2 minutes 10 seconds—before continuing.</p>
+<h5 id="kiswinterruptdispatch-method"><strong>KiSwInterruptDispatch Method</strong></h5>
+<p>This method uses the Global PatchGuard Context Structure, which is in cleartext. This means that there is no decryption process and the verification routine is called directly at some point in KiSwInterrupt.</p>
+<h5 id="breadcrumbs"><strong>Breadcrumbs</strong></h5>
+<p>Breadcrumbs methods are special because <strong>they work automatically without specific code to start their checks.</strong> However, they do not run all the time. For instance, recall CcInitializeBcbProfiler. It either queues a work item using a related function or continues running on its own. The other two verification functions, PspProcessDelete and KiInitializeUserApc, only use a simple timer (just a time counter stored in a global variable, not the TIMER structure) to control when they run.</p>
+
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#triggering-a-check"><strong>Triggering a check</strong></a>
+              <ul>
+                <li><a href="#dpc-execution"><strong>DPC Execution</strong></a>
+                  <ul>
+                    <li><a href="#non-canonical-deferredcontext-pointer"><strong>Non-Canonical DeferredContext Pointer</strong></a></li>
+                    <li><a href="#triggering-the-exception-handler"><strong>Triggering the Exception Handler</strong></a></li>
+                    <li><a href="#patchguard-context-decryption"><strong>PatchGuard Context Decryption</strong></a></li>
+                    <li><a href="#passing-control-to-verification-routine"><strong>Passing Control to Verification Routine</strong></a></li>
+                  </ul>
+                </li>
+                <li><a href="#system-thread-method"><strong>System Thread Method</strong></a>
+                  <ul>
+                    <li><a href="#triggering-the-exception-handler-1"><strong>Triggering the Exception Handler</strong></a></li>
+                    <li><a href="#creating-new-thread"><strong>Creating New Thread</strong></a></li>
+                    <li><a href="#the-decryption-process"><strong>The Decryption Process</strong></a></li>
+                    <li><a href="#post-verification-for-this-case-only"><strong>Post verification for this case only</strong></a></li>
+                  </ul>
+                </li>
+                <li><a href="#apc-insertion"><strong>APC insertion</strong></a></li>
+                <li><a href="#kiswinterruptdispatch-method"><strong>KiSwInterruptDispatch Method</strong></a></li>
+                <li><a href="#breadcrumbs"><strong>Breadcrumbs</strong></a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+            <div class="single-shell__panel" aria-label="Post info">
+                <div class="sp-sysinfo">
+                    <div class="sp-sysinfo__header">// SYSINFO</div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">DATE</span>
+                        <span>2025.08.08</span>
+                    </div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">READ</span>
+                        <span>12MIN</span>
+                    </div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">WORDS</span>
+                        <span>2531</span>
+                    </div>
+                </div>
+                
+                <div class="sp-tags">
+                    <div class="sp-tags__header">// TAGS</div>
+                    
+                    <a href="/tags/reverse-engineering" class="sp-tag">Reverse-Engineering</a>
+                    
+                    <a href="/tags/patchguard" class="sp-tag">PatchGuard</a>
+                    
+                    <a href="/tags/reversing-patchguard" class="sp-tag">Reversing-PatchGuard</a>
+                    
+                    <a href="/tags/windows-internals" class="sp-tag">Windows-Internals</a>
+                    
+                    <a href="/tags/analyzing-of-windows-kernel" class="sp-tag">Analyzing-of-Windows-Kernel</a>
+                    
+                </div>
+                
+            </div>
+            
+            
+        </div>
+    </div>
+</article>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css"><link rel="stylesheet" href="/css/projects.css"><link rel="stylesheet" href="/css/diagrams.css">
+<script src="/js/jquery.js"></script>
+
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
+</html>

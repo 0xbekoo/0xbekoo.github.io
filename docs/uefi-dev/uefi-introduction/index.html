@@ -1,81 +1,312 @@
-<!doctype html><html lang=en><head><title>0xbekoo</title><meta charset=utf-8><meta content="utf-8" http-equiv=encoding><meta name=viewport content="width=device-width,initial-scale=1"><meta name=format-detection content="telephone=no"><meta name=theme-color content="#000084"><link rel=icon href=/favicon.ico><link rel=canonical href=/docs/uefi-dev/uefi-introduction/><noscript><style>body{visibility:visible!important}</style></noscript></head><body><nav class="navbar navbar-inverse navbar-fixed-top"><div class=navbar-inner><div class=container><button type=button class="btn btn-navbar" data-toggle=collapse data-target=.nav-collapse></button>
-<a class=brand href=/>0xbekoo</a><div class="nav-collapse collapse"><ul class=nav><li><a href=/docs/><span>Documentation</span></a></li><li><a href=/blogs/><span>Blogs</span></a></li><li><a href=/projects/><span>Projects</span></a></li></ul></div></div></div></nav><div id=content class=container><article class="single-shell single-shell--docs"><div class="row-fluid navmargin"><div class="page-header single-shell__header"><h1 class=single-shell__title>Introduction to UEFI</h1><p class=single-shell__meta>Sun, Jan 19, 2025</p></div><div class="single-shell__body single-shell__body--with-toc"><div class=single-shell__main><section class="single-shell__author single-shell__author--mobile"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--mobile is-open" data-ui=toc><button class=single-shell__toc-toggle type=button aria-expanded=true aria-controls=single-toc-mobile-docs-uefi-dev-uefi-introduction->
-<span class=single-shell__toc-label>Contents</span>
-<span class=single-shell__toc-status aria-hidden=true>[-]</span></button><div id=single-toc-mobile-docs-uefi-dev-uefi-introduction- class=single-shell__toc-panel><div class=single-shell__toc-panel-inner><div class=single-shell__toc-body><nav id=TableOfContents-mobile><ul><li><ul><li><a href=#what-is-uefi><strong>What is UEFI?</strong></a></li><li><a href=#uefi-boot-process><strong>UEFI Boot Process</strong></a></li><li><a href=#introduction-to-uefi-development><strong>Introduction to UEFI Development</strong></a></li><li><a href=#setup-edk2-on-windows><strong>Setup EDK2 on Windows</strong></a></li><li><a href=#hello-world-with-uefi><strong>Hello World with UEFI</strong></a></li><li><a href=#running-the-driver><strong>Running the Driver</strong></a></li><li><a href=#conclusion><strong>Conclusion</strong></a></li></ul></li></ul></nav></div></div></div></section><div class=single-shell__content><p>Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.</p><h3 id=what-is-uefi><strong>What is UEFI?</strong></h3><p>UEFI (Unified Extensible Firmware Interface) is a specification for a computer&rsquo;s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.</p><p>We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different. UEFI uses GPT (Guid Partition Table). GPT is a modern standard that defines the layout of partitions on a computer&rsquo;s storage device. It is the standard used in devices such as HDDs or SSDs that we are all familiar with. Just as UEFI replaced BIOS, GPT has replaced the previously used MBR (Master Boot Record) partitioning table. GPT works seamlessly with UEFI.</p><p>The advantages gained when combining UEFI and GPT are as follows:</p><ul><li>Support for 2TB or larger disks</li><li>Faster booting process</li><li>Simplified development compared to the old BIOS</li></ul><p>So we can see that UEFI and GPT offer more advantages than older systems.</p><p>UEFI has the same tasks as BIOS: running I/O devices and transferring control to the OS. However, its task is not limited to this, and as I mentioned above, it also offers a wide range of options for pre-OS development.</p><p>Let&rsquo;s take a look at the diagram below, which shows the difference between Legacy BIOS and UEFI:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img1.png style=width:70%></div><p>When we look at the diagram, we see that BIOS is firmware that communicates directly with hardware and is also hardware itself. When we look at UEFI in the diagram, we can see that it combines the interface between the hardware and the operating system. This function of UEFI makes things easier for developers.</p><p>In short, when we look at UEFI, we can see that it offers a more modern and faster process compared to the old Legacy BIOS, especially when used with GPT.</p><h3 id=uefi-boot-process><strong>UEFI Boot Process</strong></h3><p>Let&rsquo;s take a closer look at what happens in the background after pressing the power button on a UEFI computer, before the logo appears.</p><p>UEFI has six main boot stages that are critical to the platform&rsquo;s startup process:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img2.png style=width:100%></div><ul><li><strong>Security (SEC)</strong>: The Security phase is the first stage of the UEFI boot process. Its main purpose is to initialize the Temporary RAM store, act as the system’s <em>root of trust</em>, and provide information to the Pre-EFI core phase. The mentioned root of trust works as follows: the SEC mechanism also serves as a system that ensures any code executed in the PI (Platform Initialization) is digitally signed, creating a <em>Secure Boot</em> environment.<br></li><li><strong>Pre-EFI Initialization (PEI):</strong> In the second stage, the execution of EFI code is enabled. Its primary responsibility is to load the DXE Foundation, which will initiate the DXE drivers in the next stage. It also uses processor resources to dispatch Pre-EFI Initialization Modules (PEIMs). These PEIMs handle critical processes such as initializing certain persistent memory components and ensuring the transition to the next stage — the Driver Execution Environment (DXE).<br></li><li><strong>Driver Execution Environment (DXE):</strong> I think this stage is particularly important because major operations required to start the system occur here. In the PEI stage, the memory needed for DXE to operate is allocated and initialized. Once control is passed to DXE, the DXE Dispatcher is called. This Dispatcher is responsible for loading and executing hardware drivers, runtime services, and all boot services required for the operating system to start. In the context of our goal, as I mentioned earlier, this is a crucial stage — our driver will be executed here.<br></li><li><strong>Boot Device Selection (BDS):</strong> After the DXE drivers have been executed, control is passed to BDS — likely the stage you’ve all seen before. Here, a selection is made as to which device the OS loader will be sought from. The operating system is then prepared for loading, and the process moves toward the Transient System Load (TSL) stage.<br></li><li><strong>Transient System Load (TSL):</strong> At this stage, the selected boot loader runs, and UEFI boot services are terminated.<br></li><li><strong>Runtime (RT):</strong> In this phase, the UEFI flow is handed over to the operating system. However, this does not mean UEFI disappears entirely. The Runtime Services belonging to UEFI remain available to support the OS. For hardware-specific tasks, the System Management Mode (SMM) comes into play. SMM is a secure mode in which the processor manages critical hardware functions independently of the operating system. For example, tasks such as adjusting fan speed or monitoring battery status are performed in this mode. If the OS cannot perform a certain hardware-related operation on its own, it sends a signal called <em>SMI</em> (System Management Interrupt) — essentially a “call for help.” For instance, when the OS wants to control fan speed, it sends an SMI, SMM kicks in, and the task is handled there.</li></ul><h3 id=introduction-to-uefi-development><strong>Introduction to UEFI Development</strong></h3><p>When it comes to sources for UEFI development, you’ll really see that resources are limited. Popularly, the following tools can be used during the development process.</p><ul><li><strong>EDK2:</strong> EDK2 is a toolset for UEFI and PI specifications with modern features like rich, cross‑platform coding. The EDK2 project is developed and maintained today by many of the developers who contribute to the UEFI specification (along with community volunteers).</li></ul><p>In this series, we’ll use it for coding. Since EDK2 includes the latest UEFI protocols, it’s extremely useful. In addition, there are many projects we can use as guides during the learning process.-<br></p><ul><li><strong>VisualUEFI:</strong> The VisualUEFI tool enables Windows users to develop EDK2 projects with the Visual Studio IDE. If you want to escape EDK2’s complex layout and work more comfortably, you can opt for this tool.</li></ul><p>Although I’m a Windows user, I won’t be using VisualUEFI in the serie. While VisualUEFI provides a comfortable environment for coding, I personally find it easier to manually work with project layouts like EDK2. If you want to install VisualUEFI, there are plenty of resources online.</p><p>After we develop our projects, we’ll need to simulate them. One of the following can be used:</p><ul><li><strong>QEMU:</strong> You probably already know what QEMU is. Being an emulator rather than just a virtual machine, it offers good debugging capabilities and is a multi‑platform emulator. You can choose it in either Linux or Windows environments.<br></li><li><strong>VMware / VirtualBox:</strong> You can also use virtual machines such as VMware or VirtualBox.</li></ul><h3 id=setup-edk2-on-windows><strong>Setup EDK2 on Windows</strong></h3><p>Before setting up the EDK2 project in Windows, we need to install the following tools:</p><ul><li>Git</li><li>Python</li><li>NASM</li><li>Visual Studio</li></ul><p>First, let&rsquo;s download Git, and then Python. Download Python directly from the original website instead of the Microsoft Store, and pay attention to the following during installation:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img5.png style=width:100%></div><p>Don&rsquo;t forget to check the boxes in the area shown in the photo.</p><p>Next, download NASM from its original website and run the downloaded .exe file as an administrator:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img8.png style=width:40%></div><p>During installation, set the location of the NASM project to C:\NASM.</p><p>After installing NASM, create a variable named NASM_PREFIX for User Variables in Windows&rsquo; Environment Variables settings:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img6.png style=width:80%></div><p>Let&rsquo;s set the value to C:\NASM.</p><p>Next, we need to install Visual Studio&rsquo;s C++ tools. To download these tools, search for Build Tools on the Downloads page:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img3.png style=width:100%></div><p>Let&rsquo;s download Tools for Visual Studio and then:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img4.png style=width:70%></div><p>Select <strong>Desktop Development with C++</strong> during installation and start the installation.</p><p>Once you have completed these steps, open cmd.exe and install the edk2 project:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>git clone https://github.com/tianocore/edk2.git
-</span></span><span style=display:flex><span>cd edk2
-</span></span><span style=display:flex><span>git submodule update --init
-</span></span></code></pre></div><p>After downloading the edk2 project, open the Developer Command Prompt VS 2022 tool and then go to the edk2 project we downloaded. Open Config/target.txt with Notepad:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>notepad Conf<span style=color:#ae81ff>\t</span>arget.txt
-</span></span></code></pre></div><p>In this .txt file, replace the values with the ones I show you below:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>ACTIVE_PLATFORM       <span style=color:#f92672>=</span> ShellPkg<span style=color:#f92672>/</span>ShellPkg.dsc
-</span></span><span style=display:flex><span>...
-</span></span><span style=display:flex><span>TARGET                <span style=color:#f92672>=</span> RELEASE
-</span></span><span style=display:flex><span>...
-</span></span><span style=display:flex><span>TARGET_ARCH           <span style=color:#f92672>=</span> X64
-</span></span><span style=display:flex><span>...
-</span></span><span style=display:flex><span>TOOL_CHAIN_TAG        <span style=color:#f92672>=</span> VS2022
-</span></span></code></pre></div><p>Change the values accordingly and save and close. Then run edksetup.bat:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>&gt; C:<span style=color:#ae81ff>\e</span>dk2&gt;edksetup.bat
-</span></span><span style=display:flex><span>...
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span> WORKSPACE      <span style=color:#f92672>=</span> C:<span style=color:#ae81ff>\e</span>dk2
-</span></span><span style=display:flex><span> EDK_TOOLS_PATH      <span style=color:#f92672>=</span> C:<span style=color:#ae81ff>\e</span>dk2<span style=color:#ae81ff>\B</span>aseTools
-</span></span><span style=display:flex><span> BASE_TOOLS_PATH     <span style=color:#f92672>=</span> C:<span style=color:#ae81ff>\e</span>dk2<span style=color:#ae81ff>\B</span>aseTools
-</span></span><span style=display:flex><span> EDK_TOOLS_BIN      <span style=color:#f92672>=</span> C:<span style=color:#ae81ff>\e</span>dk2<span style=color:#ae81ff>\B</span>aseTools<span style=color:#ae81ff>\B</span>in<span style=color:#ae81ff>\W</span>in32
-</span></span><span style=display:flex><span> CONF_PATH      <span style=color:#f92672>=</span> C:<span style=color:#ae81ff>\e</span>dk2<span style=color:#ae81ff>\C</span>onf
-</span></span><span style=display:flex><span> PYTHON_COMMAND <span style=color:#f92672>=</span> py -3
-</span></span><span style=display:flex><span> PYTHONPATH <span style=color:#f92672>=</span> C:<span style=color:#ae81ff>\e</span>dk2<span style=color:#ae81ff>\B</span>aseTools<span style=color:#ae81ff>\S</span>ource<span style=color:#ae81ff>\P</span>ython;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>!!! WARNING !!! NASM_PREFIX environment variable is not set
-</span></span><span style=display:flex><span>  Found nasm.exe, setting the environment variable to C:<span style=color:#ae81ff>\n</span>asm<span style=color:#ae81ff>\
-</span></span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>!!! WARNING !!! CLANG_BIN environment variable is not set
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>!!! WARNING !!! No CYGWIN_HOME set, gcc build may not be used !!!
-</span></span></code></pre></div><p>Next, let&rsquo;s go to the BaseTools directory to compile the tools:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>&gt; C:<span style=color:#ae81ff>\e</span>dk2&gt;cd BaseTools
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>&gt; C:<span style=color:#ae81ff>\e</span>dk2<span style=color:#ae81ff>\B</span>aseTools&gt;nmake
-</span></span></code></pre></div><p>After compiling the tools, let&rsquo;s return to the main directory and run the Build command:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>&gt; C:<span style=color:#ae81ff>\e</span>dk2<span style=color:#ae81ff>\B</span>aseTools&gt;cd ..
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>&gt; C:<span style=color:#ae81ff>\e</span>dk2&gt;Build
-</span></span><span style=display:flex><span>...
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>- Done -
-</span></span><span style=display:flex><span>Build end time: 13:14:44, Jan.28 <span style=color:#ae81ff>2025</span>
-</span></span><span style=display:flex><span>Build total time: 00:02:03
-</span></span></code></pre></div><h3 id=hello-world-with-uefi><strong>Hello World with UEFI</strong></h3><p>We now have everything we need to develop a UEFI driver. Let&rsquo;s develop a simple project that outputs “Hello UEFI World”. We can create the projects we will develop under the ShellPkg/Application directory.</p><p>When developing a driver, in addition to a .c project, we also need to create an .inf file. This INF file provides the necessary information to create and package the module. In other words, we will provide the necessary information for packaging our driver.</p><p>Let&rsquo;s create a folder named HelloWorld under the edk2/ShellPkg/Application directory and then start coding our HelloWorld.c project:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Uefi.h&gt;</span><span style=color:#75715e>
-</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style=color:#75715e>
-</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/UefiLib.h&gt;</span><span style=color:#75715e>
-</span></span></span><span style=display:flex><span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;Library/PcdLib.h&gt;</span><span style=color:#75715e>
-</span></span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>EFI_STATUS
-</span></span><span style=display:flex><span>EFIAPI
-</span></span><span style=display:flex><span><span style=color:#a6e22e>UefiMain</span> (
-</span></span><span style=display:flex><span>  IN EFI_HANDLE        ImageHandle,
-</span></span><span style=display:flex><span>  IN EFI_SYSTEM_TABLE  <span style=color:#f92672>*</span>SystemTable
-</span></span><span style=display:flex><span>  )
-</span></span><span style=display:flex><span>{
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>Print</span> (<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;Hello UEFI World!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
-</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> EFI_SUCCESS;
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>Aside from some details, the code will not seem foreign to us.</p><p>For the <strong>main</strong> function, we will write our code inside <strong>UefiMain</strong>. <em>UefiMain</em> is the entry point of UEFI drivers. Similar to the traditional main function, it is the entry point of a UEFI application. <strong>UefiMain</strong> takes two parameters:</p><ul><li><strong>ImageHandle:</strong> A unique identifier for the application, represented by the UEFI firmware.</li><li><strong>SystemTable:</strong> A data structure providing access to various services and tables defined in the UEFI system.</li></ul><p>When you look at the code more closely, you might have felt your hands shake a bit because of the syntax differences (for example, the space left between Print and the parentheses). At first, like me, you might think this is a syntax error — but it’s not. It’s related to the <a href=https://github.com/tianocore/tianocore.github.io/wiki/Code-Style-C>C coding style</a> used by the EDK2 community:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img9.png style=width:100%></div><p>Then let&rsquo;s create another project called HelloWorld.inf:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-inf data-lang=inf><span style=display:flex><span><span style=color:#66d9ef>[Defines]</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>INF_VERSION</span>                    <span style=color:#f92672>=</span> <span style=color:#e6db74>0x00010006
-</span></span></span><span style=display:flex><span><span style=color:#e6db74>  BASE_NAME                      = HelloWorld
-</span></span></span><span style=display:flex><span><span style=color:#e6db74>  MODULE_TYPE                    = UEFI_APPLICATION
-</span></span></span><span style=display:flex><span><span style=color:#e6db74>  VERSION_STRING                 = 1.0
-</span></span></span><span style=display:flex><span><span style=color:#e6db74>  ENTRY_POINT                    = UefiMain</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>[Sources]</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>HelloWorld.c</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>[Packages]</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>MdePkg/MdePkg.dec</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>ShellPkg/ShellPkg.dec</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>MdeModulePkg/MdeModulePkg.dec</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>[LibraryClasses]</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>UefiApplicationEntryPoint</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>UefiLib</span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>PcdLib</span>
-</span></span></code></pre></div><p>After coding the .inf file, everything is complete, but before moving on to compilation, we will need to add our project to /edk2/ShellPkg/ShellPkg.dsc:</p><pre tabindex=0><code>...
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="/favicon.ico">
+    <link rel="canonical" href="/docs/uefi-dev/uefi-introduction/">
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/projects/">
+                                    
+                                    <span>Projects</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div id="content" class="container">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<article class="single-shell single-shell--docs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">Introduction to UEFI</h1>
+            <p class="single-shell__meta">Sun, Jan 19, 2025</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-docs-uefi-dev-uefi-introduction-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-docs-uefi-dev-uefi-introduction-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#what-is-uefi"><strong>What is UEFI?</strong></a></li>
+        <li><a href="#uefi-boot-process"><strong>UEFI Boot Process</strong></a></li>
+        <li><a href="#introduction-to-uefi-development"><strong>Introduction to UEFI Development</strong></a></li>
+        <li><a href="#setup-edk2-on-windows"><strong>Setup EDK2 on Windows</strong></a></li>
+        <li><a href="#hello-world-with-uefi"><strong>Hello World with UEFI</strong></a></li>
+        <li><a href="#running-the-driver"><strong>Running the Driver</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <p>Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.</p>
+<h3 id="what-is-uefi"><strong>What is UEFI?</strong></h3>
+<p>UEFI (Unified Extensible Firmware Interface) is a specification for a computer&rsquo;s firmware. When the power button of a computer is pressed, UEFI runs before the operating system is started.</p>
+<p>We can think of UEFI as an improved version of the old BIOS system. UEFI models also have basic I/O systems for interacting with hardware, but the system boot processes are different. UEFI uses GPT (Guid Partition Table). GPT is a modern standard that defines the layout of partitions on a computer&rsquo;s storage device. It is the standard used in devices such as HDDs or SSDs that we are all familiar with. Just as UEFI replaced BIOS, GPT has replaced the previously used MBR (Master Boot Record) partitioning table. GPT works seamlessly with UEFI.</p>
+<p>The advantages gained when combining UEFI and GPT are as follows:</p>
+<ul>
+<li>Support for 2TB or larger disks</li>
+<li>Faster booting process</li>
+<li>Simplified development compared to the old BIOS</li>
+</ul>
+<p>So we can see that UEFI and GPT offer more advantages than older systems.</p>
+<p>UEFI has the same tasks as BIOS: running I/O devices and transferring control to the OS. However, its task is not limited to this, and as I mentioned above, it also offers a wide range of options for pre-OS development.</p>
+<p>Let&rsquo;s take a look at the diagram below, which shows the difference between Legacy BIOS and UEFI:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img1.png" style="width: 70%" />
+</div>
+<p>When we look at the diagram, we see that BIOS is firmware that communicates directly with hardware and is also hardware itself. When we look at UEFI in the diagram, we can see that it combines the interface between the hardware and the operating system. This function of UEFI makes things easier for developers.</p>
+<p>In short, when we look at UEFI, we can see that it offers a more modern and faster process compared to the old Legacy BIOS, especially when used with GPT.</p>
+<h3 id="uefi-boot-process"><strong>UEFI Boot Process</strong></h3>
+<p>Let&rsquo;s take a closer look at what happens in the background after pressing the power button on a UEFI computer, before the logo appears.</p>
+<p>UEFI has six main boot stages that are critical to the platform&rsquo;s startup process:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img2.png" style="width: 100%" />
+</div>
+<ul>
+<li><strong>Security (SEC)</strong>: The Security phase is the first stage of the UEFI boot process. Its main purpose is to initialize the Temporary RAM store, act as the system’s <em>root of trust</em>, and provide information to the Pre-EFI core phase. The mentioned root of trust works as follows: the SEC mechanism also serves as a system that ensures any code executed in the PI (Platform Initialization) is digitally signed, creating a <em>Secure Boot</em> environment.
+<br></li>
+<li><strong>Pre-EFI Initialization (PEI):</strong> In the second stage, the execution of EFI code is enabled. Its primary responsibility is to load the DXE Foundation, which will initiate the DXE drivers in the next stage. It also uses processor resources to dispatch Pre-EFI Initialization Modules (PEIMs). These PEIMs handle critical processes such as initializing certain persistent memory components and ensuring the transition to the next stage — the Driver Execution Environment (DXE).
+<br></li>
+<li><strong>Driver Execution Environment (DXE):</strong> I think this stage is particularly important because major operations required to start the system occur here. In the PEI stage, the memory needed for DXE to operate is allocated and initialized. Once control is passed to DXE, the DXE Dispatcher is called. This Dispatcher is responsible for loading and executing hardware drivers, runtime services, and all boot services required for the operating system to start. In the context of our goal, as I mentioned earlier, this is a crucial stage — our driver will be executed here.
+<br></li>
+<li><strong>Boot Device Selection (BDS):</strong> After the DXE drivers have been executed, control is passed to BDS — likely the stage you’ve all seen before. Here, a selection is made as to which device the OS loader will be sought from. The operating system is then prepared for loading, and the process moves toward the Transient System Load (TSL) stage.
+<br></li>
+<li><strong>Transient System Load (TSL):</strong> At this stage, the selected boot loader runs, and UEFI boot services are terminated.
+<br></li>
+<li><strong>Runtime (RT):</strong> In this phase, the UEFI flow is handed over to the operating system. However, this does not mean UEFI disappears entirely. The Runtime Services belonging to UEFI remain available to support the OS. For hardware-specific tasks, the System Management Mode (SMM) comes into play. SMM is a secure mode in which the processor manages critical hardware functions independently of the operating system. For example, tasks such as adjusting fan speed or monitoring battery status are performed in this mode. If the OS cannot perform a certain hardware-related operation on its own, it sends a signal called <em>SMI</em> (System Management Interrupt) — essentially a “call for help.” For instance, when the OS wants to control fan speed, it sends an SMI, SMM kicks in, and the task is handled there.</li>
+</ul>
+<h3 id="introduction-to-uefi-development"><strong>Introduction to UEFI Development</strong></h3>
+<p>When it comes to sources for UEFI development, you’ll really see that resources are limited. Popularly, the following tools can be used during the development process.</p>
+<ul>
+<li><strong>EDK2:</strong> EDK2 is a toolset for UEFI and PI specifications with modern features like rich, cross‑platform coding. The EDK2 project is developed and maintained today by many of the developers who contribute to the UEFI specification (along with community volunteers).</li>
+</ul>
+<p>In this series, we’ll use it for coding. Since EDK2 includes the latest UEFI protocols, it’s extremely useful. In addition, there are many projects we can use as guides during the learning process.-
+<br></p>
+<ul>
+<li><strong>VisualUEFI:</strong> The VisualUEFI tool enables Windows users to develop EDK2 projects with the Visual Studio IDE. If you want to escape EDK2’s complex layout and work more comfortably, you can opt for this tool.</li>
+</ul>
+<p>Although I’m a Windows user, I won’t be using VisualUEFI in the serie. While VisualUEFI provides a comfortable environment for coding, I personally find it easier to manually work with project layouts like EDK2. If you want to install VisualUEFI, there are plenty of resources online.</p>
+<p>After we develop our projects, we’ll need to simulate them. One of the following can be used:</p>
+<ul>
+<li><strong>QEMU:</strong> You probably already know what QEMU is. Being an emulator rather than just a virtual machine, it offers good debugging capabilities and is a multi‑platform emulator. You can choose it in either Linux or Windows environments.
+<br></li>
+<li><strong>VMware / VirtualBox:</strong> You can also use virtual machines such as VMware or VirtualBox.</li>
+</ul>
+<h3 id="setup-edk2-on-windows"><strong>Setup EDK2 on Windows</strong></h3>
+<p>Before setting up the EDK2 project in Windows, we need to install the following tools:</p>
+<ul>
+<li>Git</li>
+<li>Python</li>
+<li>NASM</li>
+<li>Visual Studio</li>
+</ul>
+<p>First, let&rsquo;s download Git, and then Python. Download Python directly from the original website instead of the Microsoft Store, and pay attention to the following during installation:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img5.png" style="width: 100%" />
+</div>
+<p>Don&rsquo;t forget to check the boxes in the area shown in the photo.</p>
+<p>Next, download NASM from its original website and run the downloaded .exe file as an administrator:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img8.png" style="width: 40%" />
+</div>
+<p>During installation, set the location of the NASM project to C:\NASM.</p>
+<p>After installing NASM, create a variable named NASM_PREFIX for User Variables in Windows&rsquo; Environment Variables settings:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img6.png" style="width: 80%" />
+</div>
+<p>Let&rsquo;s set the value to C:\NASM.</p>
+<p>Next, we need to install Visual Studio&rsquo;s C++ tools. To download these tools, search for Build Tools on the Downloads page:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img3.png" style="width: 100%" />
+</div>
+<p>Let&rsquo;s download Tools for Visual Studio and then:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img4.png" style="width: 70%" />
+</div>
+<p>Select <strong>Desktop Development with C++</strong> during installation and start the installation.</p>
+<p>Once you have completed these steps, open cmd.exe and install the edk2 project:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git clone https://github.com/tianocore/edk2.git
+</span></span><span style="display:flex;"><span>cd edk2
+</span></span><span style="display:flex;"><span>git submodule update --init
+</span></span></code></pre></div><p>After downloading the edk2 project, open the Developer Command Prompt VS 2022 tool and then go to the edk2 project we downloaded. Open Config/target.txt with Notepad:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>notepad Conf<span style="color:#ae81ff">\t</span>arget.txt
+</span></span></code></pre></div><p>In this .txt file, replace the values with the ones I show you below:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ACTIVE_PLATFORM       <span style="color:#f92672">=</span> ShellPkg<span style="color:#f92672">/</span>ShellPkg.dsc
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>TARGET                <span style="color:#f92672">=</span> RELEASE
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>TARGET_ARCH           <span style="color:#f92672">=</span> X64
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>TOOL_CHAIN_TAG        <span style="color:#f92672">=</span> VS2022
+</span></span></code></pre></div><p>Change the values accordingly and save and close. Then run edksetup.bat:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>&gt; C:<span style="color:#ae81ff">\e</span>dk2&gt;edksetup.bat
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span> WORKSPACE      <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2
+</span></span><span style="display:flex;"><span> EDK_TOOLS_PATH      <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools
+</span></span><span style="display:flex;"><span> BASE_TOOLS_PATH     <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools
+</span></span><span style="display:flex;"><span> EDK_TOOLS_BIN      <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools<span style="color:#ae81ff">\B</span>in<span style="color:#ae81ff">\W</span>in32
+</span></span><span style="display:flex;"><span> CONF_PATH      <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\C</span>onf
+</span></span><span style="display:flex;"><span> PYTHON_COMMAND <span style="color:#f92672">=</span> py -3
+</span></span><span style="display:flex;"><span> PYTHONPATH <span style="color:#f92672">=</span> C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools<span style="color:#ae81ff">\S</span>ource<span style="color:#ae81ff">\P</span>ython;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>!!! WARNING !!! NASM_PREFIX environment variable is not set
+</span></span><span style="display:flex;"><span>  Found nasm.exe, setting the environment variable to C:<span style="color:#ae81ff">\n</span>asm<span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>!!! WARNING !!! CLANG_BIN environment variable is not set
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>!!! WARNING !!! No CYGWIN_HOME set, gcc build may not be used !!!
+</span></span></code></pre></div><p>Next, let&rsquo;s go to the BaseTools directory to compile the tools:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>&gt; C:<span style="color:#ae81ff">\e</span>dk2&gt;cd BaseTools
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>&gt; C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools&gt;nmake
+</span></span></code></pre></div><p>After compiling the tools, let&rsquo;s return to the main directory and run the Build command:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>&gt; C:<span style="color:#ae81ff">\e</span>dk2<span style="color:#ae81ff">\B</span>aseTools&gt;cd ..
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>&gt; C:<span style="color:#ae81ff">\e</span>dk2&gt;Build
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>- Done -
+</span></span><span style="display:flex;"><span>Build end time: 13:14:44, Jan.28 <span style="color:#ae81ff">2025</span>
+</span></span><span style="display:flex;"><span>Build total time: 00:02:03
+</span></span></code></pre></div><h3 id="hello-world-with-uefi"><strong>Hello World with UEFI</strong></h3>
+<p>We now have everything we need to develop a UEFI driver. Let&rsquo;s develop a simple project that outputs “Hello UEFI World”. We can create the projects we will develop under the ShellPkg/Application directory.</p>
+<p>When developing a driver, in addition to a .c project, we also need to create an .inf file. This INF file provides the necessary information to create and package the module. In other words, we will provide the necessary information for packaging our driver.</p>
+<p>Let&rsquo;s create a folder named HelloWorld under the edk2/ShellPkg/Application directory and then start coding our HelloWorld.c project:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Uefi.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiApplicationEntryPoint.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/UefiLib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;Library/PcdLib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>EFI_STATUS
+</span></span><span style="display:flex;"><span>EFIAPI
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">UefiMain</span> (
+</span></span><span style="display:flex;"><span>  IN EFI_HANDLE        ImageHandle,
+</span></span><span style="display:flex;"><span>  IN EFI_SYSTEM_TABLE  <span style="color:#f92672">*</span>SystemTable
+</span></span><span style="display:flex;"><span>  )
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">Print</span> (<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Hello UEFI World!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> EFI_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Aside from some details, the code will not seem foreign to us.</p>
+<p>For the <strong>main</strong> function, we will write our code inside <strong>UefiMain</strong>. <em>UefiMain</em> is the entry point of UEFI drivers. Similar to the traditional main function, it is the entry point of a UEFI application. <strong>UefiMain</strong> takes two parameters:</p>
+<ul>
+<li><strong>ImageHandle:</strong> A unique identifier for the application, represented by the UEFI firmware.</li>
+<li><strong>SystemTable:</strong> A data structure providing access to various services and tables defined in the UEFI system.</li>
+</ul>
+<p>When you look at the code more closely, you might have felt your hands shake a bit because of the syntax differences (for example, the space left between Print and the parentheses). At first, like me, you might think this is a syntax error — but it’s not. It’s related to the <a href="https://github.com/tianocore/tianocore.github.io/wiki/Code-Style-C">C coding style</a> used by the EDK2 community:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img9.png" style="width: 100%" />
+</div>
+<p>Then let&rsquo;s create another project called HelloWorld.inf:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-inf" data-lang="inf"><span style="display:flex;"><span><span style="color:#66d9ef">[Defines]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">INF_VERSION</span>                    <span style="color:#f92672">=</span> <span style="color:#e6db74">0x00010006
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  BASE_NAME                      = HelloWorld
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  MODULE_TYPE                    = UEFI_APPLICATION
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  VERSION_STRING                 = 1.0
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  ENTRY_POINT                    = UefiMain</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Sources]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">HelloWorld.c</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Packages]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">MdePkg/MdePkg.dec</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ShellPkg/ShellPkg.dec</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">MdeModulePkg/MdeModulePkg.dec</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[LibraryClasses]</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">UefiApplicationEntryPoint</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">UefiLib</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">PcdLib</span>
+</span></span></code></pre></div><p>After coding the .inf file, everything is complete, but before moving on to compilation, we will need to add our project to /edk2/ShellPkg/ShellPkg.dsc:</p>
+<pre tabindex="0"><code>...
 [Components]
   #
   # Build all the libraries when building this package.
@@ -96,13 +327,175 @@
   ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
   ShellPkg/Library/UefiShellNetwork2CommandsLib/UefiShellNetwork2CommandsLib.inf
   ShellPkg/Application/HelloWorld/HelloWorld.inf
-</code></pre><p>As shown above, add your HelloWorld project under Components.</p><p>Now let&rsquo;s compile our project:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>Build -m ShellPkg<span style=color:#ae81ff>\A</span>pplication<span style=color:#ae81ff>\H</span>elloWorld<span style=color:#ae81ff>\H</span>elloWorld.inf
-</span></span></code></pre></div><h3 id=running-the-driver><strong>Running the Driver</strong></h3><p>I will be using the VMWare environment for simulation operations. If you are using VMware or VirtualBox like me, you will need a USB flash drive formatted with FAT32. After formatting with FAT32, create a directory named efi/boot on the USB flash drive.</p><p>There will be two shell files under the /edk2/Build/Shell/RELEASE_VS2022/X64 directory:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img10.png style=width:40%></div><p>Copy any of these to the efi/boot directory as bootx64.efi. Then copy the HelloWorld.efi file to the root directory.</p><p>Let&rsquo;s start the virtual machine and perform the following steps:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img11.png style=width:100%></div><p>Removable Devices > USB Flash Drive > Click on the Connect option.</p><p>Restart the virtual machine and press the DEL key at startup:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img12.png style=width:100%></div><p>Select your USB flash drive from the Boot Manager screen. It&rsquo;s that simple!</p><p>Now let&rsquo;s run our HelloWorld driver:</p><div style=text-align:center><img src=/images/posts/introduction-to-uefi/img13.png style=width:80%></div><h3 id=conclusion><strong>Conclusion</strong></h3><p>In this first chapter of UEFI development, we explored both the theory and the practical steps needed to start building UEFI applications. We learned that UEFI is a modern replacement for the traditional BIOS, offering faster boot times, support for large drives through GPT, and a more flexible platform for pre‑OS development. The six-stage boot process—from SEC to Runtime—provides a clear roadmap for how the system initializes, loads drivers, and eventually hands control to the operating system.</p><h1 id=references><strong>References</strong></h1><ul><li><a href=https://en.wikipedia.org/wiki/UEFI><strong>Wikipedia - UEFI</strong></a></li><li><a href=https://habr.com/en/companies/acronis/articles/535848/><strong>Dabudabot - Beginning UEFI Development</strong></a></li><li><a href=https://secret.club/2020/05/26/introduction-to-uefi-part-1.html><strong>Secret Club - Introduction to UEFI: Part 1</strong></a></li><li><a href=https://binary.ninja/2024/08/23/uefi-firmware-analysis.html><strong>Binary Ninja - Advanced UEFI Analysis with Binary Ninja</strong></a></li></ul></div><div class=single-shell__back><h4><a href=/>Back to Home</a></h4></div><button class=single-shell__scroll-top type=button aria-label="Scroll to top" data-ui=scroll-top>
-<span aria-hidden=true>^</span></button></div><aside class=single-shell__aside><section class="single-shell__author single-shell__author--desktop"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--desktop"><div class=single-shell__toc-heading><span class=single-shell__toc-label>Contents</span></div><div class=single-shell__toc-body><nav id=TableOfContents-desktop><ul><li><ul><li><a href=#what-is-uefi><strong>What is UEFI?</strong></a></li><li><a href=#uefi-boot-process><strong>UEFI Boot Process</strong></a></li><li><a href=#introduction-to-uefi-development><strong>Introduction to UEFI Development</strong></a></li><li><a href=#setup-edk2-on-windows><strong>Setup EDK2 on Windows</strong></a></li><li><a href=#hello-world-with-uefi><strong>Hello World with UEFI</strong></a></li><li><a href=#running-the-driver><strong>Running the Driver</strong></a></li><li><a href=#conclusion><strong>Conclusion</strong></a></li></ul></li></ul></nav></div></section></aside><div class=single-shell__panel aria-label="Post info"><div class=sp-sysinfo><div class=sp-sysinfo__header>// SYSINFO</div><div class=sp-sysinfo__row><span class=sp-label>DATE</span>
-<span>2025.01.19</span></div><div class=sp-sysinfo__row><span class=sp-label>READ</span>
-<span>10MIN</span></div><div class=sp-sysinfo__row><span class=sp-label>WORDS</span>
-<span>2023</span></div></div></div></div></div></article></div><footer class=container><hr class=soften><p>&copy;
-0xbekoo
-<span id=thisyear>2026</span>
-| 0xbekoo.github.io</p><p class=text-center><a href=https://x.com/0xbekooo>Twitter</a>
-<a href=https://github.com/0xbekoo>GitHub</a></p></footer></body><link rel=stylesheet href=/css/bootstrap.css><link rel=stylesheet href=/css/bootstrap-responsive.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/blog-callouts.css><link rel=stylesheet href=/css/mobile-reading.css><link rel=stylesheet href=/css/duat-gate.css><link rel=stylesheet href=/css/home-glitch.css><link rel=stylesheet href=/css/duat-boot.css><link rel=stylesheet href=/css/page-slide.css><link rel=stylesheet href=/css/projects.css><link rel=stylesheet href=/css/diagrams.css><script src=/js/jquery.js></script><script src=/js/bootstrap-transition.js></script><script src=/js/bootstrap-alert.js></script><script src=/js/bootstrap-modal.js></script><script src=/js/bootstrap-dropdown.js></script><script src=/js/bootstrap-scrollspy.js></script><script src=/js/bootstrap-tab.js></script><script src=/js/bootstrap-tooltip.js></script><script src=/js/bootstrap-popover.js></script><script src=/js/bootstrap-button.js></script><script src=/js/bootstrap-collapse.js></script><script src=/js/bootstrap-carousel.js></script><script src=/js/bootstrap-typeahead.js></script><script src=/js/bootstrap-affix.js></script><script>_386={fastLoad:!1,onePass:!1,speedFactor:1.5,duatBootImage:"/images/blog-images/hour.jpg"};function ThisYear(){document.getElementById("thisyear").innerHTML=(new Date).getFullYear()}</script><script src=/js/duat-boot.js></script><script src=/js/mobile-image-lightbox.js></script><script src=/js/page-slide.js></script></html>
+</code></pre><p>As shown above, add your HelloWorld project under Components.</p>
+<p>Now let&rsquo;s compile our project:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>Build -m ShellPkg<span style="color:#ae81ff">\A</span>pplication<span style="color:#ae81ff">\H</span>elloWorld<span style="color:#ae81ff">\H</span>elloWorld.inf
+</span></span></code></pre></div><h3 id="running-the-driver"><strong>Running the Driver</strong></h3>
+<p>I will be using the VMWare environment for simulation operations. If you are using VMware or VirtualBox like me, you will need a USB flash drive formatted with FAT32. After formatting with FAT32, create a directory named efi/boot on the USB flash drive.</p>
+<p>There will be two shell files under the /edk2/Build/Shell/RELEASE_VS2022/X64 directory:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img10.png" style="width: 40%" />
+</div>
+<p>Copy any of these to the efi/boot directory as bootx64.efi. Then copy the HelloWorld.efi file to the root directory.</p>
+<p>Let&rsquo;s start the virtual machine and perform the following steps:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img11.png" style="width: 100%" />
+</div>
+<p>Removable Devices &gt; USB Flash Drive &gt; Click on the Connect option.</p>
+<p>Restart the virtual machine and press the DEL key at startup:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img12.png" style="width: 100%" />
+</div>
+<p>Select your USB flash drive from the Boot Manager screen. It&rsquo;s that simple!</p>
+<p>Now let&rsquo;s run our HelloWorld driver:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/introduction-to-uefi/img13.png" style="width: 80%" />
+</div>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>In this first chapter of UEFI development, we explored both the theory and the practical steps needed to start building UEFI applications. We learned that UEFI is a modern replacement for the traditional BIOS, offering faster boot times, support for large drives through GPT, and a more flexible platform for pre‑OS development. The six-stage boot process—from SEC to Runtime—provides a clear roadmap for how the system initializes, loads drivers, and eventually hands control to the operating system.</p>
+<h1 id="references"><strong>References</strong></h1>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/UEFI"><strong>Wikipedia - UEFI</strong></a></li>
+<li><a href="https://habr.com/en/companies/acronis/articles/535848/"><strong>Dabudabot - Beginning UEFI Development</strong></a></li>
+<li><a href="https://secret.club/2020/05/26/introduction-to-uefi-part-1.html"><strong>Secret Club - Introduction to UEFI: Part 1</strong></a></li>
+<li><a href="https://binary.ninja/2024/08/23/uefi-firmware-analysis.html"><strong>Binary Ninja - Advanced UEFI Analysis with Binary Ninja</strong></a></li>
+</ul>
+
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#what-is-uefi"><strong>What is UEFI?</strong></a></li>
+        <li><a href="#uefi-boot-process"><strong>UEFI Boot Process</strong></a></li>
+        <li><a href="#introduction-to-uefi-development"><strong>Introduction to UEFI Development</strong></a></li>
+        <li><a href="#setup-edk2-on-windows"><strong>Setup EDK2 on Windows</strong></a></li>
+        <li><a href="#hello-world-with-uefi"><strong>Hello World with UEFI</strong></a></li>
+        <li><a href="#running-the-driver"><strong>Running the Driver</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+            <div class="single-shell__panel" aria-label="Post info">
+                <div class="sp-sysinfo">
+                    <div class="sp-sysinfo__header">// SYSINFO</div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">DATE</span>
+                        <span>2025.01.19</span>
+                    </div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">READ</span>
+                        <span>10MIN</span>
+                    </div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">WORDS</span>
+                        <span>2023</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            
+        </div>
+    </div>
+</article>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css"><link rel="stylesheet" href="/css/projects.css"><link rel="stylesheet" href="/css/diagrams.css">
+<script src="/js/jquery.js"></script>
+
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
+</html>

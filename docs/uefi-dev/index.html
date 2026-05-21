@@ -1,24 +1,216 @@
-<!doctype html><html lang=en><head><title>0xbekoo</title><meta charset=utf-8><meta content="utf-8" http-equiv=encoding><meta name=viewport content="width=device-width,initial-scale=1"><meta name=format-detection content="telephone=no"><meta name=theme-color content="#000084"><link rel=icon href=/favicon.ico><link rel=canonical href=/docs/uefi-dev/><noscript><style>body{visibility:visible!important}</style></noscript></head><body><nav class="navbar navbar-inverse navbar-fixed-top"><div class=navbar-inner><div class=container><button type=button class="btn btn-navbar" data-toggle=collapse data-target=.nav-collapse></button>
-<a class=brand href=/>0xbekoo</a><div class="nav-collapse collapse"><ul class=nav><li><a href=/docs/><span>Documentation</span></a></li><li><a href=/blogs/><span>Blogs</span></a></li><li><a href=/projects/><span>Projects</span></a></li></ul></div></div></div></nav><div id=content class=container><article class="row-fluid navmargin archive-shell archive-shell--docs"><header class="page-header archive-shell__header"><p class=archive-shell__eyebrow>DOCS</p><h1>UEFI Development</h1><p class=archive-shell__lead>Documentation paths grouped by topic, from malware development to firmware internals.</p></header><p>You can check the following sections to review documentations related to UEFI Development:</p></article><section class="archive-list archive-list--docs" aria-label="UEFI Development list"><article class=archive-card><a class=archive-card__link href=/docs/uefi-dev/debugging-ovmf-with-gdb/><span class=archive-card__index>01</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2025-10-27>2025-10-27</time>
-</span><span class=archive-card__title>Debugging QEMU + OVMF with GDB</span>
-<span class=archive-card__summary>Introduction Probably you know the signifince of debugging in any low-level programming projects. In the same way, we need to debug our UEFI Driver in …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/docs/uefi-dev/communation-between-windows-and-uefi/><span class=archive-card__index>02</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2025-07-18>2025-07-18</time>
-</span><span class=archive-card__title>UEFI to Windows Communication via NVRAM Variables</span>
-<span class=archive-card__summary>In this documentation, we will discuss how to establish communication between a UEFI driver and a Windows driver. Specifically, we’ll explore how to …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/docs/uefi-dev/uefi-keylogger/><span class=archive-card__index>03</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2025-01-28>2025-01-28</time>
-</span><span class=archive-card__title>UEFI Keylogger</span>
-<span class=archive-card__summary>In this documentation we will develop simple uefi keylogger.
-Coding #include &lt;Uefi.h> #include &lt;Library/UefiApplicationEntryPoint.h> …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/docs/uefi-dev/uefi-introduction/><span class=archive-card__index>04</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2025-01-19>2025-01-19</time>
-</span><span class=archive-card__title>Introduction to UEFI</span>
-<span class=archive-card__summary>Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="/favicon.ico">
+    <link rel="canonical" href="/docs/uefi-dev/">
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/projects/">
+                                    
+                                    <span>Projects</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div id="content" class="container">
+
+
+<article class="row-fluid navmargin archive-shell archive-shell--docs">
+    <header class="page-header archive-shell__header">
+        <p class="archive-shell__eyebrow">DOCS</p>
+        <h1>UEFI Development</h1>
+        
+        <p class="archive-shell__lead">
+            
+            Documentation paths grouped by topic, from malware development to firmware internals.
+            
+        </p>
+        
+    </header>
+    
+    <p>You can check the following sections to review documentations related to UEFI Development:</p>
+
+</article>
+
+
+<section class="archive-list archive-list--docs" aria-label="UEFI Development list">
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/docs/uefi-dev/debugging-ovmf-with-gdb/">
+            <span class="archive-card__index">01</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2025-10-27">2025-10-27</time>
+                    
+                    
+                </span>
+                <span class="archive-card__title">Debugging QEMU &#43; OVMF with GDB</span>
+                
+                <span class="archive-card__summary">Introduction Probably you know the signifince of debugging in any low-level programming projects. In the same way, we need to debug our UEFI Driver in …</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/docs/uefi-dev/communation-between-windows-and-uefi/">
+            <span class="archive-card__index">02</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2025-07-18">2025-07-18</time>
+                    
+                    
+                </span>
+                <span class="archive-card__title">UEFI to Windows Communication via NVRAM Variables</span>
+                
+                <span class="archive-card__summary">In this documentation, we will discuss how to establish communication between a UEFI driver and a Windows driver. Specifically, we’ll explore how to …</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/docs/uefi-dev/uefi-keylogger/">
+            <span class="archive-card__index">03</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2025-01-28">2025-01-28</time>
+                    
+                    
+                </span>
+                <span class="archive-card__title">UEFI Keylogger</span>
+                
+                <span class="archive-card__summary">In this documentation we will develop simple uefi keylogger.
+Coding #include &lt;Uefi.h&gt; #include &lt;Library/UefiApplicationEntryPoint.h&gt; …</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/docs/uefi-dev/uefi-introduction/">
+            <span class="archive-card__index">04</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2025-01-19">2025-01-19</time>
+                    
+                    
+                </span>
+                <span class="archive-card__title">Introduction to UEFI</span>
+                
+                <span class="archive-card__summary">Hello everyone. In this first document of UEFI Development, we will introduce the theory behind UEFI.
 What is UEFI? UEFI (Unified Extensible Firmware …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article></section></div><footer class=container><hr class=soften><p>&copy;
-0xbekoo
-<span id=thisyear>2026</span>
-| 0xbekoo.github.io</p><p class=text-center><a href=https://x.com/0xbekooo>Twitter</a>
-<a href=https://github.com/0xbekoo>GitHub</a></p></footer></body><link rel=stylesheet href=/css/bootstrap.css><link rel=stylesheet href=/css/bootstrap-responsive.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/blog-callouts.css><link rel=stylesheet href=/css/mobile-reading.css><link rel=stylesheet href=/css/duat-gate.css><link rel=stylesheet href=/css/home-glitch.css><link rel=stylesheet href=/css/duat-boot.css><link rel=stylesheet href=/css/page-slide.css><link rel=stylesheet href=/css/projects.css><link rel=stylesheet href=/css/diagrams.css><script src=/js/jquery.js></script><script src=/js/bootstrap-transition.js></script><script src=/js/bootstrap-alert.js></script><script src=/js/bootstrap-modal.js></script><script src=/js/bootstrap-dropdown.js></script><script src=/js/bootstrap-scrollspy.js></script><script src=/js/bootstrap-tab.js></script><script src=/js/bootstrap-tooltip.js></script><script src=/js/bootstrap-popover.js></script><script src=/js/bootstrap-button.js></script><script src=/js/bootstrap-collapse.js></script><script src=/js/bootstrap-carousel.js></script><script src=/js/bootstrap-typeahead.js></script><script src=/js/bootstrap-affix.js></script><script>_386={fastLoad:!1,onePass:!1,speedFactor:1.5,duatBootImage:"/images/blog-images/hour.jpg"};function ThisYear(){document.getElementById("thisyear").innerHTML=(new Date).getFullYear()}</script><script src=/js/duat-boot.js></script><script src=/js/mobile-image-lightbox.js></script><script src=/js/page-slide.js></script></html>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+</section>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css"><link rel="stylesheet" href="/css/projects.css"><link rel="stylesheet" href="/css/diagrams.css">
+<script src="/js/jquery.js"></script>
+
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
+</html>

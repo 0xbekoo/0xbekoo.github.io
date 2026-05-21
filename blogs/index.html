@@ -1,88 +1,490 @@
-<!doctype html><html lang=en><head><title>0xbekoo</title><meta charset=utf-8><meta content="utf-8" http-equiv=encoding><meta name=viewport content="width=device-width,initial-scale=1"><meta name=format-detection content="telephone=no"><meta name=theme-color content="#000084"><link rel=icon href=/favicon.ico><link rel=canonical href=/blogs/><noscript><style>body{visibility:visible!important}</style></noscript></head><body><nav class="navbar navbar-inverse navbar-fixed-top"><div class=navbar-inner><div class=container><button type=button class="btn btn-navbar" data-toggle=collapse data-target=.nav-collapse></button>
-<a class=brand href=/>0xbekoo</a><div class="nav-collapse collapse"><ul class=nav><li><a href=/docs/><span>Documentation</span></a></li><li><a href=/blogs/><span>Blogs</span></a></li><li><a href=/projects/><span>Projects</span></a></li></ul></div></div></div></nav><div id=content class=container><article class="row-fluid navmargin archive-shell archive-shell--blogs"><header class="page-header archive-shell__header"><p class=archive-shell__eyebrow>BLOGS</p><h1>Blogs</h1><p class=archive-shell__lead>Field notes, reverse engineering logs, and low-level research writeups.</p></header></article><section class="archive-list archive-list--blogs" aria-label="Blogs list"><article class=archive-card><a class=archive-card__link href=/blogs/setup-exe-journey/><span class=archive-card__index>01</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2026-05-21>2026-05-21</time>
-<span class=archive-card__tags><span>Reverse-Engineering</span><span>Windows-Internals</span><span>UEFI</span>
-</span></span><span class=archive-card__title>A Journey Into setup.exe — LabConfig and Windows 11 Security</span>
-<span class=archive-card__summary>Introduction Earlier this year I submitted a security finding to MSRC. No CVE came out of it, no bounty — just something I thought someone at …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/whitelotus/><span class=archive-card__index>02</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2026-05-12>2026-05-12</time>
-<span class=archive-card__tags><span>whitelotus</span><span>bootkit</span><span>uefi</span>
-</span></span><span class=archive-card__title>WhiteLotus: Walking Through a UEFI Bootkit</span>
-<span class=archive-card__summary>A firmware research walk-through of WhiteLotus, a UEFI boot-chain project that follows bootmgfw, winload, and ntoskrnl before Windows fully starts.</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/introduction-to-x230-coreboot/><span class=archive-card__index>03</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2026-04-07>2026-04-07</time>
-<span class=archive-card__tags><span>lenovo-x230</span><span>coreboot</span><span>real-silicon</span>
-</span></span><span class=archive-card__title>My Journey for X230 + Coreboot</span>
-<span class=archive-card__summary>After finishing the SMM blog, I picked up a Lenovo X230 for the next stage of the project. Until now, most of my experiments had lived inside QEMU. In …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/diving-deep-into-smm/><span class=archive-card__index>04</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2026-03-26>2026-03-26</time>
-<span class=archive-card__tags><span>system-management-mode</span>
-</span></span><span class=archive-card__title>An In-Depth Look at the System Management Mode of Processors</span>
-<span class=archive-card__summary>It&rsquo;s gonna be hard, I guess.
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="/favicon.ico">
+    <link rel="canonical" href="/blogs/">
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/projects/">
+                                    
+                                    <span>Projects</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div id="content" class="container">
+
+
+<article class="row-fluid navmargin archive-shell archive-shell--blogs">
+    <header class="page-header archive-shell__header">
+        <p class="archive-shell__eyebrow">BLOGS</p>
+        <h1>Blogs</h1>
+        
+        <p class="archive-shell__lead">
+            
+            Field notes, reverse engineering logs, and low-level research writeups.
+            
+        </p>
+        
+    </header>
+    
+    
+</article>
+
+
+<section class="archive-list archive-list--blogs" aria-label="Blogs list">
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/setup-exe-journey/">
+            <span class="archive-card__index">01</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2026-05-21">2026-05-21</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Reverse-Engineering</span><span>Windows-Internals</span><span>UEFI</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">A Journey Into setup.exe — LabConfig and Windows 11 Security</span>
+                
+                <span class="archive-card__summary">Introduction I recently submitted a security finding to MSRC. No CVE came out of it, no bounty — just something I thought someone at Microsoft should …</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/whitelotus/">
+            <span class="archive-card__index">02</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2026-05-12">2026-05-12</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>whitelotus</span><span>bootkit</span><span>uefi</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">WhiteLotus: Walking Through a UEFI Bootkit</span>
+                
+                <span class="archive-card__summary">A firmware research walk-through of WhiteLotus, a UEFI boot-chain project that follows bootmgfw, winload, and ntoskrnl before Windows fully starts.</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/introduction-to-x230-coreboot/">
+            <span class="archive-card__index">03</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2026-04-07">2026-04-07</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>lenovo-x230</span><span>coreboot</span><span>real-silicon</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">My Journey for X230 &#43; Coreboot</span>
+                
+                <span class="archive-card__summary">After finishing the SMM blog, I picked up a Lenovo X230 for the next stage of the project. Until now, most of my experiments had lived inside QEMU. In …</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/diving-deep-into-smm/">
+            <span class="archive-card__index">04</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2026-03-26">2026-03-26</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>system-management-mode</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">An In-Depth Look at the System Management Mode of Processors</span>
+                
+                <span class="archive-card__summary">It&rsquo;s gonna be hard, I guess.
 Introduction Welcome to my journey into the underworld. In this blog, we’ll take an in-depth look at the “god mode” …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/a-journey-from-reset-vector/><span class=archive-card__index>05</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2025-12-31>2025-12-31</time>
-<span class=archive-card__tags><span>Reverse-Engineering</span><span>Firmware-Reversing</span><span>Reser-Vector</span>
-</span></span><span class=archive-card__title>A Journey For X86 Reset Vector</span>
-<span class=archive-card__summary>Introduction Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&rsquo;s very first breath.
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/a-journey-from-reset-vector/">
+            <span class="archive-card__index">05</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2025-12-31">2025-12-31</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Reverse-Engineering</span><span>Firmware-Reversing</span><span>Reser-Vector</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">A Journey For X86 Reset Vector</span>
+                
+                <span class="archive-card__summary">Introduction Hello folks, and welcome to yet another journey! Today, we are going to dive deep into a processor&rsquo;s very first breath.
 Lately, …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/ssdt-hook-detector-usermode/><span class=archive-card__index>06</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2025-09-18>2025-09-18</time>
-<span class=archive-card__tags><span>Malware-Development</span><span>Reverse-Engineering</span><span>SSDT-Unhooking</span>
-</span></span><span class=archive-card__title>Detecting SSDT Hook with User Mode Program via BYOVD</span>
-<span class=archive-card__summary>Introduction Github Link: github.com/0xbekoo/SSDT-Hook-Detector
-Welcome to my blog! Today we will dive into a little adventure&mldr;
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/ssdt-hook-detector-usermode/">
+            <span class="archive-card__index">06</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2025-09-18">2025-09-18</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Malware-Development</span><span>Reverse-Engineering</span><span>SSDT-Unhooking</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">Detecting SSDT Hook with User Mode Program via BYOVD</span>
+                
+                <span class="archive-card__summary">Introduction Github Link: github.com/0xbekoo/SSDT-Hook-Detector
+Welcome to my blog! Today we will dive into a little adventure&hellip;
 Recently, I …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/patchguard-analysis-part-4/><span class=archive-card__index>07</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2025-08-09>2025-08-09</time>
-<span class=archive-card__tags><span>Reverse-Engineering</span><span>PatchGuard</span><span>Reversing-PatchGuard</span>
-</span></span><span class=archive-card__title>PatchGuard Analysis - Part 4</span>
-<span class=archive-card__summary>Verification Routines This phase is the heart of PatchGuard&rsquo;s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/patchguard-analysis-part-3/><span class=archive-card__index>08</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2025-08-08>2025-08-08</time>
-<span class=archive-card__tags><span>Reverse-Engineering</span><span>PatchGuard</span><span>Reversing-PatchGuard</span>
-</span></span><span class=archive-card__title>PatchGuard Analysis - Part 3</span>
-<span class=archive-card__summary>Triggering a check As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/patchguard-analysis-part-2/><span class=archive-card__index>09</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2025-08-07>2025-08-07</time>
-<span class=archive-card__tags><span>Reverse-Engineering</span><span>PatchGuard</span><span>Reversing-PatchGuard</span>
-</span></span><span class=archive-card__title>PatchGuard Analysis - Part 2</span>
-<span class=archive-card__summary>Arguments of KiInitPatchGuardContext Now, we can see another Arguments of the function.
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/patchguard-analysis-part-4/">
+            <span class="archive-card__index">07</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2025-08-09">2025-08-09</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Reverse-Engineering</span><span>PatchGuard</span><span>Reversing-PatchGuard</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">PatchGuard Analysis - Part 4</span>
+                
+                <span class="archive-card__summary">Verification Routines This phase is the heart of PatchGuard&rsquo;s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a …</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/patchguard-analysis-part-3/">
+            <span class="archive-card__index">08</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2025-08-08">2025-08-08</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Reverse-Engineering</span><span>PatchGuard</span><span>Reversing-PatchGuard</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">PatchGuard Analysis - Part 3</span>
+                
+                <span class="archive-card__summary">Triggering a check As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are …</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/patchguard-analysis-part-2/">
+            <span class="archive-card__index">09</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2025-08-07">2025-08-07</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Reverse-Engineering</span><span>PatchGuard</span><span>Reversing-PatchGuard</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">PatchGuard Analysis - Part 2</span>
+                
+                <span class="archive-card__summary">Arguments of KiInitPatchGuardContext Now, we can see another Arguments of the function.
 Argument 1: DPC Routine Pointer As we have seen before, the …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/patchguard-analysis-part-1/><span class=archive-card__index>10</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2025-08-06>2025-08-06</time>
-<span class=archive-card__tags><span>Reverse-Engineering</span><span>PatchGuard</span><span>Reversing-PatchGuard</span>
-</span></span><span class=archive-card__title>PatchGuard Analysis - Part 1</span>
-<span class=archive-card__summary>This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/patchguard-analysis-part-1/">
+            <span class="archive-card__index">10</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2025-08-06">2025-08-06</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Reverse-Engineering</span><span>PatchGuard</span><span>Reversing-PatchGuard</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">PatchGuard Analysis - Part 1</span>
+                
+                <span class="archive-card__summary">This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.
 Introduction Most of us have probably come across …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/ssdt-hooking/><span class=archive-card__index>11</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2025-02-22>2025-02-22</time>
-<span class=archive-card__tags><span>Reverse-Engineering</span><span>Windows-kernel</span><span>Rootkit</span>
-</span></span><span class=archive-card__title>Loading Driver from User-Mode Program via SSDT Hooking</span>
-<span class=archive-card__summary>Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/ssdt-hooking/">
+            <span class="archive-card__index">11</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2025-02-22">2025-02-22</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Reverse-Engineering</span><span>Windows-kernel</span><span>Rootkit</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">Loading Driver from User-Mode Program via SSDT Hooking</span>
+                
+                <span class="archive-card__summary">Welcome to my blog. In this blog, i will demonstrate SSDT Hooking technique.
 In this article, we will examine how SSDT Hooking works, why it is used, …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/syscalls/><span class=archive-card__index>12</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2024-12-31>2024-12-31</time>
-<span class=archive-card__tags><span>Reverse-Engineering</span><span>Syscall</span><span>Windows-kernel</span>
-</span></span><span class=archive-card__title>Reversing System Call Mechanism in Windows Kernel</span>
-<span class=archive-card__summary>Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/bare-metal-reversing/><span class=archive-card__index>13</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2024-12-04>2024-12-04</time>
-<span class=archive-card__tags><span>Reverse-Engineering</span><span>Firmware-Reversing</span><span>IOT-Hacking</span>
-</span></span><span class=archive-card__title>ARM Firmware Reverse Engineering</span>
-<span class=archive-card__summary>Hello everyone. In this blog we continue with Firmware Reverse Engineering. We will dive into Bare Metal Reversing. If you remember, in our previous …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/router-firmware-reversing/><span class=archive-card__index>14</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2024-12-03>2024-12-03</time>
-<span class=archive-card__tags><span>Reverse-Engineering</span><span>Firmware-Reversing</span><span>IOT-Hacking</span>
-</span></span><span class=archive-card__title>Router Firmware Reverse Engineering</span>
-<span class=archive-card__summary>Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&rsquo;s Archer AX 21 …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article><article class=archive-card><a class=archive-card__link href=/blogs/is-valorant-spyware/><span class=archive-card__index>15</span>
-<span class=archive-card__body><span class=archive-card__meta><time datetime=2024-04-17>2024-04-17</time>
-<span class=archive-card__tags><span>Reverse-Engineering</span><span>Ptrace</span><span>radare2</span>
-</span></span><span class=archive-card__title>Is Valorant Spyware?</span>
-<span class=archive-card__summary>Understanding How Anti-Cheat Software Works To begin our exploration, we first need to understand how anti-cheat software works. In general, …</span>
-</span><span class=archive-card__arrow aria-hidden=true>RUN</span></a></article></section></div><footer class=container><hr class=soften><p>&copy;
-0xbekoo
-<span id=thisyear>2026</span>
-| 0xbekoo.github.io</p><p class=text-center><a href=https://x.com/0xbekooo>Twitter</a>
-<a href=https://github.com/0xbekoo>GitHub</a></p></footer></body><link rel=stylesheet href=/css/bootstrap.css><link rel=stylesheet href=/css/bootstrap-responsive.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/blog-callouts.css><link rel=stylesheet href=/css/mobile-reading.css><link rel=stylesheet href=/css/duat-gate.css><link rel=stylesheet href=/css/home-glitch.css><link rel=stylesheet href=/css/duat-boot.css><link rel=stylesheet href=/css/page-slide.css><link rel=stylesheet href=/css/projects.css><link rel=stylesheet href=/css/diagrams.css><script src=/js/jquery.js></script><script src=/js/bootstrap-transition.js></script><script src=/js/bootstrap-alert.js></script><script src=/js/bootstrap-modal.js></script><script src=/js/bootstrap-dropdown.js></script><script src=/js/bootstrap-scrollspy.js></script><script src=/js/bootstrap-tab.js></script><script src=/js/bootstrap-tooltip.js></script><script src=/js/bootstrap-popover.js></script><script src=/js/bootstrap-button.js></script><script src=/js/bootstrap-collapse.js></script><script src=/js/bootstrap-carousel.js></script><script src=/js/bootstrap-typeahead.js></script><script src=/js/bootstrap-affix.js></script><script>_386={fastLoad:!1,onePass:!1,speedFactor:1.5,duatBootImage:"/images/blog-images/hour.jpg"};function ThisYear(){document.getElementById("thisyear").innerHTML=(new Date).getFullYear()}</script><script src=/js/duat-boot.js></script><script src=/js/mobile-image-lightbox.js></script><script src=/js/page-slide.js></script></html>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/syscalls/">
+            <span class="archive-card__index">12</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2024-12-31">2024-12-31</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Reverse-Engineering</span><span>Syscall</span><span>Windows-kernel</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">Reversing System Call Mechanism in Windows Kernel</span>
+                
+                <span class="archive-card__summary">Hi everyone! Today we will dive into Syscalls in Windows Kernel. After the information I had for SSDT, this information seemed insufficient to me. …</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/bare-metal-reversing/">
+            <span class="archive-card__index">13</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2024-12-04">2024-12-04</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Reverse-Engineering</span><span>Firmware-Reversing</span><span>IOT-Hacking</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">ARM Firmware Reverse Engineering</span>
+                
+                <span class="archive-card__summary">Hello everyone. In this blog we continue with Firmware Reverse Engineering. We will dive into Bare Metal Reversing. If you remember, in our previous …</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/router-firmware-reversing/">
+            <span class="archive-card__index">14</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2024-12-03">2024-12-03</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Reverse-Engineering</span><span>Firmware-Reversing</span><span>IOT-Hacking</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">Router Firmware Reverse Engineering</span>
+                
+                <span class="archive-card__summary">
+Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&rsquo;s Archer AX 21 …</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+    <article class="archive-card">
+        <a class="archive-card__link" href="/blogs/is-valorant-spyware/">
+            <span class="archive-card__index">15</span>
+            <span class="archive-card__body">
+                <span class="archive-card__meta">
+                    
+                    <time datetime="2024-04-17">2024-04-17</time>
+                    
+                    
+                    <span class="archive-card__tags">
+                        <span>Reverse-Engineering</span><span>Ptrace</span><span>radare2</span>
+                    </span>
+                    
+                </span>
+                <span class="archive-card__title">Is Valorant Spyware?</span>
+                
+                <span class="archive-card__summary">Understanding How Anti-Cheat Software Works To begin our exploration, we first need to understand how anti-cheat software works. In general, …</span>
+                
+            </span>
+            <span class="archive-card__arrow" aria-hidden="true">RUN</span>
+        </a>
+    </article>
+    
+</section>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css"><link rel="stylesheet" href="/css/projects.css"><link rel="stylesheet" href="/css/diagrams.css">
+<script src="/js/jquery.js"></script>
+
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
+</html>

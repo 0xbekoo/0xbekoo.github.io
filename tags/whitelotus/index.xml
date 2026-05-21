@@ -1,6 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Whitelotus on 0xbekoo</title><link>https://0xbekoo.github.io/tags/whitelotus/</link><description>Recent content in Whitelotus on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Tue, 12 May 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/whitelotus/index.xml" rel="self" type="application/rss+xml"/><item><title>WhiteLotus: Walking Through a UEFI Bootkit</title><link>https://0xbekoo.github.io/blogs/whitelotus/</link><pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/whitelotus/</guid><description>&lt;div class="blog-callout blog-callout-warning"&gt;
- &lt;div class="blog-callout__header"&gt;
- &lt;span class="blog-callout__badge"&gt;[!]&lt;/span&gt;
- &lt;span class="blog-callout__title"&gt;Research and Safety Notice&lt;/span&gt;
- &lt;/div&gt;
- &lt;div class="blog-callout__body"&gt;&lt;p&gt;WhiteLotus was built as a proof-of-concept directly tied to the LabConfig analysis published in &lt;a href="https://0xbekoo.github.io/blogs/setup-exe-journey"&gt;A Journey Into setup.exe — LabConfig and Windows 11 Security&lt;/a&gt;. It demonstrates the practical attack surface that exists on systems installed through the LabConfig bypass: once Secure Boot is absent and the boot chain offers no resistance, the capabilities shown here become available to any attacker who can write to the EFI System Partition.&lt;/p&gt;</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Whitelotus on 0xbekoo</title>
+    <link>http://localhost:1313/tags/whitelotus/</link>
+    <description>Recent content in Whitelotus on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Tue, 12 May 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/whitelotus/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>WhiteLotus: Walking Through a UEFI Bootkit</title>
+      <link>http://localhost:1313/blogs/whitelotus/</link>
+      <pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/whitelotus/</guid>
+      <description>&lt;div class=&#34;blog-callout blog-callout-warning&#34;&gt;&#xA;  &lt;div class=&#34;blog-callout__header&#34;&gt;&#xA;    &lt;span class=&#34;blog-callout__badge&#34;&gt;[!]&lt;/span&gt;&#xA;    &lt;span class=&#34;blog-callout__title&#34;&gt;Research and Safety Notice&lt;/span&gt;&#xA;  &lt;/div&gt;&#xA;  &lt;div class=&#34;blog-callout__body&#34;&gt;&lt;p&gt;WhiteLotus was built as a proof-of-concept directly tied to the LabConfig analysis published in &lt;a href=&#34;http://localhost:1313/blogs/setup-exe-journey&#34;&gt;A Journey Into setup.exe — LabConfig and Windows 11 Security&lt;/a&gt;. It demonstrates the practical attack surface that exists on systems installed through the LabConfig bypass: once Secure Boot is absent and the boot chain offers no resistance, the capabilities shown here become available to any attacker who can write to the EFI System Partition.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

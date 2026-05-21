@@ -1,88 +1,54 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Windows-Internals on 0xbekoo</title><link>https://0xbekoo.github.io/tags/windows-internals/</link><description>Recent content in Windows-Internals on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Thu, 21 May 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/windows-internals/index.xml" rel="self" type="application/rss+xml"/><item><title>A Journey Into setup.exe — LabConfig and Windows 11 Security</title><link>https://0xbekoo.github.io/blogs/setup-exe-journey/</link><pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/setup-exe-journey/</guid><description>&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Earlier this year I submitted a security finding to MSRC. No CVE came out of it, no bounty — just something I thought someone at Microsoft should read. This blog is basically that report, rewritten in a way that makes sense to read outside of a submission form.&lt;/p&gt;
-&lt;p&gt;The short version: Windows 11 publicly guarantees that Secure Boot and TPM 2.0 protect your system out-of-the-box. The binaries that enforce those guarantees haven&amp;rsquo;t meaningfully changed since Windows 10. And there&amp;rsquo;s a registry path — one that millions of people have used to install Windows 11 on unsupported hardware — that makes those guarantees completely optional without ever telling the user.&lt;/p&gt;</description></item><item><title>WhiteLotus: Walking Through a UEFI Bootkit</title><link>https://0xbekoo.github.io/blogs/whitelotus/</link><pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/whitelotus/</guid><description>&lt;div class="blog-callout blog-callout-warning"&gt;
- &lt;div class="blog-callout__header"&gt;
- &lt;span class="blog-callout__badge"&gt;[!]&lt;/span&gt;
- &lt;span class="blog-callout__title"&gt;Research and Safety Notice&lt;/span&gt;
- &lt;/div&gt;
- &lt;div class="blog-callout__body"&gt;&lt;p&gt;WhiteLotus was built as a proof-of-concept directly tied to the LabConfig analysis published in &lt;a href="https://0xbekoo.github.io/blogs/setup-exe-journey"&gt;A Journey Into setup.exe — LabConfig and Windows 11 Security&lt;/a&gt;. It demonstrates the practical attack surface that exists on systems installed through the LabConfig bypass: once Secure Boot is absent and the boot chain offers no resistance, the capabilities shown here become available to any attacker who can write to the EFI System Partition.&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 4</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-4/</link><pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-4/</guid><description>&lt;h3 id="verification-routines"&gt;&lt;strong&gt;Verification Routines&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;This phase is the heart of PatchGuard&amp;rsquo;s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a system thread, or other dispatch mechanisms—it enters the validation routine. The validation code decrypts and inspects internal PatchGuard state and memory-resident kernel structures.&lt;/p&gt;
-&lt;p&gt;There are several checking routines involved, with the main one called &lt;strong&gt;FsRtlMdlReadCompleteDevEx&lt;/strong&gt;. Other routines include:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;TVCallBack Routine&lt;/strong&gt;: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;br&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;CcBcbProfiler&lt;/strong&gt; We saw that this function is used to check a randomly choosen routine from ntoskrnl.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;In this section, we will focus mainly on FsRtlMdlReadCompleteDevEx. This function is really long and the function can be summed up into multiple parts:&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 3</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-3/</link><pubDate>Fri, 08 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-3/</guid><description>&lt;h4 id="triggering-a-check"&gt;&lt;strong&gt;Triggering a check&lt;/strong&gt;&lt;/h4&gt;
-&lt;p&gt;As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.&lt;/p&gt;
-&lt;h5 id="dpc-execution"&gt;&lt;strong&gt;DPC Execution&lt;/strong&gt;&lt;/h5&gt;
-&lt;p&gt;The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:&lt;/p&gt;
-&lt;table&gt;
- &lt;thead&gt;
- &lt;tr&gt;
- &lt;th style="text-align: center"&gt;&lt;strong&gt;0&lt;/strong&gt;&lt;/th&gt;
- &lt;th style="text-align: center"&gt;CmpEnableLazyFlushDpcRoutine&lt;/th&gt;
- &lt;/tr&gt;
- &lt;/thead&gt;
- &lt;tbody&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;1&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpCenturyDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;2&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpTimeZoneDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;3&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpTimeRefreshDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;4&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;CmpLazyFlushDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;5&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;ExpTimerDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;6&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;IopTimerDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;7&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;IopIrpStackProfilerDpcRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;8&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiBalanceSetManagerDeferredRoutine&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;9&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;PopThermalZoneDpc&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;10&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;11&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td style="text-align: center"&gt;&lt;strong&gt;12&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: center"&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;
- &lt;/tr&gt;
- &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 2</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-2/</link><pubDate>Thu, 07 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-2/</guid><description>&lt;h6 id="arguments-of-kiinitpatchguardcontext"&gt;&lt;strong&gt;Arguments of KiInitPatchGuardContext&lt;/strong&gt;&lt;/h6&gt;
-&lt;p&gt;Now, we can see another Arguments of the function.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Argument 1: DPC Routine Pointer&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.&lt;/p&gt;
-&lt;p&gt;The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:&lt;/p&gt;</description></item><item><title>PatchGuard Analysis - Part 1</title><link>https://0xbekoo.github.io/blogs/patchguard-analysis-part-1/</link><pubDate>Wed, 06 Aug 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/blogs/patchguard-analysis-part-1/</guid><description>&lt;p&gt;&lt;em&gt;This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.&lt;/em&gt;&lt;/p&gt;
-&lt;h3 id="introduction"&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.&lt;/p&gt;</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Windows-Internals on 0xbekoo</title>
+    <link>http://localhost:1313/tags/windows-internals/</link>
+    <description>Recent content in Windows-Internals on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 21 May 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/windows-internals/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>A Journey Into setup.exe — LabConfig and Windows 11 Security</title>
+      <link>http://localhost:1313/blogs/setup-exe-journey/</link>
+      <pubDate>Thu, 21 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/setup-exe-journey/</guid>
+      <description>&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Earlier this year I submitted a security finding to MSRC. No CVE came out of it, no bounty — just something I thought someone at Microsoft should read. This blog is basically that report, rewritten in a way that makes sense to read outside of a submission form.&lt;/p&gt;&#xA;&lt;p&gt;The short version: Windows 11 publicly guarantees that Secure Boot and TPM 2.0 protect your system out-of-the-box. The binaries that enforce those guarantees haven&amp;rsquo;t meaningfully changed since Windows 10. And there&amp;rsquo;s a registry path — one that millions of people have used to install Windows 11 on unsupported hardware — that makes those guarantees completely optional without ever telling the user.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>WhiteLotus: Walking Through a UEFI Bootkit</title>
+      <link>http://localhost:1313/blogs/whitelotus/</link>
+      <pubDate>Tue, 12 May 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/whitelotus/</guid>
+      <description>&lt;div class=&#34;blog-callout blog-callout-warning&#34;&gt;&#xA;  &lt;div class=&#34;blog-callout__header&#34;&gt;&#xA;    &lt;span class=&#34;blog-callout__badge&#34;&gt;[!]&lt;/span&gt;&#xA;    &lt;span class=&#34;blog-callout__title&#34;&gt;Research and Safety Notice&lt;/span&gt;&#xA;  &lt;/div&gt;&#xA;  &lt;div class=&#34;blog-callout__body&#34;&gt;&lt;p&gt;WhiteLotus was built as a proof-of-concept directly tied to the LabConfig analysis published in &lt;a href=&#34;http://localhost:1313/blogs/setup-exe-journey&#34;&gt;A Journey Into setup.exe — LabConfig and Windows 11 Security&lt;/a&gt;. It demonstrates the practical attack surface that exists on systems installed through the LabConfig bypass: once Secure Boot is absent and the boot chain offers no resistance, the capabilities shown here become available to any attacker who can write to the EFI System Partition.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 4</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-4/</link>
+      <pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-4/</guid>
+      <description>&lt;h3 id=&#34;verification-routines&#34;&gt;&lt;strong&gt;Verification Routines&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;This phase is the heart of PatchGuard&amp;rsquo;s self-defense mechanism. Once PatchGuard is triggered—either by a timer, a DPC, a system thread, or other dispatch mechanisms—it enters the validation routine. The validation code decrypts and inspects internal PatchGuard state and memory-resident kernel structures.&lt;/p&gt;&#xA;&lt;p&gt;There are several checking routines involved, with the main one called &lt;strong&gt;FsRtlMdlReadCompleteDevEx&lt;/strong&gt;. Other routines include:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;TVCallBack Routine&lt;/strong&gt;: The routine looks very much like FsRtlMdlReadCompleteDevEx. We showed previously that it was called from a global variable set up from KiFilterFiberContext.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;br&gt;&#xD;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;CcBcbProfiler&lt;/strong&gt; We saw that this function is used to check a randomly choosen routine from ntoskrnl.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;In this section, we will focus mainly on FsRtlMdlReadCompleteDevEx. This function is really long and the function can be summed up into multiple parts:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 3</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-3/</link>
+      <pubDate>Fri, 08 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-3/</guid>
+      <description>&lt;h4 id=&#34;triggering-a-check&#34;&gt;&lt;strong&gt;Triggering a check&lt;/strong&gt;&lt;/h4&gt;&#xA;&lt;p&gt;As we have seen before, the several methods used to setup some contexts. In this section, we will see that how these contexts are triggered.&lt;/p&gt;&#xA;&lt;h5 id=&#34;dpc-execution&#34;&gt;&lt;strong&gt;DPC Execution&lt;/strong&gt;&lt;/h5&gt;&#xA;&lt;p&gt;The frequently way to trigger a check is to use a DPC. The routine set as DeferredRoutine are picked among the following:&lt;/p&gt;&#xA;&lt;table&gt;&#xA;  &lt;thead&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;th style=&#34;text-align: center&#34;&gt;&lt;strong&gt;0&lt;/strong&gt;&lt;/th&gt;&#xA;          &lt;th style=&#34;text-align: center&#34;&gt;CmpEnableLazyFlushDpcRoutine&lt;/th&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/thead&gt;&#xA;  &lt;tbody&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;1&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpCenturyDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;2&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpTimeZoneDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;3&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpTimeRefreshDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;4&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;CmpLazyFlushDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;5&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;ExpTimerDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;6&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;IopTimerDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;7&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;IopIrpStackProfilerDpcRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;8&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiBalanceSetManagerDeferredRoutine&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;9&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;PopThermalZoneDpc&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;10&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;11&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;&lt;strong&gt;12&lt;/strong&gt;&lt;/td&gt;&#xA;          &lt;td style=&#34;text-align: center&#34;&gt;KiTimerDispatch OR KiDpcDispatch&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/tbody&gt;&#xA;&lt;/table&gt;&#xA;&lt;p&gt;Among index 0 to 9, functions use an exception handler to fire the check. KiTimerDispatch and KiDpcDispatch functions call the DPC directly without any exception handler. In other words, these functions do their job while PatchGuard hijacks them to hiding itself.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 2</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-2/</link>
+      <pubDate>Thu, 07 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-2/</guid>
+      <description>&lt;h6 id=&#34;arguments-of-kiinitpatchguardcontext&#34;&gt;&lt;strong&gt;Arguments of KiInitPatchGuardContext&lt;/strong&gt;&lt;/h6&gt;&#xA;&lt;p&gt;Now, we can see another Arguments of the function.&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;Argument 1: DPC Routine Pointer&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;As we have seen before, the several method used a DPC Structure to hide PatchGuard and queue it. This DPC actually contains a pointer to function that is known to unqueue DPC, and will perform specific operation when the DPC is actually a PatchGuard one.&lt;/p&gt;&#xA;&lt;p&gt;The first argument is an index to choose a routine randomly and this routine will be set as one of these routines:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>PatchGuard Analysis - Part 1</title>
+      <link>http://localhost:1313/blogs/patchguard-analysis-part-1/</link>
+      <pubDate>Wed, 06 Aug 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blogs/patchguard-analysis-part-1/</guid>
+      <description>&lt;p&gt;&lt;em&gt;This article is dedicated to B. who the dark shadow. Thx for your all help, the dark shadow B.&lt;/em&gt;&lt;/p&gt;&#xA;&lt;h3 id=&#34;introduction&#34;&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h3&gt;&#xA;&lt;p&gt;Most of us have probably come across PatchGuard (Kernel Patch Protection) at some point. Developed by Microsoft, it plays a critical role in 64-bit Windows operating systems. Its mission is simple yet vital: preventing unauthorized modifications to kernel-level structures in order to preserve system integrity. Today, it still stands as one of the core components of modern Windows security architecture.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

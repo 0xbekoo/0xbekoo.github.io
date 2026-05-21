@@ -1,15 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>X64 on 0xbekoo</title><link>https://0xbekoo.github.io/tags/x64/</link><description>Recent content in X64 on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Sat, 01 Mar 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/x64/index.xml" rel="self" type="application/rss+xml"/><item><title>WhiteLotus</title><link>https://0xbekoo.github.io/projects/whitelotus/</link><pubDate>Sat, 01 Mar 2025 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/projects/whitelotus/</guid><description>&lt;h2 id="overview"&gt;Overview&lt;/h2&gt;
-&lt;p&gt;WhiteLotus is a UEFI-based bootkit that installs a malicious DXE driver into the EFI System Partition. It hooks Windows boot manager functions to inject a kernel driver before the OS loads, bypassing Secure Boot on misconfigured systems.&lt;/p&gt;
-&lt;h2 id="components"&gt;Components&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Dropper&lt;/strong&gt; — Windows EXE that extracts and installs the UEFI payload via a UAC bypass (ICMLuaUtil + PEB masquerade)&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;LoadEfi&lt;/strong&gt; — Elevated loader that mounts the ESP and writes the DXE driver&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;DXE Driver&lt;/strong&gt; — UEFI firmware driver that hooks &lt;code&gt;ExitBootServices&lt;/code&gt; and injects shellcode into the Windows kernel&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="techniques"&gt;Techniques&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;PEB masquerade (&lt;code&gt;ImagePathName&lt;/code&gt; + LDR enumeration) to impersonate &lt;code&gt;explorer.exe&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;COM elevation via &lt;code&gt;CLSID_CMSTPLUA&lt;/code&gt; elevation moniker&lt;/li&gt;
-&lt;li&gt;UEFI DXE runtime driver persistence&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;winload.efi&lt;/code&gt; hook via &lt;code&gt;ExitBootServices&lt;/code&gt; callback&lt;/li&gt;
-&lt;/ul&gt;</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>X64 on 0xbekoo</title>
+    <link>http://localhost:1313/tags/x64/</link>
+    <description>Recent content in X64 on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 01 Mar 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/x64/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>WhiteLotus</title>
+      <link>http://localhost:1313/projects/whitelotus/</link>
+      <pubDate>Sat, 01 Mar 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/projects/whitelotus/</guid>
+      <description>&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;&#xA;&lt;p&gt;WhiteLotus is a UEFI-based bootkit that installs a malicious DXE driver into the EFI System Partition. It hooks Windows boot manager functions to inject a kernel driver before the OS loads, bypassing Secure Boot on misconfigured systems.&lt;/p&gt;&#xA;&lt;h2 id=&#34;components&#34;&gt;Components&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;Dropper&lt;/strong&gt; — Windows EXE that extracts and installs the UEFI payload via a UAC bypass (ICMLuaUtil + PEB masquerade)&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;LoadEfi&lt;/strong&gt; — Elevated loader that mounts the ESP and writes the DXE driver&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;DXE Driver&lt;/strong&gt; — UEFI firmware driver that hooks &lt;code&gt;ExitBootServices&lt;/code&gt; and injects shellcode into the Windows kernel&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;techniques&#34;&gt;Techniques&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;PEB masquerade (&lt;code&gt;ImagePathName&lt;/code&gt; + LDR enumeration) to impersonate &lt;code&gt;explorer.exe&lt;/code&gt;&lt;/li&gt;&#xA;&lt;li&gt;COM elevation via &lt;code&gt;CLSID_CMSTPLUA&lt;/code&gt; elevation moniker&lt;/li&gt;&#xA;&lt;li&gt;UEFI DXE runtime driver persistence&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;winload.efi&lt;/code&gt; hook via &lt;code&gt;ExitBootServices&lt;/code&gt; callback&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
+    </item>
+  </channel>
+</rss>

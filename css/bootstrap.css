@@ -99,6 +99,7 @@ sub {
 }
 
 img {
+  margin: 25px;
   width: auto\9;
   height: auto;
   max-width: 100%;

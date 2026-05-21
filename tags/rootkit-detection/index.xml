@@ -1,15 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Rootkit Detection on 0xbekoo</title><link>https://0xbekoo.github.io/tags/rootkit-detection/</link><description>Recent content in Rootkit Detection on 0xbekoo</description><generator>Hugo</generator><language>en</language><lastBuildDate>Sun, 10 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://0xbekoo.github.io/tags/rootkit-detection/index.xml" rel="self" type="application/rss+xml"/><item><title>SSDT Hook Detector</title><link>https://0xbekoo.github.io/projects/ssdt-hook-detector/</link><pubDate>Sun, 10 Nov 2024 00:00:00 +0000</pubDate><guid>https://0xbekoo.github.io/projects/ssdt-hook-detector/</guid><description>&lt;h2 id="overview"&gt;Overview&lt;/h2&gt;
-&lt;p&gt;A user-mode utility that detects SSDT hooks installed by rootkits or anti-cheat software. It reads the System Service Descriptor Table from kernel memory via a custom driver and compares each entry against the expected address range of &lt;code&gt;ntoskrnl.exe&lt;/code&gt;.&lt;/p&gt;
-&lt;h2 id="how-it-works"&gt;How It Works&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;Loads a signed kernel driver that exposes an IOCTL interface&lt;/li&gt;
-&lt;li&gt;Reads &lt;code&gt;KeServiceDescriptorTable&lt;/code&gt; pointer from driver context&lt;/li&gt;
-&lt;li&gt;Iterates all syscall entries and checks if the address falls within ntoskrnl&amp;rsquo;s &lt;code&gt;.text&lt;/code&gt; section&lt;/li&gt;
-&lt;li&gt;Reports hooked entries with the hook address and closest known symbol&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id="detection-scope"&gt;Detection Scope&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Direct SSDT inline hooks&lt;/li&gt;
-&lt;li&gt;SSDT pointer replacement (table swap)&lt;/li&gt;
-&lt;li&gt;Partial hooked ranges in third-party modules&lt;/li&gt;
-&lt;/ul&gt;</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Rootkit Detection on 0xbekoo</title>
+    <link>http://localhost:1313/tags/rootkit-detection/</link>
+    <description>Recent content in Rootkit Detection on 0xbekoo</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 10 Nov 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/rootkit-detection/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>SSDT Hook Detector</title>
+      <link>http://localhost:1313/projects/ssdt-hook-detector/</link>
+      <pubDate>Sun, 10 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/projects/ssdt-hook-detector/</guid>
+      <description>&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;&#xA;&lt;p&gt;A user-mode utility that detects SSDT hooks installed by rootkits or anti-cheat software. It reads the System Service Descriptor Table from kernel memory via a custom driver and compares each entry against the expected address range of &lt;code&gt;ntoskrnl.exe&lt;/code&gt;.&lt;/p&gt;&#xA;&lt;h2 id=&#34;how-it-works&#34;&gt;How It Works&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;Loads a signed kernel driver that exposes an IOCTL interface&lt;/li&gt;&#xA;&lt;li&gt;Reads &lt;code&gt;KeServiceDescriptorTable&lt;/code&gt; pointer from driver context&lt;/li&gt;&#xA;&lt;li&gt;Iterates all syscall entries and checks if the address falls within ntoskrnl&amp;rsquo;s &lt;code&gt;.text&lt;/code&gt; section&lt;/li&gt;&#xA;&lt;li&gt;Reports hooked entries with the hook address and closest known symbol&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;detection-scope&#34;&gt;Detection Scope&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Direct SSDT inline hooks&lt;/li&gt;&#xA;&lt;li&gt;SSDT pointer replacement (table swap)&lt;/li&gt;&#xA;&lt;li&gt;Partial hooked ranges in third-party modules&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
+    </item>
+  </channel>
+</rss>

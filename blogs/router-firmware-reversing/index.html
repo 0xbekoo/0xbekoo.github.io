@@ -1,18 +1,367 @@
-<!doctype html><html lang=en><head><title>0xbekoo</title><meta charset=utf-8><meta content="utf-8" http-equiv=encoding><meta name=viewport content="width=device-width,initial-scale=1"><meta name=format-detection content="telephone=no"><meta name=theme-color content="#000084"><link rel=icon href=/favicon.ico><link rel=canonical href=/blogs/router-firmware-reversing/><noscript><style>body{visibility:visible!important}</style></noscript></head><body><nav class="navbar navbar-inverse navbar-fixed-top"><div class=navbar-inner><div class=container><button type=button class="btn btn-navbar" data-toggle=collapse data-target=.nav-collapse></button>
-<a class=brand href=/>0xbekoo</a><div class="nav-collapse collapse"><ul class=nav><li><a href=/docs/><span>Documentation</span></a></li><li><a href=/blogs/><span>Blogs</span></a></li><li><a href=/projects/><span>Projects</span></a></li></ul></div></div></div></nav><div id=content class=container><article class="single-shell single-shell--blogs"><div class="row-fluid navmargin"><div class="page-header single-shell__header"><h1 class=single-shell__title>Router Firmware Reverse Engineering</h1><p class=single-shell__meta>Tue, Dec 3, 2024</p></div><div class="single-shell__body single-shell__body--with-toc"><div class=single-shell__main><section class="single-shell__author single-shell__author--mobile"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--mobile is-open" data-ui=toc><button class=single-shell__toc-toggle type=button aria-expanded=true aria-controls=single-toc-mobile-blogs-router-firmware-reversing->
-<span class=single-shell__toc-label>Contents</span>
-<span class=single-shell__toc-status aria-hidden=true>[-]</span></button><div id=single-toc-mobile-blogs-router-firmware-reversing- class=single-shell__toc-panel><div class=single-shell__toc-panel-inner><div class=single-shell__toc-body><nav id=TableOfContents-mobile><ul><li><ul><li><a href=#finding-linux-version><strong>Finding Linux Version</strong></a></li><li><a href=#finding-linux-files><strong>Finding Linux Files</strong></a></li><li><a href=#simulating><strong>Simulating</strong></a></li><li><a href=#conclusion><strong>Conclusion</strong></a></li><li><a href=#references><strong>References</strong></a></li></ul></li></ul></nav></div></div></div></section><div class=single-shell__content><p><img src=/images/posts/reversing-router/headerphoto.jpg alt></p><p>Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&rsquo;s <a href=https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/>Archer AX 21 V4.6</a> modem. You can check TP-Link&rsquo;s original page to <a href=https://www.tp-link.com/us/support/download/archer-ax21/#Firmware>download the firmware</a>.</p><blockquote><p>[!WARNING]
-The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.</p></blockquote><p>First, let&rsquo;s take a look at the information of the firmware we downloaded:</p><p><img src=/images/posts/reversing-router/firmware-info.png alt></p><p>As you can see, it was released on November 14, 2024. So it&rsquo;s a firmware released almost 1 month ago. We can see that a few bugs have been fixed, optimizations have been made and new things have been added.</p><p>Since I don&rsquo;t physically own this router, I will only analyze the firmware in this blog.</p><h3 id=finding-linux-version><strong>Finding Linux Version</strong></h3><p>We will use a tool called binwalk, which is often used especially in firmware reverse engineering. This tool can provide us with various information about the firmware.</p><p>First, let&rsquo;s give binwalk the firmware we are going to analyze:</p><p><img src=/images/posts/reversing-router/img2.png alt></p><p>Yeaap, we have some complicated outputs&mldr;</p><p>These outputs contain the offsets of the related firmware. However, this binwalk tool does not only give offset values, it also gives explanations for these fields. Let&rsquo;s take a look at the Decimal and Hexdecimal values in this output:</p><p><img src=/images/posts/reversing-router/img3.png alt></p><p>These are the offset values. binwalk tool shows them to us in both decimal and hexdecimal. Now let&rsquo;s first focus on the Bootloader (U-Boot) and take a look at its architecture.</p><p>At this stage we can use the dd tool. Let&rsquo;s run the following command:</p><p><img src=/images/posts/reversing-router/img4.png alt></p><p>Let&rsquo;s pay attention to the values we give. with &lsquo;if&rsquo;, we give the target firmware. with &lsquo;of&rsquo;, we specify how to save the replicated data. with &lsquo;skip&rsquo;, we skip a certain amount of bytes and start the copying process. Notice that we gave a value of 8212. This means that dd will copy data up to 8212 bytes after the tool. This value is the offset of the uImage we found from binwalk.</p><p>This copy will result in a file called uImage:</p><p><img src=/images/posts/reversing-router/img5.png alt></p><p>Analyzing the copied file we can verify that it is u-boot Legacy uImage. We can also see that arch is MIPS.</p><p>To look for the Linux version, let&rsquo;s take a look at our binwalk output again:</p><p><img src=/images/posts/reversing-router/img2.png alt></p><p>If we look at the offsets again, we can go to the compressed partition with LZMA. Let&rsquo;s take the file with the .lzma extension and extract the file:</p><p><img src=/images/posts/reversing-router/img6.png alt></p><p>After these steps we should have a file as <strong>files</strong>. Our goal will be to browse the Linux version with strings only:</p><p><img src=/images/posts/reversing-router/img7.png alt></p><p>The Linux version used is 3.10.108 and 4.6.3 for GCC. Both of these are old versions.</p><p><a href=https://lwn.net/Articles/738167/>Linux version 3.10.108</a> was released on November 5, 2017:</p><p><img src=/images/posts/reversing-router/img8.png alt></p><p><a href=https://gcc.gnu.org/gcc-4.6/>Version 4.6.3 of GCC</a> was released on March 1, 2012:</p><p><img src=/images/posts/reversing-router/img9.png alt></p><p>To be honest, even though I am new to Firmware Reverse Engineering, I didn&rsquo;t find it logical that a firmware released in 2024 would use an old Linux and GCC version. This could be a security risk.</p><p>When I saw this, I asked myself: &ldquo;Do other companies do this and is it normal?&rdquo;. Although I didn&rsquo;t think it was normal, I wanted to analyze a different company&rsquo;s router firmware and compare it with the Linux version. After a short research, I decided to analyze ASUS&rsquo;s RT-AX58U Router Firmware.</p><p><a href="https://www.asus.com/networking-iot-servers/wifi-6/all-series/rt-ax58u/helpdesk_bios?model2Name=RT-AX58U">The information</a> for this firmware is as follows:</p><p><img src=/images/posts/reversing-router/img10.png alt></p><p>Likewise, this Firmware was released almost 1 month ago. I will share the result I found quickly so that we don&rsquo;t get distracted. But if you want to practice more, I recommend you to analyze this Firmware of ASUS Router like me after reading this blog:</p><p><img src=/images/posts/reversing-router/img11.png alt></p><p>As a result, Linux version 4.19.183 and GCC version 9.2.0 are used for this firmware.</p><p><a href=https://lwn.net/Articles/850356/>Linux version 4.19.183</a> was released on March 24, 2021:</p><p><img src=/images/posts/reversing-router/img12.png alt></p><p><a href=https://gcc.gnu.org/gcc-9/>Version 9.2.0 of GCC</a> was released on August 12, 2019</p><p><img src=/images/posts/reversing-router/img13.png alt></p><p>In this Firmware of the ASUS RT-AX58U we can see that it uses more recent versions compared to the TP-LINK Firmware we analyzed.</p><h3 id=finding-linux-files><strong>Finding Linux Files</strong></h3><p>Let&rsquo;s take a look again at the offset outputs we obtained with binwalk:</p><p><img src=/images/posts/reversing-router/img2.png alt></p><p>Here we can navigate to Squashfs to find Linux files. This is where most Linux files are located.</p><p>Let&rsquo;s copy them in the same way with the .sqfs extension:</p><p><img src=/images/posts/reversing-router/img14.png alt></p><p>Analyzing the file we can verify that it is already compressed with Squashfs. Now we will need to extract it, but the Squashfs-tools package needs to be downloaded if it is not installed. On Debian systems you can download it with the following command:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>sudo apt install squashfs-tools -y
-</span></span></code></pre></div><p>After downloading, extract it with unsquashfs: command:</p><p><img src=/images/posts/reversing-router/img15.png alt></p><p>After extraction we get a file named squashfs-root. Let&rsquo;s take a look inside</p><p><img src=/images/posts/reversing-router/img16.png alt></p><p>As you can see, we have accessed the Linux files. There are many things we can do in this section. You can search for a bug, hashes or passwords, whatever your analysis is based on. For example, we can take a look at the passwords in /etc/shadow:</p><p><img src=/images/posts/reversing-router/img17.png alt></p><p>If you are new like me you can search for these Linux files and copy and browse other offset sections.</p><h3 id=simulating><strong>Simulating</strong></h3><p>Finally, let&rsquo;s emulate (simulate) the firmware. We can use chroot and qemu for this. But before that we need to know the architecture of the firmware.</p><p>When we browsed uImage looking for the Linux version, we already saw that the architecture is MIPS. But let&rsquo;s check the output one more time:</p><p><img src=/images/posts/reversing-router/img5.png alt></p><p>We can see that it&rsquo;s MIPS. It is also Little Endian.</p><p>Since we are going to use Qemu, let&rsquo;s copy /usr/bin/qemu-mipsel-static to squashfs-root and then run chroot:</p><p><img src=/images/posts/reversing-router/img18.png alt></p><p>When we take a look at the version of Busybox, we see that 1.19.4 is used. This is an old version released in 2012.</p><h3 id=conclusion><strong>Conclusion</strong></h3><p>In this blog, we discussed the fundamental steps of analyzing a router&rsquo;s firmware, using a recently released TP-Link device as our case study. We demonstrated how to use common Linux tools like binwalk, dd, strings, and unsquashfs to dissect the firmware file, extract its core components like the kernel and the filesystem, and identify the software versions within.</p><p>Our most striking discovery was that a firmware released in 2024 is built upon a Linux kernel from 2017 (3.10.108) and a GCC toolchain from 2012 (4.6.3). As our comparison with a more up-to-date ASUS firmware showed, this practice is a choice, not a necessity, and it represents a significant security liability. Such outdated components are often rife with known, unpatched vulnerabilities that could be exploited by attackers.</p><h3 id=references><strong>References</strong></h3><ul><li><p><a href=https://embeddedbits.org/reverse-engineering-my-routers-firmware-with-binwalk-embeddedbits/>Embeddedbits - Reverse engineering my router’s firmware with binwalk</a></p></li><li><p><a href="https://www.youtube.com/watch?v=zs86OYea8Wk">John Hammond - Getting Started in Firmware Analysis & IoT Reverse Engineering</a></p></li><li><p><a href="https://www.youtube.com/watch?v=oqk3cU7ekag">Engineer Man - Simple Firmware Reverse Engineering</a></p></li></ul></div><div class=single-shell__back><h4><a href=/>Back to Home</a></h4></div><button class=single-shell__scroll-top type=button aria-label="Scroll to top" data-ui=scroll-top>
-<span aria-hidden=true>^</span></button></div><aside class=single-shell__aside><section class="single-shell__author single-shell__author--desktop"><div class=single-shell__author-static aria-hidden=true></div><div class=single-shell__author-heading>About Author</div><div class=single-shell__author-card><a class=single-shell__author-photo-link href=https://github.com/0xbekoo><div class=single-shell__author-photo-shell><img class=single-shell__author-photo src=https://github.com/0xbekoo.png alt=0xbekoo></div></a><div class=single-shell__author-body><a class=single-shell__author-name-link href=https://github.com/0xbekoo><span class=single-shell__author-name data-text=0xbekoo>0xbekoo</span></a><p class=single-shell__author-title>Low-Level Security Researcher</p></div></div></section><section class="single-shell__toc single-shell__toc--desktop"><div class=single-shell__toc-heading><span class=single-shell__toc-label>Contents</span></div><div class=single-shell__toc-body><nav id=TableOfContents-desktop><ul><li><ul><li><a href=#finding-linux-version><strong>Finding Linux Version</strong></a></li><li><a href=#finding-linux-files><strong>Finding Linux Files</strong></a></li><li><a href=#simulating><strong>Simulating</strong></a></li><li><a href=#conclusion><strong>Conclusion</strong></a></li><li><a href=#references><strong>References</strong></a></li></ul></li></ul></nav></div></section></aside><div class=single-shell__panel aria-label="Post info"><div class=sp-sysinfo><div class=sp-sysinfo__header>// SYSINFO</div><div class=sp-sysinfo__row><span class=sp-label>DATE</span>
-<span>2024.12.03</span></div><div class=sp-sysinfo__row><span class=sp-label>READ</span>
-<span>6MIN</span></div><div class=sp-sysinfo__row><span class=sp-label>WORDS</span>
-<span>1112</span></div></div><div class=sp-tags><div class=sp-tags__header>// TAGS</div><a href=/tags/reverse-engineering class=sp-tag>Reverse-Engineering</a>
-<a href=/tags/firmware-reversing class=sp-tag>Firmware-Reversing</a>
-<a href=/tags/iot-hacking class=sp-tag>IOT-Hacking</a>
-<a href=/tags/firmware class=sp-tag>Firmware</a>
-<a href=/tags/router class=sp-tag>Router</a></div></div></div></div></article></div><footer class=container><hr class=soften><p>&copy;
-0xbekoo
-<span id=thisyear>2026</span>
-| 0xbekoo.github.io</p><p class=text-center><a href=https://x.com/0xbekooo>Twitter</a>
-<a href=https://github.com/0xbekoo>GitHub</a></p></footer></body><link rel=stylesheet href=/css/bootstrap.css><link rel=stylesheet href=/css/bootstrap-responsive.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/blog-callouts.css><link rel=stylesheet href=/css/mobile-reading.css><link rel=stylesheet href=/css/duat-gate.css><link rel=stylesheet href=/css/home-glitch.css><link rel=stylesheet href=/css/duat-boot.css><link rel=stylesheet href=/css/page-slide.css><link rel=stylesheet href=/css/projects.css><link rel=stylesheet href=/css/diagrams.css><script src=/js/jquery.js></script><script src=/js/bootstrap-transition.js></script><script src=/js/bootstrap-alert.js></script><script src=/js/bootstrap-modal.js></script><script src=/js/bootstrap-dropdown.js></script><script src=/js/bootstrap-scrollspy.js></script><script src=/js/bootstrap-tab.js></script><script src=/js/bootstrap-tooltip.js></script><script src=/js/bootstrap-popover.js></script><script src=/js/bootstrap-button.js></script><script src=/js/bootstrap-collapse.js></script><script src=/js/bootstrap-carousel.js></script><script src=/js/bootstrap-typeahead.js></script><script src=/js/bootstrap-affix.js></script><script>_386={fastLoad:!1,onePass:!1,speedFactor:1.5,duatBootImage:"/images/blog-images/hour.jpg"};function ThisYear(){document.getElementById("thisyear").innerHTML=(new Date).getFullYear()}</script><script src=/js/duat-boot.js></script><script src=/js/mobile-image-lightbox.js></script><script src=/js/page-slide.js></script></html>
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>0xbekoo</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <link rel="icon" href="/favicon.ico">
+    <link rel="canonical" href="/blogs/router-firmware-reversing/">
+    <noscript><style>body { visibility: visible !important; }</style></noscript>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="/">0xbekoo</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/docs/">
+                                    
+                                    <span>Documentation</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/blogs/">
+                                    
+                                    <span>Blogs</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/projects/">
+                                    
+                                    <span>Projects</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div id="content" class="container">
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+    
+
+
+
+
+<article class="single-shell single-shell--blogs">
+    <div class="row-fluid navmargin">
+        <div class="page-header single-shell__header">
+            <h1 class="single-shell__title">Router Firmware Reverse Engineering</h1>
+            <p class="single-shell__meta">Tue, Dec 3, 2024</p>
+        </div>
+        <div class="single-shell__body single-shell__body--with-toc">
+            <div class="single-shell__main">
+                
+                
+                <section class="single-shell__author single-shell__author--mobile">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--mobile is-open" data-ui="toc">
+                    <button class="single-shell__toc-toggle" type="button" aria-expanded="true" aria-controls="single-toc-mobile-blogs-router-firmware-reversing-">
+                        <span class="single-shell__toc-label">Contents</span>
+                        <span class="single-shell__toc-status" aria-hidden="true">[-]</span>
+                    </button>
+                    <div id="single-toc-mobile-blogs-router-firmware-reversing-" class="single-shell__toc-panel">
+                        <div class="single-shell__toc-panel-inner">
+                            <div class="single-shell__toc-body">
+                                <nav id="TableOfContents-mobile">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#finding-linux-version"><strong>Finding Linux Version</strong></a></li>
+        <li><a href="#finding-linux-files"><strong>Finding Linux Files</strong></a></li>
+        <li><a href="#simulating"><strong>Simulating</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="single-shell__content">
+                    <p><img src="/images/posts/reversing-router/headerphoto.jpg" alt=""></p>
+<p>Hello there. Welcome to my first blog for Firmware Reverse Engineering. In this post we will reverse the firmware of TP-Link&rsquo;s <a href="https://www.tp-link.com/us/home-networking/wifi-router/archer-ax21/">Archer AX 21 V4.6</a> modem. You can check TP-Link&rsquo;s original page to <a href="https://www.tp-link.com/us/support/download/archer-ax21/#Firmware">download the firmware</a>.</p>
+<blockquote>
+<p>[!WARNING]
+The information shared in this blog is provided for security research and technical training purposes. It is not intended to cause any harm or malicious behavior towards the relevant company or its product.</p>
+</blockquote>
+<p>First, let&rsquo;s take a look at the information of the firmware we downloaded:</p>
+<p><img src="/images/posts/reversing-router/firmware-info.png" alt=""></p>
+<p>As you can see, it was released on November 14, 2024. So it&rsquo;s a firmware released almost 1 month ago. We can see that a few bugs have been fixed, optimizations have been made and new things have been added.</p>
+<p>Since I don&rsquo;t physically own this router, I will only analyze the firmware in this blog.</p>
+<h3 id="finding-linux-version"><strong>Finding Linux Version</strong></h3>
+<p>We will use a tool called binwalk, which is often used especially in firmware reverse engineering. This tool can provide us with various information about the firmware.</p>
+<p>First, let&rsquo;s give binwalk the firmware we are going to analyze:</p>
+<p><img src="/images/posts/reversing-router/img2.png" alt=""></p>
+<p>Yeaap, we have some complicated outputs&hellip;</p>
+<p>These outputs contain the offsets of the related firmware. However, this binwalk tool does not only give offset values, it also gives explanations for these fields. Let&rsquo;s take a look at the Decimal and Hexdecimal values in this output:</p>
+<p><img src="/images/posts/reversing-router/img3.png" alt=""></p>
+<p>These are the offset values. binwalk tool shows them to us in both decimal and hexdecimal. Now let&rsquo;s first focus on the Bootloader (U-Boot) and take a look at its architecture.</p>
+<p>At this stage we can use the dd tool. Let&rsquo;s run the following command:</p>
+<p><img src="/images/posts/reversing-router/img4.png" alt=""></p>
+<p>Let&rsquo;s pay attention to the values we give. with &lsquo;if&rsquo;, we give the target firmware. with &lsquo;of&rsquo;, we specify how to save the replicated data. with &lsquo;skip&rsquo;, we skip a certain amount of bytes and start the copying process. Notice that we gave a value of 8212. This means that dd will copy data up to 8212 bytes after the tool. This value is the offset of the uImage we found from binwalk.</p>
+<p>This copy will result in a file called uImage:</p>
+<p><img src="/images/posts/reversing-router/img5.png" alt=""></p>
+<p>Analyzing the copied file we can verify that it is u-boot Legacy uImage. We can also see that arch is MIPS.</p>
+<p>To look for the Linux version, let&rsquo;s take a look at our binwalk output again:</p>
+<p><img src="/images/posts/reversing-router/img2.png" alt=""></p>
+<p>If we look at the offsets again, we can go to the compressed partition with LZMA. Let&rsquo;s take the file with the .lzma extension and extract the file:</p>
+<p><img src="/images/posts/reversing-router/img6.png" alt=""></p>
+<p>After these steps we should have a file as <strong>files</strong>. Our goal will be to browse the Linux version with strings only:</p>
+<p><img src="/images/posts/reversing-router/img7.png" alt=""></p>
+<p>The Linux version used is 3.10.108 and 4.6.3 for GCC. Both of these are old versions.</p>
+<p><a href="https://lwn.net/Articles/738167/">Linux version 3.10.108</a> was released on November 5, 2017:</p>
+<p><img src="/images/posts/reversing-router/img8.png" alt=""></p>
+<p><a href="https://gcc.gnu.org/gcc-4.6/">Version 4.6.3 of GCC</a> was released on March 1, 2012:</p>
+<p><img src="/images/posts/reversing-router/img9.png" alt=""></p>
+<p>To be honest, even though I am new to Firmware Reverse Engineering, I didn&rsquo;t find it logical that a firmware released in 2024 would use an old Linux and GCC version. This could be a security risk.</p>
+<p>When I saw this, I asked myself: &ldquo;Do other companies do this and is it normal?&rdquo;. Although I didn&rsquo;t think it was normal, I wanted to analyze a different company&rsquo;s router firmware and compare it with the Linux version. After a short research, I decided to analyze ASUS&rsquo;s RT-AX58U Router Firmware.</p>
+<p><a href="https://www.asus.com/networking-iot-servers/wifi-6/all-series/rt-ax58u/helpdesk_bios?model2Name=RT-AX58U">The information</a> for this firmware is as follows:</p>
+<p><img src="/images/posts/reversing-router/img10.png" alt=""></p>
+<p>Likewise, this Firmware was released almost 1 month ago. I will share the result I found quickly so that we don&rsquo;t get distracted. But if you want to practice more, I recommend you to analyze this Firmware of ASUS Router like me after reading this blog:</p>
+<p><img src="/images/posts/reversing-router/img11.png" alt=""></p>
+<p>As a result, Linux version 4.19.183 and GCC version 9.2.0 are used for this firmware.</p>
+<p><a href="https://lwn.net/Articles/850356/">Linux version 4.19.183</a> was released on March 24, 2021:</p>
+<p><img src="/images/posts/reversing-router/img12.png" alt=""></p>
+<p><a href="https://gcc.gnu.org/gcc-9/">Version 9.2.0 of GCC</a> was released on August 12, 2019</p>
+<p><img src="/images/posts/reversing-router/img13.png" alt=""></p>
+<p>In this Firmware of the ASUS RT-AX58U we can see that it uses more recent versions compared to the TP-LINK Firmware we analyzed.</p>
+<h3 id="finding-linux-files"><strong>Finding Linux Files</strong></h3>
+<p>Let&rsquo;s take a look again at the offset outputs we obtained with binwalk:</p>
+<p><img src="/images/posts/reversing-router/img2.png" alt=""></p>
+<p>Here we can navigate to Squashfs to find Linux files. This is where most Linux files are located.</p>
+<p>Let&rsquo;s copy them in the same way with the .sqfs extension:</p>
+<p><img src="/images/posts/reversing-router/img14.png" alt=""></p>
+<p>Analyzing the file we can verify that it is already compressed with Squashfs. Now we will need to extract it, but the Squashfs-tools package needs to be downloaded if it is not installed. On Debian systems you can download it with the following command:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt install squashfs-tools -y
+</span></span></code></pre></div><p>After downloading, extract it with unsquashfs: command:</p>
+<p><img src="/images/posts/reversing-router/img15.png" alt=""></p>
+<p>After extraction we get a file named squashfs-root. Let&rsquo;s take a look inside</p>
+<p><img src="/images/posts/reversing-router/img16.png" alt=""></p>
+<p>As you can see, we have accessed the Linux files. There are many things we can do in this section. You can search for a bug, hashes or passwords, whatever your analysis is based on. For example, we can take a look at the passwords in /etc/shadow:</p>
+<p><img src="/images/posts/reversing-router/img17.png" alt=""></p>
+<p>If you are new like me you can search for these Linux files and copy and browse other offset sections.</p>
+<h3 id="simulating"><strong>Simulating</strong></h3>
+<p>Finally, let&rsquo;s emulate (simulate) the firmware. We can use chroot and qemu for this. But before that we need to know the architecture of the firmware.</p>
+<p>When we browsed uImage looking for the Linux version, we already saw that the architecture is MIPS. But let&rsquo;s check the output one more time:</p>
+<p><img src="/images/posts/reversing-router/img5.png" alt=""></p>
+<p>We can see that it&rsquo;s MIPS. It is also Little Endian.</p>
+<p>Since we are going to use Qemu, let&rsquo;s copy /usr/bin/qemu-mipsel-static to squashfs-root and then run chroot:</p>
+<p><img src="/images/posts/reversing-router/img18.png" alt=""></p>
+<p>When we take a look at the version of Busybox, we see that 1.19.4 is used. This is an old version released in 2012.</p>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>In this blog, we discussed the fundamental steps of analyzing a router&rsquo;s firmware, using a recently released TP-Link device as our case study. We demonstrated how to use common Linux tools like binwalk, dd, strings, and unsquashfs to dissect the firmware file, extract its core components like the kernel and the filesystem, and identify the software versions within.</p>
+<p>Our most striking discovery was that a firmware released in 2024 is built upon a Linux kernel from 2017 (3.10.108) and a GCC toolchain from 2012 (4.6.3). As our comparison with a more up-to-date ASUS firmware showed, this practice is a choice, not a necessity, and it represents a significant security liability. Such outdated components are often rife with known, unpatched vulnerabilities that could be exploited by attackers.</p>
+<h3 id="references"><strong>References</strong></h3>
+<ul>
+<li>
+<p><a href="https://embeddedbits.org/reverse-engineering-my-routers-firmware-with-binwalk-embeddedbits/">Embeddedbits - Reverse engineering my router’s firmware with binwalk</a></p>
+</li>
+<li>
+<p><a href="https://www.youtube.com/watch?v=zs86OYea8Wk">John Hammond - Getting Started in Firmware Analysis &amp; IoT Reverse Engineering</a></p>
+</li>
+<li>
+<p><a href="https://www.youtube.com/watch?v=oqk3cU7ekag">Engineer Man - Simple Firmware Reverse Engineering</a></p>
+</li>
+</ul>
+
+                </div>
+                <div class="single-shell__back">
+                    <h4><a href="/">Back to Home</a></h4>
+                </div>
+                <button class="single-shell__scroll-top" type="button" aria-label="Scroll to top" data-ui="scroll-top">
+                    <span aria-hidden="true">^</span>
+                </button>
+            </div>
+            
+            <aside class="single-shell__aside">
+                
+                <section class="single-shell__author single-shell__author--desktop">
+                    <div class="single-shell__author-static" aria-hidden="true"></div>
+                    <div class="single-shell__author-heading">About Author</div>
+                    <div class="single-shell__author-card">
+                        <a class="single-shell__author-photo-link" href="https://github.com/0xbekoo">
+                        <div class="single-shell__author-photo-shell">
+                            <img class="single-shell__author-photo" src="https://github.com/0xbekoo.png" alt="0xbekoo">
+                        </div>
+                        </a>
+                        <div class="single-shell__author-body">
+                            <a class="single-shell__author-name-link" href="https://github.com/0xbekoo">
+                            <span class="single-shell__author-name" data-text="0xbekoo">0xbekoo</span>
+                            </a>
+                            <p class="single-shell__author-title">Low-Level Security Researcher</p>
+                        </div>
+                    </div>
+                </section>
+                
+                
+                <section class="single-shell__toc single-shell__toc--desktop">
+                    <div class="single-shell__toc-heading">
+                        <span class="single-shell__toc-label">Contents</span>
+                    </div>
+                    <div class="single-shell__toc-body">
+                        <nav id="TableOfContents-desktop">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#finding-linux-version"><strong>Finding Linux Version</strong></a></li>
+        <li><a href="#finding-linux-files"><strong>Finding Linux Files</strong></a></li>
+        <li><a href="#simulating"><strong>Simulating</strong></a></li>
+        <li><a href="#conclusion"><strong>Conclusion</strong></a></li>
+        <li><a href="#references"><strong>References</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                </section>
+                
+            </aside>
+            
+            <div class="single-shell__panel" aria-label="Post info">
+                <div class="sp-sysinfo">
+                    <div class="sp-sysinfo__header">// SYSINFO</div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">DATE</span>
+                        <span>2024.12.03</span>
+                    </div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">READ</span>
+                        <span>6MIN</span>
+                    </div>
+                    <div class="sp-sysinfo__row">
+                        <span class="sp-label">WORDS</span>
+                        <span>1112</span>
+                    </div>
+                </div>
+                
+                <div class="sp-tags">
+                    <div class="sp-tags__header">// TAGS</div>
+                    
+                    <a href="/tags/reverse-engineering" class="sp-tag">Reverse-Engineering</a>
+                    
+                    <a href="/tags/firmware-reversing" class="sp-tag">Firmware-Reversing</a>
+                    
+                    <a href="/tags/iot-hacking" class="sp-tag">IOT-Hacking</a>
+                    
+                    <a href="/tags/firmware" class="sp-tag">Firmware</a>
+                    
+                    <a href="/tags/router" class="sp-tag">Router</a>
+                    
+                </div>
+                
+            </div>
+            
+            
+        </div>
+    </div>
+</article>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+&copy; 
+
+    0xbekoo
+
+<span id="thisyear">2026</span>
+
+    | 0xbekoo.github.io
+
+
+</p>
+    <p class="text-center">
+        
+        <a href="https://x.com/0xbekooo">Twitter</a> 
+        
+        <a href="https://github.com/0xbekoo">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/blog-callouts.css"><link rel="stylesheet" href="/css/mobile-reading.css"><link rel="stylesheet" href="/css/duat-gate.css"><link rel="stylesheet" href="/css/home-glitch.css"><link rel="stylesheet" href="/css/duat-boot.css"><link rel="stylesheet" href="/css/page-slide.css"><link rel="stylesheet" href="/css/projects.css"><link rel="stylesheet" href="/css/diagrams.css">
+<script src="/js/jquery.js"></script>
+
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 1.5 ,
+        duatBootImage: "/images/blog-images/hour.jpg"
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script>
+<script src="/js/duat-boot.js"></script>
+<script src="/js/mobile-image-lightbox.js"></script>
+<script src="/js/page-slide.js"></script>
+</html>
