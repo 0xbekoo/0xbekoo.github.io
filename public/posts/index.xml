@@ -20,19 +20,5 @@
 				<guid>http://localhost:1313/posts/first-post/</guid>
 				<description>&lt;p&gt;This is a sample post to test how a regular article looks.&lt;/p&gt;&#xA;&lt;h2 id=&#34;subtitle&#34;&gt;Subtitle&lt;/h2&gt;&#xA;&lt;p&gt;You can test text, links, lists, and code blocks here.&lt;/p&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;hugo server&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
 			</item>
-			<item>
-				<title>Full Markdown stress test</title>
-				<link>http://localhost:1313/posts/markdown-stress-test/</link>
-				<pubDate>Sun, 10 May 2026 00:00:00 +0000</pubDate>
-				<guid>http://localhost:1313/posts/markdown-stress-test/</guid>
-				<description>&lt;p&gt;This post exists to test how the theme behaves with typical technical blog content.&lt;/p&gt;&#xA;&lt;h2 id=&#34;basic-text&#34;&gt;Basic text&lt;/h2&gt;&#xA;&lt;p&gt;A regular paragraph with &lt;strong&gt;bold&lt;/strong&gt;, &lt;em&gt;italic&lt;/em&gt;, &lt;em&gt;&lt;strong&gt;both&lt;/strong&gt;&lt;/em&gt;, &lt;code&gt;inline code&lt;/code&gt;, &lt;del&gt;strikethrough&lt;/del&gt;, and a link to &lt;a href=&#34;https://gohugo.io/&#34;&gt;Hugo&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;It is also useful to test long technical terms such as &lt;code&gt;std::vector&amp;lt;BookPage&amp;gt;&lt;/code&gt;, &lt;code&gt;ReaderController::OnAppletSuspended()&lt;/code&gt;, and paths like &lt;code&gt;sdmc:/3ds/3dslibris/cache/covers/&lt;/code&gt;.&lt;/p&gt;&#xA;&lt;h2 id=&#34;lists&#34;&gt;Lists&lt;/h2&gt;&#xA;&lt;p&gt;Unordered list:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;First item.&lt;/li&gt;&#xA;&lt;li&gt;Second item with a bit more text to check wrapping.&lt;/li&gt;&#xA;&lt;li&gt;Third item:&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Nested item A.&lt;/li&gt;&#xA;&lt;li&gt;Nested item B.&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Deeply nested item.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;Ordered list:&lt;/p&gt;</description>
-			</item>
-			<item>
-				<title>Math and technical notes test</title>
-				<link>http://localhost:1313/posts/math-and-technical-notes/</link>
-				<pubDate>Sun, 10 May 2026 00:00:00 +0000</pubDate>
-				<guid>http://localhost:1313/posts/math-and-technical-notes/</guid>
-				<description>&lt;p&gt;This post tests mathematical expressions, technical tables, and documentation-like content.&lt;/p&gt;&#xA;&lt;h2 id=&#34;inline-math&#34;&gt;Inline math&lt;/h2&gt;&#xA;&lt;p&gt;A simple inline formula: \(a^2 + b^2 = c^2\).&lt;/p&gt;&#xA;&lt;p&gt;Another inline expression with subscripts and superscripts: \(x_i = y_i^2 + \alpha\).&lt;/p&gt;&#xA;&lt;h2 id=&#34;block-math&#34;&gt;Block math&lt;/h2&gt;&#xA;\[&#xD;&#xA;E = mc^2&#xD;&#xA;\]&lt;p&gt;A slightly longer expression:&lt;/p&gt;&#xA;\[&#xD;&#xA;\sum_{i=1}^{n} i = \frac{n(n+1)}{2}&#xD;&#xA;\]&lt;p&gt;And a matrix:&lt;/p&gt;&#xA;\[&#xD;&#xA;A =&#xD;&#xA;\begin{bmatrix}&#xD;&#xA;1 &amp; 2 &amp; 3 \\&#xD;&#xA;4 &amp; 5 &amp; 6&#xD;&#xA;\end{bmatrix}&#xD;&#xA;\]&lt;p&gt;Double-dollar delimiters too:&lt;/p&gt;</description>
-			</item>
 	</channel>
 </rss>
