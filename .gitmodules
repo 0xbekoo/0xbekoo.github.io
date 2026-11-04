@@ -1,0 +1,3 @@
+[submodule "themes/rewired"]
+	path = themes/rewired
+	url = https://github.com/RigleGit/rewired.git
