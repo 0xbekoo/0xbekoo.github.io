@@ -1,16 +1,16 @@
 /* <stdin> */
 :root {
-  --bg: #181a2a;
+  --bg: #000000;
   --bg-deep: #10111a;
-  --bg-soft: #282a36;
-  --line: rgba(139, 146, 184, 0.28);
+  --bg-soft: #0f0f0f;
+  --line: rgba(0, 0, 0, 0.28);
   --text: #f8f8f2;
-  --muted: #6272a4;
-  --muted-soft: #a8b0d8;
+  --muted: #000000;
+  --muted-soft: #fff8f8;
   --cyan: #8be9fd;
   --green: #50fa7b;
-  --orange: #ffb86c;
-  --pink: #ff79c6;
+  --orange: #161616;
+  --pink: #eeeeee;
   --purple: #bd93f9;
   --red: #ff5555;
   --yellow: #f1fa8c;
@@ -27,17 +27,6 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(
-      circle at top,
-      rgba(80, 85, 140, 0.28) 0%,
-      transparent 38%),
-    linear-gradient(
-      180deg,
-      #1b1e3a 0%,
-      var(--bg) 42%,
-      var(--bg-deep) 100%);
-  color: var(--text);
   font-family:
     "Fira Code",
     ui-monospace,
@@ -69,7 +58,7 @@ a {
   text-decoration: none;
 }
 a:hover {
-  color: var(--pink);
+  color: rgb(29, 29, 29);
 }
 img {
   max-width: 100%;
