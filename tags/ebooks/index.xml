@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>Ebooks on 0xbekoo</title>
+		<link>http://localhost:58297/tags/ebooks/</link>
+		<description>Recent content in Ebooks on 0xbekoo</description>
+		<generator>Hugo</generator>
+		<language>en-US</language>
+		
+		
+		
+		
+			<lastBuildDate>Fri, 01 May 2026 00:00:00 +0000</lastBuildDate>
+		
+			<atom:link href="http://localhost:58297/tags/ebooks/index.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>3dsLibris</title>
+				<link>http://localhost:58297/projects/3dslibris/</link>
+				<pubDate>Fri, 01 May 2026 00:00:00 +0000</pubDate>
+				<guid>http://localhost:58297/projects/3dslibris/</guid>
+				<description>&lt;p&gt;&lt;strong&gt;3dsLibris&lt;/strong&gt; is a homebrew ebook reader for Nintendo 3DS.&lt;/p&gt;&#xA;&lt;p&gt;It focuses on making long-form reading usable on a dual-screen handheld device, with support for formats such as EPUB, CBZ and PDF.&lt;/p&gt;&#xA;&lt;p&gt;The project explores constrained-device UI, text layout, caching, fixed-layout rendering, and performance-sensitive C/C++ development.&lt;/p&gt;</description>
+			</item>
+	</channel>
+</rss>
